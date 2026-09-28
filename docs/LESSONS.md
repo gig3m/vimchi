@@ -74,7 +74,7 @@ challenge: {
 ```
 
 - 4–8 rounds (validator allows 3–10). Vary the code and the position; don't repeat one edit six times.
-- **Goals**: `text` (buffer must equal; small differences are drawn inline — green ghost text to add, red strike-through to remove, a dashed marker for new lines — and bigger ones in a goal pane under the editor; `showGoal: 'pane'` forces the pane), `cursor` (green box), `buffer`
+- **Goals**: `text` (buffer must equal; small differences are drawn inline — a dotted marker with the text to add in a floating tag (never drawn as if it were in the buffer), red strike-through to remove, a dashed marker for new lines — and bigger ones in a goal pane under the editor; `showGoal: 'pane'` forces the pane), `cursor` (green box), `buffer`
   (current buffer name), `files` (disk contents after `:w`), `registers`, or `check(vim)` for anything
   else. Goals are checked in normal mode unless `mode: 'any'`.
 - Target-style lessons (motions) use rounds with `goal: { cursor }` and `showGoal: false`.
