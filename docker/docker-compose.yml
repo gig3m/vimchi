@@ -1,0 +1,33 @@
+# vimchi — browser Vim tutor, https://vimchi.nrsil.io. Start with ./up.sh
+# (injects the GitHub OAuth app credentials from keys); for a code change
+# `./up.sh` again (it rebuilds). No host port: NPM host reaches it as
+# `vimchi:8080` over nginx-proxy-manager_default.
+name: vimchi
+
+services:
+  vimchi:
+    build:
+      context: ..
+    image: vimchi:latest
+    container_name: vimchi
+    restart: unless-stopped
+    init: true
+    environment:
+      TZ: America/Chicago
+      VIMCHI_BASE_URL: https://vimchi.nrsil.io
+      VIMCHI_SECURE_COOKIES: "1"
+      # Optional: without them the server runs and /auth/github/login is 503.
+      GITHUB_CLIENT_ID: ${VIMCHI_GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${VIMCHI_GITHUB_CLIENT_SECRET:-}
+    networks: [npm]
+    volumes:
+      # SQLite (users, sessions, lesson runs) on the host; local-tier backup.
+      - ../var:/data
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
+
+networks:
+  npm:
+    name: nginx-proxy-manager_default
+    external: true

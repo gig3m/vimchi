@@ -47,6 +47,21 @@ Tests: `cd server && go test ./...`
 The frontend also works on its own as a static site (`dist/`): without the server, progress
 stays in the browser's localStorage and sign-in is unavailable.
 
+## Deploying on sleepwalker
+
+`Dockerfile` builds the SPA (node) and the server (Go, static binary) into one image;
+`docker/docker-compose.yml` runs it as container `vimchi` on the `nginx-proxy-manager_default`
+network (no host port) with SQLite bind-mounted at `var/`. NPM proxies `https://vimchi.nrsil.io`
+to `vimchi:8080`; `GET /healthz` is the uptime probe (200 `{"ok":true}` when SQLite answers).
+
+```sh
+docker/up.sh          # build + (re)start; also the redeploy command after a code change
+```
+
+`up.sh` injects `VIMCHI_GITHUB_CLIENT_ID` / `VIMCHI_GITHUB_CLIENT_SECRET` from `keys` when they
+exist; until a GitHub OAuth app is registered (callback
+`https://vimchi.nrsil.io/auth/github/callback`) the tutor runs with sign-in disabled.
+
 ## Credits
 
 The plugin lessons emulate the default keymaps of vim-surround/nvim-surround, vim-exchange,
