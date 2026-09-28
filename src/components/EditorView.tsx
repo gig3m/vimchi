@@ -225,7 +225,17 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
       let cls = 'cell';
       // In insert mode the caret is its own element, placed before any ghost text at this column.
       const caretHere = isCursor && insertish && vim.mode === 'insert';
-      if (isCursor) {
+      // Ghost text (goal diff) at this column: the text to insert before this cell.
+      const ghostsHere = overlay?.ann ? (overlay.ann.ins.get(l) ?? []).filter(tag => {
+        const span = overlay.ann!.del.get(l)?.find(([a]) => a === tag.col);
+        return (span ? span[1] + 1 : tag.col) === c;
+      }) : [];
+      // A normal-mode cursor sitting at the insertion column is drawn on the first ghost
+      // character rather than on the real character after it. Both are the same Vim
+      // position (`i` inserts here), but drawing it on the hint means "put the cursor at
+      // the start of the suggested text" is what actually works, instead of "just past it".
+      const cursorOnGhost = isCursor && !caretHere && focused && vim.mode !== 'replace' && ghostsHere.length > 0;
+      if (isCursor && !cursorOnGhost) {
         if (caretHere) { /* drawn below */ }
         else if (focused) {
           bg = overlay?.marks.has(`${l}:${c}`) ? (overlay.markKind === 'fix' ? C.red : C.orange) : C.fg;
@@ -236,18 +246,21 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
         } else shadow = 'inset 0 0 0 1px ' + C.fg;
       }
       if (caretHere) cells.push(<span key={`caret${c}`} className={'ev-caret' + (focused ? '' : ' dim')} />);
-      const annHere = overlay?.ann;
-      if (annHere) {
-        for (const tag of annHere.ins.get(l) ?? []) {
-          const span = annHere.del.get(l)?.find(([a]) => a === tag.col);
-          const at = span ? span[1] + 1 : tag.col;
-          if (at === c) cells.push(<span key={`g${c}`} className="ann-ghost">{tag.text.replace(/ /g, '·')}</span>);
-        }
-      }
+      ghostsHere.forEach((tag, gi) => {
+        const text = tag.text.replace(/ /g, '·');
+        if (cursorOnGhost && gi === 0) {
+          cells.push(
+            <span key={`g${c}`} className="ann-ghost">
+              <span className="cell ev-block" data-cursor style={{ color: C.bg, background: C.fg }}>{text[0]}</span>
+              {text.slice(1)}
+            </span>,
+          );
+        } else cells.push(<span key={`g${c}-${gi}`} className="ann-ghost">{text}</span>);
+      });
       for (const d of decos) for (const h of d.hl ?? []) if (h.inline && h.line === l && h.start === c) cells.push(<span key={`i${c}-${cells.length}`} className="cell" style={{ color: h.color, background: h.bg }}>{h.text}</span>);
       cells.push(
         <span key={c} className={cls} style={{ color, background: bg, boxShadow: shadow, textDecoration: deco }}
-          data-cursor={isCursor || undefined} data-target={(overlay?.target && overlay.target.line === l && overlay.target.col === c) || undefined}>
+          data-cursor={(isCursor && !cursorOnGhost) || undefined} data-target={(overlay?.target && overlay.target.line === l && overlay.target.col === c) || undefined}>
           {over ?? (ch === '\t' ? ' '.repeat(Number(vim.options.tabstop) || 8) : ch === '\0' ? '^@' : ch.charCodeAt(0) < 32 ? '^' + String.fromCharCode(ch.charCodeAt(0) + 64) : ch)}
           {hint && <span className="hint">{hint}</span>}
         </span>,
