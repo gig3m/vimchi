@@ -1,0 +1,1310 @@
+import { Code, Mono } from '../../components/Code';
+import { BeforeAfter } from '../../components/diagrams';
+import type { Section } from '../types';
+
+export const registers: Section = {
+  id: 'registers',
+  title: 'Registers',
+  band: 'deep',
+  lessons: [
+    {
+      id: 'unnamed-register',
+      title: 'The Unnamed Register',
+      chips: ['""', 'xp', 'ddp'],
+      keyCards: [
+        { key: '""', glyph: '⎘', label: 'unnamed register', sub: 'what p puts' },
+        { key: 'xp', glyph: 'ab→ba', label: 'swap two chars' },
+        { key: 'ddp', glyph: '↓', label: 'move line down' },
+      ],
+      intro: (
+        <>
+          <p>
+            Every yank, delete and change lands in the unnamed register, <Code>{'""'}</Code>, and <Code>p</Code> and{' '}
+            <Code>P</Code> put from it. So <Code>dd</Code> is really cut: <Code>ddp</Code> moves a line down and{' '}
+            <Code>xp</Code> swaps two characters.
+          </p>
+          <p>
+            You rarely type <Code>{'""p'}</Code>, because plain <Code>p</Code> means the same thing. What matters is
+            knowing that <Code>x</Code>, <Code>dw</Code> and <Code>cw</Code> all overwrite it.
+          </p>
+          <BeforeAfter
+            lines={['if (!items.length)', '  retrun 0;']}
+            cursor={[1, 5]}
+            keys="xp"
+            caption={<><Code>x</Code> cuts the r into <Code>{'""'}</Code>, <Code>p</Code> puts it back one to the right.</>}
+          />
+        </>
+      ),
+      practice: total => (
+        <p>
+          Cut and put to make the buffer match the goal. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Where did my yank go?',
+        body: (
+          <p>
+            Yank a word, delete the one you meant to replace, press <Code>p</Code>: you get the deleted word back. The
+            next lesson shows where the yank went.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'cart.ts' },
+        rounds: [
+          {
+            prompt: 'Fix "retrun".',
+            setup: {
+              text: [
+                'export function cartTotal(cart: Cart) {',
+                '  if (!cart.items.length) retrun 0;',
+                '  return sum(cart.items);',
+                '}',
+              ],
+              cursor: { line: 2, col: 2 },
+            },
+            goal: {
+              text: [
+                'export function cartTotal(cart: Cart) {',
+                '  if (!cart.items.length) return 0;',
+                '  return sum(cart.items);',
+                '}',
+              ],
+            },
+            solution: 'kfuhxp',
+          },
+          {
+            prompt: 'Sort the imports: move the first line down one.',
+            setup: {
+              text: ["import { useState } from 'react';", "import clsx from 'clsx';", '', 'export function Cart() {}'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ["import clsx from 'clsx';", "import { useState } from 'react';", '', 'export function Cart() {}'] },
+            solution: 'ddp',
+          },
+          {
+            prompt: 'Move "async " so it comes after "default".',
+            setup: {
+              text: [
+                "import { api } from './api';",
+                '',
+                'export async default function loadCart() {',
+                "  return api.get('/cart');",
+                '}',
+              ],
+              cursor: { line: 4, col: 0 },
+            },
+            goal: {
+              text: [
+                "import { api } from './api';",
+                '',
+                'export default async function loadCart() {',
+                "  return api.get('/cart');",
+                '}',
+              ],
+            },
+            solution: '2kwdwwP',
+          },
+          {
+            prompt: 'The tax is used before it is defined. Move its line up one.',
+            setup: {
+              text: ['const subtotal = sum(items);', 'const total = subtotal + tax;', 'const tax = subtotal * TAX_RATE;', 'return total;'],
+              cursor: { line: 2, col: 0 },
+            },
+            goal: { text: ['const subtotal = sum(items);', 'const tax = subtotal * TAX_RATE;', 'const total = subtotal + tax;', 'return total;'] },
+            solution: 'ddkP',
+          },
+          {
+            prompt: 'Swap the first two helper functions.',
+            setup: {
+              text: [
+                'function format(n) {',
+                '  return n.toFixed(2);',
+                '}',
+                '',
+                'function sum(xs) {',
+                '  return xs.reduce((a, b) => a + b, 0);',
+                '}',
+                '',
+                'export { format, sum };',
+              ],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: [
+                'function sum(xs) {',
+                '  return xs.reduce((a, b) => a + b, 0);',
+                '}',
+                '',
+                'function format(n) {',
+                '  return n.toFixed(2);',
+                '}',
+                '',
+                'export { format, sum };',
+              ],
+            },
+            solution: 'dap}p',
+          },
+        ],
+      },
+    },
+    {
+      id: 'yank-register',
+      title: 'The Yank Register',
+      chips: ['"0'],
+      keyCards: [{ key: '"0', glyph: 'y', label: 'last yank', sub: 'deletes leave it alone' }],
+      intro: (
+        <>
+          <p>
+            A yank also goes into register <Code>0</Code>, and deletes never touch it. After <Code>yy</Code>, then{' '}
+            <Code>dd</Code>, the unnamed register holds the deleted line but <Code>{'"0p'}</Code> still puts the yank.
+          </p>
+          <p>
+            That's the fix for the most common register surprise: yank the good text, delete the bad text, then put
+            from <Code>{'"0'}</Code>.
+          </p>
+          <BeforeAfter
+            lines={['  retries: 5,', '  retries: 1,', '};']}
+            cursor={[0, 0]}
+            keys={'yyjdd"0P'}
+            caption={<><Code>dd</Code> overwrote <Code>{'""'}</Code>, but <Code>{'"0'}</Code> still holds the yank.</>}
+          />
+        </>
+      ),
+      practice: total => (
+        <p>
+          Yank the right text, delete what it replaces, then put with <Code>{'"0'}</Code>. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'One more idea',
+        body: (
+          <p>
+            Replacing the same word in several places? Yank it once, then <Code>{'viw"0p'}</Code> on each target. Plain{' '}
+            <Code>viwp</Code> works the first time only, because it puts the replaced word in <Code>{'""'}</Code>.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'config.ts' },
+        rounds: [
+          {
+            prompt: 'Give staging the same retries line as prod.',
+            setup: {
+              text: [
+                'const prod = {',
+                '  timeout: 10_000,',
+                '  retries: 5,',
+                '};',
+                'const staging = {',
+                '  timeout: 10_000,',
+                '  retries: 1,',
+                '};',
+              ],
+              cursor: { line: 2, col: 0 },
+            },
+            goal: {
+              text: [
+                'const prod = {',
+                '  timeout: 10_000,',
+                '  retries: 5,',
+                '};',
+                'const staging = {',
+                '  timeout: 10_000,',
+                '  retries: 5,',
+                '};',
+              ],
+            },
+            solution: 'yy4jdd"0P',
+          },
+          {
+            prompt: 'Replace the TODO with a copy of the first expect line.',
+            setup: {
+              name: 'math.test.ts',
+              text: [
+                "it('adds', () => {",
+                '  expect(add(1, 2)).toBe(3);',
+                '});',
+                "it('adds negatives', () => {",
+                '  // TODO',
+                '});',
+              ],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: {
+              text: [
+                "it('adds', () => {",
+                '  expect(add(1, 2)).toBe(3);',
+                '});',
+                "it('adds negatives', () => {",
+                '  expect(add(1, 2)).toBe(3);',
+                '});',
+              ],
+            },
+            solution: 'yy3jdd"0P',
+          },
+          {
+            prompt: 'Match the react-dom version to react.',
+            setup: {
+              name: 'package.json',
+              text: ['{', '  "dependencies": {', '    "react": "^19.1.0",', '    "react-dom": "^18.3.1"', '  }', '}'],
+              cursor: { line: 2, col: 4 },
+            },
+            goal: { text: ['{', '  "dependencies": {', '    "react": "^19.1.0",', '    "react-dom": "^19.1.0"', '  }', '}'] },
+            solution: 'f^yi"jf^di""0P',
+          },
+          {
+            prompt: 'Use the local "map" alias on both lines below it.',
+            setup: {
+              name: 'keymaps.lua',
+              text: [
+                'local map = vim.keymap.set',
+                "map('n', '<leader>w', '<cmd>write<cr>')",
+                "vim.keymap.set('n', '<leader>q', '<cmd>quit<cr>')",
+                "vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float)",
+              ],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: {
+              text: [
+                'local map = vim.keymap.set',
+                "map('n', '<leader>w', '<cmd>write<cr>')",
+                "map('n', '<leader>q', '<cmd>quit<cr>')",
+                "map('n', '<leader>e', vim.diagnostic.open_float)",
+              ],
+            },
+            solution: 'yiwjvt(pj0vt("0p',
+          },
+          {
+            prompt: 'Replace both stale lines with the export line.',
+            setup: {
+              name: 'index.ts',
+              text: [
+                "export * from './client';",
+                '',
+                "const client = require('./client');",
+                'module.exports = client;',
+              ],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ["export * from './client';", '', "export * from './client';"] },
+            solution: 'yyGdk"0p',
+          },
+        ],
+      },
+    },
+    {
+      id: 'named-registers',
+      title: 'Named Registers',
+      chips: ['"a', '"b'],
+      keyCards: [
+        { key: '"a', glyph: 'a–z', label: 'use register a', sub: 'before y, d, c or p' },
+        { key: '"b', glyph: 'a–z', label: 'use register b' },
+      ],
+      intro: (
+        <>
+          <p>
+            Put <Code>{'"'}</Code> and a letter in front of a yank, delete or put to use one of 26 named registers.{' '}
+            <Code>{'"ayy'}</Code> yanks the line into <Code>a</Code>, <Code>{'"ap'}</Code> puts it back.
+          </p>
+          <p>
+            Named registers only change when you ask, so they're the place to park text you'll need a few edits from
+            now, or two snippets you need at once.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Yank into the named registers each round asks for, then put them where they belong. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Registers survive restarts',
+        body: (
+          <p>
+            Neovim saves registers in the ShaDa file, so text in <Code>a</Code> is still there tomorrow. Handy for a
+            snippet you paste every day.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'db.test.ts' },
+        rounds: [
+          {
+            prompt: 'Yank the query line into register q.',
+            setup: {
+              name: 'report.py',
+              text: [
+                'def monthly(db):',
+                '    cutoff = days_ago(30)',
+                "    sql = 'SELECT * FROM orders WHERE created_at > %s'",
+                '    return db.all(sql, cutoff)',
+              ],
+              cursor: { line: 3, col: 4 },
+            },
+            goal: { registers: { q: "    sql = 'SELECT * FROM orders WHERE created_at > %s'\n" } },
+            solution: 'k"qyy',
+          },
+          {
+            prompt: 'Save the URL in u and the header name in k.',
+            setup: {
+              name: 'env.ts',
+              text: [
+                '// local development only',
+                "const DB_URL = 'postgres://localhost:5432/app';",
+                "const KEY_NAME = 'X-Api-Key';",
+                'const PORT = 8080;',
+              ],
+              cursor: { line: 3, col: 0 },
+            },
+            goal: { registers: { u: 'postgres://localhost:5432/app', k: 'X-Api-Key' } },
+            solution: `2kf'"uyi'jf'"kyi'`,
+          },
+          {
+            prompt: 'Give the orders suite the same beforeEach and afterAll.',
+            setup: {
+              text: [
+                "describe('users', () => {",
+                '  beforeEach(() => db.reset());',
+                "  it('creates a user', async () => {});",
+                '  afterAll(() => db.close());',
+                '});',
+                '',
+                "describe('orders', () => {",
+                "  it('lists orders', async () => {});",
+                '});',
+              ],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: {
+              text: [
+                "describe('users', () => {",
+                '  beforeEach(() => db.reset());',
+                "  it('creates a user', async () => {});",
+                '  afterAll(() => db.close());',
+                '});',
+                '',
+                "describe('orders', () => {",
+                '  beforeEach(() => db.reset());',
+                "  it('lists orders', async () => {});",
+                '  afterAll(() => db.close());',
+                '});',
+              ],
+            },
+            solution: '"ayy2j"byy4j"aPj"bp',
+          },
+          {
+            prompt: 'Register h holds the license header and s the strict pragma. Put both at the top, h first.',
+            setup: {
+              name: 'server.js',
+              text: ["const http = require('node:http');", '', 'http.createServer(handler).listen(8080);'],
+              registers: { h: '// SPDX-License-Identifier: MIT\n', s: "'use strict';\n" },
+              cursor: { line: 2, col: 0 },
+            },
+            goal: {
+              text: [
+                '// SPDX-License-Identifier: MIT',
+                "'use strict';",
+                "const http = require('node:http');",
+                '',
+                'http.createServer(handler).listen(8080);',
+              ],
+            },
+            solution: 'gg"sP"hP',
+          },
+        ],
+      },
+    },
+    {
+      id: 'appending-registers',
+      title: 'Appending to Registers',
+      chips: ['"A'],
+      keyCards: [{ key: '"A', glyph: 'a+', label: 'append to a', sub: 'uppercase name' }],
+      intro: (
+        <>
+          <p>
+            Name a register in uppercase to add to it instead of replacing it. <Code>{'"ayy'}</Code> starts a
+            collection, and each <Code>{'"Ayy'}</Code> after that adds another line.
+          </p>
+          <p>
+            It turns scattered lines into one paste: gather every TODO, every import, every failing test name, then{' '}
+            <Code>{'"ap'}</Code> once.
+          </p>
+          <BeforeAfter
+            lines={['- TODO: rotate keys', 'Deployed 2.4.1.', '- TODO: fix CI', '## Open']}
+            cursor={[0, 0]}
+            keys={'"ayy2j"AyyG"ap'}
+          />
+        </>
+      ),
+      practice: total => (
+        <p>
+          Collect the lines into one register with <Code>{'"a'}</Code> then <Code>{'"A'}</Code>, and put them where
+          the goal shows. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Collect with :g',
+        body: (
+          <p>
+            Clear the register with <Code>qaq</Code>, then <Code>:g/TODO/y A</Code> appends every matching line in one
+            command.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'notes.md' },
+        rounds: [
+          {
+            prompt: 'Copy the three TODO lines under "Open TODOs".',
+            setup: {
+              text: [
+                '# Sprint notes',
+                '- TODO: rotate the API keys',
+                'Deployed 2.4.1 on Tuesday.',
+                '- TODO: fix the flaky checkout test',
+                'Retro moved to Friday.',
+                '- TODO: update the onboarding doc',
+                '',
+                '## Open TODOs',
+              ],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: [
+                '# Sprint notes',
+                '- TODO: rotate the API keys',
+                'Deployed 2.4.1 on Tuesday.',
+                '- TODO: fix the flaky checkout test',
+                'Retro moved to Friday.',
+                '- TODO: update the onboarding doc',
+                '',
+                '## Open TODOs',
+                '- TODO: rotate the API keys',
+                '- TODO: fix the flaky checkout test',
+                '- TODO: update the onboarding doc',
+              ],
+            },
+            solution: 'j"ayy2j"Ayy2j"AyyG"ap',
+          },
+          {
+            prompt: 'Move both imports to the top of the file.',
+            setup: {
+              name: 'app.ts',
+              text: [
+                'const app = express();',
+                "import express from 'express';",
+                'app.use(json());',
+                "import { json } from 'body-parser';",
+                'app.listen(3000);',
+              ],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: {
+              text: [
+                "import express from 'express';",
+                "import { json } from 'body-parser';",
+                'const app = express();',
+                'app.use(json());',
+                'app.listen(3000);',
+              ],
+            },
+            solution: '"addj"Addgg"aP',
+          },
+          {
+            prompt: 'Register e already holds one exported name. Add the other two lines to it.',
+            setup: {
+              name: 'index.ts',
+              text: ["export { parse } from './parse';", "export { format } from './format';", "export { validate } from './validate';"],
+              registers: { e: "export { tokenize } from './tokenize';\n" },
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              registers: {
+                e: "export { tokenize } from './tokenize';\nexport { parse } from './parse';\nexport { validate } from './validate';\n",
+              },
+            },
+            solution: '"Eyy2j"Eyy',
+          },
+          {
+            prompt: 'Cut the two debug lines into t and put them at the bottom.',
+            setup: {
+              name: 'worker.py',
+              text: [
+                'def run(job):',
+                "    print('DEBUG start', job.id)",
+                '    result = job.execute()',
+                "    print('DEBUG done', result)",
+                '    return result',
+                '',
+                '# parked:',
+              ],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: {
+              text: [
+                'def run(job):',
+                '    result = job.execute()',
+                '    return result',
+                '',
+                '# parked:',
+                "    print('DEBUG start', job.id)",
+                "    print('DEBUG done', result)",
+              ],
+            },
+            solution: '"tddj"TddG"tp',
+          },
+        ],
+      },
+    },
+    {
+      id: 'delete-history',
+      title: 'Delete History',
+      chips: ['"1', '"-'],
+      keyCards: [
+        { key: '"1', glyph: '1–9', label: 'recent line deletes', sub: '"1 newest, "9 oldest' },
+        { key: '"-', glyph: 'del', label: 'small delete', sub: 'within one line' },
+      ],
+      intro: (
+        <>
+          <p>
+            Deleting a line or more pushes it onto a stack: the newest in <Code>{'"1'}</Code>, the one before in{' '}
+            <Code>{'"2'}</Code>, down to <Code>{'"9'}</Code>. Deletes inside a line, like <Code>dw</Code> or{' '}
+            <Code>x</Code>, go to <Code>{'"-'}</Code> instead.
+          </p>
+          <p>
+            So nothing you deleted recently is gone. <Code>{'"3p'}</Code> brings back the line you cut three deletes
+            ago, without undoing the two since.
+          </p>
+          <BeforeAfter
+            lines={['- rotate the API keys', '- fix the flaky test', '- update the docs']}
+            cursor={[0, 0]}
+            keys={'dddd"2p'}
+            caption={<>Two deletes later, <Code>{'"2'}</Code> still holds the first line.</>}
+          />
+        </>
+      ),
+      practice: total => (
+        <p>
+          Some text has already been deleted in each round. Put back the piece the prompt asks for from the
+          delete registers. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Walking the stack',
+        body: (
+          <p>
+            Not sure which number? Type <Code>{'"1p'}</Code>, then <Code>u.</Code> repeatedly: each <Code>.</Code>{' '}
+            after a numbered put moves on to the next register.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'routes.ts' },
+        rounds: [
+          {
+            prompt: 'Three lines were deleted. Put the first one back below the cursor.',
+            setup: {
+              text: [
+                "router.get('/users', listUsers);",
+                "router.post('/users', createUser);",
+                "router.get('/users/:id', getUser);",
+                "router.delete('/users/:id', deleteUser);",
+                "router.patch('/users/:id', updateUser);",
+                'export default router;',
+              ],
+              cursor: { line: 0, col: 0 },
+              init: vim => {
+                vim.feedKeys('jddjdddd');
+                vim.setCursor({ line: 1, col: 0 });
+                vim.typedKeys = 0;
+              },
+            },
+            goal: {
+              text: [
+                "router.get('/users', listUsers);",
+                "router.get('/users/:id', getUser);",
+                "router.post('/users', createUser);",
+                'export default router;',
+              ],
+            },
+            solution: '"3p',
+          },
+          {
+            prompt: 'Two lines were deleted. Put back the first one, the return, below the cursor.',
+            setup: {
+              name: 'user.py',
+              text: [
+                'def full_name(user):',
+                '    first = user.first.strip()',
+                '    last = user.last.strip()',
+                '    # FIXME',
+                '    return f"{first} {last}"',
+              ],
+              cursor: { line: 4, col: 0 },
+              init: vim => {
+                vim.feedKeys('dddd');
+                vim.typedKeys = 0;
+              },
+            },
+            goal: {
+              text: ['def full_name(user):', '    first = user.first.strip()', '    last = user.last.strip()', '    return f"{first} {last}"'],
+            },
+            solution: '"2p',
+          },
+          {
+            prompt: 'A word was cut, then a line. Put the word back before "function".',
+            setup: {
+              name: 'load.ts',
+              text: ['// fetch the user', 'export async function loadUser(id: string) {', '  return api.get(`/users/${id}`);', '}'],
+              cursor: { line: 1, col: 7 },
+              init: vim => {
+                vim.feedKeys('dwggdd');
+                vim.typedKeys = 0;
+              },
+            },
+            goal: { text: ['export async function loadUser(id: string) {', '  return api.get(`/users/${id}`);', '}'] },
+            solution: 'w"-P',
+          },
+          {
+            prompt: 'Delete the "old" line, then put the benchmark task deleted earlier back at the end.',
+            setup: {
+              name: 'todo.md',
+              text: ['- [x] ship v2', '- [ ] old: migrate to webpack', '- [ ] write release notes'],
+              cursor: { line: 1, col: 0 },
+              init: vim => {
+                vim.setCursor({ line: 2, col: 0 });
+                vim.feedKeys('o- [ ] benchmark the parser<Esc>dd');
+                vim.setCursor({ line: 1, col: 0 });
+                vim.typedKeys = 0;
+              },
+            },
+            goal: { text: ['- [x] ship v2', '- [ ] write release notes', '- [ ] benchmark the parser'] },
+            solution: 'dd"2p',
+          },
+        ],
+      },
+    },
+    {
+      id: 'black-hole-register',
+      title: 'The Black Hole',
+      chips: ['"_'],
+      keyCards: [{ key: '"_', glyph: '∅', label: 'black hole', sub: 'delete without saving' }],
+      intro: (
+        <>
+          <p>
+            Text deleted into <Code>{'"_'}</Code> goes nowhere. <Code>{'"_dd'}</Code> removes a line and leaves every
+            other register, including <Code>{'""'}</Code>, exactly as it was.
+          </p>
+          <p>
+            Use it when you yank first and clear space second: the plain <Code>p</Code> afterwards still puts your yank.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Yank the good text, delete the bad text into <Code>{'"_'}</Code>, then put with plain <Code>p</Code> or{' '}
+          <Code>P</Code>. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Visual P',
+        body: (
+          <p>
+            In visual mode, <Code>P</Code> replaces the selection and keeps the register as it was, so{' '}
+            <Code>viwP</Code> can replace word after word. Vim before 9.0 doesn't have it.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'handler.go' },
+        rounds: [
+          {
+            prompt: 'Replace the two log lines with a copy of the return line.',
+            setup: {
+              text: [
+                'if err != nil {',
+                '	return fmt.Errorf("load config: %w", err)',
+                '}',
+                'if err := cfg.Validate(); err != nil {',
+                '	log.Println(err)',
+                '	os.Exit(1)',
+                '}',
+              ],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: {
+              text: [
+                'if err != nil {',
+                '	return fmt.Errorf("load config: %w", err)',
+                '}',
+                'if err := cfg.Validate(); err != nil {',
+                '	return fmt.Errorf("load config: %w", err)',
+                '}',
+              ],
+            },
+            solution: 'yy3j"_2ddP',
+          },
+          {
+            prompt: 'Replace "ctx2" with the yanked "ctx".',
+            setup: {
+              text: [
+                '// Get loads one user by id.',
+                'func (s *Store) Get(ctx context.Context, id string) *User {',
+                '	return s.db.QueryUser(ctx2, id)',
+                '}',
+              ],
+              cursor: { line: 1, col: 20 },
+            },
+            goal: {
+              text: [
+                '// Get loads one user by id.',
+                'func (s *Store) Get(ctx context.Context, id string) *User {',
+                '	return s.db.QueryUser(ctx, id)',
+                '}',
+              ],
+            },
+            solution: 'yiwjfc"_diwP',
+          },
+          {
+            prompt: 'Swap in the yanked name for "tmp", keeping the comma.',
+            setup: {
+              name: 'dates.py',
+              text: [
+                'start_date = parse(args.start)',
+                'end_date = parse(args.end)',
+                'report = build(tmp, end_date)',
+                'print(report.summary())',
+              ],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: [
+                'start_date = parse(args.start)',
+                'end_date = parse(args.end)',
+                'report = build(start_date, end_date)',
+                'print(report.summary())',
+              ],
+            },
+            solution: 'yiw2jf(l"_dt,P',
+          },
+          {
+            prompt: 'Replace the placeholder paragraph with the yanked intro.',
+            setup: {
+              name: 'README.md',
+              text: [
+                '# vimchi',
+                '',
+                'A browser Vim tutor built from short lessons.',
+                '',
+                'Lorem ipsum dolor sit amet,',
+                'consectetur adipiscing elit.',
+              ],
+              cursor: { line: 2, col: 0 },
+            },
+            goal: {
+              text: ['# vimchi', '', 'A browser Vim tutor built from short lessons.', '', 'A browser Vim tutor built from short lessons.'],
+            },
+            solution: 'yyG"_dipp',
+          },
+        ],
+      },
+    },
+    {
+      id: 'clipboard-register',
+      title: 'System Clipboard',
+      chips: ['"+'],
+      keyCards: [
+        { key: '"+', glyph: '⧉', label: 'system clipboard' },
+        { key: '"*', glyph: '⧉', label: 'primary selection', sub: 'X11 / Wayland' },
+      ],
+      intro: (
+        <>
+          <p>
+            <Code>{'"+'}</Code> is the system clipboard: <Code>{'"+y'}</Code> copies for other apps,{' '}
+            <Code>{'"+p'}</Code> pastes what they copied. On Linux, <Code>{'"*'}</Code> is the middle-click selection; on
+            macOS and Windows it's the same as <Code>{'"+'}</Code>.
+          </p>
+          <p>
+            Keeping the clipboard separate means Vim's constant deletes never trample what you copied from the browser.
+            If you'd rather merge them, one option does it.
+          </p>
+        </>
+      ),
+      practice: total => <p>The browser can't hand its clipboard to the tutor, so this one's a quiz. {total} questions.</p>,
+      aside: {
+        title: 'Over SSH',
+        body: (
+          <p>
+            Neovim 0.10 and later can copy through OSC 52, so <Code>{'"+y'}</Code> on a remote machine lands in your
+            local clipboard in terminals that support it.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'quiz',
+        questions: [
+          {
+            prompt: 'Copy the current line so you can paste it into Slack.',
+            options: ['"+yy', 'yy', '"0yy', '"_yy'],
+            answer: 0,
+            explain: '"+ is the system clipboard. Plain yy only fills Vim\'s own registers.',
+          },
+          {
+            prompt: 'You copied a URL in the browser. Put it after the cursor.',
+            options: ['p', '"+p', '"0p', '".p'],
+            answer: 1,
+            explain: 'Text copied outside Vim is only in "+ unless you have set clipboard=unnamedplus.',
+          },
+          {
+            prompt: 'Which setting makes every yank and put use the system clipboard?',
+            code: "-- init.lua\nvim.opt.clipboard = ???",
+            options: ["'unnamed'", "'unnamedplus'", "'system'", "'autoselect'"],
+            answer: 1,
+            explain: "'unnamedplus' ties the unnamed register to \"+. 'unnamed' ties it to \"*, the selection on Linux.",
+          },
+          {
+            prompt: 'With the default settings, you yank a word with yiw. Where is it now?',
+            options: ['"+ only', '"" and "1', '"" and "+', '"" and "0'],
+            answer: 3,
+            explain: 'Yanks go to the unnamed register and "0. The clipboard stays untouched.',
+          },
+          {
+            prompt: 'In insert mode, paste the clipboard without leaving insert.',
+            options: ['<C-v>', '<C-r>+', '<C-o>p', '<C-r>0'],
+            answer: 1,
+            explain: '<C-r> followed by a register name inserts its contents; + is the clipboard.',
+          },
+        ],
+      },
+    },
+    {
+      id: 'read-only-registers',
+      title: 'Read-Only Registers',
+      chips: ['".', '"%', '":'],
+      keyCards: [
+        { key: '".', glyph: 'ins', label: 'last inserted text' },
+        { key: '"%', glyph: 'file', label: 'current file name' },
+        { key: '":', glyph: ':', label: 'last command line' },
+      ],
+      intro: (
+        <>
+          <p>
+            Vim fills a few registers for you. <Code>{'".'}</Code> holds the text you last typed in insert mode,{' '}
+            <Code>{'"%'}</Code> the current file name, and <Code>{'":'}</Code> the last command you ran.
+          </p>
+          <p>
+            You can't yank into them, but you can put from them: <Code>{'"%p'}</Code> writes the file name into a
+            comment, <Code>{'":p'}</Code> pastes a command into your notes.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Put from the read-only register the prompt describes. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Run it again',
+        body: (
+          <p>
+            <Code>@:</Code> runs the <Code>{'":'}</Code> register as a command again, and <Code>@@</Code> repeats that.
+            It's dot-repeat for Ex commands.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'Button.tsx' },
+        rounds: [
+          {
+            prompt: 'You just typed the aria attribute on the first icon. Add it to the second one too.',
+            setup: {
+              text: [
+                'export function Toolbar() {',
+                '  return (',
+                '    <nav>',
+                '      <IconClose className="h-4 w-4" />',
+                '      <IconMenu className="h-4 w-4" />',
+                '    </nav>',
+                '  );',
+                '}',
+              ],
+              cursor: { line: 3, col: 0 },
+              init: vim => {
+                vim.feedKeys('f/iaria-hidden="true" <Esc>');
+                vim.typedKeys = 0;
+              },
+            },
+            goal: {
+              text: [
+                'export function Toolbar() {',
+                '  return (',
+                '    <nav>',
+                '      <IconClose className="h-4 w-4" aria-hidden="true" />',
+                '      <IconMenu className="h-4 w-4" aria-hidden="true" />',
+                '    </nav>',
+                '  );',
+                '}',
+              ],
+            },
+            solution: 'jF/".P',
+          },
+          {
+            prompt: 'Finish the header comment with the file name.',
+            setup: {
+              name: 'src/api/client.ts',
+              text: [
+                '// File: ',
+                "import { createClient } from './http';",
+                '',
+                "export const client = createClient({ baseUrl: '/api' });",
+              ],
+              cursor: { line: 3, col: 0 },
+            },
+            goal: {
+              text: [
+                '// File: src/api/client.ts',
+                "import { createClient } from './http';",
+                '',
+                "export const client = createClient({ baseUrl: '/api' });",
+              ],
+            },
+            solution: 'gg$"%p',
+          },
+          {
+            prompt: 'Paste the command you just ran into the code block.',
+            setup: {
+              name: 'cheatsheet.md',
+              text: ['## Strip trailing whitespace', '', '```vim', '```'],
+              cursor: { line: 0, col: 0 },
+              init: vim => {
+                vim.feedKeys(':%s/\\s\\+$//e<CR>');
+                vim.setCursor({ line: 2, col: 0 });
+                vim.typedKeys = 0;
+              },
+            },
+            goal: { text: ['## Strip trailing whitespace', '', '```vim', ':%s/\\s\\+$//e', '```'] },
+            solution: 'o:<Esc>":p',
+          },
+          {
+            prompt: 'Name the module after its file.',
+            setup: {
+              name: 'billing.lua',
+              text: ['local M = {}', '', "M.name = ''", '', 'return M'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['local M = {}', '', "M.name = 'billing.lua'", '', 'return M'] },
+            solution: `2jf'"%p`,
+          },
+        ],
+      },
+    },
+    {
+      id: 'paste-while-typing',
+      title: 'Paste While Typing',
+      chips: ['C-r'],
+      keyCards: [
+        { key: 'C-r', glyph: '⎘', label: 'insert a register', sub: 'then its name' },
+        { key: 'C-r "', glyph: '""', label: 'what you just cut' },
+        { key: 'C-r 0', glyph: 'y', label: 'your last yank' },
+      ],
+      intro: (
+        <>
+          <p>
+            In insert mode, <Code>C-r</Code> followed by a register name types that register's contents at the cursor.{' '}
+            <Code>C-r 0</Code> inserts your last yank, <Code>C-r "</Code> what you just deleted.
+          </p>
+          <p>
+            It saves the leave-insert, put, re-enter dance, and it works on the command line too: yank a word, then{' '}
+            <Code>:%s/</Code> and <Code>C-r 0</Code> to search for it.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Build each line with <Code>C-r</Code> instead of retyping. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Word under the cursor',
+        body: (
+          <p>
+            On the command line, <Code>C-r C-w</Code> inserts the word under the cursor without yanking it first.{' '}
+            <Code>:%s/</Code><Code>C-r C-w</Code><Code>/</Code> is the classic rename.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'checkout.ts' },
+        rounds: [
+          {
+            prompt: 'Log the value with a label.',
+            setup: {
+              text: [
+                'export function checkout(items: Item[]) {',
+                '  const orderTotal = items.reduce(sum, 0);',
+                '  return charge(orderTotal);',
+                '}',
+              ],
+              cursor: { line: 2, col: 16 },
+            },
+            goal: {
+              text: [
+                'export function checkout(items: Item[]) {',
+                '  const orderTotal = items.reduce(sum, 0);',
+                "  console.log('orderTotal', orderTotal);",
+                '  return charge(orderTotal);',
+                '}',
+              ],
+            },
+            solution: "yiwOconsole.log('<C-r>0', <C-r>0);<Esc>",
+          },
+          {
+            prompt: 'Wrap the id in String().',
+            setup: {
+              text: [
+                'async function saveReceipt(orderId: number) {',
+                '  const receipt = await createReceipt(orderId);',
+                '  cache.set(orderId, receipt);',
+                '  return receipt;',
+                '}',
+              ],
+              cursor: { line: 3, col: 2 },
+            },
+            goal: {
+              text: [
+                'async function saveReceipt(orderId: number) {',
+                '  const receipt = await createReceipt(orderId);',
+                '  cache.set(String(orderId), receipt);',
+                '  return receipt;',
+                '}',
+              ],
+            },
+            solution: 'kf(wciwString(<C-r>")<Esc>',
+          },
+          {
+            prompt: 'Register u holds the endpoint. Fill in the empty string.',
+            setup: {
+              text: [
+                "const url = '';",
+                'const res = await fetch(url, {',
+                "  method: 'POST',",
+                '  body: JSON.stringify(intent),',
+                '});',
+              ],
+              registers: { u: 'https://api.stripe.com/v1/payment_intents' },
+              cursor: { line: 2, col: 2 },
+            },
+            goal: {
+              text: [
+                "const url = 'https://api.stripe.com/v1/payment_intents';",
+                'const res = await fetch(url, {',
+                "  method: 'POST',",
+                '  body: JSON.stringify(intent),',
+                '});',
+              ],
+            },
+            solution: "ggf'a<C-r>u<Esc>",
+          },
+          {
+            prompt: 'Rename every "amt" to "amount" with :s and C-r.',
+            setup: {
+              text: ['function charge(amt: number) {', '  if (amt <= 0) throw new Error(`bad amt`);', '  return gateway.charge(amt);', '}'],
+              cursor: { line: 0, col: 16 },
+            },
+            goal: {
+              text: [
+                'function charge(amount: number) {',
+                '  if (amount <= 0) throw new Error(`bad amount`);',
+                '  return gateway.charge(amount);',
+                '}',
+              ],
+            },
+            solution: 'yiw:%s/<C-r>0/amount/g<CR>',
+          },
+          {
+            prompt: 'Turn the key into a getter call.',
+            setup: {
+              text: ['const settings = loadSettings();', 'const theme = settings.theme;', 'const saved = ;', 'applyTheme(saved);'],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: {
+              text: ['const settings = loadSettings();', 'const theme = settings.theme;', "const saved = settings.get('theme');", 'applyTheme(saved);'],
+            },
+            solution: "$byiwjf;isettings.get('<C-r>0')<Esc>",
+          },
+        ],
+      },
+    },
+    {
+      id: 'expression-register',
+      title: 'Expression Register',
+      chips: ['C-r', '='],
+      keyCards: [
+        { key: 'C-r', glyph: '⎘', label: 'insert a register' },
+        { key: '=', glyph: '1+1', label: 'expression', sub: 'type it, then Enter' },
+      ],
+      intro: (
+        <>
+          <p>
+            <Code>C-r =</Code> opens a prompt at the bottom of the screen. Type an expression, press Enter, and its
+            result is inserted at the cursor: <Code>C-r =</Code> <Mono>24*60*60</Mono> Enter types <Mono>86400</Mono>.
+          </p>
+          <p>
+            It's a calculator that writes straight into the buffer, and it knows Vim's string functions too.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Let the expression register do the arithmetic. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Integer maths',
+        body: (
+          <p>
+            <Mono>7/2</Mono> is <Mono>3</Mono>: numbers without a decimal point are integers, and dividing them
+            drops the remainder. <Mono>printf('%.2f', x)</Mono> formats a decimal result.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'limits.ts' },
+        rounds: [
+          {
+            prompt: 'Fill in one day in milliseconds.',
+            setup: {
+              text: ['export const MAX_RETRIES = 5;', 'export const ONE_DAY_MS = ;', 'export const PAGE_SIZE = 50;'],
+              cursor: { line: 2, col: 0 },
+            },
+            goal: { text: ['export const MAX_RETRIES = 5;', 'export const ONE_DAY_MS = 86400000;', 'export const PAGE_SIZE = 50;'] },
+            solution: 'kf;i<C-r>=24*60*60*1000<CR><Esc>',
+          },
+          {
+            prompt: 'Fill in the total.',
+            setup: {
+              name: 'invoice.md',
+              text: ['| Item | Cost |', '|---|---|', '| Hosting | 129 |', '| Domain | 18 |', '| Email | 45 |', '| Total | |'],
+              cursor: { line: 5, col: 0 },
+            },
+            goal: { text: ['| Item | Cost |', '|---|---|', '| Hosting | 129 |', '| Domain | 18 |', '| Email | 45 |', '| Total | 192 |'] },
+            solution: '$i<C-r>=129+18+45<CR> <Esc>',
+          },
+          {
+            prompt: 'Set the upload limit to 25 MB in bytes.',
+            setup: {
+              text: ['export const upload = {', '  maxBytes: 0, // 25 MB', "  types: ['image/png', 'image/jpeg'],", '};'],
+              cursor: { line: 3, col: 0 },
+            },
+            goal: { text: ['export const upload = {', '  maxBytes: 26214400, // 25 MB', "  types: ['image/png', 'image/jpeg'],", '};'] },
+            solution: '2kf0s<C-r>=25*1024*1024<CR><Esc>',
+          },
+          {
+            prompt: 'Underline the 23-character heading with "=" signs.',
+            setup: {
+              name: 'CHANGELOG.md',
+              text: ['Release notes for 3.0.0', '', '- Drop Node 18 support.', '- New plugin API.'],
+              cursor: { line: 3, col: 0 },
+            },
+            goal: { text: ['Release notes for 3.0.0', '=======================', '', '- Drop Node 18 support.', '- New plugin API.'] },
+            solution: "ggo<C-r>=repeat('=', 23)<CR><Esc>",
+          },
+          {
+            prompt: 'Fill in the line total for 3 mugs at 4.99, to two decimals.',
+            setup: {
+              name: 'order.json',
+              text: ['{', '  "sku": "MUG-01",', '  "qty": 3,', '  "price": 4.99,', '  "total": 0', '}'],
+              cursor: { line: 2, col: 2 },
+            },
+            goal: { text: ['{', '  "sku": "MUG-01",', '  "qty": 3,', '  "price": 4.99,', '  "total": 14.97', '}'] },
+            solution: "2j$s<C-r>=printf('%.2f', 3 * 4.99)<CR><Esc>",
+          },
+        ],
+      },
+    },
+    {
+      id: 'viewing-registers',
+      title: 'Viewing Registers',
+      chips: [':reg'],
+      keyCards: [{ key: ':reg', glyph: '☰', label: 'list registers', sub: ':reg a b for some' }],
+      intro: (
+        <>
+          <p>
+            <Code>:reg</Code> (short for <Code>:registers</Code>) lists every register that holds something: its
+            type, its name, and the start of its contents. <Code>:reg a0</Code> shows just <Code>a</Code> and{' '}
+            <Code>0</Code>.
+          </p>
+          <p>
+            Check it before a put when you're not sure what's where. The type column says how it will paste:{' '}
+            <Mono>l</Mono> for whole lines, <Mono>c</Mono> for characters, <Mono>b</Mono> for a block.
+          </p>
+        </>
+      ),
+      practice: total => <p>Read the <Code>:reg</Code> output and pick the key that does what's asked. {total} questions.</p>,
+      aside: {
+        title: 'Control keys',
+        body: (
+          <p>
+            Recorded macros show control keys as <Mono>^[</Mono> for Escape and <Mono>^M</Mono> for Enter. The
+            tutor's <Code>:reg</Code> shows the same thing.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'quiz',
+        questions: [
+          {
+            prompt: 'Put the route line you yanked earlier below the cursor.',
+            code: [
+              'Type Name Content',
+              '  l  ""   const id = req.params.id;^J',
+              "  l  \"0   app.get('/users/:id', getUser);^J",
+              '  l  "1   const id = req.params.id;^J',
+              '  c  "-   tmp',
+            ].join('\n'),
+            options: ['p', '"0p', '"1p', '"-p'],
+            answer: 1,
+            explain: 'The route line is the last yank, so it is in "0. The unnamed register has since picked up a delete.',
+          },
+          {
+            prompt: 'Which register holds a macro?',
+            code: ['Type Name Content', '  c  "a   I- ^[j', '  c  "b   https://example.com/docs', '  l  "c   import os^J'].join('\n'),
+            options: ['"a', '"b', '"c', 'none'],
+            answer: 0,
+            explain: '^[ is Escape, so "a holds keys: insert "- ", leave insert, move down.',
+          },
+          {
+            prompt: 'You cut "tmp" with dw. Which put brings it back?',
+            code: ['Type Name Content', '  c  ""   tmp ', '  l  "0   return total;^J', '  c  "-   tmp '].join('\n'),
+            options: ['"0p', '"1p', '"-p', '"tp'],
+            answer: 2,
+            explain: 'Deletes within one line go to "-, the small delete register. p would work too, since "" points there.',
+          },
+          {
+            prompt: 'Which of these puts as whole lines?',
+            code: ['Type Name Content', '  c  "a   userId', '  l  "b   return nil^J', '  b  "c   foo^Jbar'].join('\n'),
+            options: ['"ap', '"bp', '"cp', 'all of them'],
+            answer: 1,
+            explain: 'Type l means linewise: "bp opens a new line below. c puts inline, b puts a rectangle.',
+          },
+          {
+            prompt: 'Show only registers a and 0.',
+            options: [':reg a0', ':reg "a"0', ':reg a,0', ':show a 0'],
+            answer: 0,
+            explain: ':reg takes a list of register names with no separators.',
+          },
+        ],
+      },
+    },
+  ],
+};

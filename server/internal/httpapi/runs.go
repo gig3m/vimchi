@@ -1,0 +1,91 @@
+package httpapi
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+
+	"vimchi/server/internal/store"
+)
+
+const (
+	maxRunBody    = 4 << 10 // one run is ~150 bytes
+	maxImportBody = 4 << 20
+	maxImportRuns = 5000
+)
+
+type meResponse struct {
+	Login     string `json:"login"`
+	Name      string `json:"name"`
+	AvatarURL string `json:"avatarUrl"`
+	Created   int64  `json:"created"`
+}
+
+func (s *Server) handleMe(w http.ResponseWriter, r *http.Request, u store.User) {
+	name := u.Name
+	if name == "" {
+		name = u.Login
+	}
+	writeJSON(w, http.StatusOK, meResponse{
+		Login:     u.Login,
+		Name:      name,
+		AvatarURL: u.AvatarURL,
+		Created:   u.Created.UnixMilli(),
+	})
+}
+
+func (s *Server) handleRuns(w http.ResponseWriter, r *http.Request, u store.User) {
+	runs, err := s.Store.Runs(r.Context(), u.ID)
+	if err != nil {
+		s.serverError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, runs)
+}
+
+func (s *Server) handleAddRun(w http.ResponseWriter, r *http.Request, u store.User) {
+	var run store.Run
+	if !decodeJSON(w, r, maxRunBody, &run) {
+		return
+	}
+	if err := run.Validate(s.Now().UnixMilli()); err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := s.Store.AddRuns(r.Context(), u.ID, []store.Run{run}); err != nil {
+		s.serverError(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// handleImportRuns migrates a guest's local runs. Entries that fail to decode
+// or validate are skipped rather than failing the batch, so one corrupt
+// localStorage entry can't block the rest from syncing.
+func (s *Server) handleImportRuns(w http.ResponseWriter, r *http.Request, u store.User) {
+	var raw []json.RawMessage
+	if !decodeJSON(w, r, maxImportBody, &raw) {
+		return
+	}
+	if len(raw) > maxImportRuns {
+		writeError(w, http.StatusRequestEntityTooLarge, fmt.Sprintf("at most %d runs per import", maxImportRuns))
+		return
+	}
+	now := s.Now().UnixMilli()
+	runs := make([]store.Run, 0, len(raw))
+	for _, m := range raw {
+		var run store.Run
+		if json.Unmarshal(m, &run) != nil || run.Validate(now) != nil {
+			continue
+		}
+		runs = append(runs, run)
+	}
+	if skipped := len(raw) - len(runs); skipped > 0 {
+		s.Log.Info("import skipped invalid runs", "user", u.Login, "skipped", skipped, "kept", len(runs))
+	}
+	if err := s.Store.AddRuns(r.Context(), u.ID, runs); err != nil {
+		s.serverError(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}

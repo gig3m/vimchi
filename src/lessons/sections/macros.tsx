@@ -1,0 +1,785 @@
+import { Code } from '../../components/Code';
+import { BeforeAfter } from '../../components/diagrams';
+import type { Section } from '../types';
+
+export const macros: Section = {
+  id: 'macros',
+  title: 'Macros',
+  band: 'deep',
+  lessons: [
+    {
+      id: 'recording-macro',
+      title: 'Recording a Macro',
+      chips: ['q', '@'],
+      keyCards: [
+        { key: 'q', glyph: '●', label: 'record / stop', sub: 'qa records into a' },
+        { key: '@', glyph: '▶', label: 'play', sub: '@a plays a' },
+      ],
+      intro: (
+        <>
+          <p>
+            <Code>qa</Code> starts recording every key you press into register <Code>a</Code>. Do the edit once, then{' '}
+            <Code>q</Code> stops. <Code>@a</Code> plays those keys back.
+          </p>
+          <p>
+            Finish the recording on the next line, usually with <Code>j</Code>, so each replay picks up where the last
+            one left off.
+          </p>
+          <BeforeAfter
+            lines={['oat milk', 'lemons', 'sourdough']}
+            cursor={[0, 0]}
+            keys="qaI- <Esc>jq@a@a"
+            caption="Record the edit and a j once, then each @a does the next line."
+          />
+        </>
+      ),
+      practice: total => (
+        <p>
+          Record the edit on the first line, then replay it on the rest with <Code>@a</Code>. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Watch the mode line',
+        body: (
+          <p>
+            While recording, the bottom line shows <Code>recording @a</Code>. If you see it when you didn't mean to,
+            press <Code>q</Code> to stop.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'groceries.md' },
+        rounds: [
+          {
+            prompt: 'Turn each line into a list item.',
+            setup: {
+              text: ['# Saturday', '', 'oat milk', 'coffee beans', 'lemons', 'sourdough'],
+              cursor: { line: 2, col: 4 },
+            },
+            goal: { text: ['# Saturday', '', '- oat milk', '- coffee beans', '- lemons', '- sourdough'] },
+            solution: 'qaI- <Esc>jq@a@a@a',
+          },
+          {
+            prompt: 'End every statement with a semicolon.',
+            setup: {
+              name: 'setup.ts',
+              text: [
+                "import express from 'express'",
+                "import cors from 'cors'",
+                'const app = express()',
+                'app.use(cors())',
+                'app.listen(3000)',
+              ],
+              cursor: { line: 0, col: 7 },
+            },
+            goal: {
+              text: [
+                "import express from 'express';",
+                "import cors from 'cors';",
+                'const app = express();',
+                'app.use(cors());',
+                'app.listen(3000);',
+              ],
+            },
+            solution: 'qaA;<Esc>jq@a@a@a@a',
+          },
+          {
+            prompt: 'Quote each key.',
+            setup: {
+              name: 'theme.json',
+              text: ['{', '  background: "#1e1e2e",', '  foreground: "#cdd6f4",', '  accent: "#f5c2e7"', '}'],
+              cursor: { line: 1, col: 6 },
+            },
+            goal: { text: ['{', '  "background": "#1e1e2e",', '  "foreground": "#cdd6f4",', '  "accent": "#f5c2e7"', '}'] },
+            solution: 'qaI"<Esc>f:i"<Esc>jq@a@a',
+          },
+          {
+            prompt: 'Swap print for log.info on each line.',
+            setup: {
+              name: 'sync.py',
+              text: [
+                'def sync(rows):',
+                "    print('fetching accounts')",
+                "    print('found %d', len(rows))",
+                "    print('writing cache')",
+                '    return rows',
+              ],
+              cursor: { line: 0, col: 4 },
+            },
+            goal: {
+              text: [
+                'def sync(rows):',
+                "    log.info('fetching accounts')",
+                "    log.info('found %d', len(rows))",
+                "    log.info('writing cache')",
+                '    return rows',
+              ],
+            },
+            solution: 'jqa^cwlog.info<Esc>jq@a@a',
+          },
+        ],
+      },
+    },
+    {
+      id: 'replaying-macros',
+      title: 'Replaying',
+      chips: ['@@', '5@a'],
+      keyCards: [
+        { key: '@@', glyph: '▶▶', label: 'replay last macro' },
+        { key: '5@a', glyph: '5×▶', label: 'play a five times' },
+      ],
+      intro: (
+        <>
+          <p>
+            <Code>@@</Code> replays whichever macro ran last, so after one <Code>@a</Code> you can keep going with a
+            key that's easier to hit. A count plays it that many times: <Code>5@a</Code>.
+          </p>
+          <p>
+            Record once, check the result, then fire off the rest with a count.
+          </p>
+          <BeforeAfter
+            lines={['BEGIN;', 'INSERT INTO seats VALUES (1);', 'COMMIT;']}
+            cursor={[1, 0]}
+            keys="qayyp<C-a>q3@a"
+            caption="Record one copy-and-bump, then 3@a makes three more."
+          />
+        </>
+      ),
+      practice: total => (
+        <p>
+          Use a count or <Code>@@</Code> instead of pressing <Code>@a</Code> over and over. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Overshooting is fine',
+        body: (
+          <p>
+            If a motion fails, like <Code>j</Code> on the last line, the macro stops. So <Code>99@a</Code> means "until
+            the end of the file".
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'seed.sql' },
+        rounds: [
+          {
+            prompt: 'Add a trailing comma to every row but the last.',
+            setup: {
+              name: 'regions.ts',
+              text: ['const regions = [', "  'us-east-1'", "  'us-west-2'", "  'eu-west-1'", "  'eu-central-1'", "  'ap-south-1'", "  'ap-northeast-1'", '];'],
+              cursor: { line: 0, col: 6 },
+            },
+            goal: {
+              text: ['const regions = [', "  'us-east-1',", "  'us-west-2',", "  'eu-west-1',", "  'eu-central-1',", "  'ap-south-1',", "  'ap-northeast-1'", '];'],
+            },
+            solution: 'jqaA,<Esc>jq4@a',
+          },
+          {
+            prompt: 'Register a comments out a line and moves down. Comment out all four.',
+            setup: {
+              name: 'init.lua',
+              text: [
+                '-- prose',
+                "vim.opt.spell = true",
+                "vim.opt.spelllang = { 'en_gb' }",
+                "vim.opt.conceallevel = 2",
+                "vim.opt.textwidth = 80",
+                "vim.opt.number = true",
+              ],
+              registers: { a: 'I-- \x1bj' },
+              cursor: { line: 1, col: 8 },
+            },
+            goal: {
+              text: [
+                '-- prose',
+                '-- vim.opt.spell = true',
+                "-- vim.opt.spelllang = { 'en_gb' }",
+                '-- vim.opt.conceallevel = 2',
+                '-- vim.opt.textwidth = 80',
+                'vim.opt.number = true',
+              ],
+            },
+            solution: '4@a',
+          },
+          {
+            prompt: 'Fill in seats 2 to 6 by copying the row and bumping the number.',
+            setup: {
+              text: ['-- hall A, front row', 'BEGIN;', "INSERT INTO seats (id, row) VALUES (1, 'A');", 'COMMIT;'],
+              cursor: { line: 2, col: 12 },
+            },
+            goal: {
+              text: [
+                '-- hall A, front row',
+                'BEGIN;',
+                "INSERT INTO seats (id, row) VALUES (1, 'A');",
+                "INSERT INTO seats (id, row) VALUES (2, 'A');",
+                "INSERT INTO seats (id, row) VALUES (3, 'A');",
+                "INSERT INTO seats (id, row) VALUES (4, 'A');",
+                "INSERT INTO seats (id, row) VALUES (5, 'A');",
+                "INSERT INTO seats (id, row) VALUES (6, 'A');",
+                'COMMIT;',
+              ],
+            },
+            solution: 'qayyp<C-a>q4@a',
+          },
+          {
+            prompt: 'Uppercase each constant name. Replay with @@.',
+            setup: {
+              name: 'status.ts',
+              text: [
+                '// HTTP status codes',
+                'export const ok = 200;',
+                'export const created = 201;',
+                'export const accepted = 202;',
+                'export const conflict = 409;',
+              ],
+              cursor: { line: 1, col: 13 },
+            },
+            goal: {
+              text: ['// HTTP status codes', "export const OK = 200;", "export const CREATED = 201;", "export const ACCEPTED = 202;", "export const CONFLICT = 409;"],
+            },
+            solution: 'qa02wgUiwjq@a@@@@',
+          },
+        ],
+      },
+    },
+    {
+      id: 'robust-macros',
+      title: 'Robust Macros',
+      chips: ['macros'],
+      keyCards: [
+        { key: '0', glyph: '|←', label: 'start from a known spot' },
+        { key: 'f', glyph: '→x', label: 'move by content', sub: 'not by counting' },
+        { key: 'j', glyph: '↓', label: 'end on the next line' },
+      ],
+      intro: (
+        <>
+          <p>
+            A macro replays keys, not intentions. <Code>5l</Code> works on the line you recorded and misses on a
+            longer one. Move by what the text says instead: <Code>f=</Code>, <Code>t,</Code>, <Code>w</Code>,{' '}
+            <Code>$</Code>, <Code>I</Code> and <Code>A</Code>.
+          </p>
+          <p>
+            Start with <Code>0</Code> or <Code>^</Code> so each run begins in the same place, and finish on the next
+            line so the next run can start.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          The lines differ in length. Record a macro that works on all of them, then replay it. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Test before you count',
+        body: (
+          <p>
+            Run the macro once with <Code>@a</Code> and check the line before you reach for <Code>99@a</Code>. If it's
+            wrong, <Code>u</Code> and record again; <Code>qa</Code> overwrites.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: '.envrc' },
+        rounds: [
+          {
+            prompt: 'Export each variable with its value quoted.',
+            setup: {
+              text: [
+                '# local dev',
+                'DATABASE_URL=postgres://localhost/app',
+                'PORT=8080',
+                'LOG_LEVEL=debug',
+                'SENTRY_DSN=https://key@o1.ingest.sentry.io/42',
+              ],
+              cursor: { line: 1, col: 5 },
+            },
+            goal: {
+              text: [
+                '# local dev',
+                'export DATABASE_URL="postgres://localhost/app"',
+                'export PORT="8080"',
+                'export LOG_LEVEL="debug"',
+                'export SENTRY_DSN="https://key@o1.ingest.sentry.io/42"',
+              ],
+            },
+            solution: 'qaIexport <Esc>f=a"<Esc>A"<Esc>jq3@a',
+          },
+          {
+            prompt: 'Turn each "name url" line into a Markdown link.',
+            setup: {
+              name: 'links.md',
+              text: [
+                '## Links',
+                '',
+                'vimchi https://github.com/gig3m/vimchi',
+                'neovim https://neovim.io',
+                'lazy.nvim https://lazy.folke.io',
+              ],
+              cursor: { line: 2, col: 0 },
+            },
+            goal: { text: ['## Links', '', '[vimchi](https://github.com/gig3m/vimchi)', '[neovim](https://neovim.io)', '[lazy.nvim](https://lazy.folke.io)'] },
+            solution: 'qaI[<Esc>f s](<Esc>A)<Esc>jq2@a',
+          },
+          {
+            prompt: 'Turn each parameter into a dict entry.',
+            setup: {
+              name: 'payload.py',
+              text: ['payload = {', '    user_id', '    amount', '    currency', '    idempotency_key', '}'],
+              cursor: { line: 1, col: 6 },
+            },
+            goal: {
+              text: [
+                'payload = {',
+                "    'user_id': user_id,",
+                "    'amount': amount,",
+                "    'currency': currency,",
+                "    'idempotency_key': idempotency_key,",
+                '}',
+              ],
+            },
+            solution: "qa^yiwI'<Esc>A': <C-r>0,<Esc>jq3@a",
+          },
+          {
+            prompt: 'Change each default value to null, keeping the names.',
+            setup: {
+              name: 'defaults.ts',
+              text: [
+                'const defaults = {',
+                '  timeout: 30_000,',
+                '  retries: 3,',
+                '  baseUrl: "https://api.example.com",',
+                '  onError: console.error,',
+                '};',
+              ],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: ['const defaults = {', '  timeout: null,', '  retries: null,', '  baseUrl: null,', '  onError: null,', '};'],
+            },
+            solution: 'jqa^f:wct,null<Esc>jq3@a',
+          },
+        ],
+      },
+    },
+    {
+      id: 'recursive-macros',
+      title: 'Recursive Macros',
+      chips: ['qaq', '@a'],
+      keyCards: [
+        { key: 'qaq', glyph: '∅', label: 'clear register a' },
+        { key: '@a', glyph: '↻', label: 'call itself', sub: 'last key of the macro' },
+      ],
+      intro: (
+        <>
+          <p>
+            A macro can end by playing itself. Clear the register with <Code>qaq</Code>, record the edit, finish with{' '}
+            <Code>j@a</Code>, stop with <Code>q</Code>, and one <Code>@a</Code> runs to the end of the file.
+          </p>
+          <p>
+            It stops when a motion fails: <Code>j</Code> on the last line, or a search with no more matches. No
+            counting lines.
+          </p>
+          <BeforeAfter
+            lines={['renew the cert', 'bump node', 'drop old flags']}
+            cursor={[0, 0]}
+            keys="qaqqaI- <Esc>j@aq@a"
+            caption="One @a keeps calling itself until j fails on the last line."
+          />
+        </>
+      ),
+      practice: total => (
+        <p>
+          Clear the register, record a macro that calls itself, then start it once. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Why clear it first',
+        body: (
+          <p>
+            The <Code>@a</Code> you type while recording runs right away. If <Code>a</Code> still held an old macro,
+            that would play in the middle of your recording.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'todo.md' },
+        rounds: [
+          {
+            prompt: 'Make every line a checkbox item.',
+            setup: {
+              text: [
+                '## Ops',
+                '',
+                '- renew the TLS cert',
+                '- rotate the staging DB password',
+                '- bump node to 22',
+                '- archive the old dashboards',
+                '- move CI to arm runners',
+                '- delete the feature flags',
+              ],
+              cursor: { line: 2, col: 5 },
+            },
+            goal: {
+              text: [
+                '## Ops',
+                '',
+                '- [ ] renew the TLS cert',
+                '- [ ] rotate the staging DB password',
+                '- [ ] bump node to 22',
+                '- [ ] archive the old dashboards',
+                '- [ ] move CI to arm runners',
+                '- [ ] delete the feature flags',
+              ],
+            },
+            solution: 'qaqqa0a [ ]<Esc>j@aq@a',
+          },
+          {
+            prompt: 'Delete every debug line. The search failing ends it.',
+            setup: {
+              name: 'checkout.ts',
+              text: [
+                'export async function checkout(cart: Cart) {',
+                "  console.debug('cart', cart);",
+                '  const order = await createOrder(cart);',
+                "  console.debug('order', order.id);",
+                '  await charge(order);',
+                "  console.debug('charged');",
+                '  return order;',
+                '}',
+              ],
+              cursor: { line: 2, col: 8 },
+            },
+            goal: {
+              text: [
+                'export async function checkout(cart: Cart) {',
+                '  const order = await createOrder(cart);',
+                '  await charge(order);',
+                '  return order;',
+                '}',
+              ],
+            },
+            solution: 'qaqqa/debug<CR>dd@aq@a',
+          },
+          {
+            prompt: 'Wrap every function name in backticks.',
+            setup: {
+              name: 'API.md',
+              text: [
+                '## Functions',
+                '',
+                'parse - read a config file',
+                'validate - check it against the schema',
+                'merge - combine two configs',
+                'resolve - expand env vars',
+                'dump - write it back out',
+              ],
+              cursor: { line: 2, col: 0 },
+            },
+            goal: {
+              text: [
+                '## Functions',
+                '',
+                '`parse` - read a config file',
+                '`validate` - check it against the schema',
+                '`merge` - combine two configs',
+                '`resolve` - expand env vars',
+                '`dump` - write it back out',
+              ],
+            },
+            solution: 'qaqqaI`<Esc>ea`<Esc>j@aq@a',
+          },
+          {
+            prompt: 'Join each key with its value on the next line, with ": " between.',
+            setup: {
+              name: 'headers.txt',
+              text: ['Content-Type', 'application/json', 'Cache-Control', 'no-store', 'X-Request-Id', 'a1b2c3', 'Accept', '*/*'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['Content-Type: application/json', 'Cache-Control: no-store', 'X-Request-Id: a1b2c3', 'Accept: */*'] },
+            solution: 'qaqqaA:<Esc>Jj@aq@a',
+          },
+        ],
+      },
+    },
+    {
+      id: 'editing-macros',
+      title: 'Editing a Macro',
+      chips: ['"ap', '"ay$'],
+      keyCards: [
+        { key: '"ap', glyph: '⎘', label: 'put the macro', sub: 'as text' },
+        { key: '"ay$', glyph: 'y', label: 'yank it back', sub: 'without the newline' },
+      ],
+      intro: (
+        <>
+          <p>
+            A macro is just text in a register. When one is almost right, don't re-record it: put it on an empty line
+            with <Code>"ap</Code>, fix it like any other text, then <Code>0"ay$</Code> to store it again and{' '}
+            <Code>dd</Code> the scratch line.
+          </p>
+          <p>
+            Yank with <Code>y$</Code>, not <Code>yy</Code>. A linewise yank adds a newline, and the macro would press
+            Enter at the end.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Each register holds a macro with one mistake. Put it on a new line at the end, fix it, yank it back, delete the
+          scratch line, then use it if the round asks. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Or use :let',
+        body: (
+          <p>
+            <Code>:let @a = '0f=r:j'</Code> writes a register directly. Press <Code>C-r a</Code> inside the quotes to
+            start from the current contents.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'legacy.py' },
+        rounds: [
+          {
+            prompt: 'Register a deletes a trailing semicolon but forgets to move down. Add the j, then run it on all four lines.',
+            setup: {
+              text: ['import json;', 'rows = load();', 'total = sum(r.amount for r in rows);', 'print(json.dumps(total));'],
+              registers: { a: '$x' },
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['import json', 'rows = load()', 'total = sum(r.amount for r in rows)', 'print(json.dumps(total))'], registers: { a: '$xj' } },
+            solution: 'Go<Esc>"apAj<Esc>0"ay$ddgg4@a',
+          },
+          {
+            prompt: 'Register v should delete the version at the start of a line, but dw stops at the dot. Make it dW.',
+            setup: {
+              name: 'CHANGELOG.md',
+              text: ['v2.4.0 Add dark mode', 'v2.3.1 Fix login redirect', 'v2.3.0 Drop Node 18'],
+              registers: { v: '0dwj' },
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['v2.4.0 Add dark mode', 'v2.3.1 Fix login redirect', 'v2.3.0 Drop Node 18'], registers: { v: '0dWj' } },
+            solution: 'Go<Esc>"vpFwrW0"vy$dd',
+          },
+          {
+            prompt: 'Register c removes one character, but each comment starts with "# ". Make it 02xj, then uncomment all three.',
+            setup: {
+              name: 'config.py',
+              text: ['# DEBUG = True', '# ALLOWED_HOSTS = ["*"]', '# CACHE_TTL = 0'],
+              registers: { c: '0xj' },
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['DEBUG = True', 'ALLOWED_HOSTS = ["*"]', 'CACHE_TTL = 0'], registers: { c: '02xj' } },
+            solution: 'Go<Esc>"cp0a2<Esc>0"cy$ddgg3@c',
+          },
+        ],
+      },
+    },
+    {
+      id: 'macros-over-lines',
+      title: 'Macros over Lines',
+      chips: [':norm @a'],
+      keyCards: [
+        { key: ':norm', glyph: ':n', label: 'run normal keys', sub: 'on every line in a range' },
+        { key: '@a', glyph: '▶', label: 'the macro to run' },
+      ],
+      intro: (
+        <>
+          <p>
+            <Code>:%norm @a</Code> runs macro <Code>a</Code> once on every line, with the cursor at the start of each.
+            Select lines first and <Code>:</Code> fills in the range: <Code>:'&lt;,'&gt;norm @a</Code>.
+          </p>
+          <p>
+            The macro doesn't need a <Code>j</Code>, and a line where it fails doesn't stop the others. That makes it
+            safer than a count when only some lines fit.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Apply the macro to a range of lines with <Code>:norm</Code>. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'No macro needed',
+        body: (
+          <>
+          <p>
+            <Code>:norm</Code> takes keys directly too: <Code>:%norm A;</Code> appends a semicolon to every line. Pair it
+            with <Code>:g</Code> to pick lines by pattern.
+          </p>
+          <BeforeAfter
+            lines={["import { z } from 'zod'", 'const Id = z.string()', 'const n = 1']}
+            cursor={[0, 0]}
+            keys=":%norm A;<CR>"
+          />
+          </>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'keys.ts' },
+        rounds: [
+          {
+            prompt: 'Register a appends a semicolon. Run it on every line.',
+            setup: {
+              text: ["import { z } from 'zod'", 'const Id = z.string().uuid()', 'const Email = z.string().email()', 'export const User = z.object({ id: Id, email: Email })'],
+              registers: { a: 'A;\x1b' },
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: ["import { z } from 'zod';", 'const Id = z.string().uuid();', 'const Email = z.string().email();', 'export const User = z.object({ id: Id, email: Email });'],
+            },
+            solution: ':%norm @a<CR>',
+          },
+          {
+            prompt: 'Record a macro that makes a line a numbered step, then run it on the other lines.',
+            setup: {
+              name: 'deploy.md',
+              text: ['# Deploy', '', 'Tag the release', 'Build the image', 'Push to the registry', 'Roll out to staging', 'Promote to prod'],
+              cursor: { line: 2, col: 0 },
+            },
+            goal: {
+              text: ['# Deploy', '', '1. Tag the release', '1. Build the image', '1. Push to the registry', '1. Roll out to staging', '1. Promote to prod'],
+            },
+            solution: 'qaI1. <Esc>q:4,$norm @a<CR>',
+          },
+          {
+            prompt: 'Register q quotes a line and adds a comma. Select the three hosts and run it.',
+            setup: {
+              name: 'allow.ts',
+              text: ['export const ALLOWED = [', 'example.com', 'api.example.com', 'cdn.example.com', '];'],
+              registers: { q: `I  '\x1bA',\x1b` },
+              cursor: { line: 1, col: 0 },
+            },
+            goal: { text: ['export const ALLOWED = [', "  'example.com',", "  'api.example.com',", "  'cdn.example.com',", '];'] },
+            solution: 'Vjj:norm @q<CR>',
+          },
+          {
+            prompt: 'Register a turns "key = value" into "key: value". Run it on every line; the comments have no "=" and are skipped.',
+            setup: {
+              name: 'settings.toml',
+              text: ['# server', 'host = "0.0.0.0"', 'port = 8080', '# logging', 'level = "info"', 'format = "json"'],
+              registers: { a: '0f=hxr:' },
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['# server', 'host: "0.0.0.0"', 'port: 8080', '# logging', 'level: "info"', 'format: "json"'] },
+            solution: ':%norm @a<CR>',
+          },
+        ],
+      },
+    },
+    {
+      id: 'boss-csv-to-object',
+      title: 'Boss: CSV to Object Literal',
+      boss: true,
+      chips: ['q', '@a'],
+      keyCards: [
+        { key: 'q', glyph: '●', label: 'record once' },
+        { key: '4@a', glyph: '4×▶', label: 'replay the rest' },
+      ],
+      intro: (
+        <>
+          <p>
+            A CSV export needs to become a TypeScript array of objects. Five rows, a few fields each: exactly the kind of
+            repetition a macro is for.
+          </p>
+          <p>
+            Set up the first and last lines, record one row with <Code>f,</Code> and <Code>s</Code>, and replay it on
+            the rest. Three exports, three shapes.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Turn each CSV export into the code shown below the editor. Par assumes one recorded macro and a count per
+          round. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Commas in fields',
+        body: (
+          <p>
+            Real CSV can quote a field that contains a comma, and <Code>f,</Code> will stop inside it. Search the data
+            for <Code>"</Code> first; if a row is odd, run the macro on the others and fix that one by hand.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'users.ts' },
+        rounds: [
+          {
+            setup: {
+              text: [
+                'id,name,role',
+                '1,Ada Lovelace,admin',
+                '2,Grace Hopper,editor',
+                '3,Alan Turing,viewer',
+                '4,Katherine Johnson,editor',
+                '5,Margaret Hamilton,viewer',
+              ],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: [
+                'const users = [',
+                "  { id: 1, name: 'Ada Lovelace', role: 'admin' },",
+                "  { id: 2, name: 'Grace Hopper', role: 'editor' },",
+                "  { id: 3, name: 'Alan Turing', role: 'viewer' },",
+                "  { id: 4, name: 'Katherine Johnson', role: 'editor' },",
+                "  { id: 5, name: 'Margaret Hamilton', role: 'viewer' },",
+                '];',
+              ],
+            },
+            solution: "Go];<Esc>ggccconst users = [<Esc>jqaI  { id: <Esc>f,s, name: '<Esc>f,s', role: '<Esc>A' },<Esc>jq4@a",
+          },
+          {
+            setup: {
+              name: 'products.ts',
+              text: ['sku,title,price', 'MUG-01,Enamel mug,12.5', 'TEE-BLK-M,Black tee (M),24', 'PIN-03,Enamel pin,6.75', 'TOTE-02,Canvas tote,18'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: [
+                'export const products = [',
+                "  { sku: 'MUG-01', title: 'Enamel mug', price: 12.5 },",
+                "  { sku: 'TEE-BLK-M', title: 'Black tee (M)', price: 24 },",
+                "  { sku: 'PIN-03', title: 'Enamel pin', price: 6.75 },",
+                "  { sku: 'TOTE-02', title: 'Canvas tote', price: 18 },",
+                '];',
+              ],
+            },
+            solution: "Go];<Esc>ggccexport const products = [<Esc>jqaI  { sku: '<Esc>f,s', title: '<Esc>f,s', price: <Esc>A },<Esc>jq3@a",
+          },
+          {
+            setup: {
+              name: 'status.ts',
+              text: ['code,text', '200,OK', '201,Created', '301,Moved Permanently', '404,Not Found', '429,Too Many Requests', '503,Service Unavailable'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: [
+                'const statusText = new Map([',
+                "  [200, 'OK'],",
+                "  [201, 'Created'],",
+                "  [301, 'Moved Permanently'],",
+                "  [404, 'Not Found'],",
+                "  [429, 'Too Many Requests'],",
+                "  [503, 'Service Unavailable'],",
+                ']);',
+              ],
+            },
+            solution: "Go]);<Esc>ggccconst statusText = new Map([<Esc>jqaI  [<Esc>f,s, '<Esc>A'],<Esc>jq5@a",
+          },
+        ],
+      },
+    },
+  ],
+};
