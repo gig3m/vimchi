@@ -46,6 +46,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /auth/github/callback", s.handleCallback)
 	mux.HandleFunc("POST /auth/logout", s.handleLogout)
 
+	mux.HandleFunc("GET /healthz", s.handleHealth)
+
 	mux.HandleFunc("GET /api/me", s.requireUser(s.handleMe))
 	mux.HandleFunc("GET /api/runs", s.requireUser(s.handleRuns))
 	mux.HandleFunc("POST /api/runs", s.requireUser(s.handleAddRun))
@@ -140,4 +142,20 @@ func (s *Server) serverError(w http.ResponseWriter, r *http.Request, err error) 
 		s.Log.Error("request failed", "method", r.Method, "path", r.URL.Path, "err", err)
 	}
 	writeError(w, http.StatusInternalServerError, "internal error")
+}
+
+// handleHealth answers the uptime probe: 200 {"ok":true} when the database
+// responds, 503 otherwise.
+func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Second)
+	defer cancel()
+	if err := s.Store.Ping(ctx); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusServiceUnavailable)
+		json.NewEncoder(w).Encode(map[string]any{"ok": false, "error": "database unavailable"})
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
+	json.NewEncoder(w).Encode(map[string]any{"ok": true})
 }

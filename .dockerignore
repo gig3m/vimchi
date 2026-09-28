@@ -1,0 +1,10 @@
+node_modules
+dist
+var
+docs
+scripts
+.git
+.claude
+*.tsbuildinfo
+server/.env
+server/*.db*

@@ -370,3 +370,15 @@ func TestOAuthCallback(t *testing.T) {
 		}
 	})
 }
+
+func TestHealthz(t *testing.T) {
+	_, h := newServer(t, nil)
+	w := do(t, h, http.MethodGet, "/healthz", "")
+	if w.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", w.Code)
+	}
+	var body struct{ OK bool `json:"ok"` }
+	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil || !body.OK {
+		t.Fatalf("body = %q, want {\"ok\":true}", w.Body.String())
+	}
+}

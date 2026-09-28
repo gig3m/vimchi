@@ -52,6 +52,9 @@ func Open(ctx context.Context, path string) (*Store, error) {
 // Close closes the database.
 func (s *Store) Close() error { return s.db.Close() }
 
+// Ping reports whether the database is reachable.
+func (s *Store) Ping(ctx context.Context) error { return s.db.PingContext(ctx) }
+
 // migrate applies embedded migrations newer than PRAGMA user_version. Files
 // are named NNN_description.sql and applied in lexical order.
 func (s *Store) migrate(ctx context.Context) error {
