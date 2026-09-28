@@ -162,8 +162,12 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
   const insertish = current && (vim.mode === 'insert' || vim.mode === 'replace');
 
   const rowsOut: ReactNode[] = [];
-  shown.forEach(l => {
+  shown.forEach((l, rowIdx) => {
     pushVirt(l);
+    // Insert hints float just above their row. The single pane has headroom for its first row;
+    // a multi-pane window clips above its first row, so that row shows no hint (owner ruling:
+    // no hint beats a hint that reads as belonging to the wrong line).
+    const hintRow = !(multi && rowIdx === 0);
     const fold = vim.closedFoldAt(l, win);
     const isCurLine = l === cur.line || (fold && cur.line >= fold.start && cur.line <= fold.end);
     const num = rel && !isCurLine ? Math.abs(visible.indexOf(l) - visible.indexOf(fold ? fold.start : cur.line)) : l + 1;
@@ -241,7 +245,7 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
         } else shadow = 'inset 0 0 0 1px ' + C.fg;
       }
       if (caretHere) cells.push(<span key={`caret${c}`} className={'ev-caret' + (focused ? '' : ' dim')} />);
-      ghostsHere.forEach((tag, gi) => cells.push(<InsertHint key={`g${c}-${gi}`} text={tag.text} below={l <= 1} />));
+      if (hintRow) ghostsHere.forEach((tag, gi) => cells.push(<InsertHint key={`g${c}-${gi}`} text={tag.text} />));
       for (const d of decos) for (const h of d.hl ?? []) if (h.inline && h.line === l && h.start === c) cells.push(<span key={`i${c}-${cells.length}`} className="cell" style={{ color: h.color, background: h.bg }}>{h.text}</span>);
       cells.push(
         <span key={c} className={cls} style={{ color, background: bg, boxShadow: shadow, textDecoration: deco }}
@@ -255,7 +259,7 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
     for (const tag of overlay?.ann?.ins.get(l) ?? []) {
       const span = overlay!.ann!.del.get(l)?.find(([a]) => a === tag.col);
       const at = span ? span[1] + 1 : tag.col;
-      if (at >= nCells) cells.push(<InsertHint key={`ge${at}`} text={tag.text} below={l <= 1} />);
+      if (at >= nCells && hintRow) cells.push(<InsertHint key={`ge${at}`} text={tag.text} />);
     }
     const v = virt.get(l);
     rowsOut.push(
@@ -443,13 +447,12 @@ function Completion({ vim, rowPx }: { vim: Vim; rowPx: number }) {
 
 /**
  * Text to insert at this point, shown vim-hero style: a dotted marker at the exact
- * insertion boundary, a dotted lead line, and the text in a tag parked a full row away so it
- * hides no more than one character of a neighbouring line. Rows 0-1 lead downward instead,
- * since the pane clips anything above them. Nothing is drawn as if it were in the buffer.
+ * insertion boundary and the text in a tag floating just above it. Nothing is drawn as if it
+ * were in the buffer.
  */
-function InsertHint({ text, below }: { text: string; below: boolean }) {
+function InsertHint({ text }: { text: string }) {
   return (
-    <span className={'ann-ins' + (below ? ' below' : '')} aria-label={`insert ${JSON.stringify(text)} here`}>
+    <span className="ann-ins" aria-label={`insert ${JSON.stringify(text)} here`}>
       <span className="ann-ins-line" />
       <span className="ann-tag">{text.replace(/ /g, '·')}</span>
     </span>

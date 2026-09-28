@@ -326,7 +326,8 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 .ev-tab { padding: 3px 12px; color: var(--muted); background: #21222c; border-radius: 5px 5px 0 0; }
 .ev-tab.on { color: var(--fg); background: var(--bg-editor); }
 .ev-panes { position: relative; font-size: 15px; }
-.ev-panes:not(.multi) { padding: 16px 0 18px; overflow-x: auto; }
+.ev-panes:not(.multi) { padding: 30px 0 18px; overflow-x: auto; } /* 30px top: headroom for an insert hint above the first row */
+.ev-panes:not(.multi) .ev-pane { overflow: visible; }
 .ev-panes.multi { font-size: 13.5px; background: var(--bg-bar); }
 .ev-pane { overflow: hidden; }
 .ev-pane.multi { display: flex; flex-direction: column; background: var(--bg-editor); }
@@ -465,11 +466,10 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 .ann-tag-line { display: block; }
 /* Insert hint: a zero-width anchor between two cells, a dotted line marking the boundary,
    and the text to type floating above it (below on the first row, which the pane would clip). */
-.ann-ins { position: relative; display: inline; pointer-events: none; --ann-lead: calc(var(--row) + 9px); }
+.ann-ins { position: relative; display: inline; pointer-events: none; --ann-lead: 9px; }
 .ann-ins-line { position: absolute; z-index: 1; left: -1px; top: calc(-1 * var(--ann-lead)); bottom: -3px; border-left: 2px dotted var(--green); }
 .ann-ins .ann-tag { position: absolute; z-index: 2; bottom: calc(100% + var(--ann-lead)); left: 0; transform: translateX(-50%); }
-.ann-ins.below .ann-ins-line { top: -3px; bottom: calc(-1 * var(--ann-lead)); }
-.ann-ins.below .ann-tag { bottom: auto; top: calc(100% + var(--ann-lead)); }
+
 
 /* ---------- cursor stays visible over marks ---------- */
 .cell.ev-block { position: relative; z-index: 1; box-shadow: 0 0 0 1px var(--bg-editor), 0 0 8px 1px rgba(248, 248, 242, .55) !important; text-decoration: none !important; }
