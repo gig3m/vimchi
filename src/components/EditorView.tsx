@@ -230,12 +230,7 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
         const span = overlay.ann!.del.get(l)?.find(([a]) => a === tag.col);
         return (span ? span[1] + 1 : tag.col) === c;
       }) : [];
-      // A normal-mode cursor sitting at the insertion column is drawn on the first ghost
-      // character rather than on the real character after it. Both are the same Vim
-      // position (`i` inserts here), but drawing it on the hint means "put the cursor at
-      // the start of the suggested text" is what actually works, instead of "just past it".
-      const cursorOnGhost = isCursor && !caretHere && focused && vim.mode !== 'replace' && ghostsHere.length > 0;
-      if (isCursor && !cursorOnGhost) {
+      if (isCursor) {
         if (caretHere) { /* drawn below */ }
         else if (focused) {
           bg = overlay?.marks.has(`${l}:${c}`) ? (overlay.markKind === 'fix' ? C.red : C.orange) : C.fg;
@@ -246,21 +241,11 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
         } else shadow = 'inset 0 0 0 1px ' + C.fg;
       }
       if (caretHere) cells.push(<span key={`caret${c}`} className={'ev-caret' + (focused ? '' : ' dim')} />);
-      ghostsHere.forEach((tag, gi) => {
-        const text = tag.text.replace(/ /g, '·');
-        if (cursorOnGhost && gi === 0) {
-          cells.push(
-            <span key={`g${c}`} className="ann-ghost">
-              <span className="cell ev-block" data-cursor style={{ color: C.bg, background: C.fg }}>{text[0]}</span>
-              {text.slice(1)}
-            </span>,
-          );
-        } else cells.push(<span key={`g${c}-${gi}`} className="ann-ghost">{text}</span>);
-      });
+      ghostsHere.forEach((tag, gi) => cells.push(<InsertHint key={`g${c}-${gi}`} text={tag.text} below={l === 0} />));
       for (const d of decos) for (const h of d.hl ?? []) if (h.inline && h.line === l && h.start === c) cells.push(<span key={`i${c}-${cells.length}`} className="cell" style={{ color: h.color, background: h.bg }}>{h.text}</span>);
       cells.push(
         <span key={c} className={cls} style={{ color, background: bg, boxShadow: shadow, textDecoration: deco }}
-          data-cursor={(isCursor && !cursorOnGhost) || undefined} data-target={(overlay?.target && overlay.target.line === l && overlay.target.col === c) || undefined}>
+          data-cursor={isCursor || undefined} data-target={(overlay?.target && overlay.target.line === l && overlay.target.col === c) || undefined}>
           {over ?? (ch === '\t' ? ' '.repeat(Number(vim.options.tabstop) || 8) : ch === '\0' ? '^@' : ch.charCodeAt(0) < 32 ? '^' + String.fromCharCode(ch.charCodeAt(0) + 64) : ch)}
           {hint && <span className="hint">{hint}</span>}
         </span>,
@@ -270,7 +255,7 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
     for (const tag of overlay?.ann?.ins.get(l) ?? []) {
       const span = overlay!.ann!.del.get(l)?.find(([a]) => a === tag.col);
       const at = span ? span[1] + 1 : tag.col;
-      if (at >= nCells) cells.push(<span key={`ge${at}`} className="ann-ghost">{tag.text.replace(/ /g, '·')}</span>);
+      if (at >= nCells) cells.push(<InsertHint key={`ge${at}`} text={tag.text} below={l === 0} />);
     }
     const v = virt.get(l);
     rowsOut.push(
@@ -453,6 +438,20 @@ function Completion({ vim, rowPx }: { vim: Vim; rowPx: number }) {
         <div key={it} className={'ev-pum-row' + (i === cp.idx ? ' sel' : '')}>{it}</div>
       ))}
     </div>
+  );
+}
+
+/**
+ * Text to insert at this point, shown vim-hero style: a dotted marker at the exact
+ * insertion boundary and the text in a floating tag. Nothing is drawn as if it were in the
+ * buffer - what you see between the cells is always what is really there.
+ */
+function InsertHint({ text, below }: { text: string; below: boolean }) {
+  return (
+    <span className={'ann-ins' + (below ? ' below' : '')} aria-label={`insert ${JSON.stringify(text)} here`}>
+      <span className="ann-ins-line" />
+      <span className="ann-tag">{text.replace(/ /g, '·')}</span>
+    </span>
   );
 }
 

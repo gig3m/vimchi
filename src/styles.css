@@ -465,7 +465,12 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 .ann-newline.above { top: 0; }
 .ann-dash { border-top: 1.5px dashed var(--green); }
 .ann-tag-line { display: block; }
-.ann-ghost { color: var(--green); background: rgba(80, 250, 123, .1); box-shadow: inset 0 0 0 1px rgba(80, 250, 123, .6); border-radius: 3px; margin: 0 1px; }
+/* Insert hint: a zero-width anchor between two cells, a dotted line marking the boundary,
+   and the text to type floating above it (below on the first row, which the pane would clip). */
+.ann-ins { position: relative; display: inline-block; width: 0; height: var(--row); vertical-align: top; pointer-events: none; }
+.ann-ins-line { position: absolute; top: 3px; bottom: 3px; left: -1px; border-left: 2px dotted var(--green); }
+.ann-ins .ann-tag { position: absolute; z-index: 2; bottom: calc(100% - 1px); left: 0; transform: translateX(-50%); }
+.ann-ins.below .ann-tag { bottom: auto; top: calc(100% - 1px); }
 
 /* ---------- cursor stays visible over marks ---------- */
 .cell.ev-block { position: relative; z-index: 1; box-shadow: 0 0 0 1px var(--bg-editor), 0 0 8px 1px rgba(248, 248, 242, .55) !important; text-decoration: none !important; }
@@ -475,7 +480,6 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 }
 .ev-caret.dim { animation: none; opacity: .5; }
 @keyframes ev-blink { 50% { opacity: .25; } }
-.ann-ghost { opacity: .85; margin: 0 2px; }
 
 /* ---------- before/after, v2 ---------- */
 .dg.dg-ba { display: block; }
