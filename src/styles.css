@@ -455,22 +455,21 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 
 /* ---------- inline goal annotations ---------- */
 .ev-text { position: relative; }
-.ann-ins { position: absolute; bottom: calc(100% - 6px); z-index: 2; pointer-events: none; border-left: 2px solid var(--green); padding-left: 0; }
 .ann-tag {
   display: inline-flex; flex-direction: column; padding: 0 5px; font-size: 12.5px; line-height: 18px; white-space: pre;
   color: var(--green); background: #1e1f29; border: 1.5px solid var(--green); border-radius: 4px;
 }
-.ann-ins .ann-tag { transform: translate(-2px, -2px); }
 .ann-newline { position: absolute; top: 100%; z-index: 2; display: flex; align-items: center; transform: translateY(-50%); pointer-events: none; }
 .ann-newline.above { top: 0; }
 .ann-dash { border-top: 1.5px dashed var(--green); }
 .ann-tag-line { display: block; }
 /* Insert hint: a zero-width anchor between two cells, a dotted line marking the boundary,
    and the text to type floating above it (below on the first row, which the pane would clip). */
-.ann-ins { position: relative; display: inline-block; width: 0; height: var(--row); vertical-align: top; pointer-events: none; }
-.ann-ins-line { position: absolute; top: 3px; bottom: 3px; left: -1px; border-left: 2px dotted var(--green); }
-.ann-ins .ann-tag { position: absolute; z-index: 2; bottom: calc(100% - 1px); left: 0; transform: translateX(-50%); }
-.ann-ins.below .ann-tag { bottom: auto; top: calc(100% - 1px); }
+.ann-ins { position: relative; display: inline; pointer-events: none; --ann-lead: calc(var(--row) + 9px); }
+.ann-ins-line { position: absolute; z-index: 1; left: -1px; top: calc(-1 * var(--ann-lead)); bottom: -3px; border-left: 2px dotted var(--green); }
+.ann-ins .ann-tag { position: absolute; z-index: 2; bottom: calc(100% + var(--ann-lead)); left: 0; transform: translateX(-50%); }
+.ann-ins.below .ann-ins-line { top: -3px; bottom: calc(-1 * var(--ann-lead)); }
+.ann-ins.below .ann-tag { bottom: auto; top: calc(100% + var(--ann-lead)); }
 
 /* ---------- cursor stays visible over marks ---------- */
 .cell.ev-block { position: relative; z-index: 1; box-shadow: 0 0 0 1px var(--bg-editor), 0 0 8px 1px rgba(248, 248, 242, .55) !important; text-decoration: none !important; }
