@@ -8,11 +8,13 @@ import { mulberry32 } from '../rng';
 const SEEDS = [1, 2, 3, 4, 5];
 
 describe.each(Object.values(KINDS).map(k => [k.id, k] as const))('mutation %s', (_id, kind) => {
+  // Not every kind fits every file (a colour table has no removable statement; most real
+  // code has no near-duplicate pair), so sites are required corpus-wide, not per file.
+  it('has candidate sites in at least 4 corpus files', () => {
+    expect(CORPUS.filter(f => kind.sites(f.lines).length > 0).length).toBeGreaterThanOrEqual(4);
+  });
   for (const f of CORPUS) {
     const sites = kind.sites(f.lines);
-    it(`${f.name}: has candidate sites`, () => {
-      expect(sites.length).toBeGreaterThan(0);
-    });
     for (const site of sites) for (const seed of SEEDS) {
       it(`${f.name} @${site.line}:${site.col} seed ${seed}`, () => {
         if (kind.id === 'line-to-remove') return; // inverted kind: tested on its own below
@@ -40,5 +42,23 @@ describe.each(Object.values(KINDS).map(k => [k.id, k] as const))('mutation %s', 
 describe('challenge 1 kinds are registered', () => {
   it.each(['dropped-char', 'extra-char', 'wrong-char', 'wrong-literal', 'wrong-short-ident'])('%s', id => {
     expect(KINDS[id]).toBeDefined();
+  });
+});
+
+describe('challenge 2 kinds are registered', () => {
+  it.each(['stray-line', 'stray-word', 'wrong-word', 'missing-duplicate-line', 'line-to-remove'])('%s', id => {
+    expect(KINDS[id]).toBeDefined();
+  });
+});
+
+describe('line-to-remove', () => {
+  it('dd on the line yields the original minus that line', () => {
+    for (const f of CORPUS) for (const site of KINDS['line-to-remove'].sites(f.lines).slice(0, 5)) {
+      const m = KINDS['line-to-remove'].apply(f.lines, site, mulberry32(1))!;
+      const vim = createVim({ text: f.lines, name: f.name });
+      vim.win.cursor = { line: site.line, col: 0 };
+      vim.feedKeys(m.fixKeys);
+      expect(vim.buf.lines).toEqual([...f.lines.slice(0, site.line), ...f.lines.slice(site.line + 1)]);
+    }
   });
 });
