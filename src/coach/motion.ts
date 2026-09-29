@@ -23,7 +23,10 @@ function move(lines: readonly string[], st: State, m: string, count: number): St
   for (let n = 0; n < count; n++) {
     const before = p;
     switch (m) {
-      case 'h': case 'l': case 'w': case 'b': case 'e': case 'W': case 'B': case 'E': p = step(lines, m, p); w = p.col; break;
+      case 'h': case 'l': p = step(lines, m, p); w = p.col; break;
+      // Word motions that wrap to another line land on whatever happens to be there: a
+      // coincidence a teacher would not suggest, so the critic keeps them on one line.
+      case 'w': case 'b': case 'e': case 'W': case 'B': case 'E': { const q = step(lines, m, p); if (q.line !== p.line) return null; p = q; w = p.col; break; }
       case 'j': if (p.line + 1 >= lines.length) return null; p = { line: p.line + 1, col: Math.min(w, last(p.line + 1)) }; break;
       case 'k': if (p.line === 0) return null; p = { line: p.line - 1, col: Math.min(w, last(p.line - 1)) }; break;
       case '0': p = { line: p.line, col: 0 }; w = 0; break;
@@ -33,7 +36,7 @@ function move(lines: readonly string[], st: State, m: string, count: number): St
       case 'gg': p = { line: 0, col: firstNonBlank(lines[0]) }; w = p.col; break;
       case '}': { let r = p.line + 1; while (r < lines.length && !isBlank(lines[r])) r++; if (r >= lines.length) { r = lines.length - 1; p = { line: r, col: last(r) }; } else p = { line: r, col: 0 }; w = p.col; break; }
       case '{': { let r = p.line - 1; while (r >= 0 && !isBlank(lines[r])) r--; p = { line: Math.max(0, r), col: 0 }; w = 0; break; }
-      case 'ge': case 'gE': {
+      case 'ge': case 'gE': { // same-line only, as above
         const big = m === 'gE'; const l = lines[p.line];
         let c = p.col;
         if (cls(l[c], big) !== 0) { const k = cls(l[c], big); while (c > 0 && cls(l[c - 1], big) === k) c--; c--; }

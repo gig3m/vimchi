@@ -1,5 +1,5 @@
 // "How would a better Vim user have done that?" over a session's key log.
-import { LESSONS } from '../lessons';
+import { LESSONS, sectionOf } from '../lessons';
 import { solutionKeys } from '../lessons/runtime';
 import type { Challenge } from '../lessons/types';
 import { betterMotions } from './motion';
@@ -21,7 +21,9 @@ export type CoachSession = SessionLike & {
 
 export const MIN_SAVES = 2;
 export const RATIO = 1.5;
-const worth = (learner: number, s: Suggestion) => s.saves >= MIN_SAVES || learner >= RATIO * (learner - s.saves);
+/** The ratio rule needs a run long enough for a ratio to mean something (j0 → w is a nitpick). */
+const RATIO_MIN_KEYS = 4;
+const worth = (learner: number, s: Suggestion) => s.saves >= MIN_SAVES || (learner >= RATIO_MIN_KEYS && learner >= RATIO * (learner - s.saves));
 const notation = (keys: string[]) => keys.join('');
 
 /** Segments recorded inside a macro: between a `q<reg>` break and the next `q` break in the same unit. */
@@ -49,8 +51,9 @@ function verify(session: CoachSession, seg: Segment, endSeg: Segment, keys: stri
 export function coachSegment(session: CoachSession, lessonId: string, seg: Segment, segs: Segment[], i: number): Critique | null {
   if (!coachable(lessonId)) return null;
   const taught = taughtBy(lessonId);
+  // Never undercut what this lesson's section drills: a Search lesson must not be told not to search.
   const lesson = LESSONS[lessonId];
-  const drilled = new Set(lesson.chips.flatMap(tokenize));
+  const drilled = new Set((lesson.challenge.kind === 'generated' ? [lesson] : sectionOf(lessonId).lessons).flatMap(l => l.chips.flatMap(tokenize)));
   const usedDrilled = (keys: string[]) => keys.some(k => drilled.has(k));
   if (recordingSpans(segs).has(i)) return null;
 

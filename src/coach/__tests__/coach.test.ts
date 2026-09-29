@@ -47,7 +47,7 @@ describe('coach', () => {
     const rep = coach(s, 'insert-mode');
     for (const line of rep.reference) expect(line.par).toBeGreaterThanOrEqual(solutionKeys(c.rounds[line.unit].solution).length);
   });
-  it('lists which reference playthroughs still get critiques (audit input)', () => {
+  it('every reference playthrough yields zero critiques', () => {
     const offenders: string[] = [];
     for (const sec of SECTIONS) for (const l of sec.lessons) {
       if (!coachable(l.id) || l.challenge.kind !== 'rounds') continue;
@@ -58,8 +58,7 @@ describe('coach', () => {
       const rep = coach(s, l.id);
       for (const cr of rep.critiques) offenders.push(`${l.id} r${cr.unit + 1}: ${cr.you} → ${cr.better.map(b => `${b.keys} (${b.rule})`).join(' | ')}`);
     }
-    console.log(`reference critiques (${offenders.length}):\n` + offenders.join('\n'));
-    expect(offenders.length).toBeLessThan(400);
+    expect(offenders).toEqual([]);
   });
   it('a generated run replayed with par motions gets no critiques', () => {
     const ch = CHALLENGES[0];
@@ -71,5 +70,20 @@ describe('coach', () => {
       const rep = coach(s, ch.id);
       expect(rep.critiques.filter(c => c.better.some(b => b.rule !== 'motion')), `seed ${seed}`).toEqual([]);
     }
+  });
+});
+
+describe('coach heuristics from the reference audit', () => {
+  it('a two-key run beaten by one key is not worth showing', () => {
+    expect(play(['abc def', 'ghi jkl'], 'j0x').critiques).toEqual([]); // j0 → w saves 1 on a 2-key run
+  });
+  it('never undercuts a key the current SECTION drills', () => {
+    // clear-highlights is in the Search section: searching is the point, even if 7j reaches the line.
+    const lines = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'leader'];
+    expect(play(lines, '/leader<CR>x', 'clear-highlights').critiques).toEqual([]);
+  });
+  it(':%s// reads the search pattern, so a search is not replaced before it', () => {
+    const r = play(['x 12ms', 'y'], '/\\d\\+ms<CR>:%s//ZZ/<CR>', 'sub-last-search');
+    expect(r.critiques.filter(c => c.you.startsWith('/'))).toEqual([]);
   });
 });

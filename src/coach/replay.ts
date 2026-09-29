@@ -18,7 +18,7 @@ export type StateNeeds = { register: boolean; lastFind: boolean; search: boolean
 
 const READS_REGISTER = /^(?:"[^"]?)?[0-9]*[pP]$/;
 const READS_FIND = /^[0-9]*[;,]$/;
-const READS_SEARCH = /^[0-9]*(?:n|N|cgn|cgN|dgn)$|^:s\//;
+const READS_SEARCH = /^[0-9]*(?:n|N|cgn|cgN|dgn|g&|&)$|^:[%0-9,.$'a-z]*s\//;
 const READS_CHANGE = /^[0-9]*\.$/;
 const WRITES_REGISTER = /^(?:"[^"]?)?[0-9]*(?:[xXdDcCsSyY]|dd|yy|cc)/;
 const WRITES_FIND = /^[0-9]*[ftFT]./;
