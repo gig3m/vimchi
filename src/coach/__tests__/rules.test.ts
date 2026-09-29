@@ -22,10 +22,10 @@ function suggest(text: string[], keys: string, cursor?: { line: number; col: num
     const hit = r.apply(segs, i, { lines });
     if (!hit) continue;
     const a = stateBefore(s, segs[i].logStart); for (let k = i; k < i + hit.consumed; k++) a.feedKeys(segs[k].keys);
-    const b = stateBefore(s, segs[i].logStart); b.feedKeys(hit.suggestion.keys);
-    expect(b.buf.text(), `${r.id}: ${hit.suggestion.keys}`).toBe(a.buf.text());
-    expect(b.cursor, `${r.id}: ${hit.suggestion.keys} cursor`).toEqual(a.cursor);
-    return hit.suggestion;
+    const b = stateBefore(s, segs[i].logStart); b.feedKeys(hit.suggestions[0].keys);
+    expect(b.buf.text(), `${r.id}: ${hit.suggestions[0].keys}`).toBe(a.buf.text());
+    expect(b.cursor, `${r.id}: ${hit.suggestions[0].keys} cursor`).toEqual(a.cursor);
+    return hit.suggestions[0];
   }
   return null;
 }

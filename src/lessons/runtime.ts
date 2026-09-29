@@ -279,12 +279,20 @@ export class Session {
       } else {
         // Par grows by the basic moves from here to where the reference solution starts.
         this.carryExtra = eqPos(start, this.vim.cursor) ? 0 : shortestPath(this.vim.buf.lines, this.vim.cursor, start, 'hjklwbeWBE', 40);
+        this.carryByRound[this.roundIdx] = this.carryExtra;
       }
     }
   }
   /** Keep the cursor between rounds (off in validation playthroughs, whose solutions assume the setup cursor). */
   private carryCursor: boolean;
   private carryExtra = 0;
+  private carryByRound: number[] = [];
+
+  /** Par keys for a finished round (reference length + carry-over path), or null. */
+  roundPar(unit: number): number | null { return this.roundStats[unit]?.par ?? null; }
+  roundSolution(unit: number): string | null { return this.challenge.kind === 'rounds' ? this.challenge.rounds[unit]?.solution ?? null : null; }
+  /** True when the cursor was carried into this round from the previous one. */
+  carried(unit: number): boolean { return (this.carryByRound[unit] ?? 0) > 0; }
 
   private installReset() {
     this.vim!.defineEx('reset', 3, () => {

@@ -3,7 +3,8 @@ import type { Segment } from './segment';
 
 export type Suggestion = { keys: string; saves: number; why: string; rule: string; uses: string[] };
 export type RuleCtx = { lines: readonly string[] };
-export type Rule = { id: string; uses: string[]; apply(segs: Segment[], i: number, ctx: RuleCtx): { consumed: number; suggestion: Suggestion } | null };
+/** A rule consumes a window of segments and offers suggestions in preference order (later ones are fallbacks when an earlier one fails verification). */
+export type Rule = { id: string; uses: string[]; apply(segs: Segment[], i: number, ctx: RuleCtx): { consumed: number; suggestions: Suggestion[] } | null };
 
 export const WHY: Record<string, string> = {
   'count-x': 'A count repeats a command: 3x deletes three characters.',
@@ -41,8 +42,9 @@ export const RULES: Rule[] = [
       const s = segs[i] as Segment & { kind: 'edit' };
       const l = ctx.lines[s.from.line];
       if (s.from.col + n > l.length) return null; // x walked backwards at end of line
-      if (isWord(l, s.from.col, n)) return { consumed: n, suggestion: mk('count-x', 'de', n, ['d', 'e'], WHY['count-x-word']) };
-      return { consumed: n, suggestion: mk('count-x', `${n}x`, n, ['x', 'COUNT']) };
+      const count = mk('count-x', `${n}x`, n, ['x', 'COUNT']);
+      if (isWord(l, s.from.col, n)) return { consumed: n, suggestions: [mk('count-x', 'de', n, ['d', 'e'], WHY['count-x-word']), count] };
+      return { consumed: n, suggestions: [count] };
     },
   },
   {
@@ -53,7 +55,7 @@ export const RULES: Rule[] = [
       const t = insertText(keys(b));
       if (t === null || t.length !== 1 || !/^[ia]/.test(keys(b))) return null;
       if (b.from.line !== a.from.line || b.from.col !== a.from.col) return null;
-      return { consumed: 2, suggestion: mk('x-i-to-r', `r${t}`, a.keys.length + b.keys.length, ['r']) };
+      return { consumed: 2, suggestions: [mk('x-i-to-r', `r${t}`, a.keys.length + b.keys.length, ['r'])] };
     },
   },
   {
@@ -63,7 +65,7 @@ export const RULES: Rule[] = [
       if (!m || !e || !/^a/.test(keys(e))) return null;
       if (m.to.col !== Math.max(0, ctx.lines[m.to.line].length - 1)) return null;
       const t = insertText(keys(e)); if (t === null) return null;
-      return { consumed: 2, suggestion: mk('A-at-eol', `A${t}<Esc>`, m.keys.length + e.keys.length, ['A']) };
+      return { consumed: 2, suggestions: [mk('A-at-eol', `A${t}<Esc>`, m.keys.length + e.keys.length, ['A'])] };
     },
   },
   {
@@ -72,7 +74,7 @@ export const RULES: Rule[] = [
       const m = motion(segs[i]), e = edit(segs[i + 1]);
       if (!m || !e || keys(m) !== '^' || !/^i/.test(keys(e))) return null;
       const t = insertText(keys(e)); if (t === null) return null;
-      return { consumed: 2, suggestion: mk('I-at-bol', `I${t}<Esc>`, m.keys.length + e.keys.length, ['I']) };
+      return { consumed: 2, suggestions: [mk('I-at-bol', `I${t}<Esc>`, m.keys.length + e.keys.length, ['I'])] };
     },
   },
   {
@@ -80,8 +82,8 @@ export const RULES: Rule[] = [
     apply(segs, i) {
       const a = edit(segs[i]), m = motion(segs[i + 1]), b = edit(segs[i + 2]);
       if (!a || !m || !b || keys(a) !== 'dd') return null;
-      if (keys(m) === 'j' && keys(b) === 'P') return { consumed: 3, suggestion: mk('ddp', 'ddp', 4, ['dd', 'p']) };
-      if (keys(m) === 'k' && keys(b) === 'P') return { consumed: 3, suggestion: mk('ddp', 'ddkP', 4, ['dd', 'k', 'P']) };
+      if (keys(m) === 'j' && keys(b) === 'P') return { consumed: 3, suggestions: [mk('ddp', 'ddp', 4, ['dd', 'p'])] };
+      if (keys(m) === 'k' && keys(b) === 'P') return { consumed: 3, suggestions: [mk('ddp', 'ddkP', 4, ['dd', 'k', 'P'])] };
       return null;
     },
   },
@@ -91,7 +93,7 @@ export const RULES: Rule[] = [
       let n = 0;
       while (edit(segs[i + n]) && keys(segs[i + n]) === 'dd') n++;
       if (n < 2) return null;
-      return { consumed: n, suggestion: mk('count-dd', `${n}dd`, 2 * n, ['dd', 'COUNT']) };
+      return { consumed: n, suggestions: [mk('count-dd', `${n}dd`, 2 * n, ['dd', 'COUNT'])] };
     },
   },
   {
@@ -101,8 +103,8 @@ export const RULES: Rule[] = [
       if (!a || !b) return null;
       const t = insertText(keys(b));
       if (t === null || !/^i/.test(keys(b)) || b.from.line !== a.from.line || b.from.col !== a.from.col) return null;
-      if (keys(a) === 'de') return { consumed: 2, suggestion: mk('cw', `cw${t}<Esc>`, a.keys.length + b.keys.length, ['c', 'w']) };
-      if (keys(a) === 'dw' && t.endsWith(' ')) return { consumed: 2, suggestion: mk('cw', `cw${t.slice(0, -1)}<Esc>`, a.keys.length + b.keys.length, ['c', 'w']) };
+      if (keys(a) === 'de') return { consumed: 2, suggestions: [mk('cw', `cw${t}<Esc>`, a.keys.length + b.keys.length, ['c', 'w'])] };
+      if (keys(a) === 'dw' && t.endsWith(' ')) return { consumed: 2, suggestions: [mk('cw', `cw${t.slice(0, -1)}<Esc>`, a.keys.length + b.keys.length, ['c', 'w'])] };
       return null;
     },
   },
@@ -111,7 +113,7 @@ export const RULES: Rule[] = [
     apply(segs, i) {
       const e = edit(segs[i]); if (!e) return null;
       const m = /^A<CR>(.*)<Esc>$/.exec(keys(e)); if (!m) return null;
-      return { consumed: 1, suggestion: mk('o-not-A-CR', `o${m[1]}<Esc>`, e.keys.length, ['o']) };
+      return { consumed: 1, suggestions: [mk('o-not-A-CR', `o${m[1]}<Esc>`, e.keys.length, ['o'])] };
     },
   },
   {
@@ -126,7 +128,7 @@ export const RULES: Rule[] = [
       const window = segs.slice(i, j + 1);
       const learner = window.reduce((n, s) => n + s.keys.length, 0);
       const keysBetween = window.slice(0, -1).map(keys).join('');
-      return { consumed: j - i + 1, suggestion: mk('dot-repeat', `${keysBetween}.`, learner, ['.']) };
+      return { consumed: j - i + 1, suggestions: [mk('dot-repeat', `${keysBetween}.`, learner, ['.'])] };
     },
   },
 ];
