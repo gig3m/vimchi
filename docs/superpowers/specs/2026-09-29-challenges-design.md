@@ -149,7 +149,10 @@ export function generate(c: GeneratedChallenge, seed: number): Generated;
   and with `/`-search counted as 3 keys when the path exceeds 8), plus the kind's edit
   keys. parMs = Σ (motion keys × 250 ms + kind.parMs).
 - Checklist item: `{ text, region, kind }`. `text` is the human line; `region` is the
-  line-span in the *start* text that must match the goal for the tick.
+  line-span in the *start* text that must match the goal for the tick. For a removed
+  line (`stray-line`, `line-to-remove`) the tick means the line is gone: the aligned
+  goal has no counterpart for it. For a missing line the tick means the aligned goal
+  line now exists and matches.
 
 ## Play
 
