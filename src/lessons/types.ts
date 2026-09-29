@@ -100,6 +100,8 @@ export type GeneratedChallenge = {
   corpus: CorpusFile[];
   /** Inclusive range of mutations per run. */
   edits: [number, number];
+  /** Section ids whose lessons' keys the coach may suggest (curriculum ladder). */
+  sections: string[];
 };
 
 export type Round = {

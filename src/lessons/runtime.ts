@@ -4,6 +4,7 @@
 import { PLUGINS } from '../vim/plugins';
 import { Vim } from '../vim/editor';
 import { type Generated, collateral, generate, itemDone } from '../challenges/generate';
+import type { LastCommand } from '../vim/editor';
 import { type Key, parseKeys } from '../vim/keys';
 import { align } from './goalDiff';
 import { wordBackward, wordEnd, wordForward } from '../vim/motions';
@@ -136,6 +137,20 @@ export type SessionView = {
   seed: number | null;
 };
 
+/** One fed key, for the coach. */
+export type LogEntry = {
+  key: Key;
+  /** rounds: round index; generated: checklist item index; -1 when unattributed. */
+  unit: number;
+  /** Position/mode before the key, captured after any advance() the key triggered. */
+  before: { pos: Pos; mode: string; want: number };
+  after: { pos: Pos; mode: string; changed: boolean; pending: number };
+  /** Filled when this key completed a command. */
+  command: LastCommand | null;
+  /** True on the first key after a hard boundary (round load, :reset, restart). */
+  boundary: boolean;
+};
+
 const TARGET_EDIT_MSG = 'Editing is off in movement lessons.';
 const ROUND_BASE_MS = 1500;
 const PER_KEY_MS = 450;
@@ -176,6 +191,30 @@ export class Session {
   // generated
   generated: Generated | null = null;
   private collateralMax = 0;
+  // coach log
+  private entries: LogEntry[] = [];
+  private pendingBoundary = true;
+
+  log(): LogEntry[] { return this.entries; }
+  /** Log index of the first key of the unit's latest attempt. */
+  unitStart(unit: number): number {
+    for (let i = this.entries.length - 1; i >= 0; i--) if (this.entries[i].boundary && this.entries[i].unit === unit) return i;
+    return 0;
+  }
+  /** The setup a scratch Vim needs to replay this unit. */
+  setupFor(unit: number): Setup {
+    const c = this.challenge;
+    if (c.kind === 'rounds') return mergeSetup(c.base, c.rounds[unit]?.setup);
+    if (c.kind === 'generated') return { text: this.generated!.start, name: this.generated!.file };
+    return { text: '' };
+  }
+  /** Checklist item nearest the cursor (generated challenges), for attributing keys. */
+  private nearestItem(): number {
+    const line = this.vim!.cursor.line + 1;
+    let best = -1, dist = Infinity;
+    this.view().items.forEach((it, i) => { const d = Math.abs(it.line - line); if (d < dist) { dist = d; best = i; } });
+    return best;
+  }
 
   constructor(challenge: Challenge, opts: { targetCount?: number; rand?: () => number; carryCursor?: boolean; seed?: number } = {}) {
     this.challenge = challenge;
@@ -200,6 +239,7 @@ export class Session {
   }
 
   private start() {
+    this.pendingBoundary = true;
     const c = this.challenge;
     if (c.kind === 'target' || c.kind === 'word' || c.kind === 'fix' || c.kind === 'replace') {
       this.vim = createVim({ text: c.code, name: c.file, cursor: c.start, height: c.code.length + 1 });
@@ -214,6 +254,7 @@ export class Session {
   }
 
   private loadRound(carry = false) {
+    this.pendingBoundary = true;
     const c = this.challenge as RoundsChallenge;
     const r = c.rounds[this.roundIdx];
     const prev = this.vim;
@@ -286,7 +327,21 @@ export class Session {
     const beforeText = vim.buf.text();
     const beforeLines = vim.buf.lines.slice();
     const pendingBefore = vim.pending.length;
+    const doneBefore = c.kind === 'generated' ? this.generated!.items.map(it => itemDone(it, vim.buf.lines, this.generated!.goal)) : null;
+    const unit = c.kind === 'rounds' ? this.roundIdx : c.kind === 'generated' ? this.nearestItem() : -1;
+    const before = { pos: { ...vim.cursor }, mode: vim.mode, want: vim.win.want };
     vim.feed(k);
+    const entry: LogEntry = {
+      key: k, unit, before,
+      after: { pos: { ...vim.cursor }, mode: vim.mode, changed: vim.buf.text() !== beforeText, pending: vim.pending.length },
+      command: vim.lastCommand, boundary: this.pendingBoundary,
+    };
+    this.pendingBoundary = false;
+    this.entries.push(entry);
+    if (doneBefore) {
+      const flipped = this.generated!.items.findIndex((it, i) => !doneBefore[i] && itemDone(it, vim.buf.lines, this.generated!.goal));
+      if (flipped >= 0) entry.unit = flipped;
+    }
     const flash = pendingBefore === 0 && vim.pending.length === 0 ? k : vim.pending.length === 0 ? k : null;
 
     if (c.kind === 'target' || c.kind === 'word') {
@@ -573,7 +628,7 @@ export function parKeysFor(c: MarksChallenge): number {
   return keys;
 }
 
-function step(lines: readonly string[], k: string, p: Pos): Pos {
+export function step(lines: readonly string[], k: string, p: Pos): Pos {
   const last = (r: number) => Math.max(0, lines[r].length - 1);
   switch (k) {
     case 'h': return pos(p.line, Math.max(0, p.col - 1));
