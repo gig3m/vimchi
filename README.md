@@ -4,6 +4,8 @@ A browser Vim tutor, inspired by vim-hero's short-lesson format — small lesson
 challenge — that goes deeper: registers, macros, ex commands, regex, windows, quickfix, and the
 Neovim plugins people actually run. The lesson plan is in `CURRICULUM.md`.
 
+![The Quotes lesson: the sidebar lists the Text Objects section, and the practice editor is mid-`ci"`, in Insert mode renaming a package.json string to "vimchi" with the remaining text hinted above the cursor](docs/screenshot.png)
+
 ## Frontend
 
 ```sh
