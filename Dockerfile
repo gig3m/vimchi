@@ -8,6 +8,7 @@ COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 COPY tsconfig.json vite.config.ts index.html ./
 COPY src ./src
+COPY public ./public
 RUN npm run build
 
 FROM golang:1.26-alpine AS server
