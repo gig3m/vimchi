@@ -7,7 +7,7 @@ export const CHALLENGES: ChallengeDef[] = [
   {
     id: 'challenge-fix-the-file',
     title: 'Fix the File',
-    chips: ['w', 'f', 'x', 'r', 'i'],
+    chips: ['f', 'x', 'r', 'i'],
     challenge: {
       kind: 'generated',
       skills: ['movement', 'delete', 'replace', 'insert', 'find'],

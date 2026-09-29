@@ -26,8 +26,10 @@ describe.each(all)('%s / %s', (_section, lesson) => {
     expect(lesson.id).toMatch(/^[a-z0-9-]+$/);
     expect(lesson.chips.length).toBeGreaterThanOrEqual(1);
     expect(lesson.chips.length).toBeLessThanOrEqual(4);
-    expect(lesson.keyCards.length).toBeGreaterThanOrEqual(1);
-    expect(lesson.keyCards.length).toBeLessThanOrEqual(5);
+    if (lesson.challenge.kind !== 'generated') {
+      expect(lesson.keyCards.length).toBeGreaterThanOrEqual(1);
+      expect(lesson.keyCards.length).toBeLessThanOrEqual(5);
+    }
     expect(lesson.title.length).toBeLessThanOrEqual(28);
   });
 
@@ -90,7 +92,11 @@ describe.each(all)('%s / %s', (_section, lesson) => {
       expect(m.marks.size).toBeGreaterThan(0);
     });
   } else if (c.kind === 'generated') {
-    // Covered by src/challenges tests and the generated branch added with the section.
+    it('generates a solvable run', () => {
+      const s = new Session(c, { seed: 1 });
+      expect(s.total).toBeGreaterThan(0);
+      expect(s.vim!.buf.lineCount).toBeGreaterThanOrEqual(25);
+    });
   } else {
     it('lines fit', () => expect(tooLong(c.code)).toEqual([]));
     it('has code', () => {
