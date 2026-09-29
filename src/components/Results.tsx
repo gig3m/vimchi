@@ -9,6 +9,10 @@ type Props = {
   onRepeat: () => void;
   onNext: () => void;
   onStats: () => void;
+  /** Generated challenges: the seed that produced this file. */
+  seed?: number | null;
+  replayHref?: string;
+  onNewSeed?: () => void;
 };
 
 const CIRC = 314.16; // 2πr for r = 50
@@ -32,7 +36,7 @@ function Ring({ label, value, color, sub }: { label: string; value: number; colo
   );
 }
 
-export function Results({ result: R, prevBestTime, prevBestScore, nextTitle, onRepeat, onNext, onStats }: Props) {
+export function Results({ result: R, prevBestTime, prevBestScore, nextTitle, onRepeat, onNext, onStats, seed, replayHref, onNewSeed }: Props) {
   const newBestTime = prevBestTime != null && R.elapsed < prevBestTime;
   const newBestScore = prevBestScore != null && R.score > prevBestScore;
   return (
@@ -69,7 +73,14 @@ export function Results({ result: R, prevBestTime, prevBestScore, nextTitle, onR
           <button className="res-btn" onClick={onNext}><span className="kbd kbd-sm">n</span>Next: {nextTitle}</button>
         )}
         <button className="res-btn" onClick={onStats}><span className="kbd kbd-sm">s</span>Your stats</button>
+        {onNewSeed && <button className="res-btn" onClick={onNewSeed}><span className="kbd kbd-sm">f</span>New file</button>}
       </div>
+      {seed != null && (
+        <div className="result-seed">
+          <span>seed {seed}</span>
+          {replayHref && <a href={replayHref}>link to this file</a>}
+        </div>
+      )}
     </div>
   );
 }
