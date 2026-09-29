@@ -142,7 +142,7 @@ export function shuffle<T>(rng: Rng, arr: readonly T[]): T[] {
 In `src/lessons/types.ts`, change `Section.band` to `band: 'core' | 'deep' | 'plugins' | 'challenges'`, add `GeneratedChallenge` to the `Challenge` union, and add after `RoundsChallenge`:
 
 ```ts
-/** One clean base file for generated challenges. */
+/** One clean base file for generated challenges (Task 2 adds `source`). */
 export type CorpusFile = { name: string; lines: string[] };
 
 /**
@@ -175,30 +175,56 @@ git commit -m "challenges: seeded rng and GeneratedChallenge types"
 
 ---
 
-### Task 2: Corpus
+### Task 2: Corpus (curated from permissively licensed repos)
 
 **Files:**
 - Create: `src/challenges/corpus/index.ts`
+- Modify: `README.md` (Credits: one line per source repo), `src/lessons/types.ts` (`CorpusFile.source`)
 - Test: `src/challenges/__tests__/corpus.test.ts`
 
 **Interfaces:**
-- Produces: `CORPUS: CorpusFile[]` (10 files) and `CORPUS_BY_NAME: Record<string, CorpusFile>`.
+- Produces: `CORPUS: CorpusFile[]` (10 files) and `CORPUS_BY_NAME`. `CorpusFile` gains
+  `source: { repo: string; path: string; commit: string; license: 'MIT' | 'BSD-2-Clause' | 'BSD-3-Clause' | 'Apache-2.0' | 'ISC' }`.
 
-Corpus rules (tested): 25–40 lines, every line ≤ 60 cols, no tabs, no trailing spaces, at least 6 identifiers of 3–6 chars that occur ≥ 2 times, at least 4 numeric literals, at least 2 string literals, and at least one *near-duplicate pair*: two adjacent lines of equal length differing in 1–3 character positions (for `missing-duplicate-line`).
+Corpus rules (tested): 25–40 lines, every line ≤ 60 cols, no tabs, no trailing spaces, at least 6
+identifiers of 3–6 chars that occur ≥ 2 times, at least 4 numeric literals, at least 2 string
+literals, at least one *near-duplicate pair* (two adjacent lines of equal length differing in 1–3
+character positions), and a `source` block whose license is on the allowlist.
 
-- [ ] **Step 1: Write the failing corpus test**
+Owner ruling (2026-09-29): snippets are **real code from well-known public repos**, not invented.
+vimchi is MIT and public, so only MIT / BSD / Apache-2.0 / ISC sources are allowed; every file is
+attributed in the corpus entry and in README Credits. Light reformatting (wrapping a long line,
+dropping a doc comment, trimming to a 25–40 line excerpt) is fine under those licenses; a file that
+needs real surgery to pass the rules is dropped, not bent.
+
+- [ ] **Step 1: Add `source` to the type**
+
+In `src/lessons/types.ts`:
+
+```ts
+export type CorpusLicense = 'MIT' | 'BSD-2-Clause' | 'BSD-3-Clause' | 'Apache-2.0' | 'ISC';
+/** One clean base file for generated challenges, excerpted from a permissively licensed repo. */
+export type CorpusFile = {
+  name: string;
+  lines: string[];
+  source: { repo: string; path: string; commit: string; license: CorpusLicense };
+};
+```
+
+- [ ] **Step 2: Write the failing corpus test**
 
 ```ts
 // src/challenges/__tests__/corpus.test.ts
 import { describe, expect, it } from 'vitest';
 import { CORPUS } from '../corpus';
 
+const LICENSES = ['MIT', 'BSD-2-Clause', 'BSD-3-Clause', 'Apache-2.0', 'ISC'];
 const idents = (lines: string[]) => {
   const n = new Map<string, number>();
   for (const l of lines) for (const m of l.matchAll(/\b[a-zA-Z_][a-zA-Z0-9_]*\b/g)) n.set(m[0], (n.get(m[0]) ?? 0) + 1);
   return n;
 };
-export const nearDuplicatePairs = (lines: string[]) => {
+const nearDuplicatePairs = (lines: string[]) => {
   const out: [number, number][] = [];
   for (let i = 0; i + 1 < lines.length; i++) {
     const a = lines[i], b = lines[i + 1];
@@ -215,7 +241,17 @@ describe('corpus', () => {
     expect(CORPUS.length).toBe(10);
     expect(new Set(CORPUS.map(f => f.name)).size).toBe(10);
   });
+  it('covers three languages', () => {
+    const ext = new Set(CORPUS.map(f => f.name.split('.').pop()));
+    expect([...ext].sort()).toEqual(['go', 'lua', 'ts']);
+  });
   describe.each(CORPUS.map(f => [f.name, f] as const))('%s', (_n, f) => {
+    it('is attributed to an allowed license', () => {
+      expect(f.source.repo).toMatch(/^[\w.-]+\/[\w.-]+$/);
+      expect(f.source.path.length).toBeGreaterThan(0);
+      expect(f.source.commit).toMatch(/^[0-9a-f]{7,40}$/);
+      expect(LICENSES).toContain(f.source.license);
+    });
     it('is 25–40 lines of ≤60 columns, no tabs or trailing spaces', () => {
       expect(f.lines.length).toBeGreaterThanOrEqual(25);
       expect(f.lines.length).toBeLessThanOrEqual(40);
@@ -231,127 +267,92 @@ describe('corpus', () => {
       expect(nearDuplicatePairs(f.lines).length).toBeGreaterThanOrEqual(1);
     });
   });
+  it('README credits every source repo', async () => {
+    const readme = (await import('node:fs')).readFileSync('README.md', 'utf8');
+    for (const repo of new Set(CORPUS.map(f => f.source.repo))) expect(readme, repo).toContain(repo);
+  });
 });
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [ ] **Step 3: Run it to verify it fails**
 
 Run: `npx vitest run src/challenges/__tests__/corpus.test.ts`
 Expected: FAIL, cannot resolve `../corpus`.
 
-- [ ] **Step 3: Write the corpus**
+- [ ] **Step 4: Find candidates**
 
-Create `src/challenges/corpus/index.ts` exporting `CORPUS` with ten files. Write each as real, readable code that satisfies the rules; two are given in full here, the other eight follow the same recipe (a small module with a config object, a helper, a loop, a couple of near-duplicate lines such as `x = clamp(x, 0, w);` / `y = clamp(y, 0, h);`). Names: `cart.ts`, `clamp.ts`, `router.go`, `retry.go`, `queue.lua`, `keymap.lua`, `stats.ts`, `parse.ts`, `pool.go`, `timer.lua`.
+Use the `gh` CLI (authenticated on this box). Search each language for small files in
+well-known permissively licensed repos; confirm the license from the repo's `LICENSE`
+file, not from memory. Starting points (verify each; substitute freely):
+
+- TS (MIT): `sindresorhus/*` small packages (`p-limit`, `escape-string-regexp`, `yocto-queue`),
+  `remeda/remeda` single-function files, `colinhacks/zod` helpers, `unjs/*` utils.
+- Go (MIT/BSD): `spf13/cast` helpers, `gorilla/mux` small helpers, `hashicorp/go-multierror`
+  (MPL — NOT allowed, skip), `stretchr/testify` internals, `google/uuid` (BSD-3).
+- Lua (MIT/Apache): `nvim-lua/kickstart.nvim`, `folke/lazy.nvim` utils, `nvim-lua/plenary.nvim`
+  small modules, `echasnovski/mini.nvim` helpers.
+
+Commands:
+
+```bash
+gh api "repos/OWNER/REPO/license" --jq .license.spdx_id         # license, authoritative
+gh api "repos/OWNER/REPO/commits/HEAD" --jq .sha                # commit to pin
+gh api "repos/OWNER/REPO/contents/PATH" --jq .content | base64 -d | awk 'length > 60 {c++} END {print NR " lines, " c+0 " over 60 cols"}'
+```
+
+Keep a scratch list `candidates.tsv` (repo, path, commit, license, lines, over60) in the
+scratchpad; pick 4 TS, 3 Go, 3 Lua that need the least trimming. Prefer files whose short
+identifiers repeat and that already contain a near-duplicate line pair (`x`/`y`, `min`/`max`,
+`width`/`height` pairs are common).
+
+- [ ] **Step 5: Write the corpus**
+
+Create `src/challenges/corpus/index.ts`. Each entry keeps the original file name (for syntax
+colouring) and an exact 25–40 line excerpt, wrapped or trimmed only as needed to pass the
+test, with a one-line comment saying what was changed:
 
 ```ts
 // src/challenges/corpus/index.ts
-// Clean base files for generated challenges. Hand-written; must pass corpus.test.ts
-// (25–40 lines, ≤60 cols, repeated short identifiers, literals, a near-duplicate pair).
+// Clean base files for generated challenges, excerpted from permissively licensed repos.
+// Every entry names its source; README Credits lists the repos. corpus.test.ts enforces the
+// shape rules (25–40 lines, ≤60 cols, repeated short identifiers, literals, a near-duplicate
+// pair) and the license allowlist. Reformatting is limited to wrapping long lines and
+// trimming to an excerpt; say so in the comment above each entry.
 import type { CorpusFile } from '../../lessons/types';
 
-const cart: CorpusFile = {
-  name: 'cart.ts',
+// p-limit/index.js → lines 1–38, doc comments dropped, one line wrapped.
+const pLimit: CorpusFile = {
+  name: 'p-limit.ts',
+  source: { repo: 'sindresorhus/p-limit', path: 'index.js', commit: '<sha>', license: 'MIT' },
   lines: [
-    'export type Item = { sku: string; qty: number; price: number };',
-    '',
-    'const TAX = 0.0825;',
-    'const FREE_SHIP = 50;',
-    'const SHIP = 5.99;',
-    '',
-    'export function subtotal(items: Item[]): number {',
-    '  let sum = 0;',
-    '  for (const item of items) {',
-    '    sum += item.qty * item.price;',
-    '  }',
-    '  return round(sum);',
-    '}',
-    '',
-    'export function shipping(sum: number): number {',
-    '  if (sum >= FREE_SHIP) return 0;',
-    '  return SHIP;',
-    '}',
-    '',
-    'export function total(items: Item[]): number {',
-    '  const sum = subtotal(items);',
-    '  const tax = round(sum * TAX);',
-    '  const ship = shipping(sum);',
-    '  return round(sum + tax + ship);',
-    '}',
-    '',
-    'export function count(items: Item[]): number {',
-    '  let qty = 0;',
-    '  for (const item of items) qty += item.qty;',
-    '  return qty;',
-    '}',
-    '',
-    'function round(n: number): number {',
-    '  return Math.round(n * 100) / 100;',
-    '}',
-    '',
-    "export const EMPTY: Item = { sku: 'none', qty: 0, price: 0 };",
-    "export const DEMO: Item = { sku: 'demo', qty: 1, price: 9 };",
+    // …exact excerpt…
   ],
 };
 
-const clamp: CorpusFile = {
-  name: 'clamp.ts',
-  lines: [
-    'export type Box = { x: number; y: number; w: number; h: number };',
-    '',
-    'const MIN = 0;',
-    'const STEP = 8;',
-    '',
-    'export function clamp(v: number, lo: number, hi: number) {',
-    '  if (v < lo) return lo;',
-    '  if (v > hi) return hi;',
-    '  return v;',
-    '}',
-    '',
-    'export function fit(box: Box, w: number, h: number): Box {',
-    '  let x = box.x;',
-    '  let y = box.y;',
-    '  x = clamp(x, MIN, w - box.w);',
-    '  y = clamp(y, MIN, h - box.h);',
-    '  return { x, y, w: box.w, h: box.h };',
-    '}',
-    '',
-    'export function snap(v: number): number {',
-    '  return Math.round(v / STEP) * STEP;',
-    '}',
-    '',
-    'export function grow(box: Box, by: number): Box {',
-    '  const w = box.w + by * 2;',
-    '  const h = box.h + by * 2;',
-    '  return { x: box.x - by, y: box.y - by, w, h };',
-    '}',
-    '',
-    "export const NAME = 'clamp';",
-    "export const UNIT = 'px';",
-    'export const ZERO: Box = { x: 0, y: 0, w: 0, h: 0 };',
-  ],
-};
+// …nine more entries…
 
-// … eight more files in the same style (router.go, retry.go, queue.lua, keymap.lua,
-// stats.ts, parse.ts, pool.go, timer.lua). Each: a config block with ≥4 numeric
-// literals, ≥2 string literals, ≥6 short identifiers used twice, and one adjacent
-// near-duplicate pair of equal-length lines.
-
-export const CORPUS: CorpusFile[] = [cart, clamp, /* router, retry, queue, keymap, stats, parse, pool, timer */];
+export const CORPUS: CorpusFile[] = [pLimit /* , … */];
 export const CORPUS_BY_NAME: Record<string, CorpusFile> = Object.fromEntries(CORPUS.map(f => [f.name, f]));
 ```
 
-The implementer writes the eight remaining files in full (no placeholders may remain in the committed file) and runs the test until every file passes.
+Then add to README `## Credits`:
 
-- [ ] **Step 4: Run the corpus test**
+```markdown
+Challenge files are excerpts from these repos, used under their licenses:
+`sindresorhus/p-limit` (MIT), … one line per repo, alphabetical.
+```
+
+- [ ] **Step 6: Run the corpus test**
 
 Run: `npx vitest run src/challenges/__tests__/corpus.test.ts`
-Expected: PASS for all ten files. Fix any file that fails a rule rather than loosening the rule.
+Expected: PASS for all ten files. A file that fails a rule is replaced with another candidate,
+not edited into shape beyond wrapping/trimming.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add src/challenges/corpus src/challenges/__tests__/corpus.test.ts
-git commit -m "challenges: ten-file corpus"
+git add src/challenges/corpus src/challenges/__tests__/corpus.test.ts src/lessons/types.ts README.md
+git commit -m "challenges: corpus of ten excerpts from MIT/BSD/Apache repos, attributed"
 ```
 
 ---
