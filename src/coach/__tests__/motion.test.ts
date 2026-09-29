@@ -75,3 +75,26 @@ describe('betterMotions keeps equal-cost routes and ranks them by family', () =>
     expect(c.map(x => x.keys)).toContain('6h');
   });
 });
+
+describe('betterMotions: * and relative-number counts', () => {
+  const STAR = new Set([...ALL, '*', '#']);
+  it('* jumps to the next occurrence of the word under the cursor', () => {
+    const lines = ['head', 'foo bar', 'baz qux', 'foo end', 'tail']; // target is neither first nor last line, so G/gg do not apply
+    const c = betterMotions(lines, { line: 1, col: 1 }, 1, { line: 3, col: 0 }, 5, STAR);
+    expect(c[0].keys).toBe('*');
+    expect(c[0].uses).toContain('*');
+  });
+  it('# jumps backwards, and * is not offered when the target is not that word', () => {
+    const lines = ['head', 'foo bar', 'baz qux', 'foo end', 'tail'];
+    expect(betterMotions(lines, { line: 3, col: 0 }, 0, { line: 1, col: 0 }, 5, STAR)[0].keys).toBe('#');
+    expect(betterMotions(lines, { line: 1, col: 1 }, 1, { line: 3, col: 4 }, 5, STAR).some(x => x.keys === '*')).toBe(false);
+  });
+  it('counts on j/k beyond 3 need relative numbers on screen', () => {
+    const lines = Array.from({ length: 9 }, (_, i) => `line ${i}`);
+    const off = betterMotions(lines, { line: 0, col: 0 }, 0, { line: 7, col: 0 }, 7, ALL);
+    expect(off.some(x => x.keys === '7j')).toBe(false);
+    const on = betterMotions(lines, { line: 0, col: 0 }, 0, { line: 7, col: 0 }, 7, ALL, { relativenumber: true });
+    expect(on.some(x => x.keys === '7j')).toBe(true);
+    expect(betterMotions(lines, { line: 0, col: 0 }, 0, { line: 3, col: 0 }, 3, ALL).some(x => x.keys === '3j')).toBe(true); // ≤3 is fine by eye
+  });
+});
