@@ -201,6 +201,8 @@ export class Session {
     for (let i = this.entries.length - 1; i >= 0; i--) if (this.entries[i].boundary && this.entries[i].unit === unit) return i;
     return 0;
   }
+  /** Log index where the current round's attempt began (0 for generated challenges). */
+  currentUnitStart(): number { return this.challenge.kind === 'rounds' ? this.unitStart(this.roundIdx) : 0; }
   /** The setup a scratch Vim needs to replay this unit. */
   setupFor(unit: number): Setup {
     const c = this.challenge;

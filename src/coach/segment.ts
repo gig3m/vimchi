@@ -40,7 +40,7 @@ export function segment(log: LogEntry[]): Segment[] {
       continue;
     }
     if (cmd.kind === 'motion' && settled(e)) {
-      const continues = motion && motion.unit === unit && !log[start].boundary;
+      const continues = motion && !log[start].boundary; // units only change at boundaries for rounds; generated runs span items
       if (continues) { motion!.keys.push(...keysOf(start, i)); motion!.to = e.after.pos; motion!.logEnd = i; }
       else { flush(); motion = { kind: 'motion', unit, keys: keysOf(start, i), from, to: e.after.pos, logStart: start, logEnd: i }; }
       start = i + 1;

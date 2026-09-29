@@ -10,7 +10,7 @@ import { EditorView } from './EditorView';
 import { Checklist } from './Checklist';
 import { Results } from './Results';
 import { seedHref } from '../state/seed';
-import { type Critique, type Report, coach, coachSegment } from '../coach';
+import { type Critique, type Report, coach, coachSegment, nudgeText } from '../coach';
 import { segment } from '../coach/segment';
 import { coachable } from '../coach/vocab';
 
@@ -75,24 +75,35 @@ export function Practice(p: Props) {
   const clearNudge = () => { clearTimeout(nudgeT.current); setNudge(null); };
   const showNudge = (c: Critique) => {
     const b = c.better[0];
+    void b;
     clearTimeout(nudgeT.current);
-    setNudge(`${b.keys} does that in ${c.you.length - b.saves}`);
+    setNudge(nudgeText(c));
     nudgeT.current = window.setTimeout(() => setNudge(null), 4000);
   };
   /** After a key (or a round/run end), critique any segment that has just closed. */
+  const nudgedEnd = useRef(-1);
   const liveCoach = (closing: boolean) => {
     if (!p.coachLive || !coachable(lesson.id)) return;
-    const segs = segment(s.log());
+    const log = s.log();
+    const segs = segment(log);
     const last = segs.length - 1;
     if (last < 0) return;
-    // A segment has closed when a new one started after it, or when the round/run just ended.
+    const settled = log[log.length - 1].after.mode === 'normal' && log[log.length - 1].after.pending === 0;
+    // Something closed when a new segment started after it (a motion run), when an edit just
+    // returned to normal mode, or when the round/run ended. Try the windows that end here.
     const candidates: number[] = [];
     if (segs.length > segCount.current && segs.length >= 2) candidates.push(segs.length - 2);
-    if (closing) candidates.push(last);
+    if (settled || closing) for (let i = Math.max(0, last - 2); i <= last; i++) candidates.push(i);
     segCount.current = segs.length;
-    for (const i of candidates) {
+    const unitStart = s.currentUnitStart();
+    for (const i of [...new Set(candidates)]) {
+      // Only this round's segments, never one still waiting on a pending key, never twice.
+      if (segs[i].logStart < unitStart || log[segs[i].logEnd]?.after.pending) continue;
       const c = coachSegment(s, lesson.id, segs[i], segs, i);
-      if (c) { showNudge(c); return; }
+      if (!c || c.logEnd <= nudgedEnd.current) continue;
+      nudgedEnd.current = c.logEnd;
+      showNudge(c);
+      return;
     }
   };
 
@@ -100,7 +111,7 @@ export function Practice(p: Props) {
   const restart = () => {
     session.current = new Session(lesson.challenge, { seed: s.view().seed ?? undefined });
     setFinished(null);
-    clearNudge(); segCount.current = 0;
+    clearNudge(); segCount.current = 0; nudgedEnd.current = -1;
     rerender();
     ref.current?.focus({ preventScroll: true });
   };
@@ -109,7 +120,7 @@ export function Practice(p: Props) {
     seedRef.current = null;
     session.current = new Session(lesson.challenge);
     setFinished(null);
-    clearNudge(); segCount.current = 0;
+    clearNudge(); segCount.current = 0; nudgedEnd.current = -1;
     if (location.hash.includes('?')) history.replaceState(null, '', '#' + lesson.id);
     rerender();
     ref.current?.focus({ preventScroll: true });
@@ -155,7 +166,8 @@ export function Practice(p: Props) {
     const flash = s.key(key, now);
     if (flash) p.onFlash(flash);
     liveCoach(s.roundDone || s.done);
-    if (s.roundDone) advanceT.current = window.setTimeout(() => { s.advance(); segCount.current = 0; clearNudge(); rerender(); }, 450);
+    // The round's closing hint stays through the advance (it names keys, not text); the 4 s timer clears it.
+    if (s.roundDone) advanceT.current = window.setTimeout(() => { s.advance(); segCount.current = segment(s.log()).length; rerender(); }, 450);
     if (s.done && !wasDone) { complete(now); clearNudge(); }
     rerender();
   };

@@ -10,7 +10,10 @@ export function stateBefore(s: SessionLike, i: number): Vim {
   const log = s.log();
   const unit = log[i]?.unit ?? log[log.length - 1].unit;
   const vim = createVim(s.setupFor(unit));
-  for (let k = s.unitStart(unit); k < i; k++) vim.feed(log[k].key);
+  const start = s.unitStart(unit);
+  // The attempt may have started with a carried-over cursor, not the setup's.
+  if (log[start]) { vim.win.cursor = { ...log[start].before.pos }; vim.win.want = log[start].before.want; }
+  for (let k = start; k < i; k++) vim.feed(log[k].key);
   return vim;
 }
 
@@ -25,12 +28,13 @@ const WRITES_FIND = /^[0-9]*[ftFT]./;
 const WRITES_SEARCH = /^[/?*#]/;
 
 /** Which state a suggestion must preserve: read by a later command in the unit before any command overwrites it. */
-export function stateNeeds(log: LogEntry[], afterIndex: number, unit: number): StateNeeds {
+export function stateNeeds(log: LogEntry[], afterIndex: number, _unit: number): StateNeeds {
   const needs: StateNeeds = { register: false, lastFind: false, search: false, lastChange: false };
   const open = { register: true, lastFind: true, search: true, lastChange: true };
   for (let i = afterIndex + 1; i < log.length; i++) {
     const e = log[i];
-    if (e.unit !== unit || e.boundary) break;
+    if (e.boundary) break; // rounds: a unit change is always a boundary; generated: one buffer, one unit
+
     if (!e.command || e.command.error) continue;
     const k = e.command.keys.join('');
     if (open.register && READS_REGISTER.test(k)) needs.register = true;

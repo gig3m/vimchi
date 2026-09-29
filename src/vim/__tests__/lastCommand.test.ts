@@ -37,3 +37,14 @@ describe('lastCommand', () => {
     expect(lc).toEqual({ keys: ['/', 'f', 'o', 'o', '<CR>'], kind: 'motion', error: false });
   });
 });
+
+describe('lastCommand fix pass', () => {
+  it('a replayed change (.) reports only its own key, not the replayed insert text', () => {
+    expect(after(['abc', 'def'], 'xiz<Esc>j0.').lc?.keys).toEqual(['.']);
+  });
+  it('a bare <Esc>, a cancelled pending key and the q that stops a recording complete as other', () => {
+    expect(after(['abc'], '<Esc>').lc).toEqual({ keys: ['<Esc>'], kind: 'other', error: false });
+    expect(after(['abc'], 'd<Esc>').lc).toEqual({ keys: ['d', '<Esc>'], kind: 'other', error: false });
+    expect(after(['abc'], 'qaxq').lc).toEqual({ keys: ['q'], kind: 'other', error: false });
+  });
+});

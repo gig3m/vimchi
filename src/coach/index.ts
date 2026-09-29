@@ -23,20 +23,26 @@ export const MIN_SAVES = 2;
 export const RATIO = 1.5;
 /** The ratio rule needs a run long enough for a ratio to mean something (j0 → w is a nitpick). */
 const RATIO_MIN_KEYS = 4;
-const worth = (learner: number, s: Suggestion) => s.saves >= MIN_SAVES || (learner >= RATIO_MIN_KEYS && learner >= RATIO * (learner - s.saves));
+/** Motion critiques must clear the owner's threshold; an edit rule teaches a named command, so any real saving counts. */
+const worth = (learner: number, s: Suggestion) =>
+  s.rule === 'motion' ? s.saves >= MIN_SAVES || (learner >= RATIO_MIN_KEYS && learner >= RATIO * (learner - s.saves)) : s.saves >= 1;
 const notation = (keys: string[]) => keys.join('');
 
-/** Segments recorded inside a macro: between a `q<reg>` break and the next `q` break in the same unit. */
-function recordingSpans(segs: Segment[]): Set<number> {
+/** Segments recorded inside a macro: between a `q<reg>` break and the next `q` break (or a boundary). */
+function recordingSpans(segs: Segment[], log: { boundary: boolean }[]): Set<number> {
   const out = new Set<number>();
   let open = -1;
   segs.forEach((s, i) => {
+    if (log[s.logStart]?.boundary) open = -1;
     if (s.kind === 'break' && s.keys.length === 2 && s.keys[0] === 'q') open = i;
     else if (s.kind === 'break' && s.keys.length === 1 && s.keys[0] === 'q') open = -1;
     else if (open >= 0) out.add(i);
   });
   return out;
 }
+
+/** The one-line live hint for a critique. */
+export const nudgeText = (c: Critique) => `${c.better[0].keys} does that in ${keyCount(c.better[0].keys)}`;
 
 /** Replay both routes from the segment start; the suggestion must end in the same outcome. */
 function verify(session: CoachSession, seg: Segment, endSeg: Segment, keys: string): boolean {
@@ -55,8 +61,31 @@ export function coachSegment(session: CoachSession, lessonId: string, seg: Segme
   const lesson = LESSONS[lessonId];
   const drilled = new Set((lesson.challenge.kind === 'generated' ? [lesson] : sectionOf(lessonId).lessons).flatMap(l => l.chips.flatMap(tokenize)));
   const usedDrilled = (keys: string[]) => keys.some(k => drilled.has(k));
-  if (recordingSpans(segs).has(i)) return null;
+  if (recordingSpans(segs, session.log()).has(i)) return null;
 
+  // Edit rules first: some windows start with a motion (`$a` → `A`), and a rule that consumes the
+  // motion says more than a shorter route to the same spot would.
+  if (seg.kind === 'edit' || seg.kind === 'motion') {
+    const lines = stateBefore(session, seg.logStart).buf.lines;
+    // A rule window never crosses a boundary (round load, :reset): cut the segment list there.
+    const log = session.log();
+    let end = i + 1;
+    while (end < segs.length && !log[segs[end].logStart]?.boundary) end++;
+    const window = segs.slice(0, end);
+    for (const r of RULES) {
+      const hit = r.apply(window, i, { lines });
+      if (!hit) continue;
+      // Never-undercut does not apply here: a rule replaces the drilled key with a better command
+      // on purpose, and the vocabulary gate has already checked that command is taught.
+      const span = segs.slice(i, i + hit.consumed);
+      const learner = span.reduce((a, s) => a + s.keys.length, 0);
+      for (const sug of hit.suggestions) {
+        if (!worth(learner, sug) || !usesAllowed(sug.uses, taught)) continue;
+        if (!verify(session, seg, span[span.length - 1], sug.keys)) continue;
+        return { unit: seg.unit, you: span.map(s => notation(s.keys)).join(''), better: [sug], logStart: seg.logStart, logEnd: span[span.length - 1].logEnd };
+      }
+    }
+  }
   if (seg.kind === 'motion') {
     if (usedDrilled(seg.keys)) return null;
     const vim = stateBefore(session, seg.logStart);
@@ -70,21 +99,6 @@ export function coachSegment(session: CoachSession, lessonId: string, seg: Segme
       if (better.length === 2) break;
     }
     return better.length ? { unit: seg.unit, you: notation(seg.keys), better, logStart: seg.logStart, logEnd: seg.logEnd } : null;
-  }
-  if (seg.kind === 'edit') {
-    const lines = stateBefore(session, seg.logStart).buf.lines;
-    for (const r of RULES) {
-      const hit = r.apply(segs, i, { lines });
-      if (!hit) continue;
-      const span = segs.slice(i, i + hit.consumed);
-      const learner = span.reduce((a, s) => a + s.keys.length, 0);
-      if (span.some(s => s.kind === 'edit' && usedDrilled(s.keys))) continue;
-      for (const sug of hit.suggestions) {
-        if (!worth(learner, sug) || !usesAllowed(sug.uses, taught)) continue;
-        if (!verify(session, seg, span[span.length - 1], sug.keys)) continue;
-        return { unit: seg.unit, you: span.map(s => notation(s.keys)).join(''), better: [sug], logStart: seg.logStart, logEnd: span[span.length - 1].logEnd };
-      }
-    }
   }
   return null;
 }
@@ -102,11 +116,6 @@ export function coach(session: CoachSession, lessonId: string): Report {
     const next = segs.findIndex((s, k) => k > i && s.logStart > c.logEnd);
     if (next < 0) break;
     i = next;
-  }
-  // Merge a motion critique with a rule critique that consumed the same motion (jj$a → 2j + A).
-  for (let k = critiques.length - 1; k > 0; k--) {
-    const a = critiques[k - 1], b = critiques[k];
-    if (a.logEnd >= b.logStart) { a.better = [...a.better, ...b.better]; a.logEnd = b.logEnd; critiques.splice(k, 1); }
   }
   const bestSaves = (c: Critique) => Math.max(...c.better.map(s => s.saves));
   critiques.sort((a, b) => bestSaves(b) - bestSaves(a) || a.unit - b.unit || a.logStart - b.logStart);

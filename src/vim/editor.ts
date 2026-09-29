@@ -678,11 +678,11 @@ export class Vim {
       case 'insert':
       case 'replace':
         if (this.dotCapture) this.dotCapture.keys.push(key);
-        this.cmdKeys.push(key);
+        if (this.depth === 0) this.cmdKeys.push(key);
         return this.insertKey(key);
       case 'cmdline':
         if (this.dotCapture && (this.cmdline?.type === '=' || this.pendingSearchOp)) this.dotCapture.keys.push(key);
-        this.cmdKeys.push(key);
+        if (this.depth === 0) this.cmdKeys.push(key);
         return this.cmdlineKey(key);
       default:
         return this.normalKey(key);
@@ -694,6 +694,7 @@ export class Vim {
   private normalKey(key: Key) {
     if (this.pending.length === 0 && key === 'q' && this.recording) {
       this.stopRecording();
+      if (this.depth === 0) { this.cmdKeys = [key]; this.finishCommand('other'); }
       return;
     }
     if (this.pending.length === 0 && key === '<CR>' && this.buf.kind === 'cmdwin') {
@@ -712,6 +713,7 @@ export class Vim {
     this.dotCapture?.keys.push(key);
     if (key === '<Esc>' && this.pending.length > 1) {
       this.pending = [];
+      if (this.depth === 0) this.finishCommand('other'); // a cancelled command is not part of the next one
       return;
     }
     const res = this.parse(this.pending, this.visual ? 'v' : 'n');
@@ -721,6 +723,7 @@ export class Vim {
     if (res === 'invalid') {
       if (keys.length === 1 && keys[0] === '<Esc>') {
         if (this.visual) this.exitVisual();
+        if (this.depth === 0) this.finishCommand('other');
         return;
       }
       fail();
