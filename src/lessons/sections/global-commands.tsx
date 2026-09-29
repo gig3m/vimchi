@@ -333,26 +333,26 @@ export const globalCommands: Section = {
             solution: ':g/console/norm gcc<CR>',
           },
           {
-            prompt: 'Tick every task assigned to @kyle.',
+            prompt: 'Tick every task assigned to @lin.',
             setup: {
               name: 'sprint.md',
               text: [
-                '- [ ] migrate billing to Stripe @kyle',
+                '- [ ] migrate billing to Stripe @lin',
                 '- [ ] flaky login test @priya',
-                '- [ ] drop the legacy export @kyle',
+                '- [ ] drop the legacy export @lin',
                 '- [ ] update onboarding copy @sam',
               ],
               cursor: { line: 1, col: 6 },
             },
             goal: {
               text: [
-                '- [x] migrate billing to Stripe @kyle',
+                '- [x] migrate billing to Stripe @lin',
                 '- [ ] flaky login test @priya',
-                '- [x] drop the legacy export @kyle',
+                '- [x] drop the legacy export @lin',
                 '- [ ] update onboarding copy @sam',
               ],
             },
-            solution: ':g/@kyle/norm f[lrx<CR>',
+            solution: ':g/@lin/norm f[lrx<CR>',
           },
           {
             prompt: 'Demote every level-2 heading to level 3.',

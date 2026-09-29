@@ -1128,7 +1128,7 @@ export const substitute: Section = {
               name: 'audit.log',
               text: [
                 'boot host="api-2"',
-                'login user="kyle" token="a1b2c3" ip="10.0.0.4"',
+                'login user="lin" token="a1b2c3" ip="10.0.0.4"',
                 'fetch path="/me" status="200"',
               ],
               cursor: { line: 1, col: 6 },

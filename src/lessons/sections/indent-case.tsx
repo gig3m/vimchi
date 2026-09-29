@@ -420,10 +420,10 @@ export const indentCase: Section = {
             prompt: 'Lowercase the email address.',
             setup: {
               name: 'CONTRIBUTING.md',
-              text: ['## Questions', '', 'Contact: Kyle@Example.COM', 'Replies within a week.'],
+              text: ['## Questions', '', 'Contact: Lin@Example.COM', 'Replies within a week.'],
               cursor: { line: 2, col: 9 },
             },
-            goal: { text: ['## Questions', '', 'Contact: kyle@example.com', 'Replies within a week.'] },
+            goal: { text: ['## Questions', '', 'Contact: lin@example.com', 'Replies within a week.'] },
             solution: 'gu$',
           },
           {
