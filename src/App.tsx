@@ -6,6 +6,7 @@ import { SignIn } from './components/SignIn';
 import type { Who } from './components/Avatar';
 import { COUNTED, LESSONS, ORDER } from './lessons';
 import { lessonIdFromHash, seedFromHash } from './state/seed';
+import { useSettings } from './state/settings';
 import { useProgress } from './state/store';
 
 function lessonFromHash() {
@@ -15,6 +16,7 @@ function lessonFromHash() {
 
 export function App() {
   const prog = useProgress();
+  const settings = useSettings();
   const [lessonId, setLessonId] = useState(() => lessonFromHash() || (LESSONS[prog.lesson] ? prog.lesson : ORDER[0].id));
   const [view, setView] = useState<'lesson' | 'profile'>('lesson');
   // A generated challenge's seed from the URL (`#id?seed=N`); null means a fresh random one.
@@ -76,6 +78,8 @@ export function App() {
         onProfile={openProfile}
         onSignIn={() => setSignInOpen(true)}
         onSignOut={prog.signOut}
+        coachLive={settings.coachLive}
+        onCoachLive={settings.setCoachLive}
       />
       <main ref={main} className="main">
         <div className="page">
@@ -87,6 +91,7 @@ export function App() {
               key={lesson.id}
               lesson={lesson}
               seed={seed}
+              coachLive={settings.coachLive}
               runs={runsOf(lesson.id)}
               isGuest={!acct}
               onRun={prog.addRun}
