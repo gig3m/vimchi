@@ -125,7 +125,7 @@ export type Critique = {
   better: Suggestion[];      // ≤ 2, best first
 };
 export type Report = { critiques: Critique[]; reference: { unit: number; you: string; ref: string }[] };
-export function coach(log: LogEntry[], lessonId: string, refs: ...): Report;
+export function coach(log: LogEntry[], lessonId: string, refs: { unit: number; ref: string }[]): Report;
 ```
 
 `critiques` sorted by `saves` desc, then by unit.
