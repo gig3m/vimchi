@@ -59,8 +59,10 @@ export type GoalView = { mode: 'inline'; ann: Annotations } | { mode: 'pane' } |
 /**
  * Annotate the difference. Falls back to the goal pane when inline marks
  * would be noisy: many hunks, long insertions, or whitespace-only changes.
+ * `force` keeps the inline marks regardless (generated challenges: the
+ * checklist is the guide, the marks are hints, and the pane would be huge).
  */
-export function diffGoal(cur: readonly string[], goal: readonly string[]): GoalView {
+export function diffGoal(cur: readonly string[], goal: readonly string[], opts: { force?: boolean } = {}): GoalView {
   if (cur.length === goal.length && cur.every((l, i) => l === goal[i])) return { mode: 'none' };
   const out = EMPTY();
   const pairs = align(cur, goal);
@@ -88,6 +90,6 @@ export function diffGoal(cur: readonly string[], goal: readonly string[]): GoalV
   const tags = [...out.ins.values()].flat();
   const longTag = tags.some(t => t.text.length > 40) || [...out.newLines.values()].some(ls => ls.length > 3 || ls.some(l => l.length > 50));
   const spans = [...out.del.values()].flat().length + tags.length + out.delLines.size + out.newLines.size;
-  if (noisy || longTag || hunks > 4 || spans > 6) return { mode: 'pane' };
+  if (!opts.force && (noisy || longTag || hunks > 4 || spans > 6)) return { mode: 'pane' };
   return { mode: 'inline', ann: out };
 }

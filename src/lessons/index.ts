@@ -32,6 +32,7 @@ import { findingThings } from './sections/finding-things';
 import { fileNavigation } from './sections/file-navigation';
 import { git } from './sections/git';
 import { diffs } from './sections/diffs';
+import { challenges } from './sections/challenges';
 import type { Lesson, Section } from './types';
 
 export const SECTIONS: Section[] = [
@@ -67,6 +68,7 @@ export const SECTIONS: Section[] = [
   fileNavigation,
   git,
   diffs,
+  challenges,
 ];
 
 export const ORDER: Lesson[] = SECTIONS.flatMap(s => s.lessons);

@@ -25,6 +25,7 @@ Sections may end with an optional **★ Boss**: a realistic multi-step edit with
 | `transform` | make the buffer match a shown target text (diff highlighted) | new, covers most editing lessons |
 | `quiz` | type the keys for a described action; no buffer | new, for keys the browser can't capture and for config |
 | `sim` | simulated UI (splits, quickfix, pickers, git status); graded on end state | new, for window and plugin lessons |
+| `generated` | fix a seeded, mutated corpus file; live checklist | live, Challenges band |
 
 Chips use Vim notation: `C-d` = Ctrl-d, `␣` = Space, `<leader>` = Space by default.
 
@@ -379,6 +380,18 @@ We teach one standard plugin for each slot (see Decisions). A lesson's aside nam
 | 204 | Merge Conflicts | `:diffget //2` `//3` | sim |
 
 ---
+
+## Challenges
+
+Combined-skill sessions on a generated file (`src/challenges/`). Each names the sections it
+draws on; none count toward completion. A run is `generate(challenge, seed)`; `#<id>?seed=N`
+replays one. Corpus files are attributed excerpts from MIT/BSD repos (see README Credits).
+
+| # | Lesson | Skills | Mutations |
+|---|--------|--------|-----------|
+| 1 | Fix the File | Getting Around, Small Edits, Next Steps, Motions, Search | dropped/extra/wrong char, wrong literal, wrong short identifier |
+| 2 | Operators | + First Operators | + stray line, stray word, wrong word, missing near-duplicate line, line to remove |
+| 3–5 | (planned) text objects & visual; rename & replace; registers & macros | | |
 
 ## Decisions
 
