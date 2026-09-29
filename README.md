@@ -70,6 +70,9 @@ vim-fugitive and gitsigns.nvim; their code is not included, except that the case
 in `src/vim/plugins/abolish.ts` are translated from Tim Pope's abolish.vim (Vim license). Fonts (IBM Plex Sans,
 JetBrains Mono, Space Grotesk) load from Google Fonts under the SIL Open Font License.
 
+Challenge files (`src/challenges/corpus/`) are short excerpts from these repos, used under their
+licenses and attributed per file: `TheAlgorithms/Go` (MIT), `TheAlgorithms/TypeScript` (MIT), `charmbracelet/lipgloss` (MIT), `echasnovski/mini.nvim` (MIT), `google/uuid` (BSD-3-Clause), `lewis6991/gitsigns.nvim` (MIT), `stevearc/oil.nvim` (MIT), `unjs/ufo` (MIT).
+
 ## License
 
 MIT — see `LICENSE`.

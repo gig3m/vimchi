@@ -79,8 +79,13 @@ export type RoundsChallenge = {
   showGoal?: boolean | 'inline' | 'pane';
 };
 
-/** One clean base file for generated challenges (Task 2 adds `source`). */
-export type CorpusFile = { name: string; lines: string[] };
+export type CorpusLicense = 'MIT' | 'BSD-2-Clause' | 'BSD-3-Clause' | 'Apache-2.0' | 'ISC';
+/** One clean base file for generated challenges, excerpted from a permissively licensed repo. */
+export type CorpusFile = {
+  name: string;
+  lines: string[];
+  source: { repo: string; path: string; commit: string; license: CorpusLicense };
+};
 
 /**
  * A procedurally generated, seeded edit session: one corpus file with several
