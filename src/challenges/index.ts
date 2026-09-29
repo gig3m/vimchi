@@ -14,6 +14,7 @@ export const CHALLENGES: ChallengeDef[] = [
       mutations: ['dropped-char', 'extra-char', 'wrong-char', 'wrong-literal', 'wrong-short-ident'],
       corpus: CORPUS,
       edits: [8, 12],
+      sections: ['getting-around', 'small-edits', 'next-steps', 'essential-motions', 'search'],
     },
   },
   {
@@ -29,6 +30,7 @@ export const CHALLENGES: ChallengeDef[] = [
       ],
       corpus: CORPUS,
       edits: [8, 12],
+      sections: ['getting-around', 'small-edits', 'next-steps', 'essential-motions', 'search', 'basic-operators'],
     },
   },
 ];
