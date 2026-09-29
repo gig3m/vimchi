@@ -393,6 +393,18 @@ replays one. Corpus files are attributed excerpts from MIT/BSD repos (see README
 | 2 | Operators | + First Operators | + stray line, stray word, wrong word, missing near-duplicate line, line to remove |
 | 3–5 | (planned) text objects & visual; rename & replace; registers & macros | | |
 
+## Coach
+
+After a rounds lesson or a challenge run, "Better ways" lists up to five places where a
+shorter sequence would have done the same edit, derived from the learner's own keys
+(`src/coach/`): motion runs are searched for shorter routes (counts on hjkl, f/t/;, 0/^/$,
+word motions, /search) and edits are matched against a rule library (`3x`, `r`, `A`, `I`,
+`ddp`, `.`, `cw`, `o`). Suggestions use only keys taught at or before the lesson (counts from
+`words`), must save ≥ 2 keys (or 1.5× on runs of 4+), never replace a key the lesson's section
+drills, and are replay-verified on the engine including any register / find / search state a
+later key reads. "Live hints" (sidebar footer, off by default) shows one such line under the
+editor as you type. Every reference solution yields zero critiques (tested).
+
 ## Decisions
 
 1. **Neovim first.** Defaults follow current Neovim: `Y` = `y$`, `hlsearch`/`incsearch` on, `C-l` also clears the highlight, `gc` commenting is built in, and 0.11's `[b ]b [q ]q [d ]d [␣ ]␣` and `grn gra grr gri` maps are built in. Differences in classic Vim go in asides.

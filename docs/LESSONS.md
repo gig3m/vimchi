@@ -142,3 +142,15 @@ Generated challenges live in `src/challenges/`. Two things to extend:
   every corpus file. Register the kind in `mutations/index.ts` and list it in a challenge's
   `mutations` in `challenges/index.ts`. `generate.test.ts` then checks every corpus file still
   supports the challenge's edit range with the one-line-gap rule.
+
+## Coach rules
+
+`src/coach/rules.ts` holds the edit rules. A rule sees the segment list and an index, returns
+how many segments it consumed and its suggestions in preference order (later ones are
+fallbacks when an earlier one fails the state check), and lists the keys it `uses` (for the
+vocabulary gate). Add a positive and a negative case to `rules.test.ts`; the test replays both
+the learner's keys and the suggestion on the engine and requires the same text and cursor.
+Motion heuristics live in `motion.ts`; a coincidence that slips through gets a heuristic and a
+test there, not a rewritten reference. `coach.test.ts` requires every reference solution to
+yield zero critiques: a new lesson whose reference is wasteful fails that test, and a chip
+missing from a lesson (the coach never undercuts a section's chips) shows up the same way.
