@@ -127,3 +127,18 @@ npx tsc --noEmit -p . 2>&1 | grep <your-file>            # types for your files
 
 The validator runs every round's solution through the engine, checks the goal is reached (and not
 already met at the start), plays the whole lesson through a `Session`, and checks shape rules.
+
+## Challenges
+
+Generated challenges live in `src/challenges/`. Two things to extend:
+
+- **Corpus** (`corpus/index.ts`): 25–40 lines, ≤ 60 columns, no tabs, ≥ 6 short identifiers used
+  twice, ≥ 3 numbers; at least four files corpus-wide carry an adjacent near-duplicate line pair.
+  Every entry is an attributed excerpt (`source`: repo, path, commit, MIT/BSD/Apache/ISC license)
+  and its repo is listed in README Credits. `corpus.test.ts` enforces all of it.
+- **Mutation kinds** (`mutations/*.ts`): `sites()` lists candidates in the original; `apply()` returns
+  the changed line(s), a checklist line, `fixAt` and motion-free `fixKeys`. `mutations.test.ts`
+  replays `fixKeys` through the engine from `fixAt` and requires the original back, for every site of
+  every corpus file. Register the kind in `mutations/index.ts` and list it in a challenge's
+  `mutations` in `challenges/index.ts`. `generate.test.ts` then checks every corpus file still
+  supports the challenge's edit range with the one-line-gap rule.
