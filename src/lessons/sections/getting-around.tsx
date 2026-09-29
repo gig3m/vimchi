@@ -9,7 +9,7 @@ export const gettingAround: Section = {
   lessons: [
     {
       id: 'move',
-      title: 'Basic Movement',
+      title: 'Four Keys to Move',
       chips: ['h', 'j', 'k', 'l'],
       narrowCards: true,
       keyCards: [
@@ -36,7 +36,7 @@ export const gettingAround: Section = {
         </p>
       ),
       aside: {
-        title: 'Why not the arrow keys?',
+        title: 'Why hjkl?',
         body: (
           <p>
             They pull your right hand off the home row, and every trip there and back costs time. Arrow keys are turned off
@@ -65,7 +65,7 @@ export const gettingAround: Section = {
     },
     {
       id: 'words',
-      title: 'Moving by Words',
+      title: 'Hopping by Word',
       chips: ['w', 'e', 'b'],
       keyCards: [
         { key: 'w', glyph: '→|', label: 'start of next word' },

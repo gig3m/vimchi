@@ -4,7 +4,7 @@ import type { Section } from '../types';
 
 export const basicOperators: Section = {
   id: 'basic-operators',
-  title: 'Basic Operators',
+  title: 'First Operators',
   band: 'core',
   lessons: [
     {

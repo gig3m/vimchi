@@ -1,6 +1,6 @@
 # vimchi — Curriculum
 
-A browser Vim tutor in vim-hero's shape: many small lessons, each teaching 1–4 keys, grouped into short named sections. It goes further than vim-hero into registers, macros, ex, regex, windows, and the Neovim plugins people actually run.
+A browser Vim tutor, inspired by vim-hero's short-lesson format: many small lessons, each teaching 1–4 keys, grouped into short named sections. It goes further than vim-hero into registers, macros, ex, regex, windows, and the Neovim plugins people actually run.
 
 ## Lesson shape
 
@@ -35,8 +35,8 @@ Chips use Vim notation: `C-d` = Ctrl-d, `␣` = Space, `<leader>` = Space by def
 ### Getting Around
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 01 | Basic Movement | `h` `j` `k` `l` | target |
-| 02 | Moving by Words | `w` `e` `b` | word |
+| 01 | Four Keys to Move | `h` `j` `k` `l` | target |
+| 02 | Hopping by Word | `w` `e` `b` | word |
 
 ### Small Edits
 | # | Lesson | Keys | Challenge |
@@ -52,7 +52,7 @@ Chips use Vim notation: `C-d` = Ctrl-d, `␣` = Space, `<leader>` = Space by def
 | 07 | Find Character | `f` `t` | target |
 | 08 | Change Words | `c` `w` | transform |
 
-### Insert Like a Pro
+### Ways Into Insert
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
 | 09 | Insert at Line Ends | `I` `A` | transform |
@@ -61,7 +61,7 @@ Chips use Vim notation: `C-d` = Ctrl-d, `␣` = Space, `<leader>` = Space by def
 | 12 | Replace Mode | `R` | replace |
 | 13 | Undo & Redo | `u` `C-r` | transform |
 
-### Essential Motions
+### Motions Worth Knowing
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
 | 14 | Moving by WORDs | `W` `E` `B` | word |
@@ -81,7 +81,7 @@ Chips use Vim notation: `C-d` = Ctrl-d, `␣` = Space, `<leader>` = Space by def
 | 24 | Screen Lines | `H` `M` `L` | target |
 | 25 | Recenter | `zz` `zt` `zb` | target |
 
-### Basic Operators
+### First Operators
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
 | 26 | Intro to Operators | `operators` | transform |

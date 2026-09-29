@@ -4,7 +4,7 @@ import type { Section } from '../types';
 
 export const insertLikeAPro: Section = {
   id: 'insert-like-a-pro',
-  title: 'Insert Like a Pro',
+  title: 'Ways Into Insert',
   band: 'core',
   lessons: [
     {

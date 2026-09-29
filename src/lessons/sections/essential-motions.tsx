@@ -4,7 +4,7 @@ import type { Section } from '../types';
 
 export const essentialMotions: Section = {
   id: 'essential-motions',
-  title: 'Essential Motions',
+  title: 'Motions Worth Knowing',
   band: 'core',
   lessons: [
     {

@@ -1,6 +1,6 @@
 # vimchi
 
-A browser Vim tutor in vim-hero's shape — small lessons of 1–4 keys, each with one practice
+A browser Vim tutor, inspired by vim-hero's short-lesson format — small lessons of 1–4 keys, each with one practice
 challenge — that goes deeper: registers, macros, ex commands, regex, windows, quickfix, and the
 Neovim plugins people actually run. The lesson plan is in `CURRICULUM.md`.
 

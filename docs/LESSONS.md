@@ -4,7 +4,7 @@ Lessons live in `src/lessons/sections/<section>.tsx`, one file per sidebar secti
 `src/lessons/index.ts`. `CURRICULUM.md` says which lessons each section holds, in order.
 `src/lessons/sections/next-steps.tsx` is the reference example: copy its shape and voice.
 
-## Shape (vim-hero style)
+## Shape
 
 Each lesson teaches 1–4 keys and has exactly these parts (`src/lessons/types.ts`):
 
