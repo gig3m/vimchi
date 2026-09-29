@@ -52,3 +52,13 @@ describe('segment', () => {
     expect(kinds(play(['abc def'], 'vlld'))).toEqual(['edit:vlld']);
   });
 });
+
+describe('segment fix pass', () => {
+  it('a bare <Esc> and a cancelled pending key are breaks, not run keys', () => {
+    expect(kinds(play(['abcd'], '<Esc>lllx'))).toEqual(['break:other', 'motion:lll', 'edit:x']);
+    expect(kinds(play(['abcd'], 'd<Esc>lllx'))).toEqual(['break:other', 'motion:lll', 'edit:x']);
+  });
+  it('the q that stops a recording is its own break', () => {
+    expect(kinds(play(['abcdefgh'], 'qaxqlll'))).toEqual(['break:other', 'edit:x', 'break:other', 'motion:lll']);
+  });
+});

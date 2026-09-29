@@ -83,7 +83,6 @@ export const RULES: Rule[] = [
       const a = edit(segs[i]), m = motion(segs[i + 1]), b = edit(segs[i + 2]);
       if (!a || !m || !b || keys(a) !== 'dd') return null;
       if (keys(m) === 'j' && keys(b) === 'P') return { consumed: 3, suggestions: [mk('ddp', 'ddp', 4, ['dd', 'p'])] };
-      if (keys(m) === 'k' && keys(b) === 'P') return { consumed: 3, suggestions: [mk('ddp', 'ddkP', 4, ['dd', 'k', 'P'])] };
       return null;
     },
   },
@@ -103,8 +102,8 @@ export const RULES: Rule[] = [
       if (!a || !b) return null;
       const t = insertText(keys(b));
       if (t === null || !/^i/.test(keys(b)) || b.from.line !== a.from.line || b.from.col !== a.from.col) return null;
+      // dw eats the trailing space, so dw + i… never ends where cw… does; only de + i… is cw.
       if (keys(a) === 'de') return { consumed: 2, suggestions: [mk('cw', `cw${t}<Esc>`, a.keys.length + b.keys.length, ['c', 'w'])] };
-      if (keys(a) === 'dw' && t.endsWith(' ')) return { consumed: 2, suggestions: [mk('cw', `cw${t.slice(0, -1)}<Esc>`, a.keys.length + b.keys.length, ['c', 'w'])] };
       return null;
     },
   },
@@ -119,7 +118,8 @@ export const RULES: Rule[] = [
   {
     id: 'dot-repeat', uses: ['.'],
     apply(segs, i) {
-      const a = edit(segs[i]); if (!a || a.command === 'visual') return null;
+      // Only a change can be repeated with `.`: a yank (command 'other') or a bare visual selection cannot.
+      const a = edit(segs[i]); if (!a || !(a.command === 'operator' || a.command === 'action' || a.command === 'insert')) return null;
       let j = i + 1;
       while (motion(segs[j])) j++;
       const b = edit(segs[j]); if (!b || keys(b) !== keys(a)) return null;

@@ -40,3 +40,17 @@ describe('replay', () => {
     expect(sameOutcome(a, b, stateNeeds(s.log(), 3, 0))).toBe(false);
   });
 });
+
+describe('replay fix pass', () => {
+  it('stateBefore starts from the carried-over cursor of a later round', () => {
+    const c: RoundsChallenge = {
+      kind: 'rounds', base: { text: ['abc def ghi', 'x'], name: 'a.ts' },
+      rounds: [{ goal: { cursor: { line: 0, col: 4 } }, solution: 'w' }, { goal: { text: ['abc def gh', 'x'] }, solution: '$x' }],
+    };
+    const s = new Session(c);
+    s.key('w', 50); s.advance();
+    s.key('l', 100);
+    const v = stateBefore(s, s.log().length - 1);
+    expect(v.cursor).toEqual({ line: 0, col: 4 });
+  });
+});
