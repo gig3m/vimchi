@@ -1,4 +1,6 @@
+import type { Report } from '../coach';
 import type { Result } from '../lessons/runtime';
+import { BetterWays } from './BetterWays';
 import { fmtS } from '../state/format';
 
 type Props = {
@@ -13,6 +15,9 @@ type Props = {
   seed?: number | null;
   replayHref?: string;
   onNewSeed?: () => void;
+  /** The coach's report for this run, when the lesson is coachable. */
+  report?: Report;
+  unitLabel?: (u: number) => string;
 };
 
 const CIRC = 314.16; // 2πr for r = 50
@@ -36,7 +41,7 @@ function Ring({ label, value, color, sub }: { label: string; value: number; colo
   );
 }
 
-export function Results({ result: R, prevBestTime, prevBestScore, nextTitle, onRepeat, onNext, onStats, seed, replayHref, onNewSeed }: Props) {
+export function Results({ result: R, prevBestTime, prevBestScore, nextTitle, onRepeat, onNext, onStats, seed, replayHref, onNewSeed, report, unitLabel }: Props) {
   const newBestTime = prevBestTime != null && R.elapsed < prevBestTime;
   const newBestScore = prevBestScore != null && R.score > prevBestScore;
   return (
@@ -67,6 +72,7 @@ export function Results({ result: R, prevBestTime, prevBestScore, nextTitle, onR
         <Ring label="Accuracy" value={R.acc} color="#50fa7b" sub={`${R.keys} keys, par ${R.parKeys}`} />
         <Ring label={R.correctLabel} value={R.correct} color="#f1fa8c" sub={R.correctText} />
       </div>
+      {report && <BetterWays report={report} unitLabel={unitLabel ?? (u => `Round ${u + 1}`)} />}
       <div className="res-actions">
         <button className="res-btn" onClick={onRepeat}><span className="kbd kbd-sm">r</span>Repeat</button>
         {nextTitle && (

@@ -11,6 +11,7 @@ type Props = {
   lesson: Lesson;
   /** Generated challenges: replay this seed (from the URL); null = fresh. */
   seed: number | null;
+  coachLive: boolean;
   runs: Run[];
   isGuest: boolean;
   onRun: (run: Run) => void;
@@ -18,7 +19,7 @@ type Props = {
   onStats: () => void;
 };
 
-export function LessonPage({ lesson, seed, runs, isGuest, onRun, onGo, onStats }: Props) {
+export function LessonPage({ lesson, seed, coachLive, runs, isGuest, onRun, onGo, onStats }: Props) {
   const [flash, setFlash] = useState<string | null>(null);
   const flashT = useRef<number>(undefined);
   useEffect(() => () => clearTimeout(flashT.current), []);
@@ -58,6 +59,7 @@ export function LessonPage({ lesson, seed, runs, isGuest, onRun, onGo, onStats }
         key={lesson.id}
         lesson={lesson}
         seed={seed}
+        coachLive={coachLive}
         history={runs}
         nextTitle={next?.title ?? null}
         onFlash={onFlash}
