@@ -112,6 +112,13 @@ export function Sidebar(p: Props) {
           );
         })}
       </div>
+      <div className="side-tools">
+        <label className="side-toggle" title="Show a hint under the editor as you type">
+          <input type="checkbox" checked={p.coachLive} onChange={e => p.onCoachLive(e.target.checked)} />
+          <span>Live hints</span>
+          <span className="side-toggle-sub">coach as you type</span>
+        </label>
+      </div>
       <div className="side-foot">
         <button className={'me' + (p.profileOn ? ' on' : '')} onClick={p.onProfile}>
           <Avatar who={p.who} />
@@ -120,10 +127,6 @@ export function Sidebar(p: Props) {
             <span className="me-sub">{p.userSub}</span>
           </span>
         </button>
-        <label className="side-toggle" title="Show a hint under the editor as you type">
-          <input type="checkbox" checked={p.coachLive} onChange={e => p.onCoachLive(e.target.checked)} />
-          <span>Live hints</span>
-        </label>
         {p.who.isGuest
           ? <button className="btn-primary" onClick={p.onSignIn}>Sign in</button>
           : <button className="btn-ghost" onClick={p.onSignOut}>Sign out</button>}
