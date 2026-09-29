@@ -48,3 +48,11 @@ describe('betterMotions', () => {
     expect(checked).toBeGreaterThan(50);
   });
 });
+
+describe('betterMotions heuristics from the reference audit', () => {
+  it('word motions do not cross lines (B wrapping to the previous line is a coincidence, not advice)', () => {
+    const lines = ["const DB_URL = 'postgres';", "const KEY = 'X';", 'const PORT = 8080;'];
+    const c = betterMotions(lines, { line: 2, col: 0 }, 0, { line: 0, col: 15 }, 4, ALL);
+    expect(c.some(x => /^k?[bB]$/.test(x.keys))).toBe(false);
+  });
+});
