@@ -76,14 +76,13 @@ function wordUnder(l: string, col: number): { text: string; col: number } | null
   for (const m of l.matchAll(/[A-Za-z0-9_]+/g)) if (m.index! + m[0].length > col) return { text: m[0], col: m.index! };
   return null;
 }
-/** First whole-word match of `word` after/before `from`, wrapping. */
+/** First whole-word match of `word` after/before `from` WITHOUT wrapping: a match reached by
+ * wrapping past the end is still valid Vim, but the other direction is the advice to give. */
 function wholeWordMatch(lines: readonly string[], from: Pos, word: string, dir: 1 | -1): Pos | null {
   const re = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
-  const n = lines.length;
-  for (let d = 0; d <= n; d++) {
-    const r = ((from.line + dir * d) % n + n) % n;
+  for (let r = from.line; r >= 0 && r < lines.length; r += dir) {
     const hits = [...lines[r].matchAll(re)].map(m => m.index!);
-    const ok = hits.filter(c => (d === 0 ? (dir === 1 ? c > from.col : c < from.col) : d === n ? (dir === 1 ? c <= from.col : c >= from.col) : true));
+    const ok = hits.filter(c => (r === from.line ? (dir === 1 ? c > from.col : c < from.col) : true));
     if (ok.length) return { line: r, col: dir === 1 ? ok[0] : ok[ok.length - 1] };
   }
   return null;
