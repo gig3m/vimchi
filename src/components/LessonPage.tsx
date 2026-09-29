@@ -9,6 +9,8 @@ import { Practice } from './Practice';
 
 type Props = {
   lesson: Lesson;
+  /** Generated challenges: replay this seed (from the URL); null = fresh. */
+  seed: number | null;
   runs: Run[];
   isGuest: boolean;
   onRun: (run: Run) => void;
@@ -16,7 +18,7 @@ type Props = {
   onStats: () => void;
 };
 
-export function LessonPage({ lesson, runs, isGuest, onRun, onGo, onStats }: Props) {
+export function LessonPage({ lesson, seed, runs, isGuest, onRun, onGo, onStats }: Props) {
   const [flash, setFlash] = useState<string | null>(null);
   const flashT = useRef<number>(undefined);
   useEffect(() => () => clearTimeout(flashT.current), []);
@@ -55,6 +57,7 @@ export function LessonPage({ lesson, runs, isGuest, onRun, onGo, onStats }: Prop
       <Practice
         key={lesson.id}
         lesson={lesson}
+        seed={seed}
         history={runs}
         nextTitle={next?.title ?? null}
         onFlash={onFlash}

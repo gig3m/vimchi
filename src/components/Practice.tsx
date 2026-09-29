@@ -7,10 +7,14 @@ import type { Run } from '../state/store';
 import { C, colorize } from '../ui/syntax';
 import { keyFromEvent } from '../vim/keys';
 import { EditorView } from './EditorView';
+import { Checklist } from './Checklist';
 import { Results } from './Results';
+import { seedHref } from '../state/seed';
 
 type Props = {
   lesson: Lesson;
+  /** Generated challenges: replay this seed (from the URL); null = fresh. */
+  seed: number | null;
   /** Earlier runs of this lesson, for personal-best comparisons. */
   history: Run[];
   nextTitle: string | null;
@@ -28,7 +32,8 @@ const STAND_INS: Record<string, string> = { '<A-w>': '<C-w>', '<A-n>': '<C-n>', 
 export function Practice(p: Props) {
   const { lesson } = p;
   const session = useRef<Session>(null as unknown as Session);
-  if (!session.current || session.current.challenge !== lesson.challenge) session.current = new Session(lesson.challenge);
+  const seedRef = useRef<number | null>(p.seed);
+  if (!session.current || session.current.challenge !== lesson.challenge) session.current = new Session(lesson.challenge, { seed: seedRef.current ?? undefined });
   const s = session.current;
   const [, rerender] = useReducer((n: number) => n + 1, 0);
   const [finished, setFinished] = useState<Finished | null>(null);
@@ -56,7 +61,16 @@ export function Practice(p: Props) {
     };
   }, []);
 
+  /** Repeat: the same seed for a generated challenge, so a replay races the same file. */
   const restart = () => {
+    session.current = new Session(lesson.challenge, { seed: s.view().seed ?? undefined });
+    setFinished(null);
+    rerender();
+    ref.current?.focus({ preventScroll: true });
+  };
+  /** New file: a fresh seed. */
+  const newFile = () => {
+    seedRef.current = null;
     session.current = new Session(lesson.challenge);
     setFinished(null);
     rerender();
@@ -80,6 +94,7 @@ export function Practice(p: Props) {
   const handle = (key: string) => {
     if (s.done) {
       if (key === '<CR>' || key === 'r') restart();
+      else if (key === 'f' && s.view().seed != null) newFile();
       else if (key === 'n' && p.nextTitle) p.onNext();
       else if (key === 's') p.onStats();
       return;
@@ -120,8 +135,8 @@ export function Practice(p: Props) {
   };
 
   // Show the goal inline where the diff is small; fall back to the pane below.
-  const forced = s.challenge.kind === 'rounds' ? s.challenge.showGoal : undefined;
-  const goalView = v.goalText && s.vim ? diffGoal(s.vim.buf.lines, v.goalText) : { mode: 'none' as const };
+  const forced = s.challenge.kind === 'rounds' ? s.challenge.showGoal : s.challenge.kind === 'generated' ? 'inline' : undefined;
+  const goalView = v.goalText && s.vim ? diffGoal(s.vim.buf.lines, v.goalText, { force: forced === 'inline' }) : { mode: 'none' as const };
   const inline = goalView.mode === 'inline' && forced !== 'pane' && s.vim?.tab.windows().length === 1 ? goalView.ann : null;
   const showPane = !!v.goalText && !inline && goalView.mode !== 'none';
   const overlay = useMemo(() => ({
@@ -174,9 +189,10 @@ export function Practice(p: Props) {
         {!v.done && isQuiz && v.quiz && <Quiz q={v.quiz} onPick={i => { s.pickOption(i); rerender(); ref.current?.focus(); }} onNext={() => handle(' ')} />}
 
         {!v.done && !isQuiz && s.vim && (
-          <div className={'ed-body' + (v.roundDone ? ' round-ok' : '')}>
+          <div className={'ed-body' + (v.roundDone ? ' round-ok' : '') + (v.items.length ? ' with-list' : '')}>
             <EditorView vim={s.vim} focused={focused} overlay={overlay} status={status} note={note} />
             {showPane && v.goalText && <GoalPane goal={v.goalText} current={s.vim.buf.lines} filetype={s.vim.buf.filetype} />}
+            {v.items.length > 0 && <Checklist items={v.items} />}
           </div>
         )}
 
@@ -184,6 +200,9 @@ export function Practice(p: Props) {
           <Results
             {...finished}
             nextTitle={p.nextTitle}
+            seed={v.seed}
+            replayHref={v.seed != null ? seedHref(lesson.id, v.seed) : undefined}
+            onNewSeed={v.seed != null ? newFile : undefined}
             onRepeat={restart}
             onNext={p.onNext}
             onStats={p.onStats}

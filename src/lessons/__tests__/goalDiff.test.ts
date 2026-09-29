@@ -32,3 +32,16 @@ describe('diffGoal', () => {
   });
   it('done means none', () => expect(diffGoal(['a'], ['a']).mode).toBe('none'));
 });
+
+describe('diffGoal force', () => {
+  const cur = ['a1', 'b', 'c1', 'd', 'e1', 'f', 'g1', 'h', 'i1', 'j'];
+  const goal = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
+  it('falls back to the pane for many hunks by default', () => {
+    expect(diffGoal(cur, goal).mode).toBe('pane');
+  });
+  it('stays inline when forced', () => {
+    const v = diffGoal(cur, goal, { force: true });
+    expect(v.mode).toBe('inline');
+    if (v.mode === 'inline') expect(v.ann.del.size).toBe(5);
+  });
+});

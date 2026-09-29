@@ -493,3 +493,23 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 .dg-changed { background: rgba(80, 250, 123, .1); box-shadow: -12px 0 0 rgba(80, 250, 123, .1), 12px 0 0 rgba(80, 250, 123, .1); }
 .dg-removed { background: rgba(255, 85, 85, .12); box-shadow: -12px 0 0 rgba(255, 85, 85, .12), 12px 0 0 rgba(255, 85, 85, .12); text-decoration: line-through; text-decoration-color: rgba(255, 85, 85, .7); }
 .dg-key .dg-typed { margin: 0 1px; padding: 0 3px; line-height: 18px; }
+
+/* ---------- challenge checklist ---------- */
+.ed-body.with-list { display: grid; grid-template-columns: minmax(0, 1fr) 240px; }
+.ed-body.with-list > .ev-panes { min-width: 0; }
+.checklist { border-left: 1px solid var(--line); background: var(--bg-bar); font-size: 12.5px; display: flex; flex-direction: column; min-height: 0; }
+.checklist-head { display: flex; justify-content: space-between; padding: 8px 12px; color: var(--muted); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: 11px; }
+.checklist-count { color: var(--green); }
+.checklist-list { list-style: none; margin: 0; padding: 0 0 8px; overflow-y: auto; }
+.checklist-item { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 4px 12px; color: var(--fg); }
+.checklist-item.done { color: var(--muted); }
+.checklist-item.done .checklist-text { text-decoration: line-through; }
+.checklist-tick { color: var(--green); font-weight: 700; }
+.checklist-text { font-family: var(--mono); white-space: pre-wrap; word-break: break-word; }
+.checklist-line { color: var(--comment); font-family: var(--mono); font-size: 11px; }
+.result-seed { display: flex; gap: 14px; align-items: center; margin-top: 10px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.result-seed a { color: var(--purple); }
+@media (max-width: 900px) {
+  .ed-body.with-list { grid-template-columns: 1fr; }
+  .checklist { border-left: 0; border-top: 1px solid var(--line); max-height: 180px; }
+}
