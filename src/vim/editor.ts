@@ -134,6 +134,9 @@ type InsertState = {
   /** Came from <C-o>: return here after one command. */
 };
 
+export type CommandKind = 'motion' | 'operator' | 'action' | 'insert' | 'visual' | 'cmdline' | 'modal' | 'undo' | 'other';
+export type LastCommand = { keys: Key[]; kind: CommandKind; error: boolean };
+
 type LastChange = {
   reg: string | null;
   count: number | null;
@@ -197,6 +200,15 @@ export class Vim {
   cursorHooks: (() => void)[] = [];
   /** Events for challenge bookkeeping (e.g. "undo", "search"). */
   events: string[] = [];
+  /** The command the most recent feed() completed, for the coach. null when the key completed nothing. */
+  lastCommand: LastCommand | null = null;
+  /** Keys since the current normal/visual command began, including any insert or cmdline text typed for it. */
+  private cmdKeys: Key[] = [];
+
+  private finishCommand(kind: CommandKind) {
+    this.lastCommand = { keys: this.cmdKeys.slice(), kind, error: false };
+    if (this.mode === 'normal' && !this.visual) this.cmdKeys = [];
+  }
   /** Screen rows available to the whole editor layout. */
   screenRows = 18;
   screenCols = 100;
@@ -604,11 +616,15 @@ export class Vim {
     this.typedKeys++;
     if (this.recording && this.depth === 0) this.recording.keys.push(key);
     this.events = [];
+    this.lastCommand = null;
     try {
       this.handleKey(key);
     } catch (e) {
       if (!(e instanceof VimError)) throw e;
       this.resetAfterError(e);
+      // An error ends the command; a bad f/t target is the common case, hence 'motion'.
+      this.lastCommand = { keys: this.cmdKeys.slice(), kind: 'motion', error: true };
+      this.cmdKeys = [];
     }
     this.afterKey();
   }
@@ -657,14 +673,16 @@ export class Vim {
 
   private handleKey(key: Key) {
     if (this.confirm) return this.confirm.onKey(key);
-    if (this.modal && this.modal(key)) return;
+    if (this.modal && this.modal(key)) { this.lastCommand = { keys: [key], kind: 'modal', error: false }; return; }
     switch (this.mode) {
       case 'insert':
       case 'replace':
         if (this.dotCapture) this.dotCapture.keys.push(key);
+        this.cmdKeys.push(key);
         return this.insertKey(key);
       case 'cmdline':
         if (this.dotCapture && (this.cmdline?.type === '=' || this.pendingSearchOp)) this.dotCapture.keys.push(key);
+        this.cmdKeys.push(key);
         return this.cmdlineKey(key);
       default:
         return this.normalKey(key);
@@ -687,8 +705,10 @@ export class Vim {
     if (this.pending.length === 0) {
       if (this.depth === 0) this.message = null;
       if (!this.dotReplaying) this.dotCapture = { keys: [], replaying: false };
+      if (this.depth === 0 && !this.visual) this.cmdKeys = [];
     }
     this.pending.push(key);
+    if (this.depth === 0) this.cmdKeys.push(key);
     this.dotCapture?.keys.push(key);
     if (key === '<Esc>' && this.pending.length > 1) {
       this.pending = [];
@@ -901,6 +921,7 @@ export class Vim {
         this.runKeys([...pre, ...e.rhs]);
       }
       if (e.change) this.finishDot(p, keys);
+      if (this.depth === 0) this.finishCommand(e.change ? 'action' : this.mode === 'insert' ? 'insert' : this.visual ? 'visual' : 'other');
       return;
     }
 
@@ -911,6 +932,7 @@ export class Vim {
       this.applyMotion(res);
       if (res.openFold || res.jump) this.openFoldsAt(this.cursor.line);
       this.dotCapture = null;
+      if (this.depth === 0) this.finishCommand(this.visual ? 'visual' : 'motion');
       return;
     }
 
@@ -926,6 +948,7 @@ export class Vim {
       this.win.cursor = { ...r.end };
       this.win.want = r.end.col;
       this.dotCapture = null;
+      if (this.depth === 0) this.finishCommand('visual');
       return;
     }
 
@@ -936,6 +959,10 @@ export class Vim {
       e.spec.run({ count, hasCount, reg: p.reg, arg: p.arg, keys: cmdStr });
       if (change) this.finishDot(p, keys, shape);
       else if (this.mode !== 'insert') this.dotCapture = null;
+      if (this.depth === 0) {
+        if (this.mode === 'cmdline') this.lastCommand = null; // completes on <CR>
+        else this.finishCommand(cmdStr === 'u' || cmdStr === '<C-r>' ? 'undo' : this.mode === 'insert' || this.mode === 'replace' ? 'insert' : this.visual ? 'visual' : change ? 'action' : 'other');
+      }
       return;
     }
 
@@ -970,6 +997,7 @@ export class Vim {
         if (op.change) this.beginChange();
         op.run(r, { ...ctx, keys: cmdStr });
         if (op.change) this.finishDot(p, keys);
+        if (this.depth === 0) this.finishCommand(this.mode === 'insert' ? 'insert' : op.change ? 'operator' : 'other');
       };
       if (target.pick) {
         target.pick((res, typed) => {
@@ -979,6 +1007,7 @@ export class Vim {
           f?.(res);
         }, () => { this.pendingSearchOp = null; });
       } else this.openSearchFor(target.dir);
+      this.lastCommand = null;
       return;
     } else {
       const r = this.operatorRange(p, count, hasCount);
@@ -990,6 +1019,7 @@ export class Vim {
     op.run(range, { ...ctx, keys: cmdStr + (p.arg ? `\u0000${p.arg}` : '') });
     if (op.change) this.finishDot(p, keys, dotVisual);
     else if (this.mode !== 'insert') this.dotCapture = null;
+    if (this.depth === 0) this.finishCommand(this.mode === 'insert' ? 'insert' : op.change ? 'operator' : 'other');
   }
 
   /** Argument read after the motion for operators with argAfter. */
@@ -1588,6 +1618,7 @@ export class Vim {
     this.pendingDot = null;
     this.dotCapture = null;
     this.emit('insert-leave');
+    if (this.depth === 0) this.finishCommand('insert');
   }
 
   // ---- command line ----------------------------------------------------------------------
@@ -1635,7 +1666,9 @@ export class Vim {
             h.push(text);
           }
         }
-        if (cl.onSubmit) return cl.onSubmit(text);
+        const hadOp = !!this.pendingSearchOp;
+        if (cl.onSubmit) cl.onSubmit(text);
+        if (this.depth === 0 && this.mode === 'normal' && !hadOp) this.finishCommand(cl.type === ':' ? 'cmdline' : cl.type === '/' || cl.type === '?' ? 'motion' : 'other');
         return;
       }
       case '<BS>':
