@@ -4,3 +4,4 @@ dist
 .claude/
 var/
 db-snapshot/
+.superpowers/

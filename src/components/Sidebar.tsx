@@ -21,6 +21,7 @@ const BANDS = [
   { id: 'core', title: 'Core' },
   { id: 'deep', title: 'Deep Water' },
   { id: 'plugins', title: 'Plugins' },
+  { id: 'challenges', title: 'Challenges' },
 ] as const;
 
 const OPEN_KEY = 'vimchi.sidebar.open';

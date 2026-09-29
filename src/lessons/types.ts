@@ -34,12 +34,12 @@ export type Lesson = {
   boss?: boolean;
 };
 
-export type Section = { id: string; title: string; band: 'core' | 'deep' | 'plugins'; lessons: Lesson[] };
+export type Section = { id: string; title: string; band: 'core' | 'deep' | 'plugins' | 'challenges'; lessons: Lesson[] };
 
 // ---------------------------------------------------------------------------------------------
 // Challenges
 
-export type Challenge = TargetChallenge | MarksChallenge | RoundsChallenge | QuizChallenge;
+export type Challenge = TargetChallenge | MarksChallenge | RoundsChallenge | QuizChallenge | GeneratedChallenge;
 
 /** Reach randomly placed boxes. `word` places them on w/e/b stops. */
 export type TargetChallenge = {
@@ -77,6 +77,29 @@ export type RoundsChallenge = {
   rounds: Round[];
   /** Show the goal text under the editor for text goals (default true). */
   showGoal?: boolean | 'inline' | 'pane';
+};
+
+export type CorpusLicense = 'MIT' | 'BSD-2-Clause' | 'BSD-3-Clause' | 'Apache-2.0' | 'ISC';
+/** One clean base file for generated challenges, excerpted from a permissively licensed repo. */
+export type CorpusFile = {
+  name: string;
+  lines: string[];
+  source: { repo: string; path: string; commit: string; license: CorpusLicense };
+};
+
+/**
+ * A procedurally generated, seeded edit session: one corpus file with several
+ * mutations applied; the goal is the original. See src/challenges/.
+ */
+export type GeneratedChallenge = {
+  kind: 'generated';
+  /** Skill tags shown in the intro; documentation only. */
+  skills: string[];
+  /** Mutation kind ids this challenge may draw from (keys of KINDS). */
+  mutations: string[];
+  corpus: CorpusFile[];
+  /** Inclusive range of mutations per run. */
+  edits: [number, number];
 };
 
 export type Round = {

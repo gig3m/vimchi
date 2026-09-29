@@ -5,10 +5,11 @@ import { Sidebar } from './components/Sidebar';
 import { SignIn } from './components/SignIn';
 import type { Who } from './components/Avatar';
 import { COUNTED, LESSONS, ORDER } from './lessons';
+import { lessonIdFromHash, seedFromHash } from './state/seed';
 import { useProgress } from './state/store';
 
 function lessonFromHash() {
-  const id = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
+  const id = lessonIdFromHash(location.hash);
   return LESSONS[id] ? id : '';
 }
 
@@ -16,6 +17,8 @@ export function App() {
   const prog = useProgress();
   const [lessonId, setLessonId] = useState(() => lessonFromHash() || (LESSONS[prog.lesson] ? prog.lesson : ORDER[0].id));
   const [view, setView] = useState<'lesson' | 'profile'>('lesson');
+  // A generated challenge's seed from the URL (`#id?seed=N`); null means a fresh random one.
+  const [seed, setSeed] = useState<number | null>(() => seedFromHash(location.hash));
   const [signInOpen, setSignInOpen] = useState(false);
   const main = useRef<HTMLElement>(null);
 
@@ -23,6 +26,7 @@ export function App() {
     setLessonId(id);
     setView('lesson');
     prog.setLesson(id);
+    setSeed(null);
     if (location.hash !== '#' + id) history.pushState(null, '', '#' + id);
     main.current?.scrollTo(0, 0);
   };
@@ -30,6 +34,7 @@ export function App() {
   useEffect(() => {
     const onHash = () => {
       const id = lessonFromHash();
+      setSeed(seedFromHash(location.hash));
       if (id) {
         setLessonId(id);
         setView('lesson');
@@ -81,6 +86,7 @@ export function App() {
             <LessonPage
               key={lesson.id}
               lesson={lesson}
+              seed={seed}
               runs={runsOf(lesson.id)}
               isGuest={!acct}
               onRun={prog.addRun}
