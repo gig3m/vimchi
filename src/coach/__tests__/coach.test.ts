@@ -166,3 +166,13 @@ describe('rule windows never cross a round boundary', () => {
     expect(coach(s, 'counts-operators').critiques).toEqual([]);
   });
 });
+
+describe('coach: star and relative numbers', () => {
+  it('suggests * once the search section is taught, not before', () => {
+    const lines = ['foo bar', 'baz', 'qux', 'foo end'];
+    const early = play(lines, 'jjjx', 'counts-operators', { line: 0, col: 0 }); // First Operators: * not taught yet
+    expect(early.critiques.some(c => c.better.some(b => b.keys === '*'))).toBe(false);
+    const late = play(lines, 'jjjx', 'clear-highlights', { line: 0, col: 0 });   // Search section
+    expect(late.critiques.some(c => c.better.some(b => b.keys === '*'))).toBe(true);
+  });
+});

@@ -89,7 +89,8 @@ export function coachSegment(session: CoachSession, lessonId: string, seg: Segme
   if (seg.kind === 'motion') {
     if (usedDrilled(seg.keys)) return null;
     const vim = stateBefore(session, seg.logStart);
-    const cands = betterMotions(vim.buf.lines, seg.from, vim.win.want, seg.to, seg.keys.length, taught);
+    const rnu = !!((vim.win as { opts?: { relativenumber?: boolean } }).opts?.relativenumber ?? vim.options.relativenumber);
+    const cands = betterMotions(vim.buf.lines, seg.from, vim.win.want, seg.to, seg.keys.length, taught, { relativenumber: rnu });
     const better: Suggestion[] = [];
     for (const c of cands) {
       const s: Suggestion = { keys: c.keys, saves: seg.keys.length - c.cost, why: WHY.motion, rule: 'motion', uses: c.uses };

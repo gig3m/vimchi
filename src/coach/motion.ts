@@ -69,8 +69,28 @@ const keyCost = (m: string, count: number) => (isFind(m) ? 2 + (count - 1) : (co
 /** A good alternative is short; searching deeper only finds long routes nobody would suggest. */
 export const MAX_SEARCH_COST = 10;
 
+export type MotionOpts = { relativenumber?: boolean };
+
+/** The keyword under or after the cursor on its line, as Vim's * sees it. */
+function wordUnder(l: string, col: number): { text: string; col: number } | null {
+  for (const m of l.matchAll(/[A-Za-z0-9_]+/g)) if (m.index! + m[0].length > col) return { text: m[0], col: m.index! };
+  return null;
+}
+/** First whole-word match of `word` after/before `from`, wrapping. */
+function wholeWordMatch(lines: readonly string[], from: Pos, word: string, dir: 1 | -1): Pos | null {
+  const re = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g');
+  const n = lines.length;
+  for (let d = 0; d <= n; d++) {
+    const r = ((from.line + dir * d) % n + n) % n;
+    const hits = [...lines[r].matchAll(re)].map(m => m.index!);
+    const ok = hits.filter(c => (d === 0 ? (dir === 1 ? c > from.col : c < from.col) : d === n ? (dir === 1 ? c <= from.col : c >= from.col) : true));
+    if (ok.length) return { line: r, col: dir === 1 ? ok[0] : ok[ok.length - 1] };
+  }
+  return null;
+}
+
 /** Shorter ways from `from` to `to`, cost < maxCost, unverified, best first. */
-export function betterMotions(lines: readonly string[], from: Pos, want: number, to: Pos, maxCost: number, taught: Set<string>): Cand[] {
+export function betterMotions(lines: readonly string[], from: Pos, want: number, to: Pos, maxCost: number, taught: Set<string>, opts: MotionOpts = {}): Cand[] {
   maxCost = Math.min(maxCost, MAX_SEARCH_COST + 1);
   if (same(from, to) || maxCost <= 1) return [];
   const allow = (t: string) => taught.has(t);
@@ -111,8 +131,19 @@ export function betterMotions(lines: readonly string[], from: Pos, want: number,
       const family: Cand['family'] = WORDS.has(m) ? 'word' : LINE.has(m) ? 'line' : 'basic';
       expand(n, m, 1, family, [m]);
       if (counts) {
-        const max = 'hjkl'.includes(m) ? 9 : WORDS.has(m) && m.length === 1 ? 3 : 1;
+        // A count on j/k beyond 3 is only fair advice when relative numbers show it on screen.
+        const max = 'hl'.includes(m) ? 9 : 'jk'.includes(m) ? (opts.relativenumber ? 9 : 3) : WORDS.has(m) && m.length === 1 ? 3 : 1;
         for (let c = 2; c <= max; c++) expand(n, m, c, 'count', [m, 'COUNT']);
+      }
+    }
+    // * and # : the word under the cursor must be the target word, and the first match must be the target.
+    const wu = wordUnder(lines[n.st.pos.line], n.st.pos.col);
+    if (wu) for (const [k, dir] of [['*', 1], ['#', -1]] as const) {
+      if (!allow(k)) continue;
+      const hit = wholeWordMatch(lines, n.st.pos, wu.text, dir);
+      if (hit && same(hit, to) && n.cost + 1 < maxCost) {
+        const node: Node = { st: { pos: hit, want: hit.col }, keys: n.keys + k, cost: n.cost + 1, uses: new Set([...n.uses, k]), family: n.keys ? n.family : 'search' };
+        if ((best.get(key(node.st)) ?? Infinity) >= node.cost) { best.set(key(node.st), node.cost); found.push({ keys: node.keys, cost: node.cost, uses: [...node.uses], family: node.family }); }
       }
     }
     if (targetLast) expand(n, 'G', 1, 'line', ['G']);
