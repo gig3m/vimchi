@@ -3,7 +3,9 @@
 
 import { PLUGINS } from '../vim/plugins';
 import { Vim } from '../vim/editor';
+import { type Generated, collateral, generate, itemDone } from '../challenges/generate';
 import { type Key, parseKeys } from '../vim/keys';
+import { align } from './goalDiff';
 import { wordBackward, wordEnd, wordForward } from '../vim/motions';
 import { type Pos, cmpPos, eqPos, pos } from '../vim/types';
 import type { Challenge, Goal, MarksChallenge, QuizChallenge, Round, RoundsChallenge, Setup, TargetChallenge } from './types';
@@ -129,6 +131,9 @@ export type SessionView = {
   msg: string;
   msgKind: MsgKind;
   quiz: { q: QuizChallenge['questions'][number]; index: number; picked: number | null; sel: number } | null;
+  /** Generated challenges: the checklist, ticked live. Empty otherwise. */
+  items: { text: string; kind: string; done: boolean; line: number }[];
+  seed: number | null;
 };
 
 const TARGET_EDIT_MSG = 'Editing is off in movement lessons.';
@@ -168,11 +173,16 @@ export class Session {
   private sel = 0;
   private rightAnswers = 0;
 
-  constructor(challenge: Challenge, opts: { targetCount?: number; rand?: () => number; carryCursor?: boolean } = {}) {
+  // generated
+  generated: Generated | null = null;
+  private collateralMax = 0;
+
+  constructor(challenge: Challenge, opts: { targetCount?: number; rand?: () => number; carryCursor?: boolean; seed?: number } = {}) {
     this.challenge = challenge;
     this.carryCursor = opts.carryCursor ?? true;
     this.targetCount = opts.targetCount ?? (challenge.kind === 'target' || challenge.kind === 'word' ? challenge.count ?? 12 : 0);
     this.rand = opts.rand ?? Math.random;
+    if (challenge.kind === 'generated') this.generated = generate(challenge, opts.seed ?? Math.floor(Math.random() * 0x100000000));
     this.start();
   }
 
@@ -181,6 +191,7 @@ export class Session {
     if (c.kind === 'target' || c.kind === 'word') return this.targetCount;
     if (c.kind === 'fix' || c.kind === 'replace') return marksOf(c.code, c).marks.size;
     if (c.kind === 'rounds') return c.rounds.length;
+    if (c.kind === 'generated') return this.generated!.items.length;
     return (c as QuizChallenge).questions.length;
   }
 
@@ -195,6 +206,10 @@ export class Session {
       if (c.kind === 'target' || c.kind === 'word') this.newTarget(c);
     } else if (c.kind === 'rounds') {
       this.loadRound();
+    } else if (c.kind === 'generated') {
+      const g = this.generated!;
+      this.vim = createVim({ text: g.start, name: g.file, height: Math.min(g.start.length + 1, 40) });
+      this.installReset();
     }
   }
 
@@ -293,6 +308,11 @@ export class Session {
         if (this.roundIdx >= c.rounds.length - 1) this.finish(now);
         else this.roundDone = true;
       }
+    } else if (c.kind === 'generated') {
+      const g = this.generated!;
+      this.collateralMax = Math.max(this.collateralMax, collateral(g.items, vim.buf.lines, g.goal));
+      this.hits = g.items.filter(it => itemDone(it, vim.buf.lines, g.goal)).length;
+      if (goalMet(vim, { text: g.goal })) this.finish(now);
     }
     if (!this.msg && vim.message) {
       this.msg = vim.message.text.split('\n')[0];
@@ -431,7 +451,18 @@ export class Session {
     }
     const round = this.round;
     const showGoal = c.kind === 'rounds' && c.showGoal !== false && round?.goal.text != null;
-    const goalText = showGoal ? (Array.isArray(round!.goal.text) ? round!.goal.text : round!.goal.text!.split('\n')) : null;
+    const g = c.kind === 'generated' ? this.generated! : null;
+    const goalText = g ? g.goal : showGoal ? (Array.isArray(round!.goal.text) ? round!.goal.text : round!.goal.text!.split('\n')) : null;
+    let items: SessionView['items'] = [];
+    if (g && this.vim) {
+      const cur = this.vim.buf.lines;
+      const g2c = new Map(align(cur, g.goal).map(([ci, gi]) => [gi, ci] as const));
+      items = g.items.map(it => ({
+        text: it.text, kind: it.kind,
+        done: this.done || itemDone(it, cur, g.goal),
+        line: (g2c.get(it.goal[0]) ?? it.fixAt.line) + 1,
+      }));
+    }
     let hits = this.hits;
     if ((c.kind === 'fix' || c.kind === 'replace') && this.vim) hits = Math.max(0, this.total - marks.size - brokenLines.size);
     const quiz = c.kind === 'quiz' && !this.done ? { q: c.questions[this.roundIdx], index: this.roundIdx, picked: this.picked, sel: this.sel } : null;
@@ -439,6 +470,7 @@ export class Session {
       vim: this.vim, target: this.done ? null : this.target, marks, brokenLines, goalText, prompt: round?.prompt ?? null,
       hits, total: this.total, keys: this.keys, startAt: this.startAt, endAt: this.endAt, done: this.done,
       roundDone: this.roundDone, msg: this.msg, msgKind: this.msgKind, quiz,
+      items, seed: g?.seed ?? null,
     };
   }
 
@@ -460,6 +492,12 @@ export class Session {
       const clean = this.roundStats.filter(r => r.keys <= Math.ceil(r.par * 1.5) + 1).length;
       return finalize(elapsed, parTime, par, this.keys, clean / Math.max(1, this.roundStats.length), 'Clean',
         `${clean} of ${this.roundStats.length} rounds near par`);
+    }
+    if (c.kind === 'generated') {
+      const g = this.generated!;
+      const correct = Math.max(0, 1 - this.collateralMax / Math.max(1, g.items.length));
+      return finalize(elapsed, g.parMs, g.parKeys, this.keys, correct, 'Clean',
+        this.collateralMax ? `${this.collateralMax} stray edit${this.collateralMax === 1 ? '' : 's'} outside the list` : 'nothing touched outside the list');
     }
     const n = (c as QuizChallenge).questions.length;
     return finalize(elapsed, n * 5000, n, this.keys, this.rightAnswers / n, 'Correct', `${this.rightAnswers} of ${n} right`);
