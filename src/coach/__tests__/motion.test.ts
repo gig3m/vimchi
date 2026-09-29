@@ -56,3 +56,22 @@ describe('betterMotions heuristics from the reference audit', () => {
     expect(c.some(x => /^k?[bB]$/.test(x.keys))).toBe(false);
   });
 });
+
+describe('betterMotions keeps equal-cost routes and ranks them by family', () => {
+  it('back to the line start offers 0 before b', () => {
+    const c = betterMotions(line('abcdef gh'), { line: 0, col: 6 }, 6, { line: 0, col: 0 }, 6, ALL);
+    expect(c[0].keys).toBe('0');
+    expect(c.map(x => x.keys)).toContain('b');
+    expect(c.map(x => x.keys)).not.toContain('G'); // same line: not a line jump
+  });
+  it('into the middle of a word offers Fc before 6h', () => {
+    const c = betterMotions(line('abcdefghij'), { line: 0, col: 8 }, 8, { line: 0, col: 2 }, 6, ALL);
+    expect(c[0].keys).toBe('Fc');
+    expect(c.map(x => x.keys)).toContain('6h');
+  });
+  it('to a word start offers b first', () => {
+    const c = betterMotions(line('foo barbaz qux'), { line: 0, col: 10 }, 10, { line: 0, col: 4 }, 6, ALL);
+    expect(c[0].keys).toBe('b');
+    expect(c.map(x => x.keys)).toContain('6h');
+  });
+});

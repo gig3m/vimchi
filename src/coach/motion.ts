@@ -81,7 +81,8 @@ export function betterMotions(lines: readonly string[], from: Pos, want: number,
   const buckets: Node[][] = Array.from({ length: maxCost + 1 }, () => []);
   buckets[0].push(start);
   const found: Cand[] = [];
-  const targetLast = to.line === lines.length - 1, targetFirst = to.line === 0, targetBlank = isBlank(lines[to.line]);
+  // G / gg are line jumps: never for a target on the line you are already on.
+  const targetLast = to.line === lines.length - 1 && to.line !== from.line, targetFirst = to.line === 0 && to.line !== from.line, targetBlank = isBlank(lines[to.line]);
 
   const expand = (n: Node, m: string, count: number, family: Cand['family'], uses: string[]) => {
     if (!uses.every(allow)) return;
@@ -90,11 +91,15 @@ export function betterMotions(lines: readonly string[], from: Pos, want: number,
     const st = move(lines, n.st, m, count);
     if (!st) return;
     const k = key(st);
-    if ((best.get(k) ?? Infinity) <= cost) return;
+    const prev = best.get(k) ?? Infinity;
+    const hit = same(st.pos, to);
+    // A cheaper route to a state wins; equal-cost routes to the TARGET are all kept so ties can be
+    // ranked by family (0 before b, Fc before 6h) rather than by expansion order.
+    if (prev < cost || (prev === cost && !hit)) return;
     best.set(k, cost);
     const typed = isFind(m) ? m + ';'.repeat(count - 1) : (count > 1 ? String(count) : '') + m;
     const node: Node = { st, keys: n.keys + typed, cost, uses: new Set([...n.uses, ...uses]), family: n.keys ? n.family : family };
-    if (same(st.pos, to)) found.push({ keys: node.keys, cost, uses: [...node.uses], family: node.family });
+    if (hit) found.push({ keys: node.keys, cost, uses: [...node.uses], family: node.family });
     else buckets[cost].push(node);
   };
 
@@ -132,8 +137,14 @@ export function betterMotions(lines: readonly string[], from: Pos, want: number,
       if (first && same(first, to)) { const cost = 2 + len; if (cost < maxCost) found.push({ keys: `/${pre}<CR>`, cost, uses: ['/'], family: 'search' }); break; }
     }
   }
+  // Ties: what an experienced user reaches for first. Line motions, then word motions, then
+  // f/t, then counts, then plain hjkl and search.
+  const FAMILY: Record<Cand['family'], number> = { line: 0, word: 1, find: 2, count: 3, basic: 4, search: 5 };
   const distinct = (c: Cand) => new Set(c.keys.replace(/[0-9]/g, '').replace(/<CR>/, '')).size;
-  const rank = (c: Cand) => c.cost * 100 + distinct(c) * 10 + (c.family === 'find' && lines[to.line].split(c.keys[1] ?? '\0').length > 2 ? 1 : 0);
+  // Among finds: f/F before t/T, and a target character that occurs once on the line before one that repeats.
+  const rank = (c: Cand) => c.cost * 1000 + FAMILY[c.family] * 100 + distinct(c) * 10
+    + (c.family === 'find' && /^[tT]/.test(c.keys) ? 2 : 0)
+    + (c.family === 'find' && lines[to.line].split(c.keys[1] ?? '\0').length > 2 ? 1 : 0);
   found.sort((a, b) => rank(a) - rank(b));
   const uniq = new Map<string, Cand>();
   for (const c of found) if (!uniq.has(c.keys)) uniq.set(c.keys, c);
