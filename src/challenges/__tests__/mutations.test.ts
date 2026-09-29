@@ -62,3 +62,11 @@ describe('line-to-remove', () => {
     }
   });
 });
+
+describe('line-to-remove sites', () => {
+  it('never asks to delete a bare bracket line', () => {
+    for (const f of CORPUS) for (const site of KINDS['line-to-remove'].sites(f.lines)) {
+      expect(f.lines[site.line], `${f.name}:${site.line}`).toMatch(/[A-Za-z_][A-Za-z0-9_]*/);
+    }
+  });
+});

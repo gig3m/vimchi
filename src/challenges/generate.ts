@@ -104,15 +104,16 @@ export function itemDone(item: ChecklistItem, cur: readonly string[], goal: read
 }
 
 /**
- * Count of diff hunks outside every item's window. A hunk is one gap between consecutive
- * aligned line pairs (a replacement, insertion or deletion counts once). It is inside when some
- * item's window covers the goal lines it spans (or, for a pure insertion, both bounding lines).
+ * Count of diff hunks outside every item's own lines (the spec's "region", narrower than the
+ * ±1 tick window). A hunk is one gap between consecutive aligned line pairs (a replacement,
+ * insertion or deletion counts once). It is inside when some item's lines cover the goal lines
+ * it spans, or, for a pure insertion, when either bounding line belongs to an item.
  */
 export function collateral(items: ChecklistItem[], cur: readonly string[], goal: readonly string[]): number {
   const pairs = align(cur, goal);
-  const windows = items.map(it => window(it, goal.length));
+  const regions = items.map(it => it.goal);
   const inside = (gPrev: number, gNext: number) =>
-    windows.some(([lo, hi]) => (gNext - gPrev > 1 ? lo <= gPrev + 1 && gNext - 1 <= hi : lo <= Math.max(0, gPrev) && Math.min(goal.length - 1, gNext) <= hi));
+    regions.some(([lo, hi]) => (gNext - gPrev > 1 ? lo <= gPrev + 1 && gNext - 1 <= hi : (gPrev >= lo && gPrev <= hi) || (gNext >= lo && gNext <= hi)));
   let hunks = 0, cPrev = -1, gPrev = -1;
   for (const [c, g] of [...pairs, [cur.length, goal.length] as [number, number]]) {
     if (c - cPrev > 1 || g - gPrev > 1) { if (!inside(gPrev, g)) hunks++; }

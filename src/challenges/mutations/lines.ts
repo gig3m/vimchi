@@ -111,7 +111,7 @@ export const missingDuplicateLine: MutationKind = {
  */
 export const lineToRemove: MutationKind = {
   id: 'line-to-remove',
-  sites: lines => bodySites(lines).filter(s => /;\s*$|\)\s*$/.test(lines[s.line]) && !/return|\{$|\}$/.test(lines[s.line])),
+  sites: lines => bodySites(lines).filter(s => /;\s*$|\)\s*$/.test(lines[s.line]) && /[A-Za-z_][A-Za-z0-9_]*/.test(lines[s.line]) && !/return|\{$|\}$/.test(lines[s.line])),
   apply(lines, site) {
     const l = lines[site.line];
     return {

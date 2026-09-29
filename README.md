@@ -71,7 +71,8 @@ in `src/vim/plugins/abolish.ts` are translated from Tim Pope's abolish.vim (Vim 
 JetBrains Mono, Space Grotesk) load from Google Fonts under the SIL Open Font License.
 
 Challenge files (`src/challenges/corpus/`) are short excerpts from these repos, used under their
-licenses and attributed per file: `TheAlgorithms/Go` (MIT), `TheAlgorithms/TypeScript` (MIT), `charmbracelet/lipgloss` (MIT), `echasnovski/mini.nvim` (MIT), `google/uuid` (BSD-3-Clause), `lewis6991/gitsigns.nvim` (MIT), `stevearc/oil.nvim` (MIT), `unjs/ufo` (MIT).
+licenses, attributed per file, with their license texts shipped at `/THIRD-PARTY-NOTICES.txt`
+(`public/THIRD-PARTY-NOTICES.txt`): `TheAlgorithms/Go` (MIT), `TheAlgorithms/TypeScript` (MIT), `charmbracelet/lipgloss` (MIT), `echasnovski/mini.nvim` (MIT), `google/uuid` (BSD-3-Clause), `lewis6991/gitsigns.nvim` (MIT), `stevearc/oil.nvim` (MIT), `unjs/ufo` (MIT).
 
 ## License
 

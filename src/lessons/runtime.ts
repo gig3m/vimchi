@@ -457,11 +457,25 @@ export class Session {
     if (g && this.vim) {
       const cur = this.vim.buf.lines;
       const g2c = new Map(align(cur, g.goal).map(([ci, gi]) => [gi, ci] as const));
-      items = g.items.map(it => ({
-        text: it.text, kind: it.kind,
-        done: this.done || itemDone(it, cur, g.goal),
-        line: (g2c.get(it.goal[0]) ?? it.fixAt.line) + 1,
-      }));
+      // Current-buffer line of a goal line. An unfixed line never pairs (its text differs), so
+      // interpolate from the nearest paired goal line above it; the gap rule keeps neighbours
+      // untouched, so that is normally the line just above.
+      const curLineOf = (gl: number, fallback: number) => {
+        for (let k = 0; gl - k >= 0; k++) { const c = g2c.get(gl - k); if (c !== undefined) return c + k; }
+        return fallback;
+      };
+      items = g.items.map(it => {
+        const done = this.done || itemDone(it, cur, g.goal);
+        // The line the fix acts on. The anchor (goal[0]) is the line itself for character kinds;
+        // the line ABOVE the junk / the line to delete for stray-line and line-to-remove (so +1
+        // until it is gone); the missing line for missing-duplicate-line (so the line above it
+        // until it exists).
+        const anchor = curLineOf(it.goal[0], it.fixAt.line);
+        let line = anchor;
+        if (it.kind === 'stray-line' || it.kind === 'line-to-remove') line = anchor + (done ? 0 : 1);
+        else if (it.kind === 'missing-duplicate-line' && !done) line = curLineOf(it.goal[0] - 1, it.fixAt.line);
+        return { text: it.text, kind: it.kind, done, line: line + 1 };
+      });
     }
     let hits = this.hits;
     if ((c.kind === 'fix' || c.kind === 'replace') && this.vim) hits = Math.max(0, this.total - marks.size - brokenLines.size);

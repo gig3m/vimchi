@@ -69,4 +69,9 @@ describe('itemDone / collateral', () => {
     expect(collateral([item], ['zz', 'b', 'x', 'd', 'e'], goal)).toBe(1);
     expect(collateral([item], ['b', 'x', 'd'], goal)).toBe(2); // 'a' and 'e' each lost: two separate runs
   });
+  it('charges damage on a neighbouring line even though it is inside the tick window', () => {
+    expect(collateral([item], ['a', 'y', 'x', 'd', 'e'], goal)).toBe(1); // 'b' is not the item's line
+    expect(collateral([item], ['a', 'b', 'c', 'junk', 'd', 'e'], goal)).toBe(0); // insertion bounded by the item's own line
+    expect(collateral([item], ['a', 'junk', 'b', 'c', 'd', 'e'], goal)).toBe(1); // insertion between a and b
+  });
 });
