@@ -513,3 +513,18 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
   .ed-body.with-list { grid-template-columns: 1fr; }
   .checklist { border-left: 0; border-top: 1px solid var(--line); max-height: 180px; }
 }
+
+/* ---------- coach ---------- */
+.better-ways { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; max-height: 260px; overflow-y: auto; }
+.bw-title { margin: 0 0 8px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.bw-list, .bw-ref { list-style: none; margin: 0; padding: 0; }
+.bw-item { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; padding: 6px 0; border-bottom: 1px dashed rgba(98, 114, 164, .25); }
+.bw-unit { color: var(--muted); font-family: var(--mono); font-size: 11px; min-width: 56px; }
+.bw-you, .bw-better { display: inline-flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+.bw-keys { display: inline-flex; gap: 2px; flex-wrap: wrap; }
+.bw-text { font-family: var(--mono); padding: 0 5px; border: 1px dashed var(--comment); border-radius: 4px; color: var(--yellow); }
+.bw-saves { color: var(--green); font-family: var(--mono); font-size: 11px; }
+.bw-why { color: var(--muted); font-size: 12px; margin-left: 6px; }
+.bw-ref { margin-top: 8px; color: var(--muted); }
+.side-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; }
+.cmdline-msg.coach, .ev-cmdline.coach { color: var(--green); }

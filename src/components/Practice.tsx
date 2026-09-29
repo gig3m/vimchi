@@ -10,11 +10,16 @@ import { EditorView } from './EditorView';
 import { Checklist } from './Checklist';
 import { Results } from './Results';
 import { seedHref } from '../state/seed';
+import { type Critique, type Report, coach, coachSegment, nudgeText } from '../coach';
+import { segment } from '../coach/segment';
+import { coachable } from '../coach/vocab';
 
 type Props = {
   lesson: Lesson;
   /** Generated challenges: replay this seed (from the URL); null = fresh. */
   seed: number | null;
+  /** Show a coach hint under the editor as segments close. */
+  coachLive: boolean;
   /** Earlier runs of this lesson, for personal-best comparisons. */
   history: Run[];
   nextTitle: string | null;
@@ -24,7 +29,7 @@ type Props = {
   onStats: () => void;
 };
 
-type Finished = { result: ReturnType<Session['result']>; prevBestTime: number | null; prevBestScore: number | null };
+type Finished = { result: ReturnType<Session['result']>; prevBestTime: number | null; prevBestScore: number | null; report?: Report };
 
 /** Browser-reserved Ctrl keys get an Alt stand-in outside fullscreen. */
 const STAND_INS: Record<string, string> = { '<A-w>': '<C-w>', '<A-n>': '<C-n>', '<A-t>': '<C-t>', '<A-q>': '<C-q>' };
@@ -61,10 +66,52 @@ export function Practice(p: Props) {
     };
   }, []);
 
+  const unitLabel = (u: number) => (lesson.challenge.kind === 'generated' ? `Edit ${u + 1}` : `Round ${u + 1}`);
+
+  // Live nudge: one line under the editor when a just-closed segment has a better way.
+  const [nudge, setNudge] = useState<string | null>(null);
+  const nudgeT = useRef<number>(undefined);
+  const segCount = useRef(0);
+  const clearNudge = () => { clearTimeout(nudgeT.current); setNudge(null); };
+  const showNudge = (c: Critique) => {
+    const b = c.better[0];
+    void b;
+    clearTimeout(nudgeT.current);
+    setNudge(nudgeText(c));
+    nudgeT.current = window.setTimeout(() => setNudge(null), 4000);
+  };
+  /** After a key (or a round/run end), critique any segment that has just closed. */
+  const nudgedEnd = useRef(-1);
+  const liveCoach = (closing: boolean) => {
+    if (!p.coachLive || !coachable(lesson.id)) return;
+    const log = s.log();
+    const segs = segment(log);
+    const last = segs.length - 1;
+    if (last < 0) return;
+    const settled = log[log.length - 1].after.mode === 'normal' && log[log.length - 1].after.pending === 0;
+    // Something closed when a new segment started after it (a motion run), when an edit just
+    // returned to normal mode, or when the round/run ended. Try the windows that end here.
+    const candidates: number[] = [];
+    if (segs.length > segCount.current && segs.length >= 2) candidates.push(segs.length - 2);
+    if (settled || closing) for (let i = Math.max(0, last - 2); i <= last; i++) candidates.push(i);
+    segCount.current = segs.length;
+    const unitStart = s.currentUnitStart();
+    for (const i of [...new Set(candidates)]) {
+      // Only this round's segments, never one still waiting on a pending key, never twice.
+      if (segs[i].logStart < unitStart || log[segs[i].logEnd]?.after.pending) continue;
+      const c = coachSegment(s, lesson.id, segs[i], segs, i);
+      if (!c || c.logEnd <= nudgedEnd.current) continue;
+      nudgedEnd.current = c.logEnd;
+      showNudge(c);
+      return;
+    }
+  };
+
   /** Repeat: the same seed for a generated challenge, so a replay races the same file. */
   const restart = () => {
     session.current = new Session(lesson.challenge, { seed: s.view().seed ?? undefined });
     setFinished(null);
+    clearNudge(); segCount.current = 0; nudgedEnd.current = -1;
     rerender();
     ref.current?.focus({ preventScroll: true });
   };
@@ -73,6 +120,7 @@ export function Practice(p: Props) {
     seedRef.current = null;
     session.current = new Session(lesson.challenge);
     setFinished(null);
+    clearNudge(); segCount.current = 0; nudgedEnd.current = -1;
     if (location.hash.includes('?')) history.replaceState(null, '', '#' + lesson.id);
     rerender();
     ref.current?.focus({ preventScroll: true });
@@ -96,6 +144,7 @@ export function Practice(p: Props) {
       result,
       prevBestTime: times.length ? Math.min(...times) : null,
       prevBestScore: scores.length ? Math.max(...scores) : null,
+      report: coachable(lesson.id) ? coach(s, lesson.id) : undefined,
     });
     p.onRun({
       lesson: lesson.id, at: now, time: result.elapsed, keys: result.keys,
@@ -116,8 +165,10 @@ export function Practice(p: Props) {
     clearTimeout(advanceT.current);
     const flash = s.key(key, now);
     if (flash) p.onFlash(flash);
-    if (s.roundDone) advanceT.current = window.setTimeout(() => { s.advance(); rerender(); }, 450);
-    if (s.done && !wasDone) complete(now);
+    liveCoach(s.roundDone || s.done);
+    // The round's closing hint stays through the advance (it names keys, not text); the 4 s timer clears it.
+    if (s.roundDone) advanceT.current = window.setTimeout(() => { s.advance(); segCount.current = segment(s.log()).length; rerender(); }, 450);
+    if (s.done && !wasDone) { complete(now); clearNudge(); }
     rerender();
   };
 
@@ -163,7 +214,7 @@ export function Practice(p: Props) {
   const msg = v.msg || (focused || v.done ? '' : '-- editor not focused --');
   // Tutor notes (not Vim's own messages) go in the command-line row.
   const vimMsg = s.vim?.message?.text.split('\n')[0];
-  const note = v.msg && v.msg !== vimMsg ? { text: v.msg, kind: v.msgKind } : null;
+  const note = v.msg && v.msg !== vimMsg ? { text: v.msg, kind: v.msgKind } : nudge && !v.done ? { text: nudge, kind: 'coach' } : null;
   const isQuiz = s.challenge.kind === 'quiz';
   const kind = s.challenge.kind;
   const roundLabel = kind === 'rounds' || kind === 'quiz' ? `${Math.min(v.hits + (v.done ? 0 : 1), v.total)} of ${v.total}` : `${v.hits} / ${v.total}`;
@@ -215,6 +266,7 @@ export function Practice(p: Props) {
             seed={v.seed}
             replayHref={v.seed != null ? seedHref(lesson.id, v.seed) : undefined}
             onNewSeed={v.seed != null ? newFile : undefined}
+            unitLabel={unitLabel}
             onRepeat={restart}
             onNext={p.onNext}
             onStats={p.onStats}
