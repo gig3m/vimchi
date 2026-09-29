@@ -15,6 +15,8 @@ type Props = {
   onProfile: () => void;
   onSignIn: () => void;
   onSignOut: () => void;
+  coachLive: boolean;
+  onCoachLive: (v: boolean) => void;
 };
 
 const BANDS = [
@@ -118,6 +120,10 @@ export function Sidebar(p: Props) {
             <span className="me-sub">{p.userSub}</span>
           </span>
         </button>
+        <label className="side-toggle" title="Show a hint under the editor as you type">
+          <input type="checkbox" checked={p.coachLive} onChange={e => p.onCoachLive(e.target.checked)} />
+          <span>Live hints</span>
+        </label>
         {p.who.isGuest
           ? <button className="btn-primary" onClick={p.onSignIn}>Sign in</button>
           : <button className="btn-ghost" onClick={p.onSignOut}>Sign out</button>}
