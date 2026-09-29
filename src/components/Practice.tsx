@@ -68,14 +68,26 @@ export function Practice(p: Props) {
     rerender();
     ref.current?.focus({ preventScroll: true });
   };
-  /** New file: a fresh seed. */
+  /** New file: a fresh seed; the URL drops the old one so a reload does not bring it back. */
   const newFile = () => {
     seedRef.current = null;
     session.current = new Session(lesson.challenge);
     setFinished(null);
+    if (location.hash.includes('?')) history.replaceState(null, '', '#' + lesson.id);
     rerender();
     ref.current?.focus({ preventScroll: true });
   };
+  // A seed arriving by URL while this lesson is open (pasted link, back/forward, the results
+  // screen's own "link to this file") loads that file.
+  useEffect(() => {
+    if (p.seed == null || p.seed === session.current.view().seed) return;
+    seedRef.current = p.seed;
+    session.current = new Session(lesson.challenge, { seed: p.seed });
+    setFinished(null);
+    rerender();
+    ref.current?.focus({ preventScroll: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [p.seed]);
 
   const complete = (now: number) => {
     const result = s.result();

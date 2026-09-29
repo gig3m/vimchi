@@ -54,6 +54,14 @@ describe('corpus', () => {
   it('has a near-duplicate line pair in at least 4 files', () => {
     expect(CORPUS.filter(f => nearDuplicatePairs(f.lines).length > 0).length).toBeGreaterThanOrEqual(4);
   });
+  it('ships the upstream license notices with the app', () => {
+    const notices = readFileSync('public/THIRD-PARTY-NOTICES.txt', 'utf8');
+    for (const repo of new Set(CORPUS.map(f => f.source.repo))) {
+      expect(notices, repo).toContain(repo);
+      const block = notices.slice(notices.indexOf(repo));
+      expect(block, `${repo} notice text`).toMatch(/Copyright|copyright/);
+    }
+  });
   it('README credits every source repo', () => {
     const readme = readFileSync('README.md', 'utf8');
     for (const repo of new Set(CORPUS.map(f => f.source.repo))) expect(readme, repo).toContain(repo);

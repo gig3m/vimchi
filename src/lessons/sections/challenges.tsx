@@ -38,8 +38,8 @@ const intros: Record<string, { intro: Lesson['intro']; aside: Lesson['aside'] }>
       </>
     ),
     aside: {
-      title: 'Undo is free',
-      body: <p><Code>u</Code> never costs accuracy; only edits that leave the file wrong somewhere else do.</p>,
+      title: 'Clean means clean',
+      body: <p>Stray edits outside the list count against Clean even if you <Code>u</Code> them. Every key, including <Code>u</Code>, counts toward Accuracy.</p>,
     },
   },
 };

@@ -56,3 +56,31 @@ describe('generated session', () => {
     expect(s.view().items.length).toBeGreaterThan(0);
   });
 });
+
+describe('checklist line numbers', () => {
+  const ch2 = CHALLENGES[1].challenge;
+  it('point at the line the fix acts on, at the start of a run', () => {
+    for (let seed = 1; seed <= 40; seed++) {
+      const s = new Session(ch2, { seed });
+      const g = generate(ch2, seed);
+      const items = s.view().items;
+      for (let i = 0; i < g.items.length; i++) expect(items[i].line, `seed ${seed} ${g.items[i].kind}: ${g.items[i].text}`).toBe(g.items[i].fixAt.line + 1);
+    }
+  });
+  it('follow line shifts after earlier fixes', () => {
+    const s = new Session(ch2, { seed: 11 });
+    const g = generate(ch2, 11);
+    let t = 0, shift = 0;
+    for (const item of g.items) {
+      s.vim!.win.cursor = { line: item.fixAt.line + shift, col: item.fixAt.col };
+      for (const k of solutionKeys(item.fixKeys)) s.key(k, (t += 100));
+      shift += item.kind === 'stray-line' || item.kind === 'line-to-remove' ? -1 : item.kind === 'missing-duplicate-line' ? 1 : 0;
+      const view = s.view().items;
+      for (let i = 0; i < g.items.length; i++) {
+        if (view[i].done) continue;
+        expect(view[i].line, `after ${item.kind}: ${g.items[i].kind} ${g.items[i].text}`).toBe(g.items[i].fixAt.line + shift + 1);
+      }
+    }
+    expect(s.done).toBe(true);
+  });
+});
