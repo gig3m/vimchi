@@ -89,6 +89,8 @@ describe.each(all)('%s / %s', (_section, lesson) => {
       expect(m.broken.size).toBe(0);
       expect(m.marks.size).toBeGreaterThan(0);
     });
+  } else if (c.kind === 'generated') {
+    // Covered by src/challenges tests and the generated branch added with the section.
   } else {
     it('lines fit', () => expect(tooLong(c.code)).toEqual([]));
     it('has code', () => {
