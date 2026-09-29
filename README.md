@@ -13,12 +13,12 @@ npm test           # engine + every lesson's reference solution
 npm run build      # typecheck + production bundle in dist/
 ```
 
-- `src/vim/` — a Vim engine in TypeScript (modes, operators, text objects, registers, macros,
+- `src/vim/` — a Vim engine written from scratch in TypeScript (modes, operators, text objects, registers, macros,
   dot-repeat, undo, Vim regex, ex commands, splits, quickfix, folds) plus plugin emulations in
   `src/vim/plugins/`.
 - `src/lessons/` — lesson content (`sections/*.tsx`), the challenge runtime, and the validator.
   Authoring guide: `docs/LESSONS.md`; plugin API: `docs/PLUGINS.md`.
-- `src/components/` — the UI (design: Claude Design project "Vim Tutor v2").
+- `src/components/` — the UI.
 
 Browsers reserve Ctrl-W/N/T/Q. The practice editor maps Alt-W/N/T/Q to them, and its
 "full screen" button uses the Keyboard Lock API to capture the real keys (Chromium).
@@ -43,3 +43,18 @@ go run ./cmd/vimchi
   if TLS terminates at a proxy.
 
 Tests: `cd server && go test ./...`
+
+The frontend also works on its own as a static site (`dist/`): without the server, progress
+stays in the browser's localStorage and sign-in is unavailable.
+
+## Credits
+
+The plugin lessons emulate the default keymaps of vim-surround/nvim-surround, vim-exchange,
+ReplaceWithRegister, vim-abolish, mini.ai, flash.nvim, harpoon, telescope.nvim, oil.nvim,
+vim-fugitive and gitsigns.nvim; their code is not included, except that the case-coercion rules
+in `src/vim/plugins/abolish.ts` are translated from Tim Pope's abolish.vim (Vim license). Fonts (IBM Plex Sans,
+JetBrains Mono, Space Grotesk) load from Google Fonts under the SIL Open Font License.
+
+## License
+
+MIT — see `LICENSE`.

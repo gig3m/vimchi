@@ -8,7 +8,7 @@ import type { Plugin, Vim } from '../editor';
 import { firstNonBlank } from '../text';
 import { fail, pos } from '../types';
 
-// ---- case coercion (ported from abolish.vim) ---------------------------------------------------
+// ---- case coercion (translated from abolish.vim by Tim Pope, Vim license) ---------------------------------------------------
 
 export function camelcase(word: string) {
   const w = word.replace(/-/g, '_');
