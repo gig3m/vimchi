@@ -50,7 +50,7 @@ describe('rules', () => {
   });
   it('count-dd', () => { expect(suggest(['a', 'b', 'c', 'd'], 'dddd')?.keys).toBe('2dd'); });
   it('dot-repeat needs saves ≥ 2', () => {
-    expect(suggest(['foo a foo b'], 'cwbar<Esc>wwcwbar<Esc>')?.keys).toBe('.');
+    expect(suggest(['foo a foo b'], 'cwbar<Esc>wwcwbar<Esc>')?.keys).toBe('cwbar<Esc>ww.');
     expect(suggest(['ab ab'], 'xwx')?.rule).not.toBe('dot-repeat');
   });
   it('cw: de then insert', () => { expect(suggest(['abc def'], 'deixyz<Esc>')?.keys).toBe('cwxyz<Esc>'); });
