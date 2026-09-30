@@ -68,9 +68,9 @@ export const moreTextObjects: Section = {
         title: "kickstart's keys",
         body: (
           <p>
-            These are LazyVim's keys. kickstart moves "next" to <Code>ii</Code> and <Code>aa</Code>
-            (<Code>cii(</Code>), because Neovim 0.12 uses <Code>in</Code> and <Code>an</Code> for its own treesitter
-            selection. A count reaches further: <Code>2cin(</Code> skips one pair.
+            These are LazyVim's keys. kickstart puts "next" on <Code>ii</Code> and <Code>aa</Code>, so{' '}
+            <Code>cin(</Code> is <Code>cii(</Code> there (Neovim 0.12 keeps <Code>in</Code> and <Code>an</Code> for
+            treesitter selection); <Code>il</Code> and <Code>al</Code> are the same in both.
           </p>
         ),
       },
@@ -149,8 +149,8 @@ export const moreTextObjects: Section = {
         body: (
           <p>
             Commas inside nested brackets and strings don't count, so <Mono>{"f(g(1, 2), 'a, b')"}</Mono> has two
-            arguments. In kickstart <Code>aa</Code> starts a "next" object instead, so there <Code>daa</Code> waits
-            for another key; <Code>ia</Code> works in both.
+            arguments. In kickstart <Code>aa</Code> is the "around next" prefix, so <Code>daa</Code> waits for
+            another key and never deletes an argument; <Code>dia</Code> works in both.
           </p>
         ),
       },
@@ -245,9 +245,9 @@ export const moreTextObjects: Section = {
         title: 'Where it comes from',
         body: (
           <p>
-            LazyVim gets <Code>ii</Code> and <Code>ai</Code> from snacks.nvim's scope module; mini.indentscope and
-            vim-indent-object provide the same objects. kickstart has none: its <Code>ii</Code> means "inside
-            next".
+            LazyVim gets <Code>ii</Code> and <Code>ai</Code> from snacks.nvim's scope module. kickstart has no
+            indent object: there <Code>ii</Code> is the "inside next" prefix (<Code>cii(</Code> changes the next
+            parentheses).
           </p>
         ),
       },
