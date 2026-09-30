@@ -1,6 +1,10 @@
 import { Code } from './Code';
 
-type Sim = { name: string; plugin: string; url: string; keys: string; use: string };
+type Sim = {
+  name: string; plugin: string; url: string; keys: string; use: string;
+  /** A second project on the same keys, named after `use`. */
+  also?: { plugin: string; url: string; note: string };
+};
 
 /** The plugin simulations the engine ships, with the real projects they stand in for. */
 export const SIMULATIONS: Sim[] = [
@@ -10,7 +14,8 @@ export const SIMULATIONS: Sim[] = [
   { name: 'lsp', plugin: "Neovim's built-in LSP client", url: 'https://neovim.io/doc/user/lsp.html', keys: 'gd K grr grn gra [d gO', use: 'definitions, hover, references, rename, code actions, diagnostics, symbols' },
   { name: 'telescope', plugin: 'telescope.nvim', url: 'https://github.com/nvim-telescope/telescope.nvim', keys: '␣sf ␣sg ␣sw ␣sh ␣sk ␣␣ ␣/', use: 'the pickers (LazyVim ships snacks.picker on the same keys)' },
   { name: 'which-key', plugin: 'which-key.nvim', url: 'https://github.com/folke/which-key.nvim', keys: '␣', use: 'discovering keys from the popup' },
-  { name: 'oil', plugin: 'oil.nvim', url: 'https://github.com/stevearc/oil.nvim', keys: '- CR dd cw :w', use: 'editing the file tree as a buffer' },
+  { name: 'explorer', plugin: 'snacks.explorer', url: 'https://github.com/folke/snacks.nvim/blob/main/docs/explorer.md', keys: '␣e j k l h CR a d r q', use: 'the file tree in a sidebar: opening, adding, deleting and renaming files',
+    also: { plugin: 'neo-tree.nvim', url: 'https://github.com/nvim-neo-tree/neo-tree.nvim', note: "kickstart's opt-in explorer on \\, shares the keys" } },
   { name: 'gitsigns', plugin: 'gitsigns.nvim', url: 'https://github.com/lewis6991/gitsigns.nvim', keys: ']h [h ␣ghs ␣ghr', use: 'moving between hunks, staging and resetting them' },
   { name: 'lazygit', plugin: 'lazygit', url: 'https://github.com/jesseduffield/lazygit', keys: '␣gg', use: 'committing from inside Neovim' },
   { name: 'grugfar', plugin: 'grug-far.nvim', url: 'https://github.com/MagicDuck/grug-far.nvim', keys: '␣sr', use: 'find and replace across a project' },
@@ -60,7 +65,14 @@ export function About() {
             <tr key={s.name}>
               <td><a href={s.url} target="_blank" rel="noopener noreferrer">{s.plugin}</a></td>
               <td className="about-keys">{s.keys.split(' ').map(k => <Code key={k}>{k}</Code>)}</td>
-              <td>{s.use}</td>
+              <td>
+                {s.use}
+                {s.also && (
+                  <>
+                    ; <a href={s.also.url} target="_blank" rel="noopener noreferrer">{s.also.plugin}</a>, {s.also.note}
+                  </>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
