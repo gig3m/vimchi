@@ -601,11 +601,11 @@ export const basicOperators: Section = {
         </p>
       ),
       aside: {
-        title: 'cc is S',
+        title: 'cc again',
         body: (
           <p>
-            <Code>S</Code> from the Substitute Characters lesson does exactly what <Code>cc</Code> does. Use whichever
-            your fingers prefer.
+            You met <Code>cc</Code> in Change in Place. Here it sits beside <Code>C</Code>: the whole line, or from
+            the cursor to its end.
           </p>
         ),
       },

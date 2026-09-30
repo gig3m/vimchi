@@ -16,7 +16,7 @@ export const PATTERNS: Record<string, Pattern> = {
   'to-line-end': { name: 'To the end of the line', principle: 'D and C reach the end of the line on their own', lesson: 'delete-lines' },
   'change-line': { name: 'Change the whole line', principle: 'cc replaces the line and keeps its indent', lesson: 'change-lines' },
   'delete-line': { name: 'Delete lines', principle: 'dd takes the whole line; a count takes several', lesson: 'delete-lines' },
-  substitute: { name: 'Substitute', principle: 's replaces the character under the cursor and starts typing', lesson: 'substitute' },
+  substitute: { name: 'Change in place', principle: 'cl replaces the character under the cursor and starts typing (s in standard Vim)', lesson: 'substitute' },
   'replace-char': { name: 'Replace a character', principle: 'r swaps one character without entering insert mode', lesson: 'r' },
   'delete-char': { name: 'Delete characters', principle: 'x deletes the character under the cursor', lesson: 'x' },
   'toggle-case': { name: 'Toggle case', principle: '~ flips the case of the character under the cursor', lesson: 'toggle-case' },

@@ -324,7 +324,7 @@ export const macros: Section = {
               cursor: { line: 2, col: 0 },
             },
             goal: { text: ['## Links', '', '[vimchi](https://github.com/gig3m/vimchi)', '[neovim](https://neovim.io)', '[lazy.nvim](https://lazy.folke.io)'] },
-            solution: 'qaI[<Esc>f s](<Esc>A)<Esc>jq2@a',
+            solution: 'qaI[<Esc>f cl](<Esc>A)<Esc>jq2@a',
           },
           {
             prompt: 'Turn each parameter into a dict entry.',
@@ -684,7 +684,7 @@ export const macros: Section = {
                 '};',
               ],
             },
-            solution: 'qa0f,s: <Esc>A,<Esc>jq4@a',
+            solution: 'qa0f,cl: <Esc>A,<Esc>jq4@a',
           },
         ],
       },

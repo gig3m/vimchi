@@ -166,7 +166,7 @@ export function searchIdioms(scratch: Vim, start: Vim, target: string, opts: Idi
     const long = n > 3 ? n : 0; // the x-run habit: a count this long means an operator was the idea
     add([...counted(n), 'x'], false, ['x', ...countUse(n)], n > 1 ? 'count-op' : 'delete-char', (n > 1 ? P.count : 0) + long, 1, !!long);
     add([...counted(n), '~'], false, ['~', ...countUse(n)], 'toggle-case', (n > 1 ? P.count : 0) + long, 1, !!long);
-    add([...counted(n), 's'], true, ['s', ...countUse(n)], 'substitute', (n > 1 ? P.count : 0) + long, 1, !!long);
+    add([...counted(n), 'c', 'l'], true, ['cl', ...countUse(n)], 'substitute', (n > 1 ? P.count : 0) + long, 1, !!long);
   }
   if (covers(c - delLen, c)) add([...counted(delLen), 'X'], false, ['X', ...countUse(delLen)], 'delete-char', (delLen > 1 ? P.count : 0) + (delLen > 3 ? delLen : 0), 1, delLen > 3);
   if (target.length === t0.length && covers(c, c + 1) && target[c] !== undefined && target[c] !== '\n') add(['r', target[c]], false, ['r'], 'replace-char');
