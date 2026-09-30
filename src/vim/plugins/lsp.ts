@@ -260,10 +260,14 @@ function codeActions(vim: Vim) {
     vim.msg('No code actions available');
     return;
   }
+  // Stock vim.ui.select is inputlist(): type the item's number, then <CR>. j/k and arrows do nothing,
+  // <BS> edits the number, and <CR> with no number or one out of range cancels, as do <Esc> and q.
+  const PROMPT = 'Type number and <Enter>: ';
+  let typed = '';
   const f: Float = {
-    id: FLOAT_ID, title: 'Code actions', anchor: 'cursor', sel: 0,
-    lines: acts.map((a, i) => ({ text: `${i + 1}. ${a.title}` })),
-    width: Math.min(60, Math.max(20, ...acts.map(a => a.title.length + 5))),
+    id: FLOAT_ID, title: 'Code actions', anchor: 'cursor',
+    lines: [...acts.map((a, i) => ({ text: `${i + 1}: ${a.title}` })), { text: PROMPT }],
+    width: Math.min(60, Math.max(PROMPT.length + 3, ...acts.map(a => a.title.length + 5))),
   };
   closeFloat(vim);
   vim.floats.push(f);
@@ -272,12 +276,15 @@ function codeActions(vim: Vim) {
     vim.beginChange();
     acts[i].apply(vim);
   };
+  const show = () => { f.lines[f.lines.length - 1] = { text: PROMPT + typed }; };
   vim.modal = (key: Key) => {
-    if (key === 'j' || key === '<C-n>' || key === '<Down>') f.sel = Math.min(acts.length - 1, f.sel! + 1);
-    else if (key === 'k' || key === '<C-p>' || key === '<Up>') f.sel = Math.max(0, f.sel! - 1);
-    else if (key === '<CR>') choose(f.sel!);
-    else if (/^[1-9]$/.test(key) && +key <= acts.length) choose(+key - 1);
-    else if (key === '<Esc>' || key === 'q') closeFloat(vim);
+    if (/^[0-9]$/.test(key)) { typed += key; show(); }
+    else if (key === '<BS>') { typed = typed.slice(0, -1); show(); }
+    else if (key === '<CR>') {
+      const n = Number(typed);
+      if (n >= 1 && n <= acts.length) choose(n - 1);
+      else closeFloat(vim);
+    } else if (key === '<Esc>' || key === 'q') closeFloat(vim);
     return true;
   };
 }

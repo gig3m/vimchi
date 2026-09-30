@@ -420,13 +420,12 @@ export const neovimBuiltins: Section = {
       id: 'code-actions',
       title: 'Code Actions',
       chips: ['gra'],
-      keyCards: [{ key: 'gra', glyph: 'fix', label: 'code actions', sub: 'fixes for the cursor spot' }],
+      keyCards: [{ key: 'gra', glyph: 'fix', label: 'code actions', sub: 'then number, CR' }],
       intro: (
         <>
           <p>
             <Code>gra</Code> asks the language server what it can do at the cursor: add a missing import, remove an
-            unused variable, convert a string. Pick one from the list with <Code>j</Code>/<Code>k</Code> and{' '}
-            <Code>enter</Code>, or its number.
+            unused variable, convert a string. The list is numbered: type the number, then <Code>enter</Code>.
           </p>
           <p>
             Pair it with <Code>]d</Code>: jump to the problem, <Code>gra</Code>, pick the fix. The change is one undo
@@ -439,8 +438,9 @@ export const neovimBuiltins: Section = {
         title: 'A nicer menu',
         body: (
           <p>
-            Stock Neovim lists the actions with <Code>vim.ui.select</Code>, a numbered prompt. Pickers such as
-            Telescope or fzf-lua can take over <Code>vim.ui.select</Code> to give you a fuzzy menu instead.
+            This is stock Neovim's <Code>vim.ui.select</Code>. LazyVim shows the same list in the snacks picker
+            (kickstart in Telescope): type to filter or move with <Code>C-n</Code>/<Code>C-p</Code>, then{' '}
+            <Code>enter</Code>. A number alone doesn't pick there either.
           </p>
         ),
       },
@@ -474,7 +474,7 @@ export const neovimBuiltins: Section = {
                 }),
               },
               goal: { text: ["import { useState } from 'react';", '', ...dash] },
-              solution: ']dgra<CR>',
+              solution: ']dgra1<CR>',
             },
             {
               prompt: 'Open the code actions and pick "Convert to template string".',
@@ -492,7 +492,7 @@ export const neovimBuiltins: Section = {
                 }),
               },
               goal: { text: [greet[0], '  const greeting = `Hello, ${user.name}!`;', ...greet.slice(2)] },
-              solution: 'gra<CR>',
+              solution: 'gra1<CR>',
             },
             {
               prompt: 'Jump back to the hint on req, then pick the second action, which adds an underscore.',
@@ -509,7 +509,7 @@ export const neovimBuiltins: Section = {
                 }),
               },
               goal: { text: ["app.get('/health', (_req, res) => {", "  res.send('ok');", '});'] },
-              solution: '[dgraj<CR>',
+              solution: '[dgra2<CR>',
             },
             {
               prompt: 'Jump to the error on json and apply the fix that adds await.',
@@ -525,7 +525,7 @@ export const neovimBuiltins: Section = {
                 }),
               },
               goal: { text: ['async function loadUser(id: string) {', '  const res = await fetch(`/api/users/${id}`);', '  return res.json();', '}'] },
-              solution: ']dgra<CR>',
+              solution: ']dgra1<CR>',
             },
             {
               prompt: 'Silence the unused-local warning for this line only.',
@@ -544,7 +544,7 @@ export const neovimBuiltins: Section = {
               goal: {
                 text: ['local function setup()', '  ---@diagnostic disable-next-line: unused-local', '  local unused = 1', "  require('telescope').setup({})", 'end'],
               },
-              solution: 'gra1',
+              solution: 'gra1<CR>',
             },
           ];
         })(),
