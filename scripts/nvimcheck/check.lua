@@ -5,6 +5,9 @@
 --   with Neovim's: cursor, unnamed register text + type, any register the goal names, and the text and
 --   cursor after follow-up probes (x, and p when the register is non-empty) fed after the solution.
 -- Section 3, cases: the same engine-vs-Neovim comparison, text included, for cases.json.
+-- Any Lua error (a malformed cases.json entry, say) is written into the report as a failed gate,
+-- and Neovim always quits: a headless nvim left at an error would otherwise wait forever.
+local okRun, runErr = pcall(function()
 local data = vim.json.decode(table.concat(vim.fn.readfile(vim.env.ROUNDS), '\n'))
 local sandbox = vim.env.SANDBOX or vim.fn.tempname()
 vim.fn.mkdir(sandbox, 'p')
@@ -136,4 +139,8 @@ section(out, 'cases (engine vs nvim on cases.json)', data.cases, true)
 
 vim.fn.writefile(out, vim.env.OUT)
 vim.fn.delete(sandbox, 'rf')
+end)
+if not okRun then
+  pcall(vim.fn.writefile, { 'ok 0 bad 1', 'check.lua error: ' .. tostring(runErr) }, vim.env.OUT)
+end
 vim.cmd('qa!')
