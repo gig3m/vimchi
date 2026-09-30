@@ -187,3 +187,112 @@ describe(':s///c leaves the cursor on the last match it prompted for', () => {
     expect(C(d, keys)).toBe(want);
   });
 });
+
+describe('a count past the end on the last line fails (cursor_down)', () => {
+  it.each([
+    ['|abc', '2dd', '|abc', ''],
+    ['a\n|b', '2dd', 'a\n|b', ''],
+    ['|abc', '2ccX<Esc>', '|abc', ''],
+    ['|abc', '2yyp', '|abc', ''],
+    ['abc\n|def', 'yy2ddp', 'abc\ndef\n|def', 'def\n'],
+    // Not on the last line: the count stops at the end.
+    ['a\n|b\nc', '5dd', '|a', 'b\nc\n'],
+  ])('%j %s', (doc, keys, want, text) => {
+    const [got, reg] = S(doc, keys);
+    expect([got, reg]).toEqual([want, text]);
+  });
+});
+
+describe('r onto the same character is still a change', () => {
+  it.each([
+    ['|abc', 'xura<C-r>', '|abc'], // it costs the redo branch
+    ['|abc', 'xra.u', '|ac'], // and u undoes the no-op . on its own
+    ['|abc', 'xuvra<C-r>', '|abc'], // Visual r too
+  ])('%j %s', (doc, keys, want) => {
+    expect(C(doc, keys)).toBe(want);
+  });
+});
+
+describe('<C-o> in insert mode restarts the insert', () => {
+  it.each([
+    // The text before <C-o>, the <C-o> command and the text after are separate undo steps.
+    ['|abc', 'iX<C-o>lY<Esc>u', 'Xa|bc'],
+    ['|abc def', 'iX<C-o>zzY<Esc>u', 'X|abc def'],
+    ['|abc def', 'AX<C-o>0Y<Esc>u', '|abc defX'],
+    ['|abc def', 'iX<C-o>ddY<Esc>u', '|'],
+    ['|abc def', 'iX<C-o>ddY<Esc>uu', 'X|abc def'],
+    ['|abc def', 'iX<C-o>lY<Esc>u<C-r>', 'Xa|Ybc def'],
+    // . repeats only what was typed after the <C-o>, as an i, and a count is dropped.
+    ['|abc def', 'iX<C-o>lY<Esc>0.', '|YXaYbc def'],
+    ['|  abc def', 'wiX<C-o>lY<Esc>$.', '  XaYbc de|Yf'],
+    ['|  abc def', 'AX<C-o>0Y<Esc>$.', 'Y  abc def|YX'],
+    ['|  abc def', 'wiX<C-o>ddY<Esc>.', '|YY'],
+    ['|  abc def', 'w3iX<C-o>lY<Esc>$.', '  XaYbc de|Yf'],
+    // curswant follows the typing, and a <C-o> from the end of the line returns there.
+    ['|  abc def\nxyz', 'woX<C-o>kY<Esc>G$.', '  aYbc def\n  X\nxy|Yz'],
+    ['|abc', 'AX<C-o>zzY<Esc>', 'abcX|Y'],
+    ['|abc\nlonger line', 'AX<C-o>jY<Esc>', 'abcX\nlong|Yer line'],
+  ])('%j %s', (doc, keys, want) => {
+    expect(C(doc, keys)).toBe(want);
+  });
+});
+
+describe('r<C-v> takes the next character literally, or a code', () => {
+  it.each([
+    ['r<C-v><Tab>', '\tbc'],
+    ['2r<C-v><Tab>', '\t\tc'],
+    ['r<C-v><Tab>l.', '\t\tc'],
+    ['r<C-v>x41', 'Abc'],
+    ['r<C-v>065', 'Abc'],
+    ['r<C-v>o101', 'Abc'],
+    ['r<C-v>u00e9', 'ébc'],
+    ['r<C-v>q', 'qbc'],
+    ['r<C-v><C-a>', '\x01bc'],
+    ['r<C-v>xx<Esc>', '\x1bbc'], // no digits: the ending key itself, even <Esc>
+    ['r<C-v><CR>', '\rbc'], // a literal ^M does not split the line
+  ])('%s', (keys, want) => {
+    expect(run('abc', keys).buf.text()).toBe(want);
+  });
+  it('Visual block r<C-v><Tab>', () => {
+    expect(run('a|bcd\nefgh', '<C-v>jlr<C-v><Tab>').buf.text()).toBe('a\t\td\ne\t\th');
+  });
+});
+
+describe('word objects on an empty line and the unnamed register', () => {
+  it.each([
+    ['|abc\n\ndef', 'yiwjdiw', 'abc'], // d of an empty region leaves the registers alone
+    ['|abc\n\ndef', 'yiwjyiw', ''],
+    ['|abc\n\ndef', 'yiwjciw<Esc>', ''],
+  ])('%j %s', (doc, keys, text) => {
+    expect(S(doc, keys)[1]).toBe(text);
+  });
+});
+
+describe('the coach sees g- / g+ / U as undo', () => {
+  it.each(['g-', 'g+', 'U', 'u', '<C-r>'])('%s', keys => {
+    const v = run('|abc def', 'xxu');
+    v.feedKeys(keys);
+    expect(v.lastCommand?.kind).toBe('undo');
+  });
+});
+
+describe('blockwise yank and put over short lines', () => {
+  it.each([
+    // A line ending before the block starts yanks as blanks as wide as the block ($: to the
+    // longest line's end, plus one); one that reaches into it is not padded.
+    ['abc|defgh\ng\nmnop', '<C-v>jjly', 'de\n  \np'],
+    ['abc|defgh\ng\nmnop', '<C-v>jj$y', 'defgh\n      \np'],
+    ['ab|cd\ng\nmnopqrst', '<C-v>jj$y', 'cd\n       \nopqrst'],
+    ['a|bc\ng\nmno', '<C-v>jjly', 'bc\n\nno'],
+    ['ab|c\ng\nmno', '<C-v>jjd', 'c\n \no'],
+  ])('%j %s', (doc, keys, text) => {
+    expect(S(doc, keys)[1]).toBe(text);
+  });
+  it.each([
+    // Put pads a short line out to the block; trailing blanks only where text follows.
+    ['abc|def\ng\nmnopqr', '<C-v>jjldup', 'abcd|deef\ng     \nmnoppqqr'],
+    ['abc|def\ng\nmnopqr', '<C-v>jj$dup', 'abcd|defef\ng       \nmnoppqrqr'],
+  ])('%j %s', (doc, keys, want) => {
+    expect(C(doc, keys)).toBe(want);
+  });
+});
