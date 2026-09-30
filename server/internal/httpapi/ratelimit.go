@@ -64,15 +64,14 @@ func (l *limiter) allow(key string) (bool, int) {
 	return false, int(wait) + 1
 }
 
-// clientIP is the peer address, or the first X-Forwarded-For hop when a
-// trusted proxy (Caddy, NPM) sits in front and sets it.
+// clientIP is the peer address, or the LAST X-Forwarded-For hop when a
+// trusted proxy (Caddy, NPM) sits directly in front: that hop is the peer the
+// proxy itself saw, while earlier hops came from the client and can be forged.
 func (s *Server) clientIP(r *http.Request) string {
 	if s.TrustProxy {
 		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
-			if first, _, ok := strings.Cut(xff, ","); ok {
-				return strings.TrimSpace(first)
-			}
-			return strings.TrimSpace(xff)
+			hops := strings.Split(xff, ",")
+			return strings.TrimSpace(hops[len(hops)-1])
 		}
 	}
 	host, _, err := net.SplitHostPort(r.RemoteAddr)

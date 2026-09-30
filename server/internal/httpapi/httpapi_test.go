@@ -444,9 +444,17 @@ func TestRateLimitClientIP(t *testing.T) {
 	if w := do(t, h, "POST", "/api/runs", runJSON("hjkl", at+500, 50), withCookie(alice), withHeader("X-Forwarded-For", "203.0.113.7")); w.Code != http.StatusTooManyRequests {
 		t.Fatalf("spoofed XFF without a trusted proxy = %d, want 429", w.Code)
 	}
+	// Behind a trusted proxy the client is the LAST hop: nginx/NPM append the peer they saw, so
+	// anything before it was supplied by the client and can be forged.
 	s.TrustProxy = true
 	h = s.Handler()
-	if w := do(t, h, "POST", "/api/runs", runJSON("hjkl", at+501, 50), withCookie(alice), withHeader("X-Forwarded-For", "203.0.113.7, 10.0.0.1")); w.Code != http.StatusNoContent {
+	if w := do(t, h, "POST", "/api/runs", runJSON("hjkl", at+501, 50), withCookie(alice), withHeader("X-Forwarded-For", "10.0.0.1, 203.0.113.7")); w.Code != http.StatusNoContent {
 		t.Fatalf("real client behind the proxy = %d, want 204", w.Code)
+	}
+	for i := 0; i < runWriteBurst; i++ {
+		do(t, h, "POST", "/api/runs", runJSON("hjkl", at+600+int64(i), 50), withCookie(alice), withHeader("X-Forwarded-For", "10.0.0.1, 203.0.113.7"))
+	}
+	if w := do(t, h, "POST", "/api/runs", runJSON("hjkl", at+900, 50), withCookie(alice), withHeader("X-Forwarded-For", "198.51.100.9, 203.0.113.7")); w.Code != http.StatusTooManyRequests {
+		t.Fatalf("a forged first hop must not open a fresh bucket: %d, want 429", w.Code)
 	}
 }
