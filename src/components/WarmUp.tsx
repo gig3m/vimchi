@@ -89,6 +89,7 @@ export function WarmUp({ plan, seed: urlSeed, coachLive, runs, isGuest, onRun, o
             onRun={done}
             onNext={() => {}}
             onStats={onStats}
+            onNewWarmUp={again}
           />
           <div className="practice-foot wu-foot">
             <span className="practice-foot-note">
