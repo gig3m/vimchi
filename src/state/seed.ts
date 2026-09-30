@@ -28,9 +28,11 @@ export const WARMUP_ROUTE = 'warm-up';
 export const isWarmUpHash = (hash: string) => lessonIdFromHash(hash) === WARMUP_ROUTE;
 /** Profile has its own URL, so Back from it returns to where the learner was. */
 export const PROFILE_HREF = '#profile';
+/** The About page: what the tutor is built on, with links to the real plugins. */
+export const ABOUT_HREF = '#about';
 
 export type Route = {
-  view: 'lesson' | 'profile' | 'warm-up';
+  view: 'lesson' | 'profile' | 'warm-up' | 'about';
   /** The lesson a lesson route names; null = the app picks one (the last lesson, or the first). */
   id: string | null;
   /** False for an empty or unknown hash: the app should replace it with the page it shows. */
@@ -41,6 +43,7 @@ export function routeFromHash(hash: string, isLesson: (id: string) => boolean): 
   const id = lessonIdFromHash(hash);
   if (id === WARMUP_ROUTE) return { view: 'warm-up', id: null, canonical: true };
   if ('#' + id === PROFILE_HREF) return { view: 'profile', id: null, canonical: true };
+  if ('#' + id === ABOUT_HREF) return { view: 'about', id: null, canonical: true };
   if (id && isLesson(id)) return { view: 'lesson', id, canonical: true };
   return { view: 'lesson', id: null, canonical: false };
 }

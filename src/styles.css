@@ -624,3 +624,16 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 .cp-mv-bg { background: var(--cyan); }
 .cp-ty-bg { background: var(--yellow); }
 .cp-ed-bg { background: var(--pink); }
+
+/* ---- About ---- */
+.side-about { padding: 0 16px 12px; font-size: 12px; }
+.side-about .link { background: none; border: 0; padding: 0; color: var(--muted); cursor: pointer; font: inherit; }
+.side-about .link:hover, .side-about .link.on { color: var(--fg); text-decoration: underline; }
+.about h2 { font-family: var(--display); font-size: 22px; margin: 32px 0 10px; color: var(--fg); }
+.about a { color: var(--cyan); }
+.about-table { width: 100%; border-collapse: collapse; margin: 8px 0 4px; font-size: 14px; }
+.about-table th { text-align: left; font-weight: 600; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.about-table td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.about-table td:first-child { white-space: nowrap; }
+.about-keys code { margin-right: 4px; }
+@media (max-width: 640px) { .about-table td:first-child { white-space: normal; } }
