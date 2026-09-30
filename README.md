@@ -66,11 +66,11 @@ exist; until a GitHub OAuth app is registered (callback
 
 ## Credits
 
-The plugin lessons emulate the default keymaps of vim-surround/nvim-surround, vim-exchange,
-ReplaceWithRegister, vim-abolish, mini.ai, flash.nvim, harpoon, telescope.nvim, oil.nvim,
-vim-fugitive and gitsigns.nvim; their code is not included, except that the case-coercion rules
-in `src/vim/plugins/abolish.ts` are translated from Tim Pope's abolish.vim (Vim license). Fonts (IBM Plex Sans,
-JetBrains Mono, Space Grotesk) load from Google Fonts under the SIL Open Font License.
+The plugin lessons emulate the default keymaps of nvim-surround, mini.ai and
+nvim-treesitter-textobjects, flash.nvim, telescope.nvim, oil.nvim, gitsigns.nvim, lazygit,
+grug-far.nvim and a LuaSnip/blink.cmp-style completion and snippet flow; their code is not
+included. Fonts (IBM Plex Sans, JetBrains Mono, Space Grotesk) load from Google Fonts under
+the SIL Open Font License.
 
 Challenge files (`src/challenges/corpus/`) are short excerpts from these repos, used under their
 licenses, attributed per file, with their license texts shipped at `/THIRD-PARTY-NOTICES.txt`

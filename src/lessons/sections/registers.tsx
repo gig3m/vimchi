@@ -46,7 +46,7 @@ export const registers: Section = {
           <p>
             Yank a word, delete the one you meant to replace, press <Code>p</Code>: you get the deleted word back. The
             next lesson shows where the yank went.
-          </p>
+           <Code>"+</Code> is the system clipboard; <Code>:reg</Code> lists every register.</p>
         ),
       },
       challenge: {
@@ -817,74 +817,6 @@ export const registers: Section = {
       },
     },
     {
-      id: 'clipboard-register',
-      title: 'System Clipboard',
-      chips: ['"+'],
-      keyCards: [
-        { key: '"+', glyph: '⧉', label: 'system clipboard' },
-        { key: '"*', glyph: '⧉', label: 'primary selection', sub: 'X11 / Wayland' },
-      ],
-      intro: (
-        <>
-          <p>
-            <Code>{'"+'}</Code> is the system clipboard: <Code>{'"+y'}</Code> copies for other apps,{' '}
-            <Code>{'"+p'}</Code> pastes what they copied. On Linux, <Code>{'"*'}</Code> is the middle-click selection; on
-            macOS and Windows it's the same as <Code>{'"+'}</Code>.
-          </p>
-          <p>
-            Keeping the clipboard separate means Vim's constant deletes never trample what you copied from the browser.
-            If you'd rather merge them, one option does it.
-          </p>
-        </>
-      ),
-      practice: total => <p>The browser can't hand its clipboard to the tutor, so this one's a quiz. {total} questions.</p>,
-      aside: {
-        title: 'Over SSH',
-        body: (
-          <p>
-            Neovim 0.10 and later can copy through OSC 52, so <Code>{'"+y'}</Code> on a remote machine lands in your
-            local clipboard in terminals that support it.
-          </p>
-        ),
-      },
-      challenge: {
-        kind: 'quiz',
-        questions: [
-          {
-            prompt: 'Copy the current line so you can paste it into Slack.',
-            options: ['"+yy', 'yy', '"0yy', '"_yy'],
-            answer: 0,
-            explain: '"+ is the system clipboard. Plain yy only fills Vim\'s own registers.',
-          },
-          {
-            prompt: 'You copied a URL in the browser. Put it after the cursor.',
-            options: ['p', '"+p', '"0p', '".p'],
-            answer: 1,
-            explain: 'Text copied outside Vim is only in "+ unless you have set clipboard=unnamedplus.',
-          },
-          {
-            prompt: 'Which setting makes every yank and put use the system clipboard?',
-            code: "-- init.lua\nvim.opt.clipboard = ???",
-            options: ["'unnamed'", "'unnamedplus'", "'system'", "'autoselect'"],
-            answer: 1,
-            explain: "'unnamedplus' ties the unnamed register to \"+. 'unnamed' ties it to \"*, the selection on Linux.",
-          },
-          {
-            prompt: 'With the default settings, you yank a word with yiw. Where is it now?',
-            options: ['"+ only', '"" and "1', '"" and "+', '"" and "0'],
-            answer: 3,
-            explain: 'Yanks go to the unnamed register and "0. The clipboard stays untouched.',
-          },
-          {
-            prompt: 'In insert mode, paste the clipboard without leaving insert.',
-            options: ['<C-v>', '<C-r>+', '<C-o>p', '<C-r>0'],
-            answer: 1,
-            explain: '<C-r> followed by a register name inserts its contents; + is the clipboard.',
-          },
-        ],
-      },
-    },
-    {
       id: 'read-only-registers',
       title: 'Read-Only Registers',
       chips: ['".', '"%', '":'],
@@ -1228,80 +1160,6 @@ export const registers: Section = {
             },
             goal: { text: ['{', '  "sku": "MUG-01",', '  "qty": 3,', '  "price": 4.99,', '  "total": 14.97', '}'] },
             solution: "2j$s<C-r>=printf('%.2f', 3 * 4.99)<CR><Esc>",
-          },
-        ],
-      },
-    },
-    {
-      id: 'viewing-registers',
-      title: 'Viewing Registers',
-      chips: [':reg'],
-      keyCards: [{ key: ':reg', glyph: '☰', label: 'list registers', sub: ':reg a b for some' }],
-      intro: (
-        <>
-          <p>
-            <Code>:reg</Code> (short for <Code>:registers</Code>) lists every register that holds something: its
-            type, its name, and the start of its contents. <Code>:reg a0</Code> shows just <Code>a</Code> and{' '}
-            <Code>0</Code>.
-          </p>
-          <p>
-            Check it before a put when you're not sure what's where. The type column says how it will paste:{' '}
-            <Mono>l</Mono> for whole lines, <Mono>c</Mono> for characters, <Mono>b</Mono> for a block.
-          </p>
-        </>
-      ),
-      practice: total => <p>Read the <Code>:reg</Code> output and pick the key that does what's asked. {total} questions.</p>,
-      aside: {
-        title: 'Control keys',
-        body: (
-          <p>
-            Recorded macros show control keys as <Mono>^[</Mono> for Escape and <Mono>^M</Mono> for Enter. The
-            tutor's <Code>:reg</Code> shows the same thing.
-          </p>
-        ),
-      },
-      challenge: {
-        kind: 'quiz',
-        questions: [
-          {
-            prompt: 'Put the route line you yanked earlier below the cursor.',
-            code: [
-              'Type Name Content',
-              '  l  ""   const id = req.params.id;^J',
-              "  l  \"0   app.get('/users/:id', getUser);^J",
-              '  l  "1   const id = req.params.id;^J',
-              '  c  "-   tmp',
-            ].join('\n'),
-            options: ['p', '"0p', '"1p', '"-p'],
-            answer: 1,
-            explain: 'The route line is the last yank, so it is in "0. The unnamed register has since picked up a delete.',
-          },
-          {
-            prompt: 'Which register holds a macro?',
-            code: ['Type Name Content', '  c  "a   I- ^[j', '  c  "b   https://example.com/docs', '  l  "c   import os^J'].join('\n'),
-            options: ['"a', '"b', '"c', 'none'],
-            answer: 0,
-            explain: '^[ is Escape, so "a holds keys: insert "- ", leave insert, move down.',
-          },
-          {
-            prompt: 'You cut "tmp" with dw. Which put brings it back?',
-            code: ['Type Name Content', '  c  ""   tmp ', '  l  "0   return total;^J', '  c  "-   tmp '].join('\n'),
-            options: ['"0p', '"1p', '"-p', '"tp'],
-            answer: 2,
-            explain: 'Deletes within one line go to "-, the small delete register. p would work too, since "" points there.',
-          },
-          {
-            prompt: 'Which of these puts as whole lines?',
-            code: ['Type Name Content', '  c  "a   userId', '  l  "b   return nil^J', '  b  "c   foo^Jbar'].join('\n'),
-            options: ['"ap', '"bp', '"cp', 'all of them'],
-            answer: 1,
-            explain: 'Type l means linewise: "bp opens a new line below. c puts inline, b puts a rectangle.',
-          },
-          {
-            prompt: 'Show only registers a and 0.',
-            options: [':reg a0', ':reg "a"0', ':reg a,0', ':show a 0'],
-            answer: 0,
-            explain: ':reg takes a list of register names with no separators.',
           },
         ],
       },
