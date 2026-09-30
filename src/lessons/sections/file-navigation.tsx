@@ -10,7 +10,7 @@ const exists = (vim: Vim, f: string) => vim.fs.read(f) != null;
 
 export const fileNavigation: Section = {
   id: 'file-navigation',
-  title: 'File Navigation',
+  title: 'Explorer',
   band: 'project',
   lessons: [
     {
@@ -36,12 +36,12 @@ export const fileNavigation: Section = {
       ),
       practice: total => <p>Walk the project with <Code>-</Code> and <Code>CR</Code> to reach each file. {total} rounds.</p>,
       aside: {
-        title: 'Where is -?',
+        title: 'Tree explorers',
         body: (
           <p>
-            oil's README suggests <Code>{"vim.keymap.set('n', '-', '<CMD>Oil<CR>')"}</Code>; it replaces the rarely used
-            {' '}<Code>-</Code> motion. mini.files and neo-tree are the column and tree-style alternatives; netrw's{' '}
-            <Code>:Explore</Code> is built in.
+            LazyVim's default is neo-tree on <Code>Space e</Code>; kickstart ships none (netrw's <Code>:Explore</Code>
+            is built in). The idea is the same: a directory you move through. oil's twist is that the listing is a
+            buffer you edit and <Code>:w</Code>; its README maps it to <Code>-</Code>, replacing a rarely used motion.
           </p>
         ),
       },
