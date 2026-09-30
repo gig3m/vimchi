@@ -39,7 +39,7 @@ export const globalCommands: Section = {
         </p>
       ),
       aside: {
-        title: 'Try it with p first',
+        title: 'Check before you delete',
         body: (
           <p>
             <Code>:g/pattern/</Code> with no command prints the matching lines, so you can check what a pattern hits
@@ -80,7 +80,7 @@ export const globalCommands: Section = {
             solution: ':g/console/d<CR>',
           },
           {
-            prompt: 'Strip the comment lines from the config.',
+            prompt: 'Delete the lines that start with "#". In a pattern, ^ is the start of a line.',
             setup: {
               name: 'redis.conf',
               text: [
@@ -99,7 +99,7 @@ export const globalCommands: Section = {
             solution: ':g/^#/d<CR>',
           },
           {
-            prompt: 'Delete the blank lines.',
+            prompt: 'Delete the empty lines. ^$ matches a line with nothing on it.',
             setup: {
               name: 'signups.csv',
               text: ['date,plan,count', '', '2026-09-01,free,118', '2026-09-01,pro,14', '', '', '2026-09-02,free,97', '2026-09-02,pro,21'],
@@ -109,7 +109,7 @@ export const globalCommands: Section = {
             solution: ':g/^$/d<CR>',
           },
           {
-            prompt: 'Drop the DEBUG noise from the log.',
+            prompt: 'Delete every DEBUG line.',
             setup: {
               name: 'api.log',
               text: [
@@ -132,7 +132,7 @@ export const globalCommands: Section = {
             solution: ':g/DEBUG/d<CR>',
           },
           {
-            prompt: 'Delete the comment lines, including the indented one.',
+            prompt: 'Delete the lines that start with "--", indented or not. \\s* matches any indent.',
             setup: {
               name: 'keymaps.lua',
               text: [
@@ -218,7 +218,7 @@ export const globalCommands: Section = {
             solution: ':v/ERROR/d<CR>',
           },
           {
-            prompt: 'Keep the header and the German customers only.',
+            prompt: 'Keep line 1 and the lines ending in DE; delete the rest.',
             setup: {
               name: 'customers.csv',
               text: ['id,name,country', '101,Ada Lovelace,GB', '102,Jonas Weber,DE', '103,Lea Fischer,DE', '104,Marta Silva,PT'],
@@ -228,7 +228,7 @@ export const globalCommands: Section = {
             solution: ':2,$v/DE/d<CR>',
           },
           {
-            prompt: 'Keep only the exported functions.',
+            prompt: 'Keep only the lines that start with "export".',
             setup: {
               name: 'money.ts',
               text: [
@@ -251,7 +251,7 @@ export const globalCommands: Section = {
             solution: ':v/^export/d<CR>',
           },
           {
-            prompt: 'Delete every line that is empty or only whitespace.',
+            prompt: 'Delete every line that is empty or only spaces and tabs. \\S matches anything but a space or tab.',
             setup: {
               name: 'notes.md',
               text: ['# Standup', '   ', '- shipped the export fix', '', '- pairing on auth after lunch', '\t', '- blocked on staging creds'],
@@ -307,7 +307,7 @@ export const globalCommands: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Comment out every console.log line.',
+            prompt: 'Comment out every console.log line. gcc comments out a line.',
             setup: {
               name: 'sync.ts',
               text: [
@@ -333,7 +333,7 @@ export const globalCommands: Section = {
             solution: ':g/console/norm gcc<CR>',
           },
           {
-            prompt: 'Tick every task assigned to @lin.',
+            prompt: 'Change "[ ]" to "[x]" on every line with @lin.',
             setup: {
               name: 'sprint.md',
               text: [
@@ -355,7 +355,7 @@ export const globalCommands: Section = {
             solution: ':g/@lin/norm f[lrx<CR>',
           },
           {
-            prompt: 'Demote every level-2 heading to level 3.',
+            prompt: 'Add a "#" to the start of every line that starts with "## ".',
             setup: {
               name: 'guide.md',
               text: ['# Setup', '## Install', 'Run npm install.', '## Configure', 'Copy .env.example to .env.', '## Run', 'npm run dev'],
@@ -367,7 +367,7 @@ export const globalCommands: Section = {
             solution: ':g/^## /norm I#<CR>',
           },
           {
-            prompt: 'Delete the stack-trace line under each ERROR.',
+            prompt: 'Delete the line under each ERROR line.',
             setup: {
               name: 'worker.log',
               text: [
@@ -439,7 +439,7 @@ export const globalCommands: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Reverse the log so the newest commit is on top.',
+            prompt: 'Reverse the order of all the lines.',
             setup: {
               name: 'commits.txt',
               text: ['a1f3c9e init project', '4be02d1 add login form', '9c71aa0 fix session expiry', 'e02b5f4 release v1.2.0'],
@@ -449,7 +449,7 @@ export const globalCommands: Section = {
             solution: ':g/^/m0<CR>',
           },
           {
-            prompt: 'Reverse the data rows, lines 2 to 5, below the header.',
+            prompt: 'Reverse lines 2 to 5. Line 1 stays on top.',
             setup: {
               name: 'uptime.csv',
               text: ['day,uptime', 'mon,99.98', 'tue,99.91', 'wed,100.00', 'thu,99.72'],
@@ -483,7 +483,7 @@ export const globalCommands: Section = {
             solution: ':g/TODO/m$<CR>',
           },
           {
-            prompt: 'Copy every exported name to the end, to start an index.',
+            prompt: 'Copy every line that starts with "export" to the end of the file.',
             setup: {
               name: 'index.ts',
               text: [
@@ -557,7 +557,7 @@ export const globalCommands: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Sort the requirements.',
+            prompt: 'Sort all the lines.',
             setup: {
               name: 'requirements.txt',
               text: ['requests==2.32.3', 'fastapi==0.115.0', 'uvicorn==0.30.6', 'pydantic==2.9.2', 'httpx==0.27.2'],
@@ -567,7 +567,7 @@ export const globalCommands: Section = {
             solution: ':sort<CR>',
           },
           {
-            prompt: 'Sort by size, smallest first.',
+            prompt: 'Sort by the number at the start of each line, smallest first.',
             setup: {
               name: 'du.txt',
               text: ['412 node_modules', '8 src', '96 dist', '1 README.md', '24 public'],
@@ -577,7 +577,7 @@ export const globalCommands: Section = {
             solution: ':sort n<CR>',
           },
           {
-            prompt: 'Highest score first.',
+            prompt: 'Sort by the number at the start of each line, highest first.',
             setup: {
               name: 'scores.txt',
               text: ['1840 ada', '2210 grace', '975 linus', '3120 margaret'],
@@ -587,7 +587,7 @@ export const globalCommands: Section = {
             solution: ':sort! n<CR>',
           },
           {
-            prompt: 'Sort the declarations inside the rule.',
+            prompt: 'Sort the lines inside the { } block.',
             setup: {
               name: 'card.css',
               text: ['.card {', '  padding: 16px;', '  border: 1px solid #ddd;', '  display: flex;', '  color: #222;', '}'],
@@ -622,7 +622,7 @@ export const globalCommands: Section = {
           </p>
           <p>
             It combines with the other flags: <Code>:sort ui</Code> treats <Code>Vim</Code> and <Code>vim</Code> as
-            duplicates, and <Code>:sort nu</Code> sorts numbers first.
+            duplicates, and <Code>:sort nu</Code> compares lines by their number.
           </p>
           <BeforeAfter lines={['sam', 'ada', 'priya', 'ada', 'sam']} cursor={[0, 0]} keys=":sort u<CR>" />
         </>
@@ -646,7 +646,7 @@ export const globalCommands: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Sort the mailing list and drop the duplicate addresses.',
+            prompt: 'Sort the lines and drop the duplicates.',
             setup: {
               name: 'emails.txt',
               text: ['sam@example.com', 'ada@example.com', 'priya@example.com', 'ada@example.com', 'sam@example.com'],
@@ -656,7 +656,7 @@ export const globalCommands: Section = {
             solution: ':sort u<CR>',
           },
           {
-            prompt: 'Deduplicate the ports numerically.',
+            prompt: 'Sort the numbers by value and drop the duplicates.',
             setup: {
               name: 'ports.txt',
               text: ['8080', '443', '5432', '80', '443', '8080'],
@@ -666,7 +666,7 @@ export const globalCommands: Section = {
             solution: ':sort nu<CR>',
           },
           {
-            prompt: 'Merge the tags, ignoring case.',
+            prompt: 'Sort and drop the duplicates, treating Lua and lua as the same.',
             setup: {
               name: 'tags.txt',
               text: ['neovim', 'lua', 'Neovim', 'terminal', 'Lua', 'dotfiles'],
@@ -676,7 +676,7 @@ export const globalCommands: Section = {
             solution: ':sort ui<CR>',
           },
           {
-            prompt: 'Clean up the build section only.',
+            prompt: 'Sort line 5 to the end and drop the duplicates. The lines above stay.',
             setup: {
               name: '.gitignore',
               text: ['# deps', 'node_modules/', '', '# build', 'dist/', 'coverage/', 'dist/', '.cache/', 'coverage/'],
@@ -777,7 +777,7 @@ export const globalCommands: Section = {
             solution: ':%!column -t<CR>',
           },
           {
-            prompt: 'Keep only the request paths, the third field.',
+            prompt: "Keep only the third field of each line, like /orders. awk '{print $3}' prints it.",
             setup: {
               name: 'access.log',
               text: ['10:02:11 GET /orders 200', '10:02:13 GET /invoices/88 500', '10:02:19 POST /checkout 500'],

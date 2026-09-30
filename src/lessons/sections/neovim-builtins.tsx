@@ -761,12 +761,12 @@ export const codeNavigation: Section = {
       intro: (
         <>
           <p>
-            A language server reports errors and warnings as diagnostics: a letter in the sign column and the message
-            at the end of the line. <Code>]d</Code> jumps to the next one, <Code>[d</Code> to the previous.
+            A language server reports errors and warnings as diagnostics: a letter in the sign column and, in most
+            configs, the message at the end of the line. <Code>]d</Code> jumps to the next one, <Code>[d</Code> to the previous.
           </p>
           <p>
-            Both wrap around the file and take a count. Fix, <Code>]d</Code>, fix: no scrolling to find the next red
-            squiggle.
+            Both wrap around the file and take a count. Fix, <Code>]d</Code>, fix: no scrolling to find the next
+            underlined mistake.
           </p>
         </>
       ),
@@ -840,37 +840,37 @@ export const codeNavigation: Section = {
         base: { plugins: ['lsp'] },
         rounds: [
           {
-            prompt: 'Jump to where formatMoney is defined.',
+            prompt: 'Jump to where formatMoney is defined. The cursor is on it.',
             setup: shop('src/cart.ts', at(CART, 6, 'formatMoney')),
             goal: { buffer: 'src/money.ts', cursor: at(MONEY, 1, 'formatMoney') },
             solution: 'gd',
           },
           {
-            prompt: 'Read the docs for formatMoney.',
+            prompt: "Show the docs for formatMoney, on the cursor's line.",
             setup: shop('src/receipt.ts', at(RECEIPT, 3, 'return')),
             goal: { check: hoverOpen },
             solution: 'ffK',
           },
           {
-            prompt: 'Go to the TAX_RATE constant.',
+            prompt: 'Jump to where TAX_RATE is defined. The cursor is on it.',
             setup: shop('src/cart.ts', at(CART, 14, 'TAX_RATE')),
             goal: { buffer: 'src/cart.ts', cursor: at(CART, 3, 'TAX_RATE') },
             solution: 'gd',
           },
           {
-            prompt: 'What does CartItem hold? Show its type.',
+            prompt: "Show the docs for CartItem, on the cursor's line.",
             setup: shop('src/cart.ts', at(CART, 5, 'export')),
             goal: { check: hoverOpen },
             solution: 'fCK',
           },
           {
-            prompt: 'Jump to the CartItem interface.',
+            prompt: 'Jump to where CartItem is defined. The cursor is on it.',
             setup: shop('src/cart.ts', at(CART, 9, 'CartItem')),
             goal: { buffer: 'src/types.ts', cursor: at(TYPES, 0, 'CartItem') },
             solution: 'gd',
           },
           {
-            prompt: 'What does padEnd take? Show its docs.',
+            prompt: 'Show the docs for padEnd. The cursor is on it.',
             setup: shop('src/receipt.ts', at(RECEIPT, 3, 'padEnd')),
             goal: { check: hoverOpen },
             solution: 'K',
@@ -925,25 +925,25 @@ export const codeNavigation: Section = {
             solution: 'grr]Q',
           },
           {
-            prompt: 'From receipt.ts, list the references and jump to the second: the call in lineTotal.',
+            prompt: 'List the references to formatMoney and jump to the second entry, line 7 of cart.ts.',
             setup: shop('src/receipt.ts', at(RECEIPT, 3, 'formatMoney')),
             goal: { buffer: 'src/cart.ts', cursor: at(CART, 6, 'formatMoney') },
             solution: 'grr]q',
           },
           {
-            prompt: 'List the classes implementing PaymentProvider and go to the second.',
+            prompt: 'The cursor is on PaymentProvider. List its implementations and go to the second.',
             setup: shop('src/payments.ts', at(PAYMENTS, 0, 'PaymentProvider')),
             goal: { buffer: 'src/payments.ts', cursor: at(PAYMENTS, 14, 'InvoiceProvider') },
             solution: 'gri]q',
           },
           {
-            prompt: 'Logger has one implementation. Go to it.',
+            prompt: 'The cursor is on Logger, which has one implementation. Jump to it.',
             setup: shop('src/log.ts', at(LOG, 0, 'Logger')),
             goal: { buffer: 'src/log.ts', cursor: at(LOG, 4, 'ConsoleLogger') },
             solution: 'gri',
           },
           {
-            prompt: 'Find the charge method implementations and go to the last.',
+            prompt: 'The cursor is on charge. List its implementations and go to the last.',
             setup: shop('src/payments.ts', at(PAYMENTS, 1, 'charge')),
             goal: { buffer: 'src/payments.ts', cursor: at(PAYMENTS, 15, 'charge') },
             solution: 'gri]Q',
@@ -1056,7 +1056,7 @@ export const codeNavigation: Section = {
               solution: 'gO/refund<CR><CR>',
             },
             {
-              prompt: 'Jump to the paidAt field of Invoice.',
+              prompt: 'Jump to the paidAt symbol.',
               setup: { cursor: { line: 36, col: 2 } },
               goal: { buffer: 'invoices.ts', cursor: at(inv, 8, 'paidAt') },
               solution: 'gO/paid<CR><CR>',

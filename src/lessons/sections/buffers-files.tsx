@@ -239,7 +239,7 @@ export const buffersFiles: Section = {
             solution: ':ls<CR>:b2<CR>',
           },
           {
-            prompt: 'Switch to the notes routes.',
+            prompt: 'Switch to src/routes/notes.ts.',
             goal: { buffer: 'src/routes/notes.ts' },
             solution: ':b notes<CR>',
           },
@@ -249,7 +249,7 @@ export const buffersFiles: Section = {
             solution: ':b1<CR>',
           },
           {
-            prompt: 'Back to the README.',
+            prompt: 'You are in index.ts. Switch back to the README.',
             setup: { init: vim => { FIVE(vim); vim.ex('b1'); } },
             goal: { buffer: 'README.md' },
             solution: ':b READ<CR>',
@@ -359,7 +359,7 @@ export const buffersFiles: Section = {
         body: (
           <p>
             <Code>#</Code> means the alternate file on the command line too: <Code>:e #</Code> does what{' '}
-            <Code>C-^</Code> does, and <Code>:vs #</Code> opens it in a split.
+            <Code>C-^</Code> does. Once you meet splits, <Code>:vs #</Code> opens it beside you.
           </p>
         ),
       },
@@ -380,7 +380,7 @@ export const buffersFiles: Section = {
             solution: ':e src/config.ts<CR><C-^>',
           },
           {
-            prompt: 'Open the imported src/db.ts, then flip back.',
+            prompt: 'Open src/db.ts, then flip back.',
             setup: { open: 'src/routes/notes.ts', cursor: { line: 1, col: 20 } },
             goal: { buffer: 'src/routes/notes.ts', check: vim => vim.win.alt?.name === 'src/db.ts' },
             solution: ':e src/db.ts<CR><C-^>',
@@ -433,7 +433,7 @@ export const buffersFiles: Section = {
         base: { files: PROJECT, open: 'src/index.ts', height: 14, init: FIVE },
         rounds: [
           {
-            prompt: "You're done with the README. Close it.",
+            prompt: 'Close the README, the buffer you are in.',
             goal: { check: vim => !listed(vim, 'README.md') && listed(vim, 'src/db.ts') },
             solution: ':bd<CR>',
           },
@@ -451,7 +451,7 @@ export const buffersFiles: Section = {
             solution: ':bd 2 3<CR>',
           },
           {
-            prompt: "notes.ts has edits you don't want. Close it anyway.",
+            prompt: "You are in the README. Close notes.ts, which has edits you don't want.",
             setup: {
               init: vim => {
                 FIVE(vim);
@@ -502,30 +502,30 @@ export const buffersFiles: Section = {
         base: { files: PROJECT, open: 'src/index.ts', height: 14 },
         rounds: [
           {
-            prompt: 'Open the server module.',
+            prompt: "Open './server', the path on the cursor's line.",
             goal: { buffer: 'src/server.ts' },
             solution: "f'gf",
           },
           {
-            prompt: 'Open the notes routes.',
+            prompt: "Open './routes/notes', the path on the cursor's line.",
             setup: { open: 'src/server.ts', cursor: { line: 1, col: 0 } },
             goal: { buffer: 'src/routes/notes.ts' },
             solution: 'f.gf',
           },
           {
-            prompt: 'Open the settings file the README mentions.',
+            prompt: "Open src/config.ts, named on the cursor's line.",
             setup: { open: 'README.md', cursor: { line: 6, col: 0 } },
             goal: { buffer: 'src/config.ts' },
             solution: '$gf',
           },
           {
-            prompt: 'Open the db module this route imports.',
+            prompt: "Open '../db', the path on the cursor's line.",
             setup: { open: 'src/routes/users.ts', cursor: { line: 1, col: 0 } },
             goal: { buffer: 'src/db.ts' },
             solution: "f'gf",
           },
           {
-            prompt: 'Follow the import from the test to the server.',
+            prompt: "Open '../src/server', the path on the line below the cursor.",
             setup: { open: 'test/notes.test.ts', cursor: { line: 0, col: 0 } },
             goal: { buffer: 'src/server.ts' },
             solution: "jf'gf",
@@ -581,7 +581,7 @@ export const buffersFiles: Section = {
             solution: ':find config.ts<CR>',
           },
           {
-            prompt: 'Open the notes test.',
+            prompt: 'Open notes.test.ts.',
             goal: { buffer: 'test/notes.test.ts' },
             solution: ':find notes.test.ts<CR>',
           },
