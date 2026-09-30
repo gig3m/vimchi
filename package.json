@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc -b",
-    "check:nvim": "scripts/nvimcheck/run.sh"
+    "check:nvim": "scripts/nvimcheck/run.sh",
+    "curriculum": "CURRICULUM_WRITE=1 vitest run src/lessons/__tests__/curriculum-doc.test.ts"
   },
   "dependencies": {
     "react": "^19.3.0",
