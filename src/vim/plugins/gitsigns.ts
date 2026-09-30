@@ -1,5 +1,5 @@
 // gitsigns.nvim with the README's on_attach keymaps: signs from the buffer vs
-// the index, ]c / [c, <leader>hs / hr (stage / reset hunk, also in visual),
+// the index, ]c / [c (LazyVim: ]h / [h), <leader>hs / hr (LazyVim: <leader>ghs / ghr; also in visual),
 // <leader>hS / hR (buffer), <leader>hp (preview), <leader>hb (blame line), ih,
 // and :Gitsigns {stage_hunk,reset_hunk,preview_hunk,blame_line,next_hunk,prev_hunk}.
 
@@ -134,6 +134,17 @@ export const gitsigns: Plugin = {
       if (h) reset(vim, [h]);
     }, { change: true });
     vim.map(['v'], '<leader>hr', () => reset(vim, hunksIn(vim, ...range())), { change: true });
+    // LazyVim's <leader>gh prefix for the same actions.
+    vim.map(['n'], '<leader>ghs', () => {
+      const h = hunkAt(vim);
+      if (h) stage(vim, [h]);
+    });
+    vim.map(['v'], '<leader>ghs', () => stage(vim, hunksIn(vim, ...range())));
+    vim.map(['n'], '<leader>ghr', () => {
+      const h = hunkAt(vim);
+      if (h) reset(vim, [h]);
+    }, { change: true });
+    vim.map(['v'], '<leader>ghr', () => reset(vim, hunksIn(vim, ...range())), { change: true });
     vim.map(['n'], '<leader>hS', () => stage(vim, bufferHunks(vim, vim.buf) ?? []));
     vim.map(['n'], '<leader>hR', () => reset(vim, bufferHunks(vim, vim.buf) ?? []), { change: true });
     vim.map(['n'], '<leader>hp', () => preview(vim));

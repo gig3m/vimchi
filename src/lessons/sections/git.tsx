@@ -125,10 +125,10 @@ export const git: Section = {
     {
       id: 'gitsigns-hunks',
       title: 'Walking Hunks',
-      chips: [']c', '[c'],
+      chips: [']h', '[h'],
       keyCards: [
-        { key: ']c', glyph: '↓', label: 'next hunk', sub: 'gitsigns' },
-        { key: '[c', glyph: '↑', label: 'previous hunk' },
+        { key: ']h', glyph: '↓', label: 'next hunk', sub: 'LazyVim; kickstart: ]c' },
+        { key: '[h', glyph: '↑', label: 'previous hunk', sub: 'kickstart: [c' },
       ],
       intro: (
         <>
@@ -138,7 +138,7 @@ export const git: Section = {
             <span className="hl-red">red</span> <Code>_</Code> under the spot where lines were deleted.
           </p>
           <p>
-            <Code>]c</Code> jumps to the start of the next hunk and <Code>[c</Code> to the previous one. Both take a
+            <Code>]h</Code> jumps to the start of the next hunk and <Code>[h</Code> to the previous one. Both take a
             count and wrap around the file.
           </p>
         </>
@@ -149,11 +149,11 @@ export const git: Section = {
         </p>
       ),
       aside: {
-        title: 'Same keys as diff mode',
+        title: "kickstart's keys",
         body: (
           <p>
-            <Code>]c</Code> is diff mode's "next change". gitsigns' README maps it to fall back to the built-in when the
-            window is in diff mode, so one habit covers both.
+            kickstart maps the same jumps to <Code>]c</Code> / <Code>[c</Code> (gitsigns' README keys, shared with diff
+            mode) and staging to <Code>Space hs</Code> / <Code>Space hr</Code>; both sets work here.
           </p>
         ),
       },
@@ -162,10 +162,10 @@ export const git: Section = {
         showGoal: false,
         base: { ...repo({ 'weather/cli.py': file(...CLI_ARGPARSE) }), open: 'weather/cli.py', plugins: ['gitsigns'] },
         rounds: [
-          { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: { line: 8, col: 0 } }, solution: ']c' },
-          { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: { line: 13, col: 0 } }, solution: '2]c' },
-          { setup: { cursor: { line: 17, col: 4 } }, goal: { cursor: { line: 13, col: 0 } }, solution: '[c' },
-          { setup: { cursor: { line: 13, col: 8 } }, goal: { cursor: { line: 0, col: 0 } }, solution: ']c' },
+          { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: { line: 8, col: 0 } }, solution: ']h' },
+          { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: { line: 13, col: 0 } }, solution: '2]h' },
+          { setup: { cursor: { line: 17, col: 4 } }, goal: { cursor: { line: 13, col: 0 } }, solution: '[h' },
+          { setup: { cursor: { line: 13, col: 8 } }, goal: { cursor: { line: 0, col: 0 } }, solution: ']h' },
           { setup: { cursor: { line: 10, col: 4 } }, goal: { cursor: { line: 0, col: 0 } }, solution: '[c[c' },
         ],
       },
@@ -173,16 +173,16 @@ export const git: Section = {
     {
       id: 'gitsigns-stage-hunk',
       title: 'Stage a Hunk',
-      chips: ['␣hs', '␣hr'],
+      chips: ['␣ghs', '␣ghr'],
       keyCards: [
-        { key: '␣hs', glyph: '+', label: 'stage hunk', sub: 'gitsigns' },
-        { key: '␣hr', glyph: '↺', label: 'reset hunk', sub: 'undo with u' },
+        { key: '␣ghs', glyph: '+', label: 'stage hunk', sub: 'LazyVim; kickstart: ␣hs' },
+        { key: '␣ghr', glyph: '↺', label: 'reset hunk', sub: 'undo with u' },
       ],
       intro: (
         <>
           <p>
-            <Code>Space hs</Code> stages the hunk under the cursor without leaving the file; its sign disappears.{' '}
-            <Code>Space hr</Code> resets the hunk, putting back what the index has.
+            <Code>Space ghs</Code> (LazyVim's <Code>Space gh</Code> is the git-hunk prefix) stages the hunk under the cursor without leaving the file; its sign disappears.{' '}
+            <Code>Space ghr</Code> resets the hunk, putting back what the index has.
           </p>
           <p>
             Pair them with <Code>]c</Code>: walk the hunks, stage the ones that belong in this commit and reset the
@@ -195,8 +195,8 @@ export const git: Section = {
         title: 'Look before you stage',
         body: (
           <p>
-            <Code>Space hp</Code> previews the hunk in a float. The keys come from gitsigns' README; in visual mode{' '}
-            <Code>Space hs</Code> stages just the selected lines' hunks.
+            <Code>Space hp</Code> previews the hunk in a float. kickstart keeps gitsigns' README keys, <Code>Space hs</Code> and{' '}
+            <Code>Space hr</Code>; in visual mode either stages just the selected lines' hunks.
           </p>
         ),
       },
@@ -208,19 +208,19 @@ export const git: Section = {
             prompt: 'Stage the argparse setup in main() (the cursor is in that hunk).',
             setup: { cursor: { line: 9, col: 4 } },
             goal: { check: vim => index(vim, 'weather/cli.py').includes('parser.parse_args()') && index(vim, 'weather/cli.py').includes('import sys') },
-            solution: '<Space>hs',
+            solution: '<Space>ghs',
           },
           {
             prompt: 'Stage the first hunk of the file.',
             setup: { cursor: { line: 4, col: 0 } },
             goal: { check: vim => index(vim, 'weather/cli.py').includes('import argparse') && !index(vim, 'weather/cli.py').includes('parser.parse_args()') },
-            solution: '[c<Space>hs',
+            solution: '[h<Space>ghs',
           },
           {
             prompt: 'Put back the deleted sys.stdout.flush() line.',
             setup: { cursor: { line: 0, col: 0 } },
             goal: { check: vim => vim.buf.lines.includes('    sys.stdout.flush()') },
-            solution: '2]c<Space>hr',
+            solution: '2]h<Space>ghr',
           },
           {
             prompt: 'Reset the debug print you left in api.py.',
@@ -230,13 +230,66 @@ export const git: Section = {
               cursor: { line: 0, col: 0 },
             },
             goal: { text: API },
-            solution: ']c<Space>hr',
+            solution: ']h<Space>ghr',
           },
           {
             prompt: 'Stage the second hunk, then reset the third.',
             setup: { cursor: { line: 0, col: 0 } },
             goal: { check: vim => index(vim, 'weather/cli.py').includes('parser.parse_args()') && vim.buf.lines.includes('    sys.stdout.flush()') },
-            solution: ']c<Space>hs]c<Space>hr',
+            solution: ']h<Space>ghs]h<Space>ghr',
+          },
+        ],
+      },
+    },
+    {
+      id: 'git-lazygit',
+      title: 'Lazygit',
+      chips: ['␣gg', 'q'],
+      keyCards: [
+        { key: '␣gg', glyph: '⎇', label: 'open lazygit', sub: 'LazyVim' },
+        { key: 'q', glyph: '✕', label: 'close it' },
+      ],
+      intro: (
+        <>
+          <p>
+            Staging one hunk at a time is gitsigns' job. For everything else — the full status, commits, branches,
+            logs — the starters hand you <Code>lazygit</Code> in a floating terminal: <Code>Space gg</Code> opens it
+            over the editor, <Code>q</Code> brings the editor back.
+          </p>
+          <p>
+            Inside, lazygit has its own keys (<Code>?</Code> lists them). The habit to build is the round trip: open,
+            do the git thing, close, keep editing.
+          </p>
+        </>
+      ),
+      practice: total => <p>Open lazygit, read what is changed, and close it again. {total} rounds.</p>,
+      aside: {
+        title: 'kickstart',
+        body: (
+          <p>
+            kickstart does not ship lazygit; <Code>:!git status</Code> or a second terminal fills the gap until you add
+            it.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { ...STATUS_REPO, open: 'weather/api.py', plugins: ['gitsigns', 'lazygit'] },
+        rounds: [
+          {
+            prompt: 'Open lazygit.',
+            goal: { mode: 'any', check: vim => vim.floats.some(f => f.id === 'lazygit') },
+            solution: '<Space>gg',
+          },
+          {
+            prompt: 'Open it, read the status, and close it again.',
+            goal: { check: vim => !vim.floats.some(f => f.id === 'lazygit') && (vim.pluginData.lazygit as { closed: number } | undefined)?.closed === 1 },
+            solution: '<Space>ggq',
+          },
+          {
+            prompt: 'Once more: open and close in one go.',
+            goal: { check: vim => (vim.pluginData.lazygit as { closed: number } | undefined)?.closed === 1 },
+            solution: '<Space>ggq',
           },
         ],
       },
