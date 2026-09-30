@@ -29,7 +29,7 @@ export const CHALLENGES: ChallengeDef[] = [
         'stray-line', 'stray-word', 'wrong-word', 'missing-duplicate-line', 'line-to-remove',
       ],
       corpus: CORPUS,
-      edits: [8, 12],
+      edits: [10, 14],
       sections: ['getting-around', 'small-edits', 'next-steps', 'essential-motions', 'search', 'basic-operators'],
     },
   },
