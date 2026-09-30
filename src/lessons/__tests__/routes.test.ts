@@ -17,6 +17,12 @@ const ALLOW = new Set<string>([
   // n then a find reaches the end of any match in as many keys or fewer (every pattern in the
   // options file was tried). The round is about reusing the last pattern with a new offset.
   'search-offsets r5',
+  // LazyVim's mini.surround keys carry the gs prefix (s is flash), so a find is four keys and a
+  // three-key hop can beat it. The round is about landing on the bracket by name, not the hop.
+  'find-surroundings r1',
+  'find-surroundings r2',
+  'find-surroundings r4',
+  'find-surroundings r5',
 ]);
 
 const chipKey = (c: string) => c.replace(/^C-(.)$/, '<C-$1>').replace(/^A-(.)$/, '<A-$1>');

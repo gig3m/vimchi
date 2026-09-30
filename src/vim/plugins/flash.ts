@@ -250,23 +250,29 @@ export const flash: Plugin = {
       },
     });
     // Normal and visual: jump.
+    // The pattern and label keys belong to the s command, which completes as a motion (the coach
+    // weighs it against plain motions like any other).
     vim.defineAction('s', {
       run: () => {
+        vim.continueInModal();
         start(vim, 'jump', p => {
           if (!vim.visual) vim.pushJump();
           vim.applyMotion({ pos: p });
+          vim.completeModal(vim.visual ? 'visual' : 'motion');
         }, () => {});
       },
     }, ['n', 'v']);
     // Treesitter selection.
     vim.defineAction('S', {
       run: () => {
+        vim.continueInModal();
         start(vim, 'treesitter', (a, b) => {
           if (vim.visual) vim.exitVisual();
           vim.setCursor(a);
           vim.enterVisual('v');
           vim.win.cursor = { ...b! };
           vim.win.want = b!.col;
+          vim.completeModal('visual');
         }, () => {});
       },
     }, ['n', 'v']);

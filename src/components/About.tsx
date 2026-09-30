@@ -8,9 +8,9 @@ type Sim = {
 
 /** The plugin simulations the engine ships, with the real projects they stand in for. */
 export const SIMULATIONS: Sim[] = [
-  { name: 'surround', plugin: 'mini.surround', url: 'https://github.com/echasnovski/mini.surround', keys: 'sa sd sr sf', use: 'add, change, delete and find quotes, brackets and tags' },
+  { name: 'surround', plugin: 'mini.surround', url: 'https://github.com/echasnovski/mini.surround', keys: 'gsa gsd gsr gsf', use: "add, change, delete and find quotes, brackets and tags, on LazyVim's keys (kickstart's are the bare sa sd sr sf)" },
   { name: 'mini-ai', plugin: 'mini.ai', url: 'https://github.com/echasnovski/mini.ai', keys: 'if af ic ac ii ai ia aa', use: 'function, class, indent and argument text objects' },
-  { name: 'flash', plugin: 'flash.nvim', url: 'https://github.com/folke/flash.nvim', keys: 's S', use: 'label jumps and treesitter selection' },
+  { name: 'flash', plugin: 'flash.nvim', url: 'https://github.com/folke/flash.nvim', keys: 's S', use: 'on in every lesson: s jumps, S selects' },
   { name: 'lsp', plugin: "Neovim's built-in LSP client", url: 'https://neovim.io/doc/user/lsp.html', keys: 'gd K grr grn gra [d gO', use: 'definitions, hover, references, rename, code actions, diagnostics, symbols' },
   { name: 'telescope', plugin: 'telescope.nvim', url: 'https://github.com/nvim-telescope/telescope.nvim', keys: '␣sf ␣sg ␣sw ␣sh ␣sk ␣␣ ␣/', use: 'the pickers (LazyVim ships snacks.picker on the same keys)' },
   { name: 'which-key', plugin: 'which-key.nvim', url: 'https://github.com/folke/which-key.nvim', keys: '␣', use: 'discovering keys from the popup' },
