@@ -32,6 +32,8 @@ export type Lesson = {
   challenge: Challenge;
   /** Optional boss level: not counted toward completion. */
   boss?: boolean;
+  /** The skill IS typing (insert-mode editing keys, replace mode): the typed-text budget is 8 characters per round instead of 6. */
+  typing?: boolean;
 };
 
 export type Section = { id: string; title: string; band: 'core' | 'repeat' | 'project' | 'patterns' | 'code' | 'challenges'; lessons: Lesson[] };
