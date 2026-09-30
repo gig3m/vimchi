@@ -86,3 +86,96 @@ describe('w / W under an operator', () => {
     expect(R(doc, keys)).toEqual([text, reg, kind]);
   });
 });
+
+describe('counted word text objects', () => {
+  it.each([
+    // Counts cross line boundaries; the line break itself is not a word.
+    ['|one\ntwo\nthree', '2diw', 'three', 'one\ntwo\n', 'line'],
+    ['|one\ntwo\nthree', 'd2iw', 'three', 'one\ntwo\n', 'line'],
+    ['|one\ntwo\nthree', '2daw', 'three', 'one\ntwo\n', 'line'],
+    ['|one\ntwo\nthree', '3diw', '', 'one\ntwo\nthree\n', 'line'],
+    ['|one\ntwo\nthree', '3daw', '', 'one\ntwo\nthree\n', 'line'],
+    ['one|two\nthree', '2diw', '', 'onetwo\nthree\n', 'line'],
+    ['|one\ntwo\nthree', '2yiw', 'one\ntwo\nthree', 'one\ntwo', 'char'],
+    ['one\n|two\nthree', '2yaw', 'one\ntwo\nthree', 'two\nthree', 'char'],
+    ['|one\ntwo\nthree', '2ciwX<Esc>', 'X\nthree', 'one\ntwo', 'char'],
+    ['  |one\n  two\nthree', '2diw', '  two\nthree', 'one\n  ', 'char'],
+    ['  |one\n  two\nthree', '4diw', '', '  one\n  two\nthree\n', 'line'],
+    ['a |b.c\nd.e f', '2diW', 'a  f', 'b.c\nd.e', 'char'],
+    ['a |b.c\nd.e f', '2daW', 'a f', 'b.c\nd.e ', 'char'],
+    ['a |b.c\nd.e f', '3daW', 'a', ' b.c\nd.e f', 'char'],
+    // aw with trailing blanks at the end of a line runs onto the next line.
+    ['abc |def  \nghi', '2daw', 'abc', ' def  \nghi', 'char'],
+    ['abc |def  \nghi jkl', '2daw', 'abc jkl', 'def  \nghi ', 'char'],
+    ['abc |def  \nghi jkl', 'daw', 'abc \nghi jkl', 'def  ', 'char'],
+    ['abc  | \nx', 'daw', 'abc', '   \nx', 'char'],
+    ['  |abc', 'daw', '  ', 'abc', 'char'],
+    ['|  abc', 'daw', '', '  abc', 'char'],
+    ['foo |bar baz', '2yaw', 'foo bar baz', ' bar baz', 'char'],
+    // A blank line is a word for iw / aw.
+    ['|one\n\nthree', '2diw', 'three', 'one\n\n', 'line'],
+    ['|one\n\nthree', '3diw', '', 'one\n\nthree\n', 'line'],
+    ['|one\n\nthree', '2daw', '', 'one\n\nthree\n', 'line'],
+    ['|one\n\nthree', '2yiw', 'one\n\nthree', 'one\n\n', 'line'],
+    ['|one\n\nthree', '2ciwX<Esc>', 'X\nthree', 'one\n\n', 'line'],
+    ['a |one\n\nthree', '2diw', 'a \nthree', 'one\n', 'char'],
+    ['a |one\n\nthree', '2daw', 'a', ' one\n\nthree', 'char'],
+    ['a\n|\nb', 'daw', 'a', '\nb\n', 'line'],
+    ['a\n|\nb', '2diw', 'a', '\nb\n', 'line'],
+    ['a\n|\n\nb', '2diw', 'a\nb', '\n\n', 'line'],
+    // iw on an empty line is an empty region: nothing is deleted or joined.
+    ['a\n|\nb', 'yiw', 'a\n\nb', '', 'char'],
+    ['a\n|\nb', 'ciwX<Esc>', 'a\nX\nb', '', 'char'],
+    // Same-line counts keep working.
+    ['|abc def', '2diw', 'def', 'abc ', 'char'],
+    ['|abc def', '3diw', '', 'abc def', 'char'],
+    ['fo|o, bar', '2diw', ' bar', 'foo,', 'char'],
+    ['fo|o, bar', '2daw', 'bar', 'foo, ', 'char'],
+    // A count that cannot be satisfied fails and changes nothing.
+    ['|abc', '2diw', 'abc', '', 'char'],
+    ['|abc', '2daw', 'abc', '', 'char'],
+    ['abc |def', '2diw', 'abc def', '', 'char'],
+    ['|abc def', '4diw', 'abc def', '', 'char'],
+    ['abc  | ', 'daw', 'abc   ', '', 'char'],
+    ['foo bar |baz', '2yaw', 'foo bar baz', '', 'char'],
+    ['foo |bar baz', '3yaw', 'foo bar baz', '', 'char'],
+  ])('%j  %s', (doc, keys, text, reg, kind) => {
+    expect(R(doc, keys)).toEqual([text, reg, kind]);
+  });
+  it('diw on an empty line changes nothing', () => {
+    expect(run('a\n|\nb', 'diw').buf.text()).toBe('a\n\nb');
+    expect(run('a\n|\nb', 'diwix<Esc>').buf.text()).toBe('a\nx\nb');
+  });
+
+  /** Visual selection as "anchor-cursor", both line:col. */
+  const sel = (doc: string, keys: string) => {
+    const v = run(doc, keys);
+    const a = v.visual!.anchor, c = v.cursor;
+    return `${a.line}:${a.col}-${c.line}:${c.col}`;
+  };
+  it.each([
+    ['|one\ntwo\nthree', 'v2iw', '0:0-1:2'],
+    ['|one\ntwo\nthree', 'viwiw', '0:0-1:2'],
+    ['|one\ntwo\nthree', 'viwiwiw', '0:0-2:4'],
+    ['|one\ntwo\nthree', 'v2aw', '0:0-1:2'],
+    ['|one two three', 'v2iw', '0:0-0:3'],
+    ['|one two three', 'viwiwiw', '0:0-0:6'],
+    ['|one\n\nthree', 'v2iw', '0:0-2:0'],
+    ['a\n|\nb', 'viw', '1:0-1:0'],
+    // Growing backwards from a cursor before the anchor.
+    ['foo bar |baz', 'vbiw', '0:8-0:3'],
+    ['foo bar |baz', 'vbbiw', '0:8-0:0'],
+    ['foo bar |baz', 'vbaw', '0:8-0:0'],
+    ['foo bar\nba|z', 'vbaw', '1:2-0:3'],
+    ['foo bar\nba|z', 'vkiw', '1:2-0:0'],
+  ])('%j  %s', (doc, keys, want) => {
+    expect(sel(doc, keys)).toBe(want);
+  });
+  it.each([
+    ['|one\ntwo\nthree', 'v2iwd', '\nthree', 'one\ntwo'],
+    ['|one\ntwo\nthree', 'v2awd', '\nthree', 'one\ntwo'],
+    ['a\n|\nb', 'viwd', 'a\nb', '\n'],
+  ])('%j  %s', (doc, keys, text, reg) => {
+    expect(R(doc, keys).slice(0, 2)).toEqual([text, reg]);
+  });
+});
