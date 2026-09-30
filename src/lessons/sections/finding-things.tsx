@@ -124,6 +124,8 @@ export function at(files: Record<string, string>, file: string, needle: string):
 /** Cursor goal without the green box (which would sit in the wrong file until you get there). */
 export const cursorAt = (p: Pos) => (vim: Vim) => vim.cursor.line === p.line && vim.cursor.col === p.col;
 const windows = (n: number) => (vim: Vim) => vim.tab.windows().length === n;
+/** A Telescope picker with this title is open. */
+const picker = (title: string) => (vim: Vim) => vim.floats.some(f => f.id === 'telescope' && f.title === title);
 
 export const findingThings: Section = {
   id: 'finding-things',
@@ -395,6 +397,83 @@ export const findingThings: Section = {
             prompt: 'List the console calls and jump to the last one.',
             goal: { buffer: 'src/lib/logger.ts', check: cursorAt(at(SHOP, 'src/lib/logger.ts', 'console.error')) },
             solution: '<Space>sgconsole<C-q>G<CR>',
+          },
+        ],
+      },
+    },
+    {
+      id: 'discover-keys',
+      title: 'Discover Keys',
+      chips: ['␣', '␣sk'],
+      keyCards: [
+        { key: '␣', glyph: '…', label: 'wait for the popup', sub: 'which-key' },
+        { key: '␣sk', glyph: '⌕', label: 'search keymaps', sub: 'kickstart & LazyVim' },
+        { key: 'BS', glyph: '←', label: 'back a level', sub: 'Esc: close' },
+      ],
+      intro: (
+        <>
+          <p>
+            Press <Code>Space</Code> and stop. which-key opens a popup of every key that can come next, with what it
+            does; entries starting with <Mono>+</Mono> are groups. Press a group's key (<Code>s</Code> for Search) and
+            the popup shows what is inside. <Code>BS</Code> goes back a level and <Code>Esc</Code> closes it.
+          </p>
+          <p>
+            When you remember what a command does but not its key, <Code>Space sk</Code> searches every mapping by
+            its description, and <Code>CR</Code> runs the one you pick.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Browse the popup or search the keymaps to find each command, then use it. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Both starters ship it',
+        body: (
+          <p>
+            kickstart shows the popup at once and groups its keys under Search, Toggle and Git Hunk. LazyVim waits a
+            moment before showing it and has more groups under the same leader: code, file, git, ui and others.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { files: SHOP, open: 'src/app.ts', plugins: ['telescope', 'which-key'] },
+        rounds: [
+          {
+            prompt: 'Press Space and wait. Open the Search group, then the picker that searches help.',
+            goal: { check: picker('Help') },
+            solution: '<Space>sh',
+          },
+          {
+            prompt: 'Find the file picker in the popup and open src/lib/dates.ts with it.',
+            goal: { buffer: 'src/lib/dates.ts' },
+            solution: '<Space>sfdates<CR>',
+          },
+          {
+            prompt: 'Which key lists the open buffers? Find it under Space and open that list.',
+            setup: { open: 'src/lib/money.ts' },
+            goal: { check: picker('Buffers') },
+            solution: '<Space><Space>',
+          },
+          {
+            prompt: 'Jump to the app.listen line with the key that fuzzy-searches this buffer.',
+            setup: { cursor: { line: 0, col: 0 } },
+            goal: { buffer: 'src/app.ts', check: cursorAt(at(SHOP, 'src/app.ts', 'app.listen')) },
+            solution: '<Space>/listen<CR>',
+          },
+          {
+            prompt: 'Search the keymaps for "word" and run it, then open the first hit: formatCents.',
+            setup: { open: 'src/routes/invoices.ts', cursor: at(SHOP, 'src/routes/invoices.ts', 'formatCents') },
+            goal: { buffer: 'src/lib/money.ts', check: cursorAt(at(SHOP, 'src/lib/money.ts', 'formatCents')) },
+            solution: '<Space>skword<CR><CR>',
+          },
+          {
+            prompt: 'Search the keymaps for "grep" and use it to find where TAX_RATE is set.',
+            setup: { open: 'README.md' },
+            goal: { buffer: 'src/lib/money.ts', check: cursorAt(at(SHOP, 'src/lib/money.ts', 'TAX_RATE =')) },
+            solution: '<Space>skgrep<CR>TAX_RATE =<CR>',
           },
         ],
       },
