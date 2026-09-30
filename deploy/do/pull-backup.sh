@@ -4,7 +4,7 @@
 # which the `vimchi` local-tier backup target archives. Losing the droplet
 # then loses at most a day of runs.
 set -euo pipefail
-host=${1:-kyle@vimchi.dev}
+host=${1:-vimchi-do}
 dest=/home/kyle/projects/vimchi/db-snapshot
 mkdir -p "$dest"
 ssh -o BatchMode=yes -o ConnectTimeout=20 "$host" 'sqlite3 /opt/vimchi/var/vimchi.db ".backup /opt/vimchi/var/snapshot.db"'

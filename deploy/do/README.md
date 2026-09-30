@@ -4,7 +4,7 @@ DigitalOcean `vimchi` (nyc3, s-1vcpu-1gb, Ubuntu 24.04), public IP in `.droplet-
 tailnet `vimchi` / `100.95.113.100`. Created by `create-droplet.sh` (cloud-init in
 `cloud-init.yaml`): user `kyle` with the hub key, fleet SSH CA trust + a fleet **host**
 cert (serial 24) but **no fleet user cert**, so the box can never read keys; Docker;
-Tailscale; ufw 22/80/443; unattended-upgrades with a 09:00 reboot window.
+Tailscale; ufw 80/443 only (SSH over the tailnet); unattended-upgrades with a 09:00 reboot window.
 
 - **Deploy:** `deploy/do/deploy.sh` from sleepwalker — builds the image here, ships it with
   `docker save | ssh docker load`, syncs `compose.yml` + `Caddyfile` to `/opt/vimchi`,
