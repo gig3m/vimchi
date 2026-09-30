@@ -1,12 +1,12 @@
 // "How would a better Vim user have done that?" over a session's key log.
 import { LESSONS, sectionOf } from '../lessons';
-import { solutionKeys } from '../lessons/runtime';
+import { createVim, solutionKeys } from '../lessons/runtime';
 import type { Challenge } from '../lessons/types';
 import { betterMotions } from './motion';
 import { type SessionLike, sameOutcome, stateBefore, stateNeeds } from './replay';
 import { RULES, type Suggestion, WHY, keyCount } from './rules';
 import { type Segment, segment } from './segment';
-import { coachable, taughtBy, tokenize, usesAllowed } from './vocab';
+import { coachable, commandTokens, taughtBy, tokenize, usesAllowed } from './vocab';
 
 export type { Suggestion };
 export type Critique = { unit: number; you: string; better: Suggestion[]; logStart: number; logEnd: number };
@@ -41,6 +41,18 @@ function recordingSpans(segs: Segment[], log: { boundary: boolean }[]): Set<numb
   return out;
 }
 
+/** The commands a reference solution runs, replayed on the round's setup: typed text and arguments are not "keys". */
+function referenceTokens(session: CoachSession, unit: number, sol: string): string[] {
+  const vim = createVim(session.setupFor(unit));
+  const out: string[] = [];
+  let last = vim.lastCommand;
+  for (const k of solutionKeys(sol)) {
+    vim.feed(k);
+    if (vim.lastCommand && vim.lastCommand !== last) { last = vim.lastCommand; if (!last.error) out.push(...commandTokens(last.keys)); }
+  }
+  return out;
+}
+
 /** The one-line live hint for a critique. */
 export const nudgeText = (c: Critique) => `${c.better[0].keys} does that in ${keyCount(c.better[0].keys)}`;
 
@@ -57,18 +69,28 @@ function verify(session: CoachSession, seg: Segment, endSeg: Segment, keys: stri
 export function coachSegment(session: CoachSession, lessonId: string, seg: Segment, segs: Segment[], i: number): Critique | null {
   if (!coachable(lessonId)) return null;
   const taught = taughtBy(lessonId);
-  // Never undercut what this lesson's section drills: a Search lesson must not be told not to search.
+  // Never undercut what this lesson (and the section's lessons before it) drills: a Search lesson
+  // must not be told not to search. Compared as commands the learner ran, not raw keys, so the
+  // `k` in a `dk` chip is an operator motion, not a walk, and an `f,` target is not the `,` chip.
   const lesson = LESSONS[lessonId];
-  const drilled = new Set((lesson.challenge.kind === 'generated' ? [lesson] : sectionOf(lessonId).lessons).flatMap(l => l.chips.flatMap(tokenize)));
-  const usedDrilled = (keys: string[]) => keys.some(k => drilled.has(k));
-  if (recordingSpans(segs, session.log()).has(i)) return null;
+  const upTo = lesson.challenge.kind === 'generated' ? [lesson] : (() => { const ls = sectionOf(lessonId).lessons; return ls.slice(0, ls.findIndex(l => l.id === lessonId) + 1); })();
+  const drilled = new Set(upTo.flatMap(l => l.chips.flatMap(tokenize)));
+  const log = session.log();
+  const ranTokens = (seg: Segment) => { const t: string[] = []; for (let k = seg.logStart; k <= seg.logEnd; k++) { const c = log[k].command; if (c) t.push(...commandTokens(c.keys)); } return t; };
+  /** A suggestion undercuts when it drops a drilled command the learner ran; a shorter search pattern
+   * for a search the learner already made is a nitpick, not a better way. */
+  const undercuts = (seg: Segment, sug: Suggestion) => {
+    const ran = ranTokens(seg);
+    if (ran.some(t => t === '/' || t === '?') && sug.uses.some(u => u === '/' || u === '?')) return true;
+    return ran.some(t => drilled.has(t) && !sug.uses.includes(t));
+  };
+  if (recordingSpans(segs, log).has(i)) return null;
 
   // Edit rules first: some windows start with a motion (`$a` → `A`), and a rule that consumes the
   // motion says more than a shorter route to the same spot would.
   if (seg.kind === 'edit' || seg.kind === 'motion') {
     const lines = stateBefore(session, seg.logStart).buf.lines;
     // A rule window never crosses a boundary (round load, :reset): cut the segment list there.
-    const log = session.log();
     let end = i + 1;
     while (end < segs.length && !log[segs[end].logStart]?.boundary) end++;
     const window = segs.slice(0, end);
@@ -87,14 +109,17 @@ export function coachSegment(session: CoachSession, lessonId: string, seg: Segme
     }
   }
   if (seg.kind === 'motion') {
-    if (usedDrilled(seg.keys)) return null;
     const vim = stateBefore(session, seg.logStart);
     const rnu = !!((vim.win as { opts?: { relativenumber?: boolean } }).opts?.relativenumber ?? vim.options.relativenumber);
-    const cands = betterMotions(vim.buf.lines, seg.from, vim.win.want, seg.to, seg.keys.length, taught, { relativenumber: rnu });
+    // Reinforce this lesson: a route using its own key is kept and ranked before a cheaper one that does not.
+    const own = new Set(lesson.chips.flatMap(tokenize));
+    const cands = betterMotions(vim.buf.lines, seg.from, vim.win.want, seg.to, seg.keys.length, taught, { relativenumber: rnu, prefer: own });
+    const reinforces = (c: { uses: string[] }) => c.uses.some(u => own.has(u));
+    cands.sort((a, b) => Number(reinforces(b)) - Number(reinforces(a)) || a.cost - b.cost);
     const better: Suggestion[] = [];
     for (const c of cands) {
       const s: Suggestion = { keys: c.keys, saves: seg.keys.length - c.cost, why: WHY.motion, rule: 'motion', uses: c.uses };
-      if (!worth(seg.keys.length, s) || !usesAllowed(c.uses, taught)) continue;
+      if (!worth(seg.keys.length, s) || !usesAllowed(c.uses, taught) || undercuts(seg, s)) continue;
       if (!verify(session, seg, seg, c.keys)) continue;
       better.push(s);
       if (better.length === 2) break;
@@ -131,8 +156,7 @@ export function coach(session: CoachSession, lessonId: string): Report {
       if (par === null || sol === null) continue;
       const you = log.filter(e => e.unit === u).length;
       if (you - par < MIN_SAVES) continue;
-      const refKeys = solutionKeys(sol);
-      const ok = usesAllowed(refKeys.flatMap(k => tokenize(k)), taught);
+      const ok = usesAllowed(referenceTokens(session, u, sol), taught);
       reference.push({ unit: u, you, par, ref: ok && !session.carried(u) ? sol : undefined });
     }
   }

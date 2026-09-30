@@ -40,6 +40,34 @@ export function tokenize(chip: string): string[] {
   return out;
 }
 
+/** Commands whose next key is an argument (a character, mark, register or macro name), not a command. */
+const ARG_HEADS = new Set(['f', 'F', 't', 'T', 'r', 'm', '`', "'", 'q', '@']);
+const ENTERS_TEXT = new Set([':', '/', '?']);
+
+/**
+ * The command tokens of one completed command, as the learner ran it: leading count and
+ * register prefix handled, the argument of f/t/r/m/`/'/q/@ dropped, cmdline and inserted text
+ * dropped, so `f(` → f, `"ayy` → " yy, `cwuser<Esc>` → c w, `/leader<CR>` → /.
+ */
+export function commandTokens(keys: readonly string[]): string[] {
+  let i = 0;
+  const out: string[] = [];
+  const skipCount = () => { if (/^[1-9]$/.test(keys[i] ?? '')) while (/^[0-9]$/.test(keys[i] ?? '')) i++; };
+  skipCount();
+  if (keys[i] === '"' && i + 1 < keys.length) { out.push('"'); i += 2; skipCount(); }
+  const rest: string[] = [];
+  for (; i < keys.length; i++) {
+    const k = keys[i];
+    rest.push(k);
+    if (ENTERS_TEXT.has(k)) break;                                                        // cmdline text follows
+    const prev = rest[rest.length - 2];
+    if (ARG_HEADS.has(k) && !/^[ia]$/.test(prev ?? '')) break;                             // an argument follows (it/at keep their t)
+    if (rest.length === 1 && /^[iaAIoOsSCR]$/.test(k)) break;                             // insert command: text follows
+    if (rest[0] === 'c' && rest.length >= 2 && (/^[ia]$/.test(prev) || (rest.length === 2 && /^[wWeEbB$0^lhjkc]$/.test(k)))) break; // change: text follows
+  }
+  return [...out, ...tokenize(rest.join(''))];
+}
+
 const cache = new Map<string, Set<string>>();
 
 export function taughtBy(lessonId: string): Set<string> {
