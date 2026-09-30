@@ -32,7 +32,7 @@ export const fileNavigation: Section = {
             <Code>h</Code> collapses a directory, or closes the one you are in and moves up to it.
           </p>
           <p>
-            <Code>CR</Code> opens a file or toggles a directory. A file opens in the main window and the tree stays
+            <Code>enter</Code> opens a file or toggles a directory. A file opens in the main window and the tree stays
             open beside it; <Code>q</Code> in the tree closes it, and <Code>Space e</Code> closes it from anywhere.
           </p>
         </>
@@ -43,7 +43,7 @@ export const fileNavigation: Section = {
         body: (
           <p>
             <Code>Space e</Code> is LazyVim's snacks.explorer. kickstart's explorer is neo-tree, opt-in (uncomment its{' '}
-            <Code>kickstart.plugins.neo-tree</Code> line), on <Code>\</Code>: <Code>CR</Code> toggles a directory and{' '}
+            <Code>kickstart.plugins.neo-tree</Code> line), on <Code>\</Code>: <Code>enter</Code> toggles a directory and{' '}
             <Code>BS</Code> goes up, where snacks uses <Code>l</Code> and <Code>h</Code>. If you would rather edit a
             directory as text, look at oil.nvim.
           </p>
@@ -125,7 +125,7 @@ export const fileNavigation: Section = {
         body: (
           <p>
             neo-tree, kickstart's opt-in explorer on <Code>\</Code>, uses the same <Code>a</Code>, <Code>d</Code> and{' '}
-            <Code>r</Code>, and moves with <Code>CR</Code> and <Code>BS</Code> where snacks.explorer uses{' '}
+            <Code>r</Code>, and moves with <Code>enter</Code> and <Code>BS</Code> where snacks.explorer uses{' '}
             <Code>l</Code> and <Code>h</Code>. oil.nvim takes another route: the directory is a buffer you edit with{' '}
             <Code>dd</Code> and <Code>cw</Code>, then <Code>:w</Code>.
           </p>

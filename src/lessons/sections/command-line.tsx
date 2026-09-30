@@ -114,8 +114,8 @@ export const commandLine: Section = {
       intro: (
         <>
           <p>
-            <Code>:</Code> opens the command line, <Code>Esc</Code> leaves it and <Code>Tab</Code> completes. A bare
-            line number jumps there: <Code>:42</Code> then <Code>Enter</Code> lands on line 42, in the same column where
+            <Code>:</Code> opens the command line, <Code>esc</Code> leaves it and <Code>Tab</Code> completes. A bare
+            line number jumps there: <Code>:42</Code> then <Code>enter</Code> lands on line 42, in the same column where
             it can. <Code>:$</Code> goes to the last line, though <Code>G</Code> gets there in one key.
           </p>
           <p>
@@ -737,7 +737,7 @@ export const commandLine: Section = {
         title: 'Insert mode ends itself',
         body: (
           <p>
-            <Code>:norm</Code> presses <Code>Esc</Code> for you after each line, so <Code>:%norm I- </Code> needs no
+            <Code>:norm</Code> presses <Code>esc</Code> for you after each line, so <Code>:%norm I- </Code> needs no
             escape at the end. Trailing spaces count, so type exactly what you want inserted.
           </p>
         ),
@@ -1014,134 +1014,18 @@ export const commandLine: Section = {
       },
     },
     {
-      id: 'cmdline-word',
-      title: 'Insert Word Under Cursor',
-      chips: ['C-r C-w', 'C-r C-a'],
-      keyCards: [
-        { key: 'C-r C-w', glyph: '⎀w', label: 'insert word' },
-        { key: 'C-r C-a', glyph: '⎀W', label: 'insert WORD' },
-      ],
-      intro: (
-        <>
-          <p>
-            On the command line, <Code>C-r C-w</Code> inserts the word under the cursor. <Code>C-r C-a</Code> inserts
-            the WORD, which includes dots and other punctuation.
-          </p>
-          <p>
-            Put the cursor on a name, then build the command around it without retyping (or mistyping) it. The
-            classic use is a rename with substitute, which the next section covers: <Code>:%s/</Code>,{' '}
-            <Code>C-r C-w</Code>, <Code>/newName/g</Code>.
-          </p>
-        </>
-      ),
-      practice: total => (
-        <p>
-          The cursor is already on the word. Pull it into the command with <Code>C-r</Code>. {total} rounds.
-        </p>
-      ),
-      aside: {
-        title: 'Registers too',
-        body: (
-          <p>
-            <Code>C-r</Code> followed by any register name pastes it: <Code>C-r "</Code> for the last yank or delete,{' '}
-            <Code>C-r /</Code> for the last search. It works in insert mode as well.
-          </p>
-        ),
-      },
-      challenge: {
-        kind: 'rounds',
-        base: {},
-        rounds: [
-          {
-            prompt: 'Change every "sm" to "sum" with :%s/sm/sum/g. The cursor is on sm.',
-            setup: {
-              name: 'total.ts',
-              text: [
-                'function total(items: Item[]) {',
-                '  let sm = 0;',
-                '  for (const it of items) sm += it.price * it.qty;',
-                '  return sm;',
-                '}',
-              ],
-              cursor: { line: 1, col: 6 },
-            },
-            goal: {
-              text: [
-                'function total(items: Item[]) {',
-                '  let sum = 0;',
-                '  for (const it of items) sum += it.price * it.qty;',
-                '  return sum;',
-                '}',
-              ],
-            },
-            solution: ':%s/<C-r><C-w>/sum/g<CR>',
-          },
-          {
-            prompt: 'Delete every line with the word under the cursor, using :g/word/d.',
-            setup: {
-              name: 'flags.ts',
-              text: [
-                'const flags = {',
-                '  newCheckout: true,',
-                '  legacyExport: false,',
-                '  darkMode: true,',
-                '};',
-                'if (flags.legacyExport) exportCsv();',
-                'render(flags);',
-              ],
-              cursor: { line: 2, col: 4 },
-            },
-            goal: { text: ['const flags = {', '  newCheckout: true,', '  darkMode: true,', '};', 'render(flags);'] },
-            solution: ':g/<C-r><C-w>/d<CR>',
-          },
-          {
-            prompt: 'Change every "cfg.retries" to "cfg.http.retries" with :%s/old/new/g. The cursor is on it.',
-            setup: {
-              name: 'client.ts',
-              text: [
-                "import { cfg } from './config';",
-                '',
-                'const retries = cfg.retries ?? 3;',
-                'log.info(`retrying up to ${cfg.retries} times`);',
-              ],
-              cursor: { line: 2, col: 16 },
-            },
-            goal: {
-              text: [
-                "import { cfg } from './config';",
-                '',
-                'const retries = cfg.http.retries ?? 3;',
-                'log.info(`retrying up to ${cfg.http.retries} times`);',
-              ],
-            },
-            solution: ':%s/<C-r><C-a>/cfg.http.retries/g<CR>',
-          },
-          {
-            prompt: 'Change "userName" to "login" with :s/old/new/. The cursor is on it.',
-            setup: {
-              name: 'user.json',
-              text: ['{', '  "id": 7,', '  "userName": "ada",', '  "email": "ada@example.com"', '}'],
-              cursor: { line: 2, col: 5 },
-            },
-            goal: { text: ['{', '  "id": 7,', '  "login": "ada",', '  "email": "ada@example.com"', '}'] },
-            solution: ':s/<C-r><C-w>/login/<CR>',
-          },
-        ],
-      },
-    },
-    {
       id: 'command-window',
       title: 'Command Window',
       chips: ['q:'],
       keyCards: [
         { key: 'q:', glyph: '▤:', label: 'command history window' },
-        { key: 'enter', glyph: '⏎', label: 'run this line' },
+        { key: 'CR', glyph: '⏎', label: 'run this line' },
       ],
       intro: (
         <>
           <p>
             <Code>q:</Code> opens your command history in a small window, one command per line, newest at the bottom.
-            Move and edit with normal Vim keys, then press <Code>Enter</Code> to run the line under the cursor.
+            Move and edit with normal Vim keys, then press <Code>enter</Code> to run the line under the cursor.
           </p>
           <p>
             Long commands are painful to fix on the command line. Here you get <Code>cw</Code>, <Code>f</Code>,{' '}

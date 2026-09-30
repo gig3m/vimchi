@@ -954,7 +954,7 @@ export const registers: Section = {
         body: (
           <p>
             On the command line, <Code>C-r C-w</Code> inserts the word under the cursor without yanking it first.
-            The Command Line section drills it; with Substitute it becomes the classic rename.
+            The Substitute section drills it, where it becomes the classic rename.
           </p>
         ),
       },
@@ -1032,20 +1032,25 @@ export const registers: Section = {
             solution: "ggf'a<C-r>u<Esc>",
           },
           {
-            prompt: 'Change every "amt" to "amount".',
+            prompt: 'Make the empty refund() read refund(amountCents, fee). The cursor is on amountCents.',
             setup: {
-              text: ['function charge(amt: number) {', '  if (amt <= 0) throw new Error(`bad amt`);', '  return gateway.charge(amt);', '}'],
-              cursor: { line: 0, col: 16 },
+              text: [
+                'function refund(amountCents: number) {',
+                '  const fee = Math.round(amountCents * 0.03);',
+                '  return gateway.refund();',
+                '}',
+              ],
+              cursor: { line: 0, col: 18 },
             },
             goal: {
               text: [
-                'function charge(amount: number) {',
-                '  if (amount <= 0) throw new Error(`bad amount`);',
-                '  return gateway.charge(amount);',
+                'function refund(amountCents: number) {',
+                '  const fee = Math.round(amountCents * 0.03);',
+                '  return gateway.refund(amountCents, fee);',
                 '}',
               ],
             },
-            solution: 'yiw:%s/<C-r>0/amount/g<CR>',
+            solution: 'yiw2jf(a<C-r>0, fee<Esc>',
           },
           {
             prompt: "Put 'theme', with its quotes, inside the empty get().",
@@ -1067,13 +1072,13 @@ export const registers: Section = {
       chips: ['C-r', '='],
       keyCards: [
         { key: 'C-r', glyph: '⎘', label: 'insert a register' },
-        { key: '=', glyph: '1+1', label: 'expression', sub: 'type it, then Enter' },
+        { key: '=', glyph: '1+1', label: 'expression', sub: 'type it, then CR' },
       ],
       intro: (
         <>
           <p>
-            <Code>C-r =</Code> opens a prompt at the bottom of the screen. Type an expression, press Enter, and its
-            result is inserted at the cursor: <Code>C-r =</Code> <Mono>24*60*60</Mono> Enter types <Mono>86400</Mono>.
+            <Code>C-r =</Code> opens a prompt at the bottom of the screen. Type an expression, press <Code>enter</Code>, and its
+            result is inserted at the cursor: <Code>C-r =</Code> <Mono>24*60*60</Mono> <Code>enter</Code> types <Mono>86400</Mono>.
           </p>
           <p>
             It's a calculator that writes straight into the buffer, and it knows Vim's string functions too.
