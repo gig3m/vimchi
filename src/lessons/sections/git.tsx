@@ -160,13 +160,14 @@ export const git: Section = {
       challenge: {
         kind: 'rounds',
         showGoal: false,
-        base: { ...repo({ 'weather/cli.py': file(...CLI_ARGPARSE) }), open: 'weather/cli.py', plugins: ['gitsigns'] },
+        // 12 rows keep the hunk at line 8 off M (the middle row of a full-height window).
+        base: { ...repo({ 'weather/cli.py': file(...CLI_ARGPARSE) }), open: 'weather/cli.py', plugins: ['gitsigns'], height: 12 },
         rounds: [
           { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: { line: 8, col: 0 } }, solution: ']h' },
           { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: { line: 13, col: 0 } }, solution: '2]h' },
           { setup: { cursor: { line: 17, col: 4 } }, goal: { cursor: { line: 13, col: 0 } }, solution: '[h' },
           { setup: { cursor: { line: 13, col: 8 } }, goal: { cursor: { line: 0, col: 0 } }, solution: ']h' },
-          { setup: { cursor: { line: 10, col: 4 } }, goal: { cursor: { line: 0, col: 0 } }, solution: '2[h' },
+          { setup: { cursor: { line: 17, col: 4 } }, goal: { cursor: { line: 8, col: 0 } }, solution: '2[h' },
         ],
       },
     },

@@ -474,7 +474,7 @@ export const moreTextObjects: Section = {
           { setup: { cursor: { line: 8, col: 20 } }, goal: { cursor: { line: 7, col: 0 } }, solution: '[m' },
           { setup: { cursor: { line: 12, col: 10 } }, goal: { cursor: { line: 14, col: 2 } }, solution: ']m' },
           { setup: { cursor: { line: 19, col: 6 } }, goal: { cursor: { line: 14, col: 2 } }, solution: '2[m' },
-          { setup: { cursor: { line: 4, col: 2 } }, goal: { cursor: { line: 18, col: 2 } }, solution: '3]m' },
+          { setup: { cursor: { line: 1, col: 0 } }, goal: { cursor: { line: 14, col: 2 } }, solution: '3]m' },
         ],
       },
     },

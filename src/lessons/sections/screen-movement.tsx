@@ -283,10 +283,10 @@ export const screenMovement: Section = {
         base: { name: 'queue.ts', text: QUEUE, height: ROWS },
         rounds: [
           {
-            prompt: 'Go to the QueueOptions type on line 13.',
+            prompt: 'Go to the DEFAULTS object on line 19.',
             setup: { cursor: { line: 0, col: 0 } },
-            goal: { cursor: { line: 12, col: 0 } },
-            solution: '<C-d><C-d>',
+            goal: { cursor: { line: 18, col: 0 } },
+            solution: '<C-d><C-d><C-d>',
           },
           {
             prompt: 'Go to the class on line 25.',
@@ -314,7 +314,7 @@ export const screenMovement: Section = {
           },
           {
             prompt: 'Go up to push() on line 39.',
-            setup: { cursor: { line: 50, col: 2 } },
+            setup: { cursor: { line: 50, col: 2 }, init: top(45) },
             goal: { cursor: { line: 38, col: 2 } },
             solution: '<C-u><C-u>',
           },
@@ -380,9 +380,9 @@ export const screenMovement: Section = {
           },
           {
             prompt: 'Page back to the 2.4.0 release on line 61.',
-            setup: { cursor: { line: 72, col: 0 } },
+            setup: { cursor: { line: 70, col: 0 }, init: top(58) },
             goal: { cursor: { line: 60, col: 0 } },
-            solution: '<C-b>k',
+            solution: '<C-b>j',
           },
           {
             prompt: 'Page back to the 3.0.0 release on line 34.',

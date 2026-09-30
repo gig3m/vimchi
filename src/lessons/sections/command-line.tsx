@@ -119,7 +119,7 @@ export const commandLine: Section = {
           <p>
             <Code>:</Code> opens the command line; <Code>esc</Code> leaves it, <Code>tab</Code> completes, and{' '}
             <Code>:w</Code> / <Code>:q</Code> / <Code>ZZ</Code> save and quit. A bare line number on the command line jumps there: <Code>:42</Code> then <Code>Enter</Code> lands on line
-            42, at its first non-blank character. <Code>:$</Code> goes to the last line.
+            42, at its first non-blank character. <Code>:$</Code> goes to the last line, though <Code>G</Code> gets there in one key.
           </p>
           <p>
             Error messages, stack traces and code review comments all come with line numbers. Type the number instead
@@ -147,9 +147,9 @@ export const commandLine: Section = {
         base: { name: 'init.lua', text: INIT_LUA, height: 12, cursor: { line: 0, col: 0 } },
         rounds: [
           {
-            prompt: 'The yank highlight is on line 35. Go there.',
-            goal: { cursor: { line: 34, col: 0 } },
-            solution: ':35<CR>',
+            prompt: 'The augroup is created on line 30. Go there.',
+            goal: { cursor: { line: 29, col: 0 } },
+            solution: ':30<CR>',
           },
           {
             prompt: 'Go to line 14.',
@@ -158,16 +158,16 @@ export const commandLine: Section = {
             solution: ':14<CR>',
           },
           {
-            prompt: 'Go to the last line.',
+            prompt: 'Go to line 24.',
             setup: { cursor: { line: 13, col: 0 } },
-            goal: { cursor: { line: 44, col: 0 } },
-            solution: ':$<CR>',
+            goal: { cursor: { line: 23, col: 0 } },
+            solution: ':24<CR>',
           },
           {
-            prompt: 'The format call is on line 43.',
+            prompt: 'The ]q mapping is on line 25.',
             setup: { cursor: { line: 5, col: 0 } },
-            goal: { cursor: { line: 42, col: 0 } },
-            solution: ':43<CR>',
+            goal: { cursor: { line: 24, col: 0 } },
+            solution: ':25<CR>',
           },
           {
             prompt: 'Go to line 22.',
@@ -439,19 +439,20 @@ export const commandLine: Section = {
                 '## Deploys',
                 '',
                 'Deploys run from main',
-                'after CI is green.',
-                'Tag to ship.',
+                'once CI is green.',
+                'Tag it',
+                'to ship.',
                 '',
                 '## Rollback',
                 'Revert the tag.',
               ],
-              cursor: { line: 3, col: 6 },
+              cursor: { line: 3, col: 5 },
             },
             goal: {
               text: [
                 '## Deploys',
                 '',
-                'Deploys run from main after CI is green. Tag to ship.',
+                'Deploys run from main once CI is green. Tag it to ship.',
                 '',
                 '## Rollback',
                 'Revert the tag.',

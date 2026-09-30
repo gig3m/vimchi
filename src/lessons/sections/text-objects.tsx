@@ -256,7 +256,7 @@ export const textObjects: Section = {
                 'Run the tests before you push again',
                 'and check the linter output.',
               ],
-              cursor: { line: 3, col: 0 },
+              cursor: { line: 3, col: 10 },
             },
             goal: {
               text: [
