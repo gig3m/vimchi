@@ -12,7 +12,7 @@ import { type Key, keysToString, parseKeys } from './keys';
 import { type QfItem, Tab, Window } from './layout';
 import { type Compiled, PatternError, compile } from './regex';
 import { type RegKind, type RegValue, Registers, isValidRegister } from './registers';
-import { firstNonBlank, indentOf, lastCol } from './text';
+import { indentOf, lastCol } from './text';
 import type { ObjectCtx, TextObject } from './textobjects';
 import {
   DEFAULT_OPTIONS, type Message, type Mode, type Options, type Pos, type Range, type VisualKind,
