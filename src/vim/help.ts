@@ -272,8 +272,12 @@ export function findHelp(subject: string): Tag | null {
   const names = [...tags.keys()];
   const ci = names.find(n => n.toLowerCase() === low);
   if (ci) return tags.get(ci)!;
-  const pre = names.filter(n => n.startsWith(s)).sort((a, b) => a.length - b.length)[0];
-  return pre ? tags.get(pre)! : null;
+  // A prefix: of the subject, then of the option and the Ex command (Neovim: :h wr -> 'wrap').
+  for (const k of [s, `'${s}`, `:${s}`]) {
+    const pre = names.filter(n => n.startsWith(k)).sort((a, b) => a.length - b.length)[0];
+    if (pre) return tags.get(pre)!;
+  }
+  return null;
 }
 
 const isHelp = (b: Buffer) => b.data.help === true;
@@ -284,6 +288,7 @@ function helpBuffer(vim: Vim, file: string): Buffer {
   const buf = new Buffer(file, HELP_FILES[file], { kind: 'nofile', filetype: 'help' });
   buf.listed = false;
   buf.readonly = true;
+  buf.modifiable = false;
   buf.data.help = true;
   vim.buffers.push(buf);
   return buf;
@@ -294,13 +299,13 @@ function jumpTo(vim: Vim, tag: Tag) {
   vim.pushJump();
   if (vim.buf.name !== tag.file || !isHelp(vim.buf)) vim.showBuffer(vim.win, helpBuffer(vim, tag.file));
   vim.setCursor(tag.pos);
-  vim.scrollToCursor();
+  vim.scrollCursorTo('top'); // Neovim shows the tag line at the top of the help window
 }
 
 /** :help {subject}: open (or reuse) a help window above the current one and jump to the subject. */
 export function openHelp(vim: Vim, subject: string) {
   const tag = findHelp(subject);
-  if (!tag) fail(`E149: Sorry, no help for ${subject}`);
+  if (!tag) fail(`E149: No help for ${subject}`);
   if (!isHelp(vim.buf)) {
     const open = vim.tab.windows().find(w => isHelp(w.buf));
     if (open) vim.focusWindow(open);

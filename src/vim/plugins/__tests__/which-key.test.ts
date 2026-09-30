@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Vim } from '../../editor';
 import { gitsigns } from '../gitsigns';
-import { telescope } from '../telescope';
+import { helpTags as bundledTags } from '../../help';
+import { helpTagEntries, telescope } from '../telescope';
 import { whichKey } from '../which-key';
 
 const files = { 'src/app.ts': 'const port = 3000;\nlisten(port);\n', 'src/lib/money.ts': 'export const TAX = 0.2;\n' };
@@ -68,10 +69,25 @@ describe('telescope keymaps and help', () => {
     vim.feedKeys('money<CR>');
     expect(vim.buf.name).toBe('src/lib/money.ts');
   });
-  it('<leader>sh opens help tags; <CR> runs :help', () => {
+  it('<leader>sh opens help tags; <CR> opens the help page on the tag', () => {
     const vim = make();
-    vim.feedKeys('<Space>shfolding<CR>');
+    vim.feedKeys('<Space>shCTRL-E<CR>');
     expect(vim.floats).toEqual([]);
-    expect(vim.message?.text).toMatch(/folding/);
+    expect(vim.message).toBeNull();
+    expect(vim.buf.filetype).toBe('help');
+    expect(vim.buf.name).toBe('scroll.txt');
+    expect(vim.cursor).toEqual(bundledTags().get('CTRL-E')!.pos);
+  });
+  it('every help-tags entry opens a bundled help page on its tag', () => {
+    const tags = bundledTags();
+    const entries = helpTagEntries(make());
+    expect(entries.map(e => e.display).sort()).toEqual([...tags.keys()].sort());
+    for (const e of entries) {
+      const vim = make();
+      helpTagEntries(vim).find(x => x.display === e.display)!.run!();
+      expect(vim.message?.text ?? '', e.display).toBe('');
+      expect(vim.buf.filetype, e.display).toBe('help');
+      expect({ file: vim.buf.name, pos: vim.cursor }, e.display).toEqual(tags.get(e.display));
+    }
   });
 });

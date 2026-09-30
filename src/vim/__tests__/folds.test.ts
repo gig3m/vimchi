@@ -124,3 +124,38 @@ describe('fold commands', () => {
     expect(vim.buf.text()).toBe(fns.replace('  three();\n  four();\n', ''));
   });
 });
+
+describe('commands on a closed fold (Neovim 0.12, :3,4fold on a { one(); two(); } block)', () => {
+  const text = 'a\n{\n  one();\n  two();\n}\nz\nw\nv';
+  const run = (keys: string) => {
+    const vim = new Vim({ text, name: 'x.txt' });
+    vim.feedKeys(keys);
+    const f = vim.win.folds.find(f => f.closed);
+    return {
+      text: vim.buf.text().split('\n').join('|'),
+      cursor: [vim.cursor.line, vim.cursor.col],
+      closed: f ? `${f.start + 1}-${f.end + 1}` : null,
+      reg: vim.registers.get('"').text,
+    };
+  };
+  it.each([
+    ['o opens the line below the fold', ':3,4fold<CR>ggjjoX<Esc>', 'a|{|  one();|  two();|  X|}|z|w|v', [4, 2], '3-4', ''],
+    ['o from the fold\'s first line', ':3,4fold<CR>3GoX<Esc>', 'a|{|  one();|  two();|  X|}|z|w|v', [4, 2], '3-4', ''],
+    ['O opens the line above the fold', ':3,4fold<CR>ggjjOX<Esc>', 'a|{|  X|  one();|  two();|}|z|w|v', [2, 2], '4-5', ''],
+    ['O from the fold\'s last line', ':3,4fold<CR>4GOX<Esc>', 'a|{|  X|  one();|  two();|}|z|w|v', [2, 2], '4-5', ''],
+    ['x at the last column deletes one character', '3G$:3,4fold<CR>x', 'a|{|  one()|  two();|}|z|w|v', [2, 6], '3-4', ';'],
+    ['x at the last column of the fold\'s second line', '4G$:3,4fold<CR>x', 'a|{|  one();|  two()|}|z|w|v', [3, 6], '3-4', ';'],
+    ['2x at the last column still deletes one', '3G$:3,4fold<CR>2x', 'a|{|  one()|  two();|}|z|w|v', [2, 6], '3-4', ';'],
+    ['x mid-line takes the fold', '3G4l:3,4fold<CR>x', 'a|{|}|z|w|v', [2, 0], null, '  one();\n  two();\n'],
+    ['3dd counts the fold as one line', ':3,4fold<CR>gg3dd', '}|z|w|v', [0, 0], null, 'a\n{\n  one();\n  two();\n'],
+    ['2dd on the fold takes the next line too', ':3,4fold<CR>ggjj2dd', 'a|{|z|w|v', [2, 0], null, '  one();\n  two();\n}\n'],
+    ['2yy counts the fold as one line', ':3,4fold<CR>ggj2yy', 'a|{|  one();|  two();|}|z|w|v', [1, 0], '3-4', '{\n  one();\n  two();\n'],
+    ['2cc counts lines, the fold below stays', ':3,4fold<CR>gg2ccQ<Esc>', 'Q|  one();|  two();|}|z|w|v', [0, 0], '2-3', 'a\n{\n'],
+    ['2>> from above the fold shifts it, and it stays closed', ':3,4fold<CR>ggj2>>', 'a|  {|    one();|    two();|}|z|w|v', [1, 0], '3-4', ''],
+    ['>> on the fold shifts it and opens it', ':3,4fold<CR>ggjj>>', 'a|{|    one();|    two();|}|z|w|v', [2, 0], null, ''],
+    ['>> above the fold leaves it closed', ':3,4fold<CR>gg>>', '  a|{|  one();|  two();|}|z|w|v', [0, 0], '3-4', ''],
+    ['<< on the fold opens it', ':3,4fold<CR>ggjj<<', 'a|{|one();|two();|}|z|w|v', [2, 0], null, ''],
+  ])('%s', (_name, keys, want, cursor, closed, reg) => {
+    expect(run(keys)).toEqual({ text: want, cursor, closed, reg });
+  });
+});

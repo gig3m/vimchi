@@ -608,6 +608,7 @@ export class Vim {
   // ---- undo -----------------------------------------------------------------------
   /** Open an undoable change. `at`: where undo/redo return the cursor (an operator's start). */
   beginChange(at?: Pos) {
+    this.buf.checkModifiable();
     if (this.snapshotTaken) {
       if (at) this.buf.setUndoCursor(at);
       return;
@@ -1131,14 +1132,16 @@ export class Vim {
     const t = p.target!;
     if (t.kind === 'self') {
       const start = this.cursor.line;
-      const end = start + count - 1;
+      // The count is in screen lines: a closed fold counts as one.
+      let end = start;
+      for (let i = 1; i < count && end < this.buf.lineCount; i++) end = (this.closedFoldAt(end)?.end ?? end) + 1;
       // Vim runs cc / dd / gcc as `_`: the start is the earlier of the cursor and the target's first non-blank.
       const fnb = pos(Math.min(end, this.buf.lineCount - 1), firstNonBlank(this.line(Math.min(end, this.buf.lineCount - 1))));
       this.opStart = cmpPos(fnb, this.cursor) < 0 ? fnb : { ...this.cursor };
       if (end >= this.buf.lineCount) {
         // Vim's cursor_down(): a count past the end stops at the last line, but fails on it.
-        if (start === this.buf.lineCount - 1) return null;
-        return { start: pos(start, 0), end: pos(this.buf.lineCount - 1, 0), kind: 'line' };
+        if ((this.closedFoldAt(start)?.end ?? start) === this.buf.lineCount - 1) return null;
+        return { start: pos(this.closedFoldAt(start)?.start ?? start, 0), end: pos(this.buf.lineCount - 1, 0), kind: 'line' };
       }
       // Closed folds at either end are included whole (dd on a fold deletes it).
       return { start: pos(this.closedFoldAt(start)?.start ?? start, 0), end: pos(this.closedFoldAt(end)?.end ?? end, 0), kind: 'line' };
@@ -1469,6 +1472,7 @@ export class Vim {
   // ---- insert mode ---------------------------------------------------------------------
 
   startInsert(kind: string, at: Pos, count = 1, extra: Partial<InsertState> = {}) {
+    this.buf.checkModifiable();
     this.mode = kind === 'R' ? 'replace' : 'insert';
     this.win.cursor = { ...at };
     this.clampCursor(true);
