@@ -54,7 +54,7 @@ export const indentCase: Section = {
       intro: (
         <>
           <p>
-            <Code>&gt;&gt;</Code> shifts the current line right by one <Mono>shiftwidth</Mono>, <Code>&lt;&lt;</Code>{' '}
+            <Code>&gt;&gt;</Code> shifts the current line right by one <Mono>shiftwidth</Mono> (the indent size), <Code>&lt;&lt;</Code>{' '}
             shifts it left. A count shifts that many lines: <Code>3&gt;&gt;</Code>.
           </p>
           <p>
@@ -83,13 +83,13 @@ export const indentCase: Section = {
         base: { name: 'greet.ts' },
         rounds: [
           {
-            prompt: 'Indent the return statement.',
+            prompt: 'Indent the "return" line one level.',
             setup: { text: ['function greet(name: string) {', 'return `Hello, ${name}`;', '}'], cursor: { line: 1, col: 0 } },
             goal: { text: ['function greet(name: string) {', '  return `Hello, ${name}`;', '}'] },
             solution: '>>',
           },
           {
-            prompt: 'The font line is indented one level too far.',
+            prompt: 'Shift the "vim.o.guifont" line one level left.',
             setup: {
               name: 'gui.lua',
               text: ['if vim.g.neovide then', "    vim.o.guifont = 'JetBrains Mono:h14'", 'end'],
@@ -109,7 +109,7 @@ export const indentCase: Section = {
             solution: '>i{',
           },
           {
-            prompt: 'This call sits two levels deep.',
+            prompt: 'Indent "setup(server)" two levels.',
             setup: {
               name: 'lsp.lua',
               text: ['for _, server in ipairs(servers) do', '  if server.enabled then', 'setup(server)', '  end', 'end'],
@@ -171,7 +171,7 @@ export const indentCase: Section = {
         base: { name: 'math.ts' },
         rounds: [
           {
-            prompt: 'Fix the return line.',
+            prompt: 'Fix the indentation of the "return" line.',
             setup: {
               text: ['export function clamp(n: number, lo: number, hi: number) {', '        return Math.min(hi, Math.max(lo, n));', '}'],
               cursor: { line: 1, col: 8 },
@@ -180,7 +180,7 @@ export const indentCase: Section = {
             solution: '==',
           },
           {
-            prompt: 'Fix everything inside the routes object.',
+            prompt: 'Fix the indentation inside the outermost { }.',
             setup: {
               name: 'routes.ts',
               text: [
@@ -210,7 +210,7 @@ export const indentCase: Section = {
             solution: '=i{',
           },
           {
-            prompt: 'Fix the second function.',
+            prompt: 'Fix the indentation of the "function logAll" block.',
             setup: {
               text: [
                 'function first(xs: number[]) {',
@@ -301,7 +301,7 @@ export const indentCase: Section = {
         </p>
       ),
       aside: {
-        title: 'Classic Vim',
+        title: 'The tildeop option',
         body: (
           <p>
             With <Code>:set tildeop</Code>, <Code>~</Code> becomes an operator like <Code>g~</Code> and needs a motion.
@@ -314,7 +314,7 @@ export const indentCase: Section = {
         base: { name: 'app.ts' },
         rounds: [
           {
-            prompt: 'Class names start with a capital.',
+            prompt: 'Change "userService" to "UserService".',
             setup: {
               text: ["import { db } from './db';", '', 'class userService {', '  find = (id: string) => db.get(id);', '}'],
               cursor: { line: 4, col: 0 },
@@ -325,7 +325,7 @@ export const indentCase: Section = {
             solution: 'kkw~',
           },
           {
-            prompt: 'Title-case the heading.',
+            prompt: 'Change "getting started" to "Getting Started".',
             setup: {
               name: 'README.md',
               text: ['# getting started', '', 'Clone the repo, then run npm install.'],
@@ -335,7 +335,7 @@ export const indentCase: Section = {
             solution: 'w~w~',
           },
           {
-            prompt: 'The property is innerHTML.',
+            prompt: 'Change "innerHtml" to "innerHTML".',
             setup: {
               text: ["const el = document.querySelector('#app');", "el.innerHtml = '';", 'el.append(view());'],
               cursor: { line: 0, col: 0 },
@@ -344,7 +344,7 @@ export const indentCase: Section = {
             solution: 'jft3~',
           },
           {
-            prompt: 'Constants are all caps.',
+            prompt: 'Change "API_url" to "API_URL".',
             setup: {
               text: ['// Shared constants', "const API_url = 'https://api.example.com';", 'const TIMEOUT_MS = 5000;'],
               cursor: { line: 2, col: 0 },
@@ -353,7 +353,7 @@ export const indentCase: Section = {
             solution: 'kfu3~',
           },
           {
-            prompt: 'Uppercase the SQL keywords.',
+            prompt: 'Uppercase "select" and "from".',
             setup: {
               name: 'query.sql',
               text: ['-- active users', 'select * from users', 'WHERE active = true;'],
@@ -406,7 +406,7 @@ export const indentCase: Section = {
         base: { name: 'config.ts' },
         rounds: [
           {
-            prompt: 'Make the constant uppercase.',
+            prompt: 'Uppercase "max_retries".',
             setup: {
               text: ['export const max_retries = 5;', 'export const TIMEOUT_MS = 3000;', "export const BASE_URL = '/api';"],
               cursor: { line: 0, col: 15 },
@@ -417,7 +417,7 @@ export const indentCase: Section = {
             solution: 'gUiw',
           },
           {
-            prompt: 'Lowercase the email address.',
+            prompt: 'Lowercase "Lin@Example.COM".',
             setup: {
               name: 'CONTRIBUTING.md',
               text: ['## Questions', '', 'Contact: Lin@Example.COM', 'Replies within a week.'],
@@ -437,13 +437,13 @@ export const indentCase: Section = {
             solution: 'gUt=',
           },
           {
-            prompt: 'Caps Lock was on. Fix the string.',
+            prompt: 'Flip the case of every letter in "hELLO, wORLD".',
             setup: { name: 'hello.sh', text: ['#!/bin/sh', 'echo "hELLO, wORLD"', 'exit 0'], cursor: { line: 1, col: 7 } },
             goal: { text: ['#!/bin/sh', 'echo "Hello, World"', 'exit 0'] },
             solution: 'g~i"',
           },
           {
-            prompt: 'Uppercase the Normal background colour.',
+            prompt: "Uppercase '#1e1e2e'.",
             setup: {
               name: 'colors.lua',
               text: ['local hl = vim.api.nvim_set_hl', "hl(0, 'Normal', { bg = '#1e1e2e' })", "hl(0, 'Comment', { fg = '#6C7086' })"],
@@ -468,8 +468,8 @@ export const indentCase: Section = {
       intro: (
         <>
           <p>
-            <Code>gq</Code> re-wraps text to <Mono>textwidth</Mono>: long lines break, short lines join up. It keeps comment
-            leaders, so a wrapped <Mono>//</Mono> comment stays a comment. <Code>gqq</Code> does one line,{' '}
+            <Code>gq</Code> re-wraps text to <Mono>textwidth</Mono>: long lines break, short lines join up. It keeps the comment
+            marker at the start of each line, so a wrapped <Mono>//</Mono> comment stays a comment. <Code>gqq</Code> does one line,{' '}
             <Code>gqip</Code> a paragraph.
           </p>
           <p>
@@ -496,7 +496,7 @@ export const indentCase: Section = {
         base: { name: 'retry.ts', options: { textwidth: 40 } },
         rounds: [
           {
-            prompt: 'Wrap the long comment.',
+            prompt: 'Wrap the long "//" comment on the line above.',
             setup: {
               text: [
                 "import { sleep } from './time';",
@@ -567,7 +567,7 @@ export const indentCase: Section = {
             solution: 'gwip',
           },
           {
-            prompt: 'Join the choppy comment into fuller lines.',
+            prompt: 'Rewrap the four "--" comment lines into fuller lines.',
             setup: {
               name: 'init.lua',
               text: ['-- Leader is space.', '-- Set it before', '-- loading plugins', '-- so their maps use it.', "vim.g.mapleader = ' '"],
@@ -632,7 +632,7 @@ export const indentCase: Section = {
             solution: 'j4<C-a>',
           },
           {
-            prompt: 'Halve the timeout.',
+            prompt: 'Change "1000" to "500". A count on C-x subtracts that much.',
             setup: {
               name: 'client.ts',
               text: ['const client = createClient({', "  baseUrl: '/api',", '  timeout: 1000,', '});'],
@@ -642,7 +642,7 @@ export const indentCase: Section = {
             solution: '500<C-x>',
           },
           {
-            prompt: 'Flip the offset to +1.',
+            prompt: 'Change "-1" to "1". A count on C-a adds that much.',
             setup: {
               name: 'pager.ts',
               text: ['export function pick(items: Item[]) {', '  const offset = -1;', '  return items.at(offset);', '}'],
@@ -652,7 +652,7 @@ export const indentCase: Section = {
             solution: 'kk2<C-a>',
           },
           {
-            prompt: 'Grow each heading by 2px.',
+            prompt: 'Add 2 to each font size.',
             setup: {
               text: ['h1 { font-size: 32px; }', 'h2 { font-size: 24px; }', 'h3 { font-size: 20px; }'],
               cursor: { line: 0, col: 3 },
@@ -661,7 +661,7 @@ export const indentCase: Section = {
             solution: '2<C-a>j.j.',
           },
           {
-            prompt: 'Retry one time fewer.',
+            prompt: 'Change "retries = 3" to "retries = 2".',
             setup: {
               name: 'retry.lua',
               text: ['-- network', 'local opts = { retries = 3, delay = 250 }', "require('fetch').setup(opts)"],
@@ -716,7 +716,7 @@ export const indentCase: Section = {
             solution: 'jVGg<C-a>',
           },
           {
-            prompt: 'Give the rows ids 1 to 3.',
+            prompt: 'Change the three "(0," values to 1, 2 and 3.',
             setup: {
               name: 'seed.sql',
               text: ["INSERT INTO users VALUES (0, 'ada');", "INSERT INTO users VALUES (0, 'grace');", "INSERT INTO users VALUES (0, 'linus');"],
@@ -732,7 +732,7 @@ export const indentCase: Section = {
             solution: '<C-v>jjg<C-a>',
           },
           {
-            prompt: 'Space the layers out in steps of 10.',
+            prompt: 'Set the z-index values to 10, 20 and 30.',
             setup: {
               name: 'layers.css',
               text: ['.dropdown { z-index: 0; }', '.modal { z-index: 0; }', '.toast { z-index: 0; }'],
@@ -742,7 +742,7 @@ export const indentCase: Section = {
             solution: 'VG10g<C-a>',
           },
           {
-            prompt: 'Point the second and third servers at the next ports.',
+            prompt: 'Change the worker and admin ports to 8001 and 8002.',
             setup: { name: 'servers.yml', text: ['api: 8000', 'worker: 8000', 'admin: 8000'], cursor: { line: 0, col: 0 } },
             goal: { text: ['api: 8000', 'worker: 8001', 'admin: 8002'] },
             solution: 'jVjg<C-a>',
@@ -801,13 +801,13 @@ export const indentCase: Section = {
             solution: '2<C-x>j.',
           },
           {
-            prompt: 'The font is "JetBrains Mono".',
+            prompt: 'Change "jetbrains mono" to "JetBrains Mono".',
             setup: { text: [...BOSS_COMMENT, ...bossNumbers], cursor: { line: 9, col: 0 } },
             goal: { text: [...BOSS_COMMENT, ...bossFont] },
             solution: 'fj~fb~w~',
           },
           {
-            prompt: 'Wrap the header comment.',
+            prompt: 'Rewrap the two "--" lines at the top.',
             setup: { text: [...BOSS_COMMENT, ...bossFont], cursor: { line: 0, col: 0 } },
             goal: { text: [...bossWrapped, ...bossFont] },
             solution: 'gqj',
