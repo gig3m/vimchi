@@ -1144,9 +1144,8 @@ export class Vim {
     const cur = this.win.cursor;
     cur.line = Math.max(0, Math.min(res.pos.line, this.buf.lineCount - 1));
     cur.col = res.pos.col;
-    this.clampCursor(this.mode === 'visual' && this.visual?.kind !== 'v' ? false : this.mode === 'visual');
-    // Charwise Visual may sit on the end-of-line (selecting the newline); other kinds may not.
-    if (this.visual && this.visual.kind !== 'v') cur.col = Math.min(cur.col, Math.max(0, this.line().length - (this.line().length ? 1 : 0)));
+    // Visual may sit on the end-of-line, like Vim's coladvance() while Visual is active (charwise: the newline).
+    this.clampCursor(this.mode === 'visual');
     if (res.want !== undefined) this.win.want = res.want;
     else if (!res.keepWant) this.win.want = cur.col;
     // Like Vim's coladvance(MAXCOL): charwise Visual after $ lands on the end-of-line.

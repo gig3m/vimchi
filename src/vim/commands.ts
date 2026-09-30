@@ -50,7 +50,7 @@ export function installCommands(vim: Vim) {
       }
       line = next;
     }
-    return { pos: pos(line, Math.min(V.win.want, lastCol(ln(line)))), linewise: true, keepWant: true };
+    return { pos: pos(line, Math.min(V.win.want, c.visual ? ln(line).length : lastCol(ln(line)))), linewise: true, keepWant: true };
   };
   M('h', left); M('<Left>', left); M('<BS>', left); M('<C-h>', left);
   M('l', right); M('<Right>', right); M(' ', right);
@@ -85,7 +85,7 @@ export function installCommands(vim: Vim) {
   const lineJump = (l: number): MotionResult =>
     V.options.startofline
       ? { pos: firstNonBlankPos(L(), l), linewise: true, jump: true }
-      : { pos: pos(l, Math.min(V.win.want, Math.max(0, L()[l].length - 1))), linewise: true, jump: true, keepWant: true };
+      : { pos: pos(l, Math.min(V.win.want, Math.max(0, L()[l].length - (V.visual ? 0 : 1)))), linewise: true, jump: true, keepWant: true };
   M('gg', c => lineJump(c.hasCount ? Math.min(c.count, V.buf.lineCount) - 1 : 0));
   M('G', c => lineJump(c.hasCount ? Math.min(c.count, V.buf.lineCount) - 1 : V.buf.lineCount - 1));
 
@@ -1120,35 +1120,60 @@ function installVisual(V: Vim, h: {
   }, true);
   V.defineAction('r', { ...V.getAction('r', 'v')!, arg: 'char', change: true }, ['v']);
 
+  // Visual p/P (Neovim's nv_put in Visual mode): delete the selection (into the unnamed register for p;
+  // P keeps it), then put the register in its place. Every selection kind takes a count.
   const putOver = (keepReg: boolean) => (c: ActionCtx) => {
     const v = V.getRegister(c.reg);
+    const vcur = { ...V.cursor };
     const { r } = take();
+    const n = c.count;
+    const whole = r.kind === 'line' && r.start.line === 0 && r.end.line === V.buf.lineCount - 1;
     const removed = V.deleteRange(r);
     if (!keepReg) V.registers.delete(null, removed);
-    if (r.kind === 'line') {
-      V.setCursor(pos(Math.min(r.start.line, V.buf.lineCount - 1), 0));
-      if (v.kind === 'line') {
-        const lines = v.text.replace(/\n$/, '').split('\n');
-        if (V.buf.lineCount === 1 && V.line(0) === '' && r.start.line === 0) V.buf.splice(0, 1, lines);
-        else V.insertLines(r.start.line, lines);
-        V.setCursor(pos(r.start.line, firstNonBlank(ln(r.start.line))));
-      } else {
-        V.insertLines(r.start.line, [v.text]);
-        V.setCursor(pos(r.start.line, 0));
+    const times = (xs: string[]) => Array.from({ length: n }, () => xs).flat();
+    const asLines = () => (v.kind === 'line' ? v.text.replace(/\n$/, '') : v.text).split('\n');
+    const putLines = (at: number) => {
+      const lines = times(asLines());
+      if (whole) V.buf.splice(0, V.buf.lineCount, lines);
+      else V.insertLines(at, lines);
+      V.setCursor(firstNonBlankPos(V.lines, at));
+    };
+    const c1 = r.kind === 'block' ? Math.min(r.start.col, r.end.col) : r.start.col;
+    /** Put at the deletion point, which may sit on the end-of-line. */
+    const putAt = (p: Pos) => {
+      if (v.kind === 'block') {
+        V.win.cursor = { ...p };
+        h.putValue(v, false, false, n);
+        return;
       }
-      return;
-    }
-    V.setCursor(r.start);
-    if (v.kind === 'line') {
-      // Char selection replaced by lines: split the line.
+      const text = v.text.repeat(n);
+      const end = V.insertText(p, text);
+      V.setCursor(text.includes('\n') ? p : pos(end.line, Math.max(0, end.col - 1)));
+    };
+    if (r.kind === 'line') return putLines(r.start.line);
+    if (r.kind === 'char') {
+      if (v.kind !== 'line') return putAt(r.start);
+      // Lines into a charwise selection: split the line around them.
       const t = ln(r.start.line);
-      const lines = v.text.replace(/\n$/, '').split('\n');
-      V.buf.splice(r.start.line, 1, [t.slice(0, r.start.col), ...lines, t.slice(r.start.col)]);
-      V.setCursor(pos(r.start.line + 1, 0));
+      V.buf.splice(r.start.line, 1, [t.slice(0, c1), ...times(asLines()), t.slice(c1)]);
+      V.setCursor(firstNonBlankPos(V.lines, r.start.line + 1));
       return;
     }
-    const end = V.insertText(r.start, v.text.repeat(c.count));
-    V.setCursor(pos(end.line, Math.max(0, end.col - 1)));
+    // Block selection. Lines go below the line the Visual cursor was on (p) or above the block (P).
+    if (v.kind === 'line') return putLines(keepReg ? r.start.line : vcur.line + 1);
+    if (v.kind === 'char' && !v.text.includes('\n')) {
+      // One line of text goes into every line of the block; lines ending before the block are skipped.
+      const text = v.text.repeat(n);
+      for (let l = r.start.line; l <= r.end.line; l++) {
+        const t = ln(l);
+        if (t.length < c1) continue;
+        V.buf.setLine(l, t.slice(0, c1) + text + t.slice(c1));
+      }
+      V.buf.recordChange(pos(r.start.line, c1));
+      V.setCursor(pos(r.start.line, c1 + Math.max(0, text.length - 1)));
+      return;
+    }
+    putAt(pos(r.start.line, c1));
   };
   A('p', putOver(false), true);
   A('P', putOver(true), true);
