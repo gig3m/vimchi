@@ -12,9 +12,9 @@ it.runIf(!!process.env.OUT)('export', () => {
     c.rounds.forEach((r, i) => {
       const st = mergeSetup(c.base, r.setup);
       if (st.plugins?.length || st.init || st.files || st.folds || st.marks || r.goal.text == null) return;
-      if (Object.keys(st.registers ?? {}).length || st.search) return;
+      if (Object.keys(st.registers ?? {}).length) return;
       out.push({
-        id: `${l.id}#${i + 1}`, name: st.name ?? 'x.txt',
+        id: `${l.id}#${i + 1}`, name: st.name ?? 'x.txt', search: st.search ?? '',
         text: Array.isArray(st.text) ? st.text.join('\n') : st.text ?? '',
         cursor: st.cursor ?? { line: 0, col: 0 }, options: st.options ?? {},
         keys: r.solution, want: Array.isArray(r.goal.text) ? r.goal.text.join('\n') : r.goal.text,

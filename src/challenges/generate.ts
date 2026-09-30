@@ -166,7 +166,8 @@ export function generate(c: GeneratedChallenge, seed: number): Generated {
   const repeats = c.skills.includes('repeat');
   let last: ChecklistItem | null = null, lastKeys = '';
   for (const { item, m } of items) {
-    const dot = repeats && last !== null && lastKeys === item.fixKeys && parseKeys(item.fixKeys).length > 1;
+    // Only a single-change fix replays whole with `.`; a yank-then-put (missing-duplicate-line) would replay the put alone.
+    const dot = repeats && last !== null && lastKeys === item.fixKeys && parseKeys(item.fixKeys).length > 1 && item.kind !== 'missing-duplicate-line';
     lastKeys = item.fixKeys;
     if (dot) item.fixKeys = '.';
     const motion = Math.min(shortestPath(start, prev, item.fixAt, PATH_KEYS, MAX_MOTION_KEYS + 1), MAX_MOTION_KEYS);
