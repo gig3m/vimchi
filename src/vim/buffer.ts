@@ -1,6 +1,17 @@
 import { type Pos, pos } from './types';
 
-type Snapshot = { lines: string[]; cursor: Pos; changedLine: number };
+/** One state in the undo tree: the text after change `seq` (0 = the text as loaded). */
+type UndoNode = {
+  seq: number;
+  lines: string[];
+  parent: UndoNode | null;
+  /** The child <C-r> redoes: the branch most recently undone from or travelled to. */
+  next: UndoNode | null;
+  /** Cursor when the change's first edit happened; undo and redo return there. */
+  cursor: Pos;
+};
+/** The change being recorded, between snapshot() and its commit. */
+type Pending = { before: string[]; cursor: Pos; hinted: boolean; edited: boolean; live?: () => Pos };
 
 let nextId = 1;
 
@@ -17,8 +28,6 @@ export class Buffer {
   readonly = false;
   /** Lowercase marks plus automatic ones: [ ] < > . ^ " */
   marks = new Map<string, Pos>();
-  private undoStack: Snapshot[] = [];
-  private redoStack: Snapshot[] = [];
   changelist: Pos[] = [];
   changeIdx = -1;
   /** Arbitrary per-buffer data for plugins (e.g. the oil directory it lists). */
@@ -35,6 +44,7 @@ export class Buffer {
     if (!this.lines.length) this.lines = [''];
     this.kind = opts.kind ?? 'file';
     this.filetype = opts.filetype ?? filetypeOf(name);
+    this.undoRoot.lines = this.lines.slice();
   }
 
   get lineCount() {
@@ -53,6 +63,7 @@ export class Buffer {
 
   /** Replace `count` lines starting at `start` with `repl`, shifting marks. */
   splice(start: number, count: number, repl: string[]) {
+    if (count || repl.length) this.markEdited();
     this.lines.splice(start, count, ...repl);
     if (!this.lines.length) this.lines = [''];
     const delta = repl.length - count;
@@ -70,60 +81,176 @@ export class Buffer {
   }
 
   setLine(n: number, text: string) {
+    if (this.lines[n] !== text) this.markEdited();
     this.lines[n] = text;
     this.modified = true;
   }
 
   setText(text: string) {
+    if (text !== this.lines.join('\n')) this.markEdited();
     this.lines = splitText(text);
     this.modified = true;
   }
 
   // ---- undo --------------------------------------------------------------
+  //
+  // Undo history is a tree of whole-buffer states, as in Vim: every committed change is a node
+  // numbered in time order (`seq`), a change made after undoing starts a new branch, `u`/<C-r>
+  // walk the current branch and g-/g+ step through the states in time order across branches.
+  //
+  // Cursor placement follows Neovim's u_undoredo(): each change remembers the cursor at the
+  // moment its first edit happened (for an operator: the start of the operated text). Undo and
+  // redo put the cursor back there when that line borders the changed block, else on the first
+  // changed line.
 
-  /** Record the state before a change. Call once per undoable command. */
-  snapshot(cursor: Pos, changedLine = cursor.line) {
-    this.undoStack.push({ lines: this.lines.slice(), cursor: { ...cursor }, changedLine });
-    if (this.undoStack.length > 500) this.undoStack.shift();
-    this.redoStack = [];
+  private undoRoot: UndoNode = { seq: 0, lines: [], parent: null, next: null, cursor: pos(0, 0) };
+  private undoCur: UndoNode = this.undoRoot;
+  private undoNodes: UndoNode[] = [this.undoRoot];
+  private pending: Pending | null = null;
+
+  /**
+   * Record the state before a change. Call once per undoable command; it is committed by
+   * dropSnapshotIfUnchanged() (or the next snapshot/undo). `live` reports the cursor so the
+   * change can remember where its first edit happened.
+   */
+  snapshot(cursor: Pos, live?: () => Pos) {
+    this.commitPending();
+    this.pending = { before: this.lines.slice(), cursor: { ...cursor }, hinted: false, edited: false, live };
   }
 
-  /** Drop the last snapshot if the command turned out not to change anything. */
+  /**
+   * Where undo/redo of the open change put the cursor (an operator's start). Ignored once the
+   * change has edited the text, unless `force`d; a later call before the first edit wins.
+   */
+  setUndoCursor(p: Pos, force = false) {
+    const pd = this.pending;
+    if (pd && (force || !pd.edited)) {
+      pd.cursor = { ...p };
+      pd.hinted = true;
+    }
+  }
+
+  /**
+   * Called by every mutator before it changes the text; also by commands that save undo state
+   * in Vim without changing anything (x on an empty line), which costs the redo branch.
+   */
+  markEdited() {
+    const pd = this.pending;
+    if (!pd) return;
+    if (!pd.edited && !pd.hinted && pd.live) pd.cursor = { ...pd.live() };
+    pd.edited = true;
+  }
+
+  /**
+   * Close the open change: commit it, or drop it if the text did not change. A dropped change
+   * that still edited the text (typed then erased) loses the redo branch, as in Vim; one that
+   * never touched the text (an empty insert, a failed command) keeps it.
+   */
   dropSnapshotIfUnchanged() {
-    const top = this.undoStack[this.undoStack.length - 1];
-    if (top && top.lines.length === this.lines.length && top.lines.every((l, i) => l === this.lines[i])) {
-      this.undoStack.pop();
+    const pd = this.pending;
+    if (!pd) return false;
+    if (sameLines(pd.before, this.lines)) {
+      this.pending = null;
+      if (pd.edited) this.undoCur.next = null;
       return true;
     }
+    this.commitPending();
     return false;
   }
 
+  private commitPending() {
+    const pd = this.pending;
+    if (!pd) return;
+    this.pending = null;
+    if (sameLines(pd.before, this.lines)) {
+      if (pd.edited) this.undoCur.next = null;
+      return;
+    }
+    const parent = this.undoCur;
+    // Text changed outside undo (a plugin assigning lines) belongs to the parent state.
+    parent.lines = pd.before;
+    const node: UndoNode = { seq: this.undoNodes.length, lines: this.lines.slice(), parent, next: null, cursor: pd.cursor };
+    this.undoNodes.push(node);
+    parent.next = node;
+    this.undoCur = node;
+  }
+
   get canUndo() {
-    return this.undoStack.length > 0;
+    return this.undoCur !== this.undoRoot || (!!this.pending && !sameLines(this.pending.before, this.lines));
   }
 
-  undo(cursor: Pos): Pos | null {
-    const s = this.undoStack.pop();
-    if (!s) return null;
-    this.redoStack.push({ lines: this.lines, cursor: { ...cursor }, changedLine: s.changedLine });
-    const firstDiff = firstDifferentLine(this.lines, s.lines);
-    this.lines = s.lines;
-    this.modified = true;
-    return pos(Math.min(firstDiff ?? s.changedLine, this.lines.length - 1), firstDiff == null ? s.cursor.col : 0);
+  /** Undo one change; returns where the cursor goes, or null at the oldest change. */
+  undo(cursor: Pos, want = cursor.col): Pos | null {
+    this.commitPending();
+    const node = this.undoCur;
+    if (!node.parent) return null;
+    const before = this.lines;
+    this.restore(node.parent);
+    node.parent.next = node;
+    return this.placeCursor(node, before, want);
   }
 
-  redo(cursor: Pos): Pos | null {
-    const s = this.redoStack.pop();
-    if (!s) return null;
-    this.undoStack.push({ lines: this.lines, cursor: { ...cursor }, changedLine: s.changedLine });
-    const firstDiff = firstDifferentLine(this.lines, s.lines);
-    this.lines = s.lines;
-    this.modified = true;
-    return pos(Math.min(firstDiff ?? s.changedLine, this.lines.length - 1), 0);
+  /** Redo one change on the current branch; null at the newest change. */
+  redo(cursor: Pos, want = cursor.col): Pos | null {
+    this.commitPending();
+    const node = this.undoCur.next;
+    if (!node) return null;
+    const before = this.lines;
+    this.restore(node);
+    return this.placeCursor(node, before, want);
+  }
+
+  /** g- / g+: move `steps` states back (negative) or forward in time; null if already there. */
+  undoTime(steps: number, cursor: Pos, want = cursor.col): Pos | null {
+    this.commitPending();
+    const from = this.undoCur;
+    const seq = Math.max(0, Math.min(this.undoNodes.length - 1, from.seq + steps));
+    const target = this.undoNodes[seq];
+    if (target === from) return null;
+    // Point every redo link from the root down at the target, so <C-r> continues its branch.
+    for (let n = target; n.parent; n = n.parent) n.parent.next = n;
+    let ancestor = false;
+    for (let n: UndoNode | null = from; n; n = n.parent) if (n === target) ancestor = true;
+    if (ancestor) {
+      // Pure undo: the last step undid target's child on the path from `from`.
+      let child = from;
+      while (child.parent !== target) child = child.parent!;
+      const before = child.lines;
+      this.restore(target);
+      return this.placeCursor(child, before, want);
+    }
+    // The last step redid `target` itself.
+    this.restore(target);
+    return this.placeCursor(target, target.parent!.lines, want);
   }
 
   undoCount() {
-    return this.undoStack.length;
+    let n = 0;
+    for (let c: UndoNode | null = this.undoCur; c && c.parent; c = c.parent) n++;
+    return n;
+  }
+
+  private restore(n: UndoNode) {
+    this.lines = n.lines.slice();
+    this.undoCur = n;
+    this.modified = true;
+  }
+
+  /** Neovim's cursor rule after undoing/redoing `node` (u_undoredo in undo.c). */
+  private placeCursor(node: UndoNode, before: string[], want: number): Pos {
+    const after = this.lines;
+    let pre = 0;
+    while (pre < before.length && pre < after.length && before[pre] === after[pre]) pre++;
+    let suf = 0;
+    while (suf < before.length - pre && suf < after.length - pre && before[before.length - 1 - suf] === after[after.length - 1 - suf]) suf++;
+    const newSize = after.length - pre - suf;
+    const uh = node.cursor;
+    // The remembered line wins when it touches the changed block (one line above to one below).
+    let line = uh.line >= pre - 1 && uh.line <= pre + newSize ? uh.line : pre;
+    // Off by one line below the remembered position: go back to it (Vim's rule for "o").
+    if (uh.line + 1 === line && line > 0) line--;
+    line = Math.max(0, Math.min(line, after.length - 1));
+    return pos(line, line === uh.line ? uh.col : want);
   }
 
   recordChange(p: Pos) {
@@ -136,10 +263,8 @@ export class Buffer {
   }
 }
 
-function firstDifferentLine(a: string[], b: string[]): number | null {
-  const n = Math.max(a.length, b.length);
-  for (let i = 0; i < n; i++) if (a[i] !== b[i]) return i;
-  return null;
+function sameLines(a: string[], b: string[]) {
+  return a.length === b.length && a.every((l, i) => l === b[i]);
 }
 
 export function splitText(text: string): string[] {
