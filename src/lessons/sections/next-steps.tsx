@@ -40,7 +40,7 @@ export const nextSteps: Section = {
         title: 'Esc is far away',
         body: (
           <p>
-            Many people remap Caps Lock to Escape at the OS level. <Code>Ctrl-[</Code> also works as Escape everywhere in
+            Many people remap Caps Lock to Escape at the OS level. <Code>C-[</Code> also works as Escape everywhere in
             Vim, and the tutor accepts it too.
           </p>
         ),
@@ -92,7 +92,7 @@ export const nextSteps: Section = {
             solution: 'kiconst <Esc>',
           },
           {
-            prompt: 'Close the call with ")".',
+            prompt: 'Add ")" after "greet(name".',
             setup: {
               text: ["const name = prompt('Your name?');", 'greet(name;', "console.log('done');"],
               cursor: { line: 0, col: 0 },
@@ -122,7 +122,7 @@ export const nextSteps: Section = {
             solution: '2j3ea!<Esc>',
           },
           {
-            prompt: 'Add the space after the comma.',
+            prompt: 'Add a space after the comma in "[3,4]".',
             setup: {
               text: ['const origin = [0, 0];', 'const point = [3,4];', 'const dist = distance(origin, point);'],
               cursor: { line: 2, col: 5 },
@@ -147,7 +147,7 @@ export const nextSteps: Section = {
         <>
           <p>
             Every command that starts with <Code>:</Code> is typed on the line at the bottom and run with{' '}
-            <Code>Enter</Code>. <Code>:w</Code> writes the buffer to its file. <Code>:q</Code> quits, but only
+            <Code>enter</Code>. <Code>:w</Code> writes the buffer to its file. <Code>:q</Code> quits, but only
             if there is nothing unsaved; it tells you so otherwise. <Code>:wq</Code> does both, and{' '}
             <Code>:q!</Code> quits throwing your changes away.
           </p>
@@ -351,8 +351,9 @@ export const nextSteps: Section = {
         title: 'cw is really ce',
         body: (
           <p>
-            <Code>dw</Code> deletes the space after a word, but <Code>cw</Code> doesn't: Vim treats it like{' '}
-            <Code>ce</Code> so you can type the new word without re-adding the space.
+            <Code>cw</Code> stops at the end of the word, like <Code>ce</Code>, and leaves the space after it, so you
+            can type the new word without re-adding the space. (Delete Words shows that <Code>dw</Code> takes the
+            space too.)
           </p>
         ),
       },
