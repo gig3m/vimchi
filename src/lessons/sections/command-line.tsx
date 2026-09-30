@@ -183,6 +183,91 @@ export const commandLine: Section = {
       },
     },
     {
+      id: 'ex-delete-yank',
+      title: 'Delete & Yank Lines',
+      chips: [':d', ':y'],
+      keyCards: [
+        { key: ':d', glyph: 'del', label: 'delete lines' },
+        { key: ':y', glyph: 'cpy', label: 'yank lines' },
+      ],
+      intro: (
+        <>
+          <p>
+            <Code>:d</Code> deletes lines and <Code>:y</Code> yanks them, both into the usual registers. Put line
+            numbers in front: one for a single line, <Code>:7d</Code>, or two with a comma for everything between,{' '}
+            <Code>:10,15d</Code>. Add a register name after: <Code>:3,4y a</Code>.
+          </p>
+          <p>
+            You don't have to go there first. Read the line numbers off the screen and act on them from wherever you
+            are.
+          </p>
+        </>
+      ),
+      practice: total => <p>Delete or yank by line number. {total} rounds.</p>,
+      aside: {
+        title: 'Search addresses',
+        body: (
+          <p>
+            An address can be a pattern: <Code>{':/^}/d'}</Code> deletes the next line that starts with a brace, and{' '}
+            <Code>:/TODO/y</Code> yanks the next line that mentions TODO.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'server.ts', text: SERVER_TS, cursor: { line: 18, col: 0 } },
+        rounds: [
+          {
+            prompt: 'Delete lines 10 to 15, the "// debug" block.',
+            goal: { text: [...SERVER_TS.slice(0, 9), ...SERVER_TS.slice(15)] },
+            solution: ':10,15d<CR>',
+          },
+          {
+            prompt: 'Yank lines 3 and 4 into register a.',
+            goal: { registers: { a: SERVER_TS.slice(2, 4).join('\n') + '\n' } },
+            solution: ':3,4y a<CR>',
+          },
+          {
+            prompt: 'Delete line 6, the "deploy test, remove me" echo.',
+            setup: {
+              name: 'deploy.sh',
+              text: [
+                '#!/usr/bin/env bash',
+                'set -euo pipefail',
+                'npm ci',
+                'npm run build',
+                'rsync -a dist/ web:/srv/app/',
+                'echo "deploy test, remove me"',
+              ],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: ['#!/usr/bin/env bash', 'set -euo pipefail', 'npm ci', 'npm run build', 'rsync -a dist/ web:/srv/app/'],
+            },
+            solution: ':6d<CR>',
+          },
+          {
+            prompt: 'Yank line 1 and put it below the cursor.',
+            setup: {
+              name: 'prices.csv',
+              text: ['sku,name,price', 'A-100,desk lamp,24.00', 'A-101,monitor arm,79.00', '', '# discontinued'],
+              cursor: { line: 4, col: 0 },
+            },
+            goal: {
+              text: ['sku,name,price', 'A-100,desk lamp,24.00', 'A-101,monitor arm,79.00', '', '# discontinued', 'sku,name,price'],
+            },
+            solution: ':1y<CR>p',
+          },
+          {
+            prompt: 'Delete line 7, "app.use(cors());".',
+            setup: { cursor: { line: 2, col: 0 } },
+            goal: { text: [...SERVER_TS.slice(0, 6), ...SERVER_TS.slice(7)] },
+            solution: ':7d<CR>',
+          },
+        ],
+      },
+    },
+    {
       id: 'ex-ranges',
       title: 'Ranges',
       chips: ['%', '.', '$'],
@@ -195,14 +280,14 @@ export const commandLine: Section = {
       intro: (
         <>
           <p>
-            Most commands you type after <Code>:</Code>, called Ex commands, take a range in front:{' '}
-            <Code>:5,8d</Code> deletes lines 5 to 8. Besides numbers there are
-            three shorthands: <Code>.</Code> is the current line, <Code>$</Code> the last line, and <Code>%</Code> the
-            whole file.
+            Most commands you type after <Code>:</Code>, called Ex commands, take a range in front, like the{' '}
+            <Code>5,8</Code> in <Code>:5,8d</Code>. Besides numbers there are three shorthands: <Code>.</Code> is the
+            current line, <Code>$</Code> the last line, and <Code>%</Code> the whole file.
           </p>
           <p>
-            A range lets you change lines without moving to them. <Code>:d</Code> deletes, <Code>:&gt;</Code> indents
-            and <Code>:j</Code> joins; everything later in this section takes a range too.
+            A range lets you change lines without moving to them. Besides <Code>:d</Code>, two more take one here:{' '}
+            <Code>:&gt;</Code> indents the lines one level, like <Code>&gt;&gt;</Code>, and <Code>:j</Code> joins them
+            into one, like <Code>J</Code>. Everything later in this section takes a range too.
           </p>
           <BeforeAfter
             lines={['# todo', '- buy milk', '- call Sam', '- fix bike', '- pay rent']}
@@ -458,90 +543,6 @@ export const commandLine: Section = {
               ],
             },
             solution: 'vip:j<CR>',
-          },
-        ],
-      },
-    },
-    {
-      id: 'ex-delete-yank',
-      title: 'Delete & Yank Lines',
-      chips: [':d', ':y'],
-      keyCards: [
-        { key: ':d', glyph: 'del', label: 'delete lines' },
-        { key: ':y', glyph: 'cpy', label: 'yank lines' },
-      ],
-      intro: (
-        <>
-          <p>
-            <Code>:d</Code> deletes lines and <Code>:y</Code> yanks them, both into the usual registers. Give them a
-            range: <Code>:10,15d</Code>, <Code>:3,4y</Code>. Add a register name after: <Code>:3,4y a</Code>.
-          </p>
-          <p>
-            You don't have to go there first. Read the line numbers off the screen and act on them from wherever you
-            are.
-          </p>
-        </>
-      ),
-      practice: total => <p>Delete or yank by line number. {total} rounds.</p>,
-      aside: {
-        title: 'Search addresses',
-        body: (
-          <p>
-            An address can be a pattern: <Code>{':/^}/d'}</Code> deletes the next line that starts with a brace, and{' '}
-            <Code>:.,/^$/d</Code> deletes up to the next blank line.
-          </p>
-        ),
-      },
-      challenge: {
-        kind: 'rounds',
-        base: { name: 'server.ts', text: SERVER_TS, cursor: { line: 18, col: 0 } },
-        rounds: [
-          {
-            prompt: 'Delete lines 10 to 15, the "// debug" block.',
-            goal: { text: [...SERVER_TS.slice(0, 9), ...SERVER_TS.slice(15)] },
-            solution: ':10,15d<CR>',
-          },
-          {
-            prompt: 'Yank lines 3 and 4 into register a.',
-            goal: { registers: { a: SERVER_TS.slice(2, 4).join('\n') + '\n' } },
-            solution: ':3,4y a<CR>',
-          },
-          {
-            prompt: 'Delete the last line.',
-            setup: {
-              name: 'deploy.sh',
-              text: [
-                '#!/usr/bin/env bash',
-                'set -euo pipefail',
-                'npm ci',
-                'npm run build',
-                'rsync -a dist/ web:/srv/app/',
-                'echo "deploy test, remove me"',
-              ],
-              cursor: { line: 0, col: 0 },
-            },
-            goal: {
-              text: ['#!/usr/bin/env bash', 'set -euo pipefail', 'npm ci', 'npm run build', 'rsync -a dist/ web:/srv/app/'],
-            },
-            solution: ':$d<CR>',
-          },
-          {
-            prompt: 'Yank line 1 and put it below the cursor.',
-            setup: {
-              name: 'prices.csv',
-              text: ['sku,name,price', 'A-100,desk lamp,24.00', 'A-101,monitor arm,79.00', '', '# discontinued'],
-              cursor: { line: 4, col: 0 },
-            },
-            goal: {
-              text: ['sku,name,price', 'A-100,desk lamp,24.00', 'A-101,monitor arm,79.00', '', '# discontinued', 'sku,name,price'],
-            },
-            solution: ':1y<CR>p',
-          },
-          {
-            prompt: 'Delete line 7, "app.use(cors());".',
-            setup: { cursor: { line: 2, col: 0 } },
-            goal: { text: [...SERVER_TS.slice(0, 6), ...SERVER_TS.slice(7)] },
-            solution: ':7d<CR>',
           },
         ],
       },
@@ -1052,31 +1053,39 @@ export const commandLine: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Rerun the "sort n" command from your history.',
+            prompt: 'Rerun the "$m0" command from your history, to move "# Changelog" to the top.',
             setup: {
-              name: 'scores.txt',
-              text: ['42 alice', '7 bob', '19 carol', '3 dan'],
+              name: 'CHANGELOG.md',
+              text: ['## Unreleased', '- fix login redirect', '- add dark mode', '# Changelog'],
               cursor: { line: 0, col: 0 },
-              init: vim => vim.history[':'].push('sort n', 'w', 'set wrap'),
+              init: vim => vim.history[':'].push('$m0', 'w', 'set wrap'),
             },
-            goal: { text: ['3 dan', '7 bob', '19 carol', '42 alice'] },
+            goal: { text: ['# Changelog', '## Unreleased', '- fix login redirect', '- add dark mode'] },
             solution: 'q:gg<CR>',
           },
           {
-            prompt: 'Rerun the :g command, but delete the INFO lines instead of DEBUG.',
+            prompt: 'Rerun the "5,9d" delete, but on lines 6 to 10, the [legacy] block and the blank line after it.',
             setup: {
-              name: 'api.log',
+              name: 'app.toml',
               text: [
-                'INFO  GET /health 200',
-                'WARN  GET /orders 504 (upstream timeout)',
-                'INFO  GET /users/7 200',
-                'ERROR POST /checkout 500',
+                '[server]',
+                'port = 8080',
+                'host = "0.0.0.0"',
+                'workers = 4',
+                '',
+                '[legacy]',
+                'enabled = false',
+                'path = "/old"',
+                'retries = 0',
+                '',
+                '[logging]',
+                'level = "info"',
               ],
               cursor: { line: 0, col: 0 },
-              init: vim => vim.history[':'].push('g/DEBUG/d', 'w'),
+              init: vim => vim.history[':'].push('5,9d', 'w'),
             },
-            goal: { text: ['WARN  GET /orders 504 (upstream timeout)', 'ERROR POST /checkout 500'] },
-            solution: 'q:ggfDcwINFO<Esc><CR>',
+            goal: { text: ['[server]', 'port = 8080', 'host = "0.0.0.0"', 'workers = 4', '', '[logging]', 'level = "info"'] },
+            solution: 'q:ggcW6,10d<Esc><CR>',
           },
           {
             prompt: 'Rerun the :norm command, this time over lines 2 to 4.',

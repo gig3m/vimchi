@@ -980,7 +980,7 @@ export const substitute: Section = {
                 'render(firstName, lastLoginAt);',
               ],
             },
-            solution: ':%s/\\v_(\\l)/\\u\\1/g<CR>',
+            solution: ':%s/\\v_(.)/\\u\\1/g<CR>',
           },
           {
             prompt: 'Uppercase the name before "=" on every line.',
@@ -1007,7 +1007,7 @@ export const substitute: Section = {
               cursor: { line: 0, col: 0 },
             },
             goal: { text: ['## Getting Started With Lua', '', 'Neovim runs init.lua on startup.'] },
-            solution: ':s/\\v<lt>\\l/\\u&/g<CR>',
+            solution: ':s/\\v<lt>\\w/\\u&/g<CR>',
           },
         ],
       },
@@ -1978,7 +1978,7 @@ export const substitute: Section = {
                 '}',
               ],
             },
-            solution: ':%s/\\v_(\\l)/\\u\\1/g<CR>',
+            solution: ':%s/\\v_(.)/\\u\\1/g<CR>',
           },
           {
             prompt: '3/3: Switch every double-quoted string to single quotes.',
