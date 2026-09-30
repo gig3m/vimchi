@@ -74,7 +74,7 @@ const intros: Record<string, { intro: Lesson['intro']; aside: Lesson['aside'] }>
         </p>
         <p>
           For a run, record the fix once on the first line and end it on the next one (<Code>qa</Code> …
-          <Code>+</Code> <Code>q</Code>), then <Code>2@a</Code> or <Code>3@a</Code> for the rest. When the fix is a
+          <Code>+</Code> <Code>q</Code>, where <Code>+</Code> moves to the first character of the next line), then <Code>2@a</Code> or <Code>3@a</Code> for the rest. When the fix is a
           single change, <Code>.</Code> is cheaper than a macro; register <Code>a</Code> keeps the macro for the next
           run of the same fix.
         </p>

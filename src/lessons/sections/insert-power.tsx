@@ -104,7 +104,7 @@ export const insertPower: Section = {
             solution: '<C-w>number<Esc>',
           },
           {
-            prompt: 'Nothing before the cursor is right. Start over: return v.',
+            prompt: 'Everything before the cursor is wrong. Retype it as "return v".',
             setup: { ...typing(['function unwrap(v: string | null) {', '  retrun nul‸;', '}']) },
             goal: { text: ['function unwrap(v: string | null) {', '  return v;', '}'] },
             solution: '<C-u>return v<Esc>',
@@ -141,7 +141,7 @@ export const insertPower: Section = {
             solution: '<C-w>README<Esc>',
           },
           {
-            prompt: 'Both words before the cursor are wrong. Retype them from the indent.',
+            prompt: 'Both words before the cursor are wrong. Retype them as "local ok".',
             setup: {
               name: 'safe.lua',
               ...typing(['local function try(fn)', '  lcoal ko‸ = pcall(fn)', '  return ok', 'end']),
@@ -223,7 +223,7 @@ export const insertPower: Section = {
             solution: '<C-o>dwmsg<Esc>',
           },
           {
-            prompt: 'Add "await " before the call.',
+            prompt: 'Add "await " before fetchJson.',
             setup: {
               ...typing(['export async function load(url: string) {', '  const data = fetchJson(url‸);', '  return data.items;', '}']),
             },
@@ -273,8 +273,8 @@ export const insertPower: Section = {
       ),
       practice: total => (
         <p>
-          Each round starts in insert mode. Open the menu, accept the right word, then <Code>esc</Code>. {total}{' '}
-          rounds.
+          Each round starts in insert mode. Open the menu, accept the right word, then <Code>esc</Code>. (In the
+          browser, <Code>Alt-n</Code> stands in for <Code>C-n</Code>.) {total} rounds.
         </p>
       ),
       aside: {
@@ -324,13 +324,13 @@ export const insertPower: Section = {
       intro: (
         <>
           <p>
-            A snippet turns a short trigger into a block with blanks to fill: type <Code>fn</Code>, press{' '}
-            <Code>tab</Code>, and a whole function skeleton appears with the cursor on its name. Each{' '}
-            <Code>tab</Code> jumps to the next blank; <Code>S-tab</Code> goes back.
+            A snippet turns a short trigger into a block with blanks to fill, called fields: type <Code>fn</Code>,
+            press <Code>tab</Code>, and a whole function skeleton appears with the cursor on its name. Each{' '}
+            <Code>tab</Code> jumps to the next field; <Code>S-tab</Code> goes back.
           </p>
           <p>
-            friendly-snippets ships hundreds of these for every language; both starters wire them into the
-            completion menu. The tutor has four: <Code>fn</Code>, <Code>for</Code>, <Code>if</Code>,{' '}
+            friendly-snippets ships hundreds of these for every language. LazyVim includes it; kickstart has it as a
+            commented-out line to turn on. The tutor has four: <Code>fn</Code>, <Code>for</Code>, <Code>if</Code>,{' '}
             <Code>log</Code>.
           </p>
         </>
@@ -356,26 +356,26 @@ export const insertPower: Section = {
         base: { name: 'util.ts', plugins: ['snippets'] },
         rounds: [
           {
-            prompt: 'Expand if: the condition is ok, the body go().',
+            prompt: 'Expand if, then type ok in the first field and go() in the second.',
             setup: typing(['const ok = ready();', '', 'if‸']),
             goal: { text: ['const ok = ready();', '', 'if (ok) {', '  go()', '}'] },
             solution: '<Tab>ok<Tab>go()<Esc>',
           },
           {
-            prompt: 'Expand log to print total.',
+            prompt: 'Expand log and type total in its field.',
             setup: typing(['const prices = [1, 2];', 'const total = 3;', 'log‸']),
             goal: { text: ['const prices = [1, 2];', 'const total = 3;', 'console.log(total);'] },
             solution: '<Tab>total<Esc>',
           },
           {
-            prompt: 'You skipped the name. Go back two fields and call it id.',
+            prompt: 'The field after "function" is empty. Go back two fields and type id.',
             // Expanded with the name left empty, params and body filled: the cursor sits in the body.
             setup: typing(['// identity', '', 'fn‸'], '<Tab><Tab>a<Tab>return a;'),
             goal: { text: ['// identity', '', 'function id(a) {', '  return a;', '}'] },
             solution: '<S-Tab><S-Tab>id<Esc>',
           },
           {
-            prompt: 'You are in the loop body. Expand log there to print x.',
+            prompt: 'The cursor is in the last field, inside the braces. Expand log there and type x.',
             setup: typing(['const xs = load();', '', 'for‸'], '<Tab>x<Tab>xs<Tab>'),
             goal: { text: ['const xs = load();', '', 'for (const x of xs) {', '  console.log(x);', '}'] },
             solution: 'log<Tab>x<Esc>',

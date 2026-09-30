@@ -50,7 +50,7 @@ export function WarmUp({ plan, seed: urlSeed, coachLive, runs, isGuest, onRun, o
       <h1 className="h1">Warm-up</h1>
       <p>
         One file, a mix of edits from lessons you finished a while ago: about 1, 3, 7 and 21 days back,
-        with the ones you found slow or keyed long turning up more often. A few minutes here keeps the
+        with the ones that were slow or took extra keys turning up more often. A few minutes here keeps the
         keys in your fingers.
       </p>
 
@@ -75,7 +75,7 @@ export function WarmUp({ plan, seed: urlSeed, coachLive, runs, isGuest, onRun, o
 
           <h2 className="h2">Practice</h2>
           <div className="practice-note">
-            <p>Work down the checklist in any order; each edit is one a lesson above taught. The goal is shown inline.</p>
+            <p>Work down the checklist in any order; each edit comes from one of the lessons above. The goal is shown inline.</p>
           </div>
 
           <Practice
@@ -94,7 +94,7 @@ export function WarmUp({ plan, seed: urlSeed, coachLive, runs, isGuest, onRun, o
           />
           <div className="practice-foot wu-foot">
             <span className="practice-foot-note">
-              {plan.due ? `${plan.due} ${plan.due === 1 ? 'lesson' : 'lessons'} due` : 'Nothing due: your most recent lessons'}
+              {plan.due ? `${plan.due} ${plan.due === 1 ? 'lesson' : 'lessons'} due` : 'Nothing due yet: these are your most recent lessons'}
             </span>
             {finished && <button className="link-btn" onClick={again} tabIndex={-1}>Again →</button>}
             <button className="link-btn" onClick={onBack} tabIndex={-1}>← Back to lessons</button>

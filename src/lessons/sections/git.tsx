@@ -133,9 +133,10 @@ export const git: Section = {
       intro: (
         <>
           <p>
-            gitsigns marks every changed line in the sign column: a <span className="hl-green">green</span> bar for
-            added lines, an <span className="hl-orange">orange</span> one for changed lines, and a{' '}
-            <span className="hl-red">red</span> <Code>_</Code> under the spot where lines were deleted.
+            gitsigns marks every line that differs from git in the sign column, the strip left of the line numbers: a{' '}
+            <span className="hl-green">green</span> bar for added lines, an <span className="hl-orange">orange</span>{' '}
+            one for changed lines, and a <span className="hl-red">red</span> <Code>_</Code> under the spot where lines
+            were deleted. Each run of changed lines is a hunk.
           </p>
           <p>
             <Code>]h</Code> jumps to the start of the next hunk and <Code>[h</Code> to the previous one. Both take a
@@ -183,7 +184,7 @@ export const git: Section = {
         <>
           <p>
             <Code>Space ghs</Code> (LazyVim's <Code>Space gh</Code> is the git-hunk prefix) stages the hunk under the cursor without leaving the file; its sign disappears.{' '}
-            <Code>Space ghr</Code> resets the hunk, putting back what the index has.
+            <Code>Space ghr</Code> resets the hunk: its lines go back to the last staged or committed version.
           </p>
           <p>
             Pair them with <Code>]h</Code>: walk the hunks, stage the ones that belong in this commit and reset the
@@ -207,7 +208,7 @@ export const git: Section = {
         base: { ...repo({ 'weather/cli.py': file(...CLI_ARGPARSE) }), open: 'weather/cli.py', plugins: ['gitsigns'] },
         rounds: [
           {
-            prompt: 'Stage the argparse setup in main() (the cursor is in that hunk).',
+            prompt: 'Stage the hunk the cursor is in.',
             setup: { cursor: { line: 9, col: 4 } },
             goal: { check: vim => index(vim, 'weather/cli.py').includes('parser.parse_args()') && index(vim, 'weather/cli.py').includes('import sys') },
             solution: '<Space>ghs',
@@ -219,13 +220,13 @@ export const git: Section = {
             solution: '[h<Space>ghs',
           },
           {
-            prompt: 'Put back the deleted sys.stdout.flush() line.',
+            prompt: 'Bring back the deleted line: reset the hunk marked with a red _.',
             setup: { cursor: { line: 0, col: 0 } },
             goal: { check: vim => vim.buf.lines.includes('    sys.stdout.flush()') },
             solution: '2]h<Space>ghr',
           },
           {
-            prompt: 'Reset the debug print you left in api.py.',
+            prompt: 'Reset the hunk that adds the print("DEBUG", …) line.',
             setup: {
               ...repo({ 'weather/api.py': file(...API.slice(0, 9), '    print("DEBUG", resp.status_code)', ...API.slice(9)) }),
               open: 'weather/api.py',
@@ -255,7 +256,7 @@ export const git: Section = {
         <>
           <p>
             Staging one hunk at a time is gitsigns' job. For everything else — the full status, commits, branches,
-            logs — the starters hand you <Code>lazygit</Code> in a floating terminal: <Code>Space gg</Code> opens it
+            logs — LazyVim hands you <Code>lazygit</Code> in a floating terminal: <Code>Space gg</Code> opens it
             over the editor, <Code>q</Code> brings the editor back.
           </p>
           <p>
