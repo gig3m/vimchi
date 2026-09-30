@@ -108,3 +108,82 @@ describe('built-in gc leaves the cursor on the operator start (g@)', () => {
     expect(C(d, keys, 'x.ts')).toBe(want);
   });
 });
+
+describe('cursor after Ex commands', () => {
+  it.each([
+    // :> / :< — last line of the range, first non-blank.
+    ['|a\n  b c\nd\n  e f', ':%><CR>', '  a\n    b c\n  d\n    |e f'],
+    ['a\n  b c\nd\n  e| f', ':1,2><CR>', '  a\n    |b c\nd\n  e f'],
+    ['|a\n  b c\nd\n  e f', ':2,4<<CR>', 'a\nb c\nd\n|e f'],
+    ['abcde|fg\nxyzuvwq', ':1,2><CR>', '  abcdefg\n  |xyzuvwq'],
+    ['abcde|fg\nxyzuvwq', ':><CR>', '  |abcdefg\nxyzuvwq'],
+    ['abcde|fg\nxyzuvwq', ':>> 2<CR>', '    abcdefg\n    |xyzuvwq'],
+    ['  abc|defg\n    xyzuvwq', ':<<CR>', '|abcdefg\n    xyzuvwq'],
+    // :j — first non-blank of the joined line.
+    ['a\n  b c\nd\n  e f\n|g', ':2,4j<CR>', 'a\n  |b c d e f\ng'],
+    ['a\n  b| c\nd\n  e f\ng', ':j<CR>', 'a\n  |b c d\n  e f\ng'],
+    ['a\n  b| c\nd\n  e f\ng', ':j!<CR>', 'a\n  |b cd\n  e f\ng'],
+    ['  a\n  b| c\nd\n  e f\ng', ':j 3<CR>', '  a\n  |b c d e f\ng'],
+    ['x\n  a| b\nc\nd', 'Vj:j<CR>', 'x\n  |a b c\nd'],
+    // :m / :t / :co — the last moved or copied line, column from curswant (nostartofline).
+    ['abcde|fg\nxyzuvwq\nfoo', ':1m$<CR>', 'xyzuvwq\nfoo\nabcde|fg'],
+    ['abcde|fg\nxyzuvwq\nfoo', ':1,2m$<CR>', 'foo\nabcdefg\nxyzuv|wq'],
+    ['abcdefg\nxyzuvwq\nfo|o', ':m0<CR>', 'fo|o\nabcdefg\nxyzuvwq'],
+    ['abcde|fg\nxyzuvwq\nfoo', ':1t$<CR>', 'abcdefg\nxyzuvwq\nfoo\nabcde|fg'],
+    ['abcde|fg\nxyzuvwq\nfoo', ':1,2t$<CR>', 'abcdefg\nxyzuvwq\nfoo\nabcdefg\nxyzuv|wq'],
+    ['abcde|fg\nxyzuvwq\n  foo', ':1,3m0<CR>', 'abcdefg\nxyzuvwq\n  fo|o'],
+    ['abcde|fg\nxyzuvwq\nfoo', ':1co1<CR>', 'abcdefg\nabcde|fg\nxyzuvwq\nfoo'],
+    // :sort — first line of the range, first non-blank.
+    ['abcde|fg\n  xyzuvwq\nfoo', ':2,3sort<CR>', 'abcdefg\n  |xyzuvwq\nfoo'],
+    ['abcde|fg\n  xyzuvwq\n  foo', ':2,3sort u<CR>', 'abcdefg\n  |foo\n  xyzuvwq'],
+    ['{\n  d;\n  |b;\n  c;\n}', 'vi{:sort<CR>', '{\n  |b;\n  c;\n  d;\n}'],
+    ['d\n  b\n|c', ':sort<CR>', '  |b\nc\nd'],
+    // :g — each command's own cursor rule; :m keeps curswant, :s ends on a first non-blank.
+    ['a1 x\nb2 |y\nc3 z', ':g/^/m0<CR>', 'c3 |z\nb2 y\na1 x'],
+    ['ex a\nb\nex cc\n\nz|z', ':g/^ex/t$<CR>', 'ex a\nb\nex cc\n\nzz\nex a\ne|x cc'],
+    ['ex a\nb\n  ex cc\n  q\nz|z', ':g/ex/m0<CR>', ' | ex cc\nex a\nb\n  q\nzz'],
+    ['ex a\nb\n  ex cc\n  q\nz|z', ':g/ex/j<CR>', 'ex a b\n  |ex cc q\nzz'],
+    ['ex a\nb\n  ex cc\n  q\nz|z', ':g/ex/><CR>', '  ex a\nb\n    |ex cc\n  q\nzz'],
+    // :s inside :g does not fail on a line without a match.
+    ['ex a\nb\nex cc\n  q\nz|z', ':g/ex/s/c/Q/<CR>', 'ex a\nb\n|ex Qc\n  q\nzz'],
+    ['ex a\nb\n  ex cc\n  q\nz|z', ':g/ex/s/c/Q/<CR>', 'ex a\nb\n  |ex Qc\n  q\nzz'],
+    ['ex a\nb\n  ex cc\n  q\nz|z', ':g/ex/s/c/Q/|s/a/b/<CR>', 'ex b\nb\n  |ex Qc\n  q\nzz'],
+    ['|b\na\nb', ':g/b/s/x/y/<CR>', 'b\na\n|b'],
+    ['  ex cc\n  ex a\nz|z', ':g/ex/s/c/Q/<CR>', '  ex Qc\n  |ex a\nzz'],
+    // Any other error still stops :g.
+    ['ex a\nb\n  ex cc\n  q\nz|z', ':g/ex/d|foo<CR>', '|b\n  ex cc\n  q\nzz'],
+  ])('%j %s', (doc, keys, want) => {
+    expect(C(doc, keys)).toBe(want);
+  });
+});
+
+describe(':s///c leaves the cursor on the last match it prompted for', () => {
+  const doc = '|a\n  i y\ni z\nq i\nw';
+  it.each([
+    // Column 0 when that match was substituted; on the match when it was skipped or the prompt quit.
+    ['yq', 'a\n  Q y\n|i z\nq i\nw'],
+    ['yn', 'a\n  Q y\ni z\nq |i\nw'],
+    ['ynn', 'a\n  Q y\ni z\nq |i\nw'],
+    ['nyn', 'a\n  i y\nQ z\nq |i\nw'],
+    ['nnn', 'a\n  i y\ni z\nq |i\nw'],
+    ['nq', 'a\n  i y\n|i z\nq i\nw'],
+    ['q', 'a\n  |i y\ni z\nq i\nw'],
+    ['y<Esc>', 'a\n  Q y\n|i z\nq i\nw'],
+    ['na', 'a\n  i y\nQ z\n|q Q\nw'],
+    ['a', 'a\n  Q y\nQ z\n|q Q\nw'],
+    ['nl', 'a\n  i y\n|Q z\nq i\nw'],
+    ['yyy', 'a\n  Q y\nQ z\n|q Q\nw'],
+  ])('%s', (keys, want) => {
+    expect(C(doc, `:%s/i/Q/gc<CR>${keys}`)).toBe(want);
+  });
+  it.each([
+    ['|b\n  i i\nc', ':%s/i/Q/gc<CR>yy', 'b\n|  Q Q\nc'],
+    ['|b\n  i i\nc', ':%s/i/Q/gc<CR>yn', 'b\n  Q |i\nc'],
+    ['|b\n  i i\nc', ':%s/i/Q/gc<CR>l', 'b\n|  Q i\nc'],
+    ['|i\nb\nc', ':%s/i/Q/gc<CR>y', '|Q\nb\nc'],
+    ['|a\n  i y\ni z\nq  i', ':%s/i/Q/gc<CR>yyq', 'a\n  Q y\nQ z\nq  |i'],
+    ['|a\n  xi iy\ni z\nq i\nw', ':%s/i/Q/c<CR>yyy', 'a\n  xQ iy\nQ z\n|q Q\nw'],
+  ])('%j %s', (d, keys, want) => {
+    expect(C(d, keys)).toBe(want);
+  });
+});
