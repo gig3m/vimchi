@@ -19,5 +19,18 @@
   { "id": "r-tab", "src": "codex-bugs #12", "text": "  abc", "keys": "r<Tab>" },
   { "id": "r-cr", "src": "codex-bugs #12", "text": "  abc", "keys": "r<CR>" },
   { "id": "J-trailing-space", "src": "codex-bugs #13", "text": "one  \n two", "keys": "J" },
-  { "id": "insert-undo-break", "src": "codex-bugs #14", "text": "  abc", "keys": "iX<C-g>uY<Esc>u" }
+  { "id": "insert-undo-break", "src": "codex-bugs #14", "text": "  abc", "keys": "iX<C-g>uY<Esc>u" },
+  { "id": "d2e-linewise", "src": "p3-ex", "text": "  ab\ncd\nx", "keys": "d2e" },
+  { "id": "d-para-linewise", "src": "p3-ex", "text": "a\nb\n\nc", "keys": "d}" },
+  { "id": "d-para-midline", "src": "p3-ex", "text": "x a\nb\n\nc", "cursor": { "line": 0, "col": 2 }, "keys": "d}" },
+  { "id": "d-para-last", "src": "p3-ex", "text": "a\nb", "keys": "d}" },
+  { "id": "d-search-linewise", "src": "p3-ex", "text": "  one\ntwo\nthree", "keys": "d/thr<CR>" },
+  { "id": "d-search-back", "src": "p3-ex", "text": "zz\n  one\ntwo\nthree", "cursor": { "line": 2, "col": 2 }, "keys": "d?one<CR>" },
+  { "id": "d-search-charwise", "src": "p3-ex", "text": "one\n  two x", "keys": "d/x<CR>" },
+  { "id": "diw-fail-2word", "src": "p3-ex", "text": "abc def", "keys": "4diw" },
+  { "id": "daw-fail", "src": "p3-ex", "text": "abc def", "keys": "5daw" },
+  { "id": "diw-fail-mid", "src": "p3-ex", "text": "a b", "cursor": { "line": 0, "col": 2 }, "keys": "9diw" },
+  { "id": "v-iw-fail-d", "src": "p3-ex", "text": "abc def", "keys": "v5iwd" },
+  { "id": "v-iw-fail-esc", "src": "p3-ex", "text": "abc def", "keys": "v5iw<Esc>" },
+  { "id": "c-iw-fail-X", "src": "p3-ex", "text": "abc def", "keys": "c5iwX" }
 ]

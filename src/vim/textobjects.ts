@@ -12,6 +12,8 @@ export type ObjectCtx = {
   count: number;
   /** Current visual selection, if any, so repeated objects can grow it. */
   visual: { start: Pos; end: Pos } | null;
+  /** Set by an object that fails part-way: where Vim leaves the cursor (it moves while searching). */
+  stop?: Pos;
 };
 
 export type TextObject = (ctx: ObjectCtx, inner: boolean) => Range | null;
@@ -32,11 +34,13 @@ export type WordRange = Range & { inclusive: boolean };
  * that cannot be satisfied fails.
  */
 function word(big: boolean): TextObject {
-  return ({ lines: L, cur, count, visual }, inner): WordRange | null => {
+  return (ctx, inner): WordRange | null => {
+    const { lines: L, cur, count, visual } = ctx;
     const include = !inner;
     const last = L.length - 1;
     let c: Pos = pos(cur.line, Math.min(cur.col, Math.max(0, L[cur.line].length - 1)));
     // Character class under the cursor; blanks and line ends are 0.
+    const stop = () => { ctx.stop = { ...c }; return null; };
     const cls = () => charClass(L[c.line][c.col], big);
     // inc(): 0 same line, 2 onto the line's end, 1 next line, -1 end of buffer.
     const inc = () => {
@@ -128,7 +132,7 @@ function word(big: boolean): TextObject {
       backInLine();
       start = { ...c };
       if ((cls() === 0) === include) {
-        if (!endWord(true)) return null;
+        if (!endWord(true)) return stop();
       } else {
         fwdWord();
         if (c.col === 0) decl();
@@ -141,20 +145,20 @@ function word(big: boolean): TextObject {
     while (n > 0) {
       inclusive = true;
       if (anchor && cmpPos(c, anchor) < 0) {
-        if (decl() === -1) return null;
+        if (decl() === -1) return stop();
         if (include !== (cls() !== 0)) {
-          if (!bckWord()) return null;
+          if (!bckWord()) return stop();
         } else {
-          if (!bckendWord()) return null;
+          if (!bckendWord()) return stop();
           incl();
         }
       } else {
-        if (incl() === -1) return null;
+        if (incl() === -1) return stop();
         if (include !== (cls() === 0)) {
-          if (!fwdWord() && n > 1) return null;
+          if (!fwdWord() && n > 1) return stop();
           // Just past a line break: don't take the next line's first character.
           if (!oneleft()) inclusive = false;
-        } else if (!endWord(true)) return null;
+        } else if (!endWord(true)) return stop();
       }
       n--;
     }
