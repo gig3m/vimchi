@@ -6,7 +6,8 @@ Reproduce: `npx vitest run docs/superpowers/audit/2026-09-30-sweep/codex-fidelit
 
 | Lesson | Rounds | Total keys | Buffer chars | Cmdline chars | Typed-text share | Avg typed chars/round | All text-mode keys |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| insert-mode | 5 | 36 | 10 | 0 | 27.8% | 2.00 | 15 |
+| insert-mode | 5 | 35 | 10 | 0 | 28.6% | 2.00 | 15 |
+| save-quit | 4 | 14 | 0 | 6 | 42.9% | 1.50 | 10 |
 | line-ends | 6 | 11 | 0 | 0 | 0.0% | 0.00 | 0 |
 | find-char | 6 | 16 | 0 | 0 | 0.0% | 0.00 | 0 |
 | change-words | 5 | 55 | 28 | 0 | 50.9% | 5.60 | 33 |
@@ -27,7 +28,7 @@ Reproduce: `npx vitest run docs/superpowers/audit/2026-09-30-sweep/codex-fidelit
 | full-pages | 6 | 16 | 0 | 0 | 0.0% | 0.00 | 0 |
 | screen-lines | 7 | 8 | 0 | 0 | 0.0% | 0.00 | 0 |
 | recenter | 6 | 12 | 0 | 0 | 0.0% | 0.00 | 0 |
-| intro-operators | 5 | 54 | 23 | 0 | 42.6% | 4.60 | 25 |
+| intro-operators | 5 | 51 | 23 | 0 | 45.1% | 4.60 | 25 |
 | delete-words | 5 | 26 | 0 | 0 | 0.0% | 0.00 | 0 |
 | delete-to-char | 5 | 31 | 0 | 0 | 0.0% | 0.00 | 0 |
 | delete-lines | 5 | 21 | 0 | 0 | 0.0% | 0.00 | 0 |
@@ -89,7 +90,7 @@ Reproduce: `npx vitest run docs/superpowers/audit/2026-09-30-sweep/codex-fidelit
 | opening-files | 5 | 78 | 0 | 66 | 84.6% | 13.20 | 72 |
 | buffer-list | 5 | 35 | 0 | 23 | 65.7% | 4.60 | 29 |
 | cycling-buffers | 5 | 11 | 0 | 0 | 0.0% | 0.00 | 0 |
-| alternate-file | 4 | 24 | 0 | 15 | 62.5% | 3.75 | 16 |
+| alternate-file | 4 | 35 | 0 | 26 | 74.3% | 6.50 | 28 |
 | closing-buffers | 4 | 30 | 0 | 22 | 73.3% | 5.50 | 26 |
 | go-to-file | 5 | 20 | 0 | 0 | 0.0% | 0.00 | 0 |
 | finding-files | 5 | 76 | 0 | 65 | 85.5% | 13.00 | 71 |
@@ -221,6 +222,7 @@ Reproduce: `npx vitest run docs/superpowers/audit/2026-09-30-sweep/codex-fidelit
 | change-lines | 5 | 108 | 82 | 0 | 75.9% | 16.40 | 87 |
 | cmdline-word | 4 | 63 | 0 | 47 | 74.6% | 11.75 | 59 |
 | function-class-objects | 6 | 82 | 61 | 0 | 74.4% | 10.17 | 64 |
+| alternate-file | 4 | 35 | 0 | 26 | 74.3% | 6.50 | 28 |
 | location-list | 5 | 46 | 0 | 34 | 73.9% | 6.80 | 37 |
 | closing-buffers | 4 | 30 | 0 | 22 | 73.3% | 5.50 | 26 |
 | tab-pages | 6 | 56 | 0 | 41 | 73.2% | 6.83 | 43 |
@@ -239,7 +241,6 @@ Reproduce: `npx vitest run docs/superpowers/audit/2026-09-30-sweep/codex-fidelit
 | replace-mode | 5 | 60 | 38 | 0 | 63.3% | 7.60 | 43 |
 | ex-move-copy | 5 | 27 | 0 | 17 | 63.0% | 3.40 | 22 |
 | visual-ranges | 4 | 51 | 0 | 32 | 62.7% | 8.00 | 36 |
-| alternate-file | 4 | 24 | 0 | 15 | 62.5% | 3.75 | 16 |
 | ex-delete-yank | 5 | 29 | 0 | 18 | 62.1% | 3.60 | 23 |
 | quickfix-list | 5 | 43 | 0 | 26 | 60.5% | 5.20 | 31 |
 | paste-while-typing | 5 | 100 | 47 | 13 | 60.0% | 12.00 | 71 |
@@ -254,9 +255,10 @@ Reproduce: `npx vitest run docs/superpowers/audit/2026-09-30-sweep/codex-fidelit
 | flash-motions | 4 | 42 | 21 | 0 | 50.0% | 5.25 | 22 |
 | oil-edit-directory | 6 | 72 | 29 | 6 | 48.6% | 5.83 | 45 |
 | jump-to-line | 6 | 22 | 0 | 10 | 45.5% | 1.67 | 16 |
+| intro-operators | 5 | 51 | 23 | 0 | 45.1% | 4.60 | 25 |
 | boss-tidy-function | 5 | 57 | 25 | 0 | 43.9% | 5.00 | 27 |
 | argument-objects | 5 | 35 | 15 | 0 | 42.9% | 3.00 | 17 |
-| intro-operators | 5 | 54 | 23 | 0 | 42.6% | 4.60 | 25 |
+| save-quit | 4 | 14 | 0 | 6 | 42.9% | 1.50 | 10 |
 | flash-treesitter | 4 | 26 | 11 | 0 | 42.3% | 2.75 | 13 |
 | text-objects-parens | 5 | 51 | 21 | 0 | 41.2% | 4.20 | 25 |
 | block-insert-append | 5 | 46 | 18 | 0 | 39.1% | 3.60 | 23 |
@@ -271,7 +273,7 @@ Reproduce: `npx vitest run docs/superpowers/audit/2026-09-30-sweep/codex-fidelit
 | change-next-match | 5 | 49 | 13 | 3 | 32.7% | 3.20 | 20 |
 | intro-text-objects | 5 | 43 | 13 | 0 | 30.2% | 2.60 | 16 |
 | word-objects | 6 | 52 | 15 | 0 | 28.8% | 2.50 | 18 |
-| insert-mode | 5 | 36 | 10 | 0 | 27.8% | 2.00 | 15 |
+| insert-mode | 5 | 35 | 10 | 0 | 28.6% | 2.00 | 15 |
 | robust-macros | 4 | 85 | 23 | 0 | 27.1% | 5.75 | 33 |
 | command-window | 4 | 34 | 7 | 0 | 20.6% | 1.75 | 9 |
 | recording-macro | 4 | 66 | 13 | 0 | 19.7% | 3.25 | 18 |

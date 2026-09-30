@@ -163,6 +163,11 @@ Ordered by learner effect per unit of work. Effort: S = under an hour, M = a ses
     Results, stale advance timer, sign-in return without hash, `#profile`, guest import chunking,
     24h run limit, tab rendering width, mobile keyboard).
 
+## Owner decisions (2026-09-30)
+
+- `startofline`: follow Neovim's default (`nostartofline`). The engine gets the option, default off; the six cursor goals move.
+- Surround: re-key the section to mini.surround (`sa` / `sd` / `sr`, kickstart's default), LazyVim's `gsa` / `gsd` / `gsr` in the aside. nvim-surround's `ys` / `cs` / `ds` become the aside's "other lineage".
+
 ## Where the reviewers disagreed, and the ruling
 
 - **`startofline`:** Codex calls the engine wrong; the Claude bugs reviewer lists it as a mismatch
