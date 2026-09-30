@@ -533,5 +533,85 @@ export const screenMovement: Section = {
         ],
       },
     },
+    {
+      id: 'scroll-by-line',
+      title: 'Scroll by Line',
+      chips: ['C-e', 'C-y'],
+      keyCards: [
+        { key: 'C-e', glyph: '⇣1', label: 'scroll down a line' },
+        { key: 'C-y', glyph: '⇡1', label: 'scroll up a line' },
+      ],
+      intro: (
+        <>
+          <p>
+            <Code>C-e</Code> scrolls the window down one line: the text moves up and a new line appears at the bottom.{' '}
+            <Code>C-y</Code> scrolls up one line. A count scrolls that many: <Code>5C-e</Code>.
+          </p>
+          <p>
+            The cursor stays put, on its line and, because Neovim's default is <Code>nostartofline</Code>, in its
+            column. Only when its line would leave the screen does it move, to the nearest edge. Use them to see a
+            few more lines above or below without losing your place.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Scroll the window until the line the prompt names is at the top of the screen, or where it asks. The cursor
+          should end in the <span className="hl-green">green box</span>. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'With scrolloff',
+        body: (
+          <p>
+            If your config sets <Code>scrolloff</Code> (8 is popular), the cursor is pushed along once it comes within
+            that many lines of the edge, not only at the edge.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        showGoal: false,
+        base: { name: 'queue.ts', text: QUEUE, height: ROWS },
+        rounds: [
+          {
+            prompt: 'Scroll down until the class line is at the top.',
+            setup: { cursor: { line: 30, col: 2 }, init: top(20) },
+            goal: { cursor: { line: 30, col: 2 }, check: topIs(24) },
+            solution: '4<C-e>',
+          },
+          {
+            prompt: 'Scroll up until push() is at the top.',
+            setup: { cursor: { line: 45, col: 6 }, init: top(40) },
+            goal: { cursor: { line: 45, col: 6 }, check: topIs(38) },
+            solution: '2<C-y>',
+          },
+          {
+            prompt: 'Scroll the class line off the top. Watch the cursor.',
+            setup: { cursor: { line: 24, col: 13 }, init: top(24) },
+            goal: { cursor: { line: 25, col: 13 }, check: topIs(25) },
+            solution: '<C-e>',
+          },
+          {
+            prompt: 'Scroll up until the return line of next() is at the top.',
+            setup: { cursor: { line: 68, col: 4 }, init: top(56) },
+            goal: { cursor: { line: 64, col: 4 }, check: topIs(52) },
+            solution: '4<C-y>',
+          },
+          {
+            prompt: "Scroll down until the class's closing } is the bottom line.",
+            setup: { cursor: { line: 82, col: 2 }, init: top(70) },
+            goal: { cursor: { line: 82, col: 2 }, check: topIs(79) },
+            solution: '9<C-e>',
+          },
+          {
+            prompt: 'Scroll up until the first import is back on screen.',
+            setup: { cursor: { line: 10, col: 7 }, init: top(3) },
+            goal: { cursor: { line: 10, col: 7 }, check: topIs(0) },
+            solution: '3<C-y>',
+          },
+        ],
+      },
+    },
   ],
 };
