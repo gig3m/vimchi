@@ -69,9 +69,11 @@ func (l *limiter) allow(key string) (bool, int) {
 // proxy itself saw, while earlier hops came from the client and can be forged.
 func (s *Server) clientIP(r *http.Request) string {
 	if s.TrustProxy {
-		if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		if xff := strings.Join(r.Header.Values("X-Forwarded-For"), ","); xff != "" {
 			hops := strings.Split(xff, ",")
-			return strings.TrimSpace(hops[len(hops)-1])
+			if last := strings.TrimSpace(hops[len(hops)-1]); last != "" {
+				return last
+			}
 		}
 	}
 	host, _, err := net.SplitHostPort(r.RemoteAddr)

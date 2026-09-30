@@ -308,7 +308,7 @@ export const visualMode: Section = {
               text: ['function setup() {', '  run();', '  done();', '  return ok;', '}'],
               cursor: { line: 1, col: 0 },
             },
-            goal: { text: ['function setup() {', '  return ok;', '}'], registers: { '"': '  run();\n  done();\n' } },
+            goal: { text: ['function setup() {', '  return ok;', '}'], registers: { '0': '  run();\n  done();\n' } },
             solution: 'Vjygvd',
           },
           {
