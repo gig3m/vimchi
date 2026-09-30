@@ -110,6 +110,8 @@ type Cmdline = {
   onSubmit?: (text: string) => void;
   onCancel?: () => void;
   histIdx: number;
+  /** While browsing history: the text before the cursor when <Up>/<Down> began. */
+  histPrefix?: string | null;
   /** Waiting for a register name after <C-r>. */
   ctrlR: boolean;
   /** Search state to restore on cancel (incsearch). */
@@ -1726,6 +1728,7 @@ export class Vim {
 
   private cmdlineKey(key: Key) {
     const cl = this.cmdline!;
+    if (key !== '<Up>' && key !== '<Down>') cl.histPrefix = null;
     if (cl.ctrlR) {
       cl.ctrlR = false;
       let ins = '';
@@ -1794,12 +1797,17 @@ export class Vim {
       case '<Up>':
       case '<Down>': {
         if (cl.type === 'input' || cl.type === '=') return;
+        // Vim keeps the text typed before the first <Up>/<Down> as a prefix:
+        // only entries starting with it are visited, and stepping past the
+        // newest one brings the typed text back. No match leaves everything.
         const d = key === '<Up>' ? -1 : 1;
+        const prefix = cl.histPrefix ?? cl.text.slice(0, cl.cursor);
         let i = cl.histIdx + d;
-        while (i >= 0 && i < hist.length && !hist[i].startsWith(cl.text.slice(0, cl.cursor === cl.text.length ? 0 : cl.cursor))) i += d;
-        if (i < 0) return;
-        cl.histIdx = Math.min(i, hist.length);
-        cl.text = hist[cl.histIdx] ?? '';
+        while (i >= 0 && i < hist.length && !hist[i].startsWith(prefix)) i += d;
+        if (i < 0 || i > hist.length || (i === hist.length && cl.histIdx >= hist.length)) return;
+        cl.histPrefix = prefix;
+        cl.histIdx = i;
+        cl.text = i === hist.length ? prefix : hist[i];
         cl.cursor = cl.text.length;
         return this.incsearch();
       }

@@ -179,3 +179,43 @@ describe('counted word text objects', () => {
     expect(R(doc, keys).slice(0, 2)).toEqual([text, reg]);
   });
 });
+
+describe('command-line history <Up> / <Down>', () => {
+  const H = '/one<CR>/two<CR>';
+  it.each([
+    // The text typed before the first <Up> is a prefix filter.
+    [H + '/o<Up><CR>', 'one'],
+    [H + '/t<Up><CR>', 'two'],
+    [H + '/o<Up><Up><CR>', 'one'],
+    // <Down> past the newest match brings back what was typed.
+    [H + '/o<Up><Down><CR>', 'o'],
+    [H + '/o<Up><Up><Down><CR>', 'o'],
+    // An empty prefix walks every entry.
+    [H + '/<Up><CR>', 'two'],
+    [H + '/<Up><Up><CR>', 'one'],
+    [H + '/<Up><Up><Down><CR>', 'two'],
+    [H + '/<Up><Down><CR>', 'two'],
+    // No match: the typed text stays.
+    [H + '/x<Up><CR>', 'x'],
+    [H + '/o<Down><CR>', 'o'],
+    // The prefix is the text before the cursor.
+    [H + '/ox<Left><Up><CR>', 'one'],
+    // Each step keeps matching the original prefix.
+    ['/on<CR>' + H + '/o<Up><Up><CR>', 'on'],
+    ['/on<CR>' + H + '/on<Up><Up><CR>', 'on'],
+    ['/on<CR>' + H + '/on<Up><Up><Up><CR>', 'on'],
+    // Editing starts a new prefix but keeps the place in history.
+    [H + '/o<Up>x<Up><CR>', 'onex'],
+    [H + '/o<Up><BS><Up><CR>', 'on'],
+  ])('%s', (keys, want) => {
+    expect(run('|one two\none two', keys).registers.get('/').text).toBe(want);
+  });
+  it.each([
+    [':s/a/A/<CR>:s/b/B/<CR>:s/c/C/<CR>u:s/a<Up><CR>', 'A B c'],
+    [':s/a/A/<CR>:s/b/B/<CR>u:s<Up><Up><CR>', 'A b c'],
+    [':s/a/A/<CR>:s/b/B/<CR>uu:s/b<Up><Down><CR>', 'a  c'],
+    [':s/a/A/<CR>:s/b/B/<CR>uu:<Up><Up><CR>', 'A b c'],
+  ])('%s', (keys, want) => {
+    expect(run('|a b c', keys).buf.text()).toBe(want);
+  });
+});
