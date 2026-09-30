@@ -120,11 +120,6 @@ export function Sidebar(p: Props) {
           <span>Live hints</span>
           <span className="side-toggle-sub">coach as you type</span>
         </label>
-        <a className="side-coffee" href="https://buymeacoffee.com/kylearrington" target="_blank" rel="noopener noreferrer" title="Support vimchi">
-          <span className="side-coffee-cup" aria-hidden="true">☕</span>
-          <span>Buy me a coffee</span>
-          <span className="side-toggle-sub">if vimchi helped</span>
-        </a>
       </div>
       <div className="side-foot">
         <button className={'me' + (p.profileOn ? ' on' : '')} onClick={p.onProfile}>
