@@ -218,11 +218,12 @@ export const windowsTabs: Section = {
         </p>
       ),
       aside: {
-        title: 'One key instead of two',
+        title: 'The remap everyone makes',
         body: (
           <p>
-            Look at keymaps.lua: mapping <Code>C-h</Code> to <Code>C-w h</Code> (and so on) is one of the most common
-            lines in any config.
+            Both kickstart and LazyVim map <Code>C-h</Code> <Code>C-j</Code> <Code>C-k</Code> <Code>C-l</Code> to{' '}
+            <Code>C-w</Code> plus the same letter, so one chord moves between splits. The lesson uses the built-in
+            form so it works in plain Vim too.
           </p>
         ),
       },

@@ -286,7 +286,8 @@ export const buffersFiles: Section = {
         body: (
           <p>
             <Code>[b</Code> <Code>]b</Code> (and <Code>[B</Code> <Code>]B</Code> for first and last) are built-in maps
-            since Neovim 0.11, borrowed from vim-unimpaired. In classic Vim use <Code>:bnext</Code> and{' '}
+            since Neovim 0.11, borrowed from vim-unimpaired. LazyVim also binds <Code>S-h</Code> / <Code>S-l</Code> to
+            the same moves, with bufferline showing the buffers as tabs. In classic Vim use <Code>:bnext</Code> and{' '}
             <Code>:bprevious</Code>.
           </p>
         ),
