@@ -86,12 +86,14 @@ describe('mini.ai', () => {
     expect(run(lua, 'daf', 'init.lua').buf.text()).toBe('local M = {}\n\n\nreturn M');
   });
 
-  it(']m and [m move between functions', () => {
-    const vim = run('|' + code, ']m');
+  it(']f and [f move between functions (LazyVim treesitter-textobjects keys)', () => {
+    const vim = run('|' + code, ']f');
     expect(vim.cursor).toEqual({ line: 9, col: 2 });
-    vim.feedKeys('[m');
+    vim.feedKeys('[f');
     expect(vim.cursor).toEqual({ line: 0, col: 0 });
-    vim.feedKeys(']M');
+    vim.feedKeys(']F');
+    expect(vim.cursor).toEqual({ line: 6, col: 0 });
+    vim.feedKeys('[F');
     expect(vim.cursor).toEqual({ line: 6, col: 0 });
   });
 

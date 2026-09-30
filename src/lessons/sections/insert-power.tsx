@@ -281,8 +281,8 @@ export const insertPower: Section = {
         title: 'Enter or C-y?',
         body: (
           <p>
-            LazyVim accepts with <Code>CR</Code> as well as <Code>C-y</Code>; kickstart uses <Code>C-y</Code> only,
-            so a stray Enter never grabs a candidate you did not want. <Code>C-space</Code> opens the
+            LazyVim accepts with <Code>enter</Code> as well as <Code>C-y</Code>; kickstart uses <Code>C-y</Code> only,
+            so a stray <Code>enter</Code> never grabs a candidate you did not want. <Code>C-space</Code> opens the
             documentation for the highlighted item in both.
           </p>
         ),

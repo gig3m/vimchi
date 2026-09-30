@@ -183,7 +183,7 @@ export const git: Section = {
       intro: (
         <>
           <p>
-            <Code>Space ghs</Code> (LazyVim's <Code>Space gh</Code> is the git-hunk prefix) stages the hunk under the cursor without leaving the file; its sign disappears.{' '}
+            <Code>Space ghs</Code> (LazyVim's <Code>Space gh</Code> is the git-hunk prefix) stages the hunk under the cursor without leaving the file; its sign dims to show it is staged.{' '}
             <Code>Space ghr</Code> resets the hunk: its lines go back to the last staged or committed version.
           </p>
           <p>

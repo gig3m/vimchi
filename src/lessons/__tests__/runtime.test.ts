@@ -77,6 +77,38 @@ describe('cursor carry and folds', () => {
     expect(s.vim!.cursor).toEqual({ line: 0, col: 0 });
     expect(s.vim!.closedFoldAt(s.vim!.cursor.line)).toBeNull();
   });
+  it.each(['flash-jump', 'flash-motions', 'flash-treesitter'])('%s: every round starts at its setup cursor, so labels match the reference', id => {
+    // Flash labels depend on where the cursor is; a carried cursor would show labels that differ from
+    // the reference solutions on Results.
+    const c = LESSONS[id].challenge as RoundsChallenge;
+    expect(c.carryCursor).toBe(false);
+    const s = new Session(c);
+    let t = 0;
+    c.rounds.forEach((r, i) => {
+      const want = { ...(r.setup?.cursor ?? c.base.cursor ?? { line: 0, col: 0 }) };
+      expect(s.vim!.cursor, `round ${i + 1} start`).toEqual(want);
+      for (const k of solutionKeys(r.solution)) s.key(k, (t += 100));
+      expect(s.done || s.roundDone, `round ${i + 1} (${r.solution}) not solved`).toBe(true);
+      if (!s.done) s.advance();
+    });
+  });
+  it('carryCursor: false keeps a round at its setup cursor even when the text is unchanged', () => {
+    const c: RoundsChallenge = {
+      kind: 'rounds', base: { name: 'a.ts', text }, carryCursor: false,
+      rounds: [
+        { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 3, col: 2 } }, solution: '3jw' },
+        { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 5, col: 0 } }, solution: '5j' },
+      ],
+    };
+    const s = new Session(c);
+    for (const k of solutionKeys('3jw')) s.key(k, 100);
+    s.advance();
+    expect(s.vim!.cursor).toEqual({ line: 0, col: 0 });
+    const carried = new Session({ ...c, carryCursor: undefined });
+    for (const k of solutionKeys('3jw')) carried.key(k, 100);
+    carried.advance();
+    expect(carried.vim!.cursor).toEqual({ line: 3, col: 2 });
+  });
   it('the Folds lesson solves every round in order with the cursor carried', () => {
     const lesson = LESSONS['toggle-folds'];
     const c = lesson.challenge as RoundsChallenge;

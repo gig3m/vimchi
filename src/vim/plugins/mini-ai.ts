@@ -4,7 +4,8 @@
 //   ii / ai                  — indent scope (mini.indentscope); ai adds the header line and the
 //                              closing line (}, end) when there is one
 //   if / af, ic / ac         — function and class, standing in for treesitter-textobjects
-//   ]m [m ]M [M              — to the start / end of the next / previous function
+//   ]f [f ]F [F              — to the start / end of the next / previous function (LazyVim's
+//                              treesitter-textobjects keys; ]m stays Vim's own)
 
 import type { MotionCtx, MotionResult, Plugin, Vim } from '../editor';
 import { findClose } from '../motions';
@@ -317,9 +318,9 @@ export const miniAi: Plugin = {
     vim.defineObject('af', ctx => fn(ctx, false));
     vim.defineObject('ic', ctx => cls(ctx, true));
     vim.defineObject('ac', ctx => cls(ctx, false));
-    vim.defineMotion(']m', { run: funcMotion(vim, 1, false) });
-    vim.defineMotion('[m', { run: funcMotion(vim, -1, false) });
-    vim.defineMotion(']M', { run: funcMotion(vim, 1, true) });
-    vim.defineMotion('[M', { run: funcMotion(vim, -1, true) });
+    vim.defineMotion(']f', { run: funcMotion(vim, 1, false) });
+    vim.defineMotion('[f', { run: funcMotion(vim, -1, false) });
+    vim.defineMotion(']F', { run: funcMotion(vim, 1, true) });
+    vim.defineMotion('[F', { run: funcMotion(vim, -1, true) });
   },
 };
