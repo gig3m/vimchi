@@ -130,7 +130,7 @@ export const quickfix: Section = {
         <>
           <p>
             <Code>:vimgrep /TODO/ **/*.ts</Code> searches files with a Vim pattern and collects every match in the
-            quickfix list, then jumps to the first one. <Code>**</Code> reaches into subdirectories and <Code>%</Code>{' '}
+            quickfix list, Vim's list of places to visit, then jumps to the first one. <Code>**</Code> reaches into subdirectories and <Code>%</Code>{' '}
             means the current file.
           </p>
           <p>
@@ -169,12 +169,12 @@ export const quickfix: Section = {
             solution: ':grep formatPrice<CR>',
           },
           {
-            prompt: 'Find the fetch calls in src/api only.',
+            prompt: 'Find every "fetch" in the files under src/api.',
             goal: { check: vim => qfLength(vim) === 2 && vim.quickfix.items.every(it => it.file.startsWith('src/api/')) },
             solution: ':vim /fetch/ src/api/*<CR>',
           },
           {
-            prompt: 'Find the word "total" in this file only.',
+            prompt: 'Find "total" in this file only.',
             goal: { check: vim => qfLength(vim) === 2 && vim.quickfix.items.every(it => it.file === 'src/cart.ts') },
             solution: ':vimgrep /\\<lt>total\\>/ %<CR>',
           },
@@ -226,7 +226,7 @@ export const quickfix: Section = {
             solution: ':copen<CR>',
           },
           {
-            prompt: 'Open the list and jump to the third TODO.',
+            prompt: 'Open the list and jump to the third entry.',
             goal: { buffer: 'src/checkout.ts', cursor: at('src/checkout.ts', 5, 'TODO') },
             solution: ':copen<CR>jj<CR>',
           },
@@ -242,7 +242,7 @@ export const quickfix: Section = {
             solution: ':cclose<CR>',
           },
           {
-            prompt: 'Go to the formatPrice call in products.ts, not its import.',
+            prompt: 'This list holds every formatPrice. Jump to the one on line 9 of products.ts.',
             setup: { init: qf('vimgrep /formatPrice/ **/*.ts') },
             goal: { buffer: 'src/api/products.ts', cursor: at('src/api/products.ts', 8, 'formatPrice') },
             solution: ':copen<CR>j<CR>',
@@ -317,7 +317,7 @@ export const quickfix: Section = {
             solution: '[q[q',
           },
           {
-            prompt: 'On to the next TODO.',
+            prompt: 'This list holds the TODOs. Go to the next one.',
             setup: { init: qf('vimgrep /TODO/ **/*.ts', false, 2) },
             goal: { buffer: 'src/checkout.ts', cursor: at('src/checkout.ts', 5, 'TODO') },
             solution: ']q',
@@ -334,7 +334,8 @@ export const quickfix: Section = {
         <>
           <p>
             <Code>:cdo</Code> runs a command at every entry in the quickfix list, one after another. With{' '}
-            <Code>:s</Code> it becomes a project-wide search and replace that only touches the lines you found.
+            <Code>:s/old/new/</Code>, which replaces old with new on a line (the Substitute section has the details),
+            it becomes a project-wide search and replace that only touches the lines you found.
           </p>
           <p>
             Add <Code>| update</Code> so each file is saved after its change: <Code>:cdo s/old/new/ | update</Code>.
@@ -362,19 +363,19 @@ export const quickfix: Section = {
         base: { files: SHOP, open: 'src/cart.ts', height: 18 },
         rounds: [
           {
-            prompt: 'formatPrice is renamed toMoney everywhere.',
+            prompt: 'Change every formatPrice to toMoney, and save the files.',
             setup: { search: 'formatPrice', init: qf('vimgrep /formatPrice/ **/*.ts', true) },
             goal: { files: edited(USES_PRICE, t => t.replaceAll('formatPrice', 'toMoney')) },
             solution: ':cdo s//toMoney/ | update<CR>',
           },
           {
-            prompt: 'The TODOs are done. Delete each TODO line.',
+            prompt: 'The list holds the TODOs. Delete each TODO line (:d deletes a line) and save.',
             setup: { init: qf('vimgrep /TODO/ **/*.ts', true) },
             goal: { files: edited(SRC, t => t.replace(/^ *\/\/ TODO.*\n/m, '')) },
             solution: ':cdo d | update<CR>',
           },
           {
-            prompt: 'Rename total to cartSum, tests included.',
+            prompt: 'The list holds every whole word "total". Change each to cartSum, and save.',
             setup: { search: '\\<total\\>', init: qf('vimgrep /\\<total\\>/ **/*.ts', true) },
             goal: {
               files: edited(['src/cart.ts', 'src/checkout.ts', 'test/cart.test.ts'], t => t.replace(/\btotal\b/g, 'cartSum')),
@@ -382,7 +383,7 @@ export const quickfix: Section = {
             solution: ':cdo s//cartSum/ | update<CR>',
           },
           {
-            prompt: 'Rename the Line type to Row.',
+            prompt: 'The list holds every whole word "Line". Change each to Row, and save.',
             setup: { search: '\\<Line\\>', init: qf('vimgrep /\\<Line\\>/ **/*.ts', true) },
             goal: { files: edited(['src/cart.ts', 'src/checkout.ts'], t => t.replace(/\bLine\b/g, 'Row')) },
             solution: ':cdo s//Row/ | update<CR>',
@@ -414,8 +415,8 @@ export const quickfix: Section = {
       ),
       practice: total => (
         <p>
-          The location list for this window holds every <Code>lines.</Code> in cart.ts, the places that read the array. Open it and walk it. {total}{' '}
-          rounds.
+          The location list for this window holds every <Code>lines.</Code> in cart.ts. Open it and walk it.{' '}
+          {total} rounds.
         </p>
       ),
       aside: {
@@ -423,7 +424,7 @@ export const quickfix: Section = {
         body: (
           <p>
             <Code>vim.diagnostic.setloclist()</Code> puts the LSP's errors for the current buffer in the location list,
-            and <Code>[d</Code> <Code>]d</Code> walk them directly.
+            and <Code>[d</Code> <Code>]d</Code>, from Code Navigation, walk them directly.
           </p>
         ),
       },
@@ -453,7 +454,7 @@ export const quickfix: Section = {
             solution: ':lopen<CR>G<CR>',
           },
           {
-            prompt: 'Build a location list of formatPrice in this file.',
+            prompt: 'Fill the location list with every formatPrice in this file, using :lvimgrep.',
             setup: { init: () => {} },
             goal: { check: vim => vim.win.loclist?.items.length === 2 },
             solution: ':lvimgrep /formatPrice/ %<CR>',
@@ -473,7 +474,8 @@ export const quickfix: Section = {
             exactly the ones a change is about.
           </p>
           <p>
-            Use <Code>%s</Code> with the <Code>e</Code> flag so buffers without a match don't stop the run. The changes
+            <Code>:bufdo %s/old/new/ge</Code> replaces in every buffer: <Code>%</Code> is the whole file, <Code>g</Code>{' '}
+            every match on a line, and <Code>e</Code> keeps buffers without a match from stopping the run. The changes
             wait in their buffers; end with <Code>| update</Code> when each one should be saved too.
           </p>
         </>
@@ -498,7 +500,7 @@ export const quickfix: Section = {
         base: { files: SHOP, open: 'src/cart.ts', height: 16 },
         rounds: [
           {
-            prompt: 'formatPrice (the last search) is toMoney in every open buffer.',
+            prompt: 'Change formatPrice, the last search, to toMoney in every open buffer.',
             setup: { search: 'formatPrice', init: vim => { vim.ex('e src/checkout.ts'); vim.ex('e src/format.ts'); } },
             goal: {
               check: buffersAre(['src/cart.ts', 'src/checkout.ts', 'src/format.ts'], t => t.replaceAll('formatPrice', 'toMoney')),
@@ -506,13 +508,13 @@ export const quickfix: Section = {
             solution: ':bufdo %s//toMoney/ge<CR>',
           },
           {
-            prompt: 'Point both API modules at /api/v2/.',
+            prompt: 'In both open buffers, change "/api/" to "/api/v2/".',
             setup: { open: 'src/api/orders.ts', init: vim => vim.ex('e src/api/products.ts') },
             goal: { check: buffersAre(['src/api/orders.ts', 'src/api/products.ts'], t => t.replace('/api/', '/api/v2/')) },
             solution: ':bufdo %s#api/#api/v2/#e<CR>',
           },
           {
-            prompt: 'Switch the open files to euros: USD becomes EUR.',
+            prompt: 'Change USD to EUR in every open buffer.',
             setup: { open: 'src/format.ts', init: vim => { vim.ex('e src/cart.ts'); vim.ex('e README.md'); } },
             goal: {
               check: vim =>

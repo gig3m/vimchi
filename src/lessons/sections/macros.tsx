@@ -52,7 +52,7 @@ export const macros: Section = {
         base: { name: 'groceries.md' },
         rounds: [
           {
-            prompt: 'Turn each line into a list item.',
+            prompt: 'Put "- " in front of each item line.',
             setup: {
               text: ['# Saturday', '', 'oat milk', 'coffee beans', 'lemons', 'sourdough'],
               cursor: { line: 2, col: 4 },
@@ -61,7 +61,7 @@ export const macros: Section = {
             solution: 'qaI- <Esc>jq@a@a@a',
           },
           {
-            prompt: 'End every statement with a semicolon.',
+            prompt: 'Add ";" to the end of every line.',
             setup: {
               name: 'setup.ts',
               text: [
@@ -85,7 +85,7 @@ export const macros: Section = {
             solution: 'qaA;<Esc>jq@a@a@a@a',
           },
           {
-            prompt: 'Quote each key.',
+            prompt: 'Put double quotes around the word before each ":".',
             setup: {
               name: 'theme.json',
               text: ['{', '  background: "#1e1e2e",', '  foreground: "#cdd6f4",', '  accent: "#f5c2e7"', '}'],
@@ -95,7 +95,7 @@ export const macros: Section = {
             solution: 'qaI"<Esc>f:i"<Esc>jq@a@a',
           },
           {
-            prompt: 'Every print is a debug() call.',
+            prompt: 'Change each "print" to "debug".',
             setup: {
               name: 'sync.py',
               text: [
@@ -167,7 +167,7 @@ export const macros: Section = {
         base: { name: 'seed.sql' },
         rounds: [
           {
-            prompt: 'Add a trailing comma to every row but the last.',
+            prompt: 'Add "," to the end of every quoted line except the last.',
             setup: {
               name: 'regions.ts',
               text: ['const regions = [', "  'us-east-1'", "  'us-west-2'", "  'eu-west-1'", "  'eu-central-1'", "  'ap-south-1'", "  'ap-northeast-1'", '];'],
@@ -179,7 +179,7 @@ export const macros: Section = {
             solution: 'jqaA,<Esc>jq4@a',
           },
           {
-            prompt: 'Register a comments out a line and moves down. Comment out all four.',
+            prompt: 'Register a puts "-- " at the start of a line and moves down. Run it on four lines, from the cursor.',
             setup: {
               name: 'init.lua',
               text: [
@@ -206,7 +206,7 @@ export const macros: Section = {
             solution: '4@a',
           },
           {
-            prompt: 'Fill in seats 2 to 6 by copying the row and bumping the number.',
+            prompt: 'Add seats 2 to 6: copy the INSERT line and bump its first number by one each time.',
             setup: {
               text: ['-- hall A, front row', 'BEGIN;', "INSERT INTO seats (id, row) VALUES (1, 'A');", 'COMMIT;'],
               cursor: { line: 2, col: 12 },
@@ -227,7 +227,7 @@ export const macros: Section = {
             solution: 'qayyp<C-a>q4@a',
           },
           {
-            prompt: 'Every constant name is uppercase.',
+            prompt: 'Uppercase the name after each "export const".',
             setup: {
               name: 'status.ts',
               text: [
@@ -288,7 +288,7 @@ export const macros: Section = {
         base: { name: '.envrc' },
         rounds: [
           {
-            prompt: 'Every value is quoted.',
+            prompt: 'Put double quotes around everything after each "=".',
             setup: {
               text: [
                 '# local dev',
@@ -311,7 +311,7 @@ export const macros: Section = {
             solution: 'qa0f=a"<Esc>A"<Esc>jq3@a',
           },
           {
-            prompt: 'Turn each "name url" line into a Markdown link.',
+            prompt: 'Rewrite each "name url" line as [name](url).',
             setup: {
               name: 'links.md',
               text: [
@@ -327,7 +327,7 @@ export const macros: Section = {
             solution: 'qaI[<Esc>f cl](<Esc>A)<Esc>jq2@a',
           },
           {
-            prompt: 'Turn each parameter into a dict entry.',
+            prompt: "Turn each bare name into 'name': name, with a comma at the end.",
             setup: {
               name: 'payload.py',
               text: ['payload = {', '    user_id', '    amount', '    currency', '    idempotency_key', '}'],
@@ -346,7 +346,7 @@ export const macros: Section = {
             solution: "qa^yiwI'<Esc>A': <C-r>0,<Esc>jq3@a",
           },
           {
-            prompt: 'Change each default value to null, keeping the names.',
+            prompt: 'Change each value after ":" to null, keeping the commas.',
             setup: {
               name: 'defaults.ts',
               text: [
@@ -412,7 +412,7 @@ export const macros: Section = {
         base: { name: 'todo.md' },
         rounds: [
           {
-            prompt: 'Make every line a checkbox item.',
+            prompt: 'Add "[ ] " after the "- " on every item line.',
             setup: {
               text: [
                 '## Ops',
@@ -441,7 +441,7 @@ export const macros: Section = {
             solution: 'qaqqa0a [ ]<Esc>j@aq@a',
           },
           {
-            prompt: 'Delete every debug line. The search failing ends it.',
+            prompt: 'Delete every console.debug line. The search failing ends the macro.',
             setup: {
               name: 'checkout.ts',
               text: [
@@ -468,7 +468,7 @@ export const macros: Section = {
             solution: 'qaqqa/debug<CR>dd@aq@a',
           },
           {
-            prompt: 'Wrap every function name in backticks.',
+            prompt: 'Wrap the word before each " - " in backticks.',
             setup: {
               name: 'API.md',
               text: [
@@ -496,7 +496,7 @@ export const macros: Section = {
             solution: 'qaqqaI`<Esc>ea`<Esc>j@aq@a',
           },
           {
-            prompt: 'Join each key with its value on the next line, with ": " between.',
+            prompt: 'Join the lines in pairs, with ": " between the two halves.',
             setup: {
               name: 'headers.txt',
               text: ['Content-Type', 'application/json', 'Cache-Control', 'no-store', 'X-Request-Id', 'a1b2c3', 'Accept', '*/*'],
@@ -524,8 +524,8 @@ export const macros: Section = {
             <Code>dd</Code> the scratch line.
           </p>
           <p>
-            Yank with <Code>y$</Code>, not <Code>yy</Code>. A linewise yank adds a newline, and the macro would press
-            Enter at the end.
+            Yank with <Code>y$</Code>, not <Code>yy</Code>. <Code>yy</Code> takes the line's newline too, and the
+            macro would press Enter at the end.
           </p>
         </>
       ),
@@ -570,7 +570,7 @@ export const macros: Section = {
             solution: 'Go<Esc>"vpFwrW0"vy$dd',
           },
           {
-            prompt: 'Register c removes one character, but each comment starts with "# ". Make it 02xj, then uncomment all three.',
+            prompt: 'Register c removes one character, but each line starts with "# ". Make it 02xj, then run it on all three lines.',
             setup: {
               name: 'config.py',
               text: ['# DEBUG = True', '# ALLOWED_HOSTS = ["*"]', '# CACHE_TTL = 0'],
@@ -595,8 +595,8 @@ export const macros: Section = {
       intro: (
         <>
           <p>
-            A CSV export pasted into a TypeScript file needs to become code. Five rows, a few fields each: exactly the
-            kind of repetition a macro is for.
+            A CSV export pasted into a TypeScript file needs to become code. A handful of rows, a few fields each:
+            exactly the kind of repetition a macro is for.
           </p>
           <p>
             The wrapper lines are already there. Record one row with <Code>f,</Code> and a short insert, and replay it
@@ -624,6 +624,7 @@ export const macros: Section = {
         base: { name: 'users.ts' },
         rounds: [
           {
+            prompt: "Turn each row into [id, 'name'],",
             setup: {
               text: [
                 'const users = new Map([',
@@ -650,6 +651,7 @@ export const macros: Section = {
             solution: "qaI[<Esc>f,a '<Esc>A'],<Esc>jq4@a",
           },
           {
+            prompt: "Turn each row into ['code', price],",
             setup: {
               name: 'prices.ts',
               text: ['export const prices = new Map([', '  MUG-01,12.5', '  TEE-BLK-M,24', '  PIN-03,6.75', '  TOTE-02,18', ']);'],
@@ -668,6 +670,7 @@ export const macros: Section = {
             solution: "qaI['<Esc>f,i'<Esc>la <Esc>A],<Esc>jq3@a",
           },
           {
+            prompt: 'Turn each row into name: value,',
             setup: {
               name: 'limits.ts',
               text: ['export const limits = {', '  maxUsers,500', '  maxOrgs,20', '  maxSeats,50', '  maxRepos,100', '  maxHooks,10', '};'],
