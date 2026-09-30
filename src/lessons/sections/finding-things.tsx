@@ -124,24 +124,18 @@ export function at(files: Record<string, string>, file: string, needle: string):
 /** Cursor goal without the green box (which would sit in the wrong file until you get there). */
 export const cursorAt = (p: Pos) => (vim: Vim) => vim.cursor.line === p.line && vim.cursor.col === p.col;
 const windows = (n: number) => (vim: Vim) => vim.tab.windows().length === n;
-const pickerClosed = (vim: Vim) => !vim.modal && !vim.floats.length;
-
-/** Open some buffers, ending in `last`. */
-const opened = (...names: string[]) => (vim: Vim) => {
-  for (const n of names) vim.ex(`edit ${n}`);
-};
 
 export const findingThings: Section = {
   id: 'finding-things',
-  title: 'Finding Things',
+  title: 'Pickers',
   band: 'project',
   lessons: [
     {
-      id: 'telescope-find-files',
+      id: 'picker-files',
       title: 'Find Files',
-      chips: ['␣ff', 'C-n', 'C-v'],
+      chips: ['␣sf', 'C-n', 'C-v'],
       keyCards: [
-        { key: '␣ff', glyph: '⌕', label: 'find files', sub: 'telescope' },
+        { key: '␣sf', glyph: '⌕', label: 'find files', sub: 'kickstart' },
         { key: 'C-n', glyph: '↓', label: 'next result', sub: 'C-p: previous' },
         { key: 'CR', glyph: '⏎', label: 'open it' },
         { key: 'C-v', glyph: '▯▯', label: 'open in vsplit', sub: 'C-x: split' },
@@ -149,8 +143,8 @@ export const findingThings: Section = {
       intro: (
         <>
           <p>
-            <Code>Space ff</Code> opens Telescope's file picker: a prompt, the matching files and a preview of the one
-            selected. Type a few letters of the path, in order but not necessarily together, and <Code>CR</Code> opens
+            <Code>Space sf</Code> opens the file picker (LazyVim binds <Code>Space Space</Code> to the same thing): a
+            prompt, the matching files and a preview of the one selected. Type a few letters of the path, in order but not necessarily together, and <Code>CR</Code> opens
             the best match. <Code>C-n</Code> and <Code>C-p</Code> move down and up the list.
           </p>
           <p>
@@ -161,16 +155,17 @@ export const findingThings: Section = {
       ),
       practice: total => (
         <p>
-          Open each file the prompt names with <Code>Space ff</Code>. Type just enough to put it at the top. (In the
+          Open each file the prompt names with <Code>Space sf</Code>. Type just enough to put it at the top. (In the
           browser, <Code>Alt-n</Code> stands in for <Code>C-n</Code>.) {total} rounds.
         </p>
       ),
       aside: {
-        title: 'Other pickers',
+        title: 'The same picker, other keys',
         body: (
           <p>
-            fzf-lua, snacks.picker and mini.pick work the same way with their own keys. Without a plugin,{' '}
-            <Code>:find</Code> with <Code>path+=**</Code> gets you part of the way.
+            LazyVim's default is <Code>Space Space</Code> for files and <Code>Space /</Code> for grep, both on
+            snacks.picker; kickstart uses <Code>Space sf</Code> and <Code>Space sg</Code> on Telescope. The prompt,{' '}
+            <Code>C-n</Code> / <Code>C-p</Code> and <Code>CR</Code> behave the same in all of them.
           </p>
         ),
       },
@@ -181,50 +176,50 @@ export const findingThings: Section = {
           {
             prompt: 'Open src/lib/money.ts.',
             goal: { buffer: 'src/lib/money.ts' },
-            solution: '<Space>ffmoney<CR>',
+            solution: '<Space>sfmoney<CR>',
           },
           {
             prompt: 'Open the customers route.',
             goal: { buffer: 'src/routes/customers.ts' },
-            solution: '<Space>ffcust<CR>',
+            solution: '<Space>sfcust<CR>',
           },
           {
             prompt: 'Open the README.',
             setup: { open: 'src/lib/dates.ts' },
             goal: { buffer: 'README.md' },
-            solution: '<Space>ffread<CR>',
+            solution: '<Space>sfread<CR>',
           },
           {
             prompt: 'Open test/money.test.ts: type "money", then take the second result.',
             goal: { buffer: 'test/money.test.ts' },
-            solution: '<Space>ffmoney<C-n><CR>',
+            solution: '<Space>sfmoney<C-n><CR>',
           },
           {
             prompt: 'Open dates.ts in a vertical split.',
             goal: { buffer: 'src/lib/dates.ts', check: windows(2) },
-            solution: '<Space>ffdates<C-v>',
+            solution: '<Space>sfdates<C-v>',
           },
           {
             prompt: 'Open the logger in a horizontal split.',
             setup: { open: 'src/routes/invoices.ts' },
             goal: { buffer: 'src/lib/logger.ts', check: windows(2) },
-            solution: '<Space>fflog<C-x>',
+            solution: '<Space>sflog<C-x>',
           },
         ],
       },
     },
     {
-      id: 'telescope-live-grep',
+      id: 'picker-grep',
       title: 'Live Grep',
-      chips: ['␣fg'],
+      chips: ['␣sg'],
       keyCards: [
-        { key: '␣fg', glyph: '⌕', label: 'grep the project', sub: 'telescope' },
+        { key: '␣sg', glyph: '⌕', label: 'grep the project', sub: 'kickstart; LazyVim: ␣/' },
         { key: 'CR', glyph: '⏎', label: 'jump to the hit' },
       ],
       intro: (
         <>
           <p>
-            <Code>Space fg</Code> searches the contents of every file as you type and lists each matching line as{' '}
+            <Code>Space sg</Code> searches the contents of every file as you type and lists each matching line as{' '}
             <Mono>file:line:col:text</Mono>. <Code>CR</Code> opens the file with the cursor on the match.
           </p>
           <p>
@@ -239,11 +234,12 @@ export const findingThings: Section = {
         </p>
       ),
       aside: {
-        title: 'Grep the word under the cursor',
+        title: 'Narrowing to files',
         body: (
           <p>
-            <Code>:Telescope grep_string</Code> searches for the word under the cursor; many configs map it to{' '}
-            <Code>Space fw</Code>. Live grep needs <Mono>ripgrep</Mono> installed.
+            Type the pattern, then two spaces and a glob — <Mono>parse  *.ts</Mono> — and multi-grep restricts the
+            search to matching files (TJ's multi-ripgrep picker; snacks does it with <Mono>-- -g *.ts</Mono>). Live
+            grep needs <Mono>ripgrep</Mono> installed.
           </p>
         ),
       },
@@ -254,102 +250,95 @@ export const findingThings: Section = {
           {
             prompt: 'Jump to where TAX_RATE is defined.',
             goal: { buffer: 'src/lib/money.ts', check: cursorAt(at(SHOP, 'src/lib/money.ts', 'TAX_RATE =')) },
-            solution: '<Space>fgTAX_RATE =<CR>',
+            solution: '<Space>sgTAX_RATE =<CR>',
           },
           {
             prompt: 'Jump to the handler for POST /invoices.',
             goal: { buffer: 'src/routes/invoices.ts', check: cursorAt(at(SHOP, 'src/routes/invoices.ts', 'invoices.post')) },
-            solution: '<Space>fginvoices.post<CR>',
+            solution: '<Space>sginvoices.post<CR>',
           },
           {
             prompt: 'Find where the port is read from the environment.',
             setup: { open: 'README.md' },
             goal: { buffer: 'src/app.ts', check: cursorAt(at(SHOP, 'src/app.ts', 'env.PORT')) },
-            solution: '<Space>fgenv.PORT<CR>',
+            solution: '<Space>sgenv.PORT<CR>',
           },
           {
             prompt: 'Jump to the TODO in money.ts: grep "todo", then take the second hit.',
             goal: { buffer: 'src/lib/money.ts', check: cursorAt(at(SHOP, 'src/lib/money.ts', 'TODO')) },
-            solution: '<Space>fgtodo<C-n><CR>',
+            solution: '<Space>sgtodo<C-n><CR>',
           },
           {
             prompt: 'Jump to the definition of createLogger.',
             goal: { buffer: 'src/lib/logger.ts', check: cursorAt(at(SHOP, 'src/lib/logger.ts', 'function createLogger')) },
-            solution: '<Space>fgfunction createL<CR>',
+            solution: '<Space>sgfunction createL<CR>',
           },
         ],
       },
     },
     {
-      id: 'telescope-buffers',
-      title: 'Buffers Picker',
-      chips: ['␣fb', 'esc', 'dd'],
+      id: 'picker-word',
+      title: 'Word Under Cursor',
+      chips: ['␣sw'],
       keyCards: [
-        { key: '␣fb', glyph: '☰', label: 'open buffers', sub: 'telescope' },
-        { key: 'esc', glyph: 'n', label: 'picker normal mode', sub: 'j/k move' },
-        { key: 'dd', glyph: 'del', label: 'delete buffer', sub: 'in normal mode' },
+        { key: '␣sw', glyph: '⌕w', label: 'grep this word', sub: 'kickstart' },
+        { key: 'CR', glyph: '⏎', label: 'open the match' },
       ],
       intro: (
         <>
           <p>
-            <Code>Space fb</Code> lists the files you have open, the current one marked <Mono>%a</Mono> and the
-            alternate <Mono>#</Mono>. Type part of a name and press <Code>CR</Code> to switch.
+            <Code>Space sw</Code> opens live grep with the word under the cursor already typed, so every use in the
+            project is one key away. It is the picker form of <Code>*</Code>: where <Code>*</Code> finds the next use in
+            this file, <Code>sw</Code> lists every use in every file.
           </p>
           <p>
-            <Code>esc</Code> in the prompt goes to the picker's normal mode: <Code>j</Code> and <Code>k</Code> move,{' '}
-            <Code>dd</Code> deletes the buffer under the cursor, and <Code>esc</Code> or <Code>q</Code> closes it.
+            The first result is usually the line you are on. <Code>C-n</Code> steps to the others, and the preview
+            shows each one before you commit with <Code>CR</Code>.
           </p>
         </>
       ),
-      practice: total => <p>Switch buffers, open one in a split and tidy the list. {total} rounds.</p>,
+      practice: total => (
+        <p>
+          Put the cursor on the named word, open its uses with <Code>Space sw</Code> and pick the match the prompt
+          names. (In the browser, <Code>Alt-n</Code> stands in for <Code>C-n</Code>.) {total} rounds.
+        </p>
+      ),
       aside: {
-        title: 'Most recent first',
+        title: 'Buffers picker',
         body: (
           <p>
-            <Code>{"require('telescope.builtin').buffers({ sort_mru = true })"}</Code> puts the buffers you used last at
-            the top, so <Code>Space fb CR</Code> behaves like <Code>C-^</Code>.
+            <Code>Space fb</Code> (kickstart <Code>Space Space</Code>, LazyVim <Code>Space ,</Code>) lists open buffers in
+            the same picker; <Code>dd</Code> on an entry closes that buffer.
           </p>
         ),
       },
       challenge: {
         kind: 'rounds',
-        base: {
-          files: SHOP,
-          open: 'src/app.ts',
-          plugins: ['telescope'],
-          init: opened('src/lib/money.ts', 'src/routes/invoices.ts', 'README.md', 'src/lib/logger.ts', 'src/app.ts'),
-        },
+        base: { files: SHOP, open: 'src/app.ts', plugins: ['telescope'] },
         rounds: [
           {
-            prompt: 'Switch to the invoices route.',
-            goal: { buffer: 'src/routes/invoices.ts' },
-            solution: '<Space>fbinv<CR>',
+            prompt: 'From the import of createLogger, jump to its definition.',
+            setup: { cursor: at(SHOP, 'src/app.ts', 'createLogger') },
+            goal: { buffer: 'src/lib/logger.ts', check: cursorAt(at(SHOP, 'src/lib/logger.ts', 'createLogger')) },
+            solution: '<Space>sw<C-n><C-n><CR>',
           },
           {
-            prompt: 'Switch to money.ts.',
-            goal: { buffer: 'src/lib/money.ts' },
-            solution: '<Space>fbmon<CR>',
+            prompt: 'From the import of formatCents, jump to its definition (hits list by file, so it comes first).',
+            setup: { open: 'src/routes/invoices.ts', cursor: at(SHOP, 'src/routes/invoices.ts', 'formatCents') },
+            goal: { buffer: 'src/lib/money.ts', check: cursorAt(at(SHOP, 'src/lib/money.ts', 'formatCents')) },
+            solution: '<Space>sw<CR>',
           },
           {
-            prompt: 'Open the README in a vertical split.',
-            goal: { buffer: 'README.md', check: windows(2) },
-            solution: '<Space>fbread<C-v>',
-          },
-          {
-            prompt: 'Delete the logger buffer from the picker, then close the picker.',
-            goal: { check: vim => !vim.findBuffer('src/lib/logger.ts') && pickerClosed(vim) },
-            solution: '<Space>fblog<Esc>dd<Esc>',
-          },
-          {
-            prompt: 'In the picker, move down to money.ts with j and open it.',
-            goal: { buffer: 'src/lib/money.ts' },
-            solution: '<Space>fb<Esc>j<CR>',
+            prompt: 'From the test, jump to the definition of addTax.',
+            setup: { open: 'test/money.test.ts', cursor: at(SHOP, 'test/money.test.ts', 'addTax') },
+            goal: { buffer: 'src/lib/money.ts', check: cursorAt(at(SHOP, 'src/lib/money.ts', 'addTax(cents')) },
+            solution: '<Space>sw<CR>',
           },
         ],
       },
     },
     {
-      id: 'telescope-quickfix',
+      id: 'picker-quickfix',
       title: 'Send to Quickfix',
       chips: ['C-q'],
       keyCards: [
@@ -390,22 +379,22 @@ export const findingThings: Section = {
           {
             prompt: 'Send every TODO in the project to the quickfix list.',
             goal: { check: vim => vim.quickfix.items.length === 3 && vim.buf.kind === 'quickfix' },
-            solution: '<Space>fgTODO<C-q>',
+            solution: '<Space>sgTODO<C-q>',
           },
           {
             prompt: 'Put both test files in the quickfix list.',
             goal: { check: vim => vim.quickfix.items.length === 2 && vim.quickfix.items.every(i => i.file.startsWith('test/')) && vim.buf.kind === 'quickfix' },
-            solution: '<Space>fftest/<C-q>',
+            solution: '<Space>sftest/<C-q>',
           },
           {
             prompt: 'List every formatCents, then open the second hit from the quickfix window.',
             goal: { buffer: 'src/routes/invoices.ts', check: cursorAt(at(SHOP, 'src/routes/invoices.ts', 'formatCents')) },
-            solution: '<Space>fgformatCents<C-q>j<CR>',
+            solution: '<Space>sgformatCents<C-q>j<CR>',
           },
           {
             prompt: 'List the console calls and jump to the last one.',
             goal: { buffer: 'src/lib/logger.ts', check: cursorAt(at(SHOP, 'src/lib/logger.ts', 'console.error')) },
-            solution: '<Space>fgconsole<C-q>G<CR>',
+            solution: '<Space>sgconsole<C-q>G<CR>',
           },
         ],
       },
