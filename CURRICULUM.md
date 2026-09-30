@@ -265,8 +265,8 @@ Move through a codebase, not a file: buffers, windows, jumps, quickfix, definiti
 ### Explorer
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 122 | Open the Directory | `-` `CR` | transform |
-| 123 | Edit a Directory | `dd` `cw` `:w` | transform |
+| 122 | Open the Tree | `␣e` `l` `h` `q` | transform |
+| 123 | Edit the Tree | `a` `d` `r` | transform |
 
 ## Patterns
 

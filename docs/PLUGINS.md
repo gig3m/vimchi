@@ -44,7 +44,7 @@ Call `vim.beginChange()` before editing from anything not flagged `change` (ex c
 - **Prompts**: `vim.openCmdline('input', initial, onSubmit, onCancel, 'New Name: ')`.
 - **Plugin buffers**: `new Buffer(name, lines, { kind: 'plugin', filetype })`, `vim.addBuffer(buf)`,
   then `vim.showBuffer(vim.win, buf)` or `vim.splitWindow('row' | 'col', buf)`. Keep state in
-  `buf.data`; set `buf.data.onWrite = () => …` to handle `:w` (oil, commit messages). Filetypes with
+  `buf.data`; set `buf.data.onWrite = () => …` to handle `:w` (commit messages). Filetypes with
   colours: `fugitive`, `git`, `diff`, `gitcommit`, `qf`, `markdown`, `lua`, `typescript`, …
 - **Decorations**: `vim.decorators.push((buf, win) => ({ signs, virt, hl, lineBg }))` for sign
   columns (gitsigns), virtual text (diagnostics) and highlights.

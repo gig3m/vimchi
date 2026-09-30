@@ -79,7 +79,7 @@ export type Decoration = {
   lineBg?: Map<number, string>;
   /** Virtual rows drawn above a line (diff filler); key = lineCount draws after the last line. */
   virtLines?: Map<number, { text: string; color?: string; bg?: string }[]>;
-  /** Columns hidden at the start of a line (oil's entry ids): line → count. */
+  /** Columns hidden at the start of a line (hidden entry ids): line → count. */
   conceal?: Map<number, number>;
 };
 
@@ -205,7 +205,7 @@ export class Vim {
   onChange: (() => void) | null = null;
   /** Hooks plugins use to decorate buffers. */
   decorators: ((buf: Buffer, win: Window) => Decoration | null)[] = [];
-  /** Run after every top-level key, like a CursorMoved autocmd (oil keeps the cursor off entry ids). */
+  /** Run after every top-level key, like a CursorMoved autocmd (the explorer keeps the cursor on entry names). */
   cursorHooks: (() => void)[] = [];
   /** Events for challenge bookkeeping (e.g. "undo", "search"). */
   events: string[] = [];

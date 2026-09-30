@@ -37,7 +37,7 @@ export class Buffer {
   marks = new Map<string, Pos>();
   changelist: Pos[] = [];
   changeIdx = -1;
-  /** Arbitrary per-buffer data for plugins (e.g. the oil directory it lists). */
+  /** Arbitrary per-buffer data for plugins (e.g. the explorer's tree). */
   data: Record<string, unknown> = {};
   /** Buffer-local mappings (see Vim.mapLocal). Keys are joined key sequences. */
   localMaps: Record<'n' | 'v' | 'o', Map<string, unknown>> = { n: new Map(), v: new Map(), o: new Map() };
