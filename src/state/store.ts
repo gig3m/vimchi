@@ -17,6 +17,13 @@ export type Run = {
   score: number;
 };
 
+/** The longest run the server accepts (ms); it validates `time` against this. */
+export const MAX_RUN_TIME = 24 * 60 * 60 * 1000;
+/** The timer starts at the first key, so a tab left open overnight can run past the server's limit: cap it rather than lose the run. */
+export function clampRun<R extends Run>(run: R): R {
+  return run.time > MAX_RUN_TIME ? { ...run, time: MAX_RUN_TIME } : run;
+}
+
 type Local = { lesson: string; runs: Run[] };
 const KEY = 'vimchi.v1';
 /** Guest runs go to the account this many at a time (the server caps an import at 5000). */
@@ -143,7 +150,8 @@ export function useProgress(): Progress {
     return () => { window.removeEventListener('online', onOnline); clearTimeout(retryT.current); };
   }, [account, flush]);
 
-  const addRun = useCallback((run: Run) => {
+  const addRun = useCallback((finished: Run) => {
+    const run = clampRun(finished);
     if (!account) return updateLocal(v => ({ ...v, runs: [...v.runs, run] }));
     setServerRuns(rs => [...rs, run]);
     pushOutbox(account.login, run);
