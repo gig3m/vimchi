@@ -967,7 +967,7 @@ export const codeNavigation: Section = {
             <Mono>invoices.ts|26 col 9| [Method] refund</Mono>.
           </p>
           <p>
-            Move to the symbol you want (<Code>/refund</Code> finds it) and press <Code>CR</Code>: the cursor lands on
+            Move to the symbol you want (<Code>/refund</Code> finds it) and press <Code>enter</Code>: the cursor lands on
             its name in the file. It is the file's table of contents, and quicker than scrolling for a name you
             already know.
           </p>

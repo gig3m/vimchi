@@ -457,7 +457,7 @@ export const surround: Section = {
       title: 'Surround with Tags',
       chips: ['gsrtt', 'gsaiwt'],
       keyCards: [
-        { key: 'gsrtt', glyph: '<b>→<i>', label: 'tag → tag', sub: 'type the name, then Enter' },
+        { key: 'gsrtt', glyph: '<b>→<i>', label: 'tag → tag', sub: 'type the name, then CR' },
         { key: 'gsa…t', glyph: 'x→<b>x', label: 'add a tag' },
       ],
       intro: (
@@ -465,7 +465,7 @@ export const surround: Section = {
           <p>
             <Code>t</Code> means an HTML or JSX tag. <Code>gsr</Code> takes the old pair and then the new one, so a
             tag swap is <Code>gsrtt</Code>: replace a tag with a tag. It asks for the new name: type it and press{' '}
-            <Code>Enter</Code>. The whole opening tag is replaced, attributes included, so type them again if you want
+            <Code>enter</Code>. The whole opening tag is replaced, attributes included, so type them again if you want
             them kept.
           </p>
           <p>
@@ -483,7 +483,7 @@ export const surround: Section = {
       ),
       practice: total => (
         <p>
-          Change or add tags. Finish each name with <Code>Enter</Code>. {total} rounds.
+          Change or add tags. Finish each name with <Code>enter</Code>. {total} rounds.
         </p>
       ),
       aside: {
