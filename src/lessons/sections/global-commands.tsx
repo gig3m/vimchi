@@ -80,7 +80,7 @@ export const globalCommands: Section = {
             solution: ':g/console/d<CR>',
           },
           {
-            prompt: 'Delete the lines that start with "#". In a pattern, ^ is the start of a line.',
+            prompt: 'Delete the lines that start with "#".',
             setup: {
               name: 'redis.conf',
               text: [
@@ -99,7 +99,7 @@ export const globalCommands: Section = {
             solution: ':g/^#/d<CR>',
           },
           {
-            prompt: 'Delete the empty lines. ^$ matches a line with nothing on it.',
+            prompt: 'Delete the empty lines.',
             setup: {
               name: 'signups.csv',
               text: ['date,plan,count', '', '2026-09-01,free,118', '2026-09-01,pro,14', '', '', '2026-09-02,free,97', '2026-09-02,pro,21'],
@@ -132,7 +132,7 @@ export const globalCommands: Section = {
             solution: ':g/DEBUG/d<CR>',
           },
           {
-            prompt: 'Delete the lines that start with "--", indented or not. \\s* matches any indent.',
+            prompt: 'Delete the lines that start with "--", indented or not.',
             setup: {
               name: 'keymaps.lua',
               text: [
@@ -251,7 +251,7 @@ export const globalCommands: Section = {
             solution: ':v/^export/d<CR>',
           },
           {
-            prompt: 'Delete every line that is empty or only spaces and tabs. \\S matches anything but a space or tab.',
+            prompt: 'Delete every line that is empty or only spaces and tabs.',
             setup: {
               name: 'notes.md',
               text: ['# Standup', '   ', '- shipped the export fix', '', '- pairing on auth after lunch', '\t', '- blocked on staging creds'],
