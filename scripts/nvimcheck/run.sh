@@ -9,8 +9,8 @@
 #   cases: ok N bad M     engine vs Neovim on scripts/nvimcheck/cases.json, ad-hoc {id, text, cursor?,
 #                         keys, name?, options?} entries that are not lesson rounds. Append freely.
 #
-# Exit status: fails only on the gate by default. NVIMCHECK_STRICT=1 also fails on any extended or
-# cases mismatch (flip it once the engine matches Neovim there).
+# Exit status: fails on the gate and on any extended or cases mismatch (strict since 2026-09-30, when
+# the engine first matched Neovim on all of them). NVIMCHECK_STRICT=0 relaxes it to the gate only.
 set -e
 cd "$(dirname "$0")/../.."
 tmp=$(mktemp -d)
@@ -20,6 +20,6 @@ ROUNDS="$tmp/rounds.json" OUT="$tmp/report.txt" SANDBOX="$tmp/sandbox" \
   nvim --clean --headless -c "luafile scripts/nvimcheck/check.lua" >/dev/null 2>&1
 cat "$tmp/report.txt"
 head -1 "$tmp/report.txt" | grep -q ' bad 0$'
-if [ -n "$NVIMCHECK_STRICT" ] && [ "$NVIMCHECK_STRICT" != 0 ]; then
+if [ "${NVIMCHECK_STRICT:-1}" != 0 ]; then
   if grep -Eq '^(extended|cases) .*: ok [0-9]+ bad [1-9]' "$tmp/report.txt"; then exit 1; fi
 fi
