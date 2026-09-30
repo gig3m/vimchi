@@ -351,12 +351,12 @@ What a starter config adds: LSP edits, richer text objects, flash, surround, com
 ### Surround
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 171 | Add Surroundings | `sa` | transform |
-| 172 | Change Surroundings | `sr` | transform |
-| 173 | Delete Surroundings | `sd` | transform |
-| 174 | Find a Surrounding | `sf` `sF` | transform |
-| 175 | Surround a Selection | `v` `sa` | transform |
-| 176 | Surround with Tags | `srtt` `saiwt` | transform |
+| 171 | Add Surroundings | `gsa` | transform |
+| 172 | Change Surroundings | `gsr` | transform |
+| 173 | Delete Surroundings | `gsd` | transform |
+| 174 | Find a Surrounding | `gsf` `gsF` | transform |
+| 175 | Surround a Selection | `v` `gsa` | transform |
+| 176 | Surround with Tags | `gsrtt` `gsaiwt` | transform |
 
 ### Insert Mode Power
 | # | Lesson | Keys | Challenge |

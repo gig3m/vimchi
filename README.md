@@ -80,7 +80,8 @@ from `keys` when they exist; without them the tutor runs with sign-in disabled.
 
 ## Credits
 
-The plugin lessons emulate the default keymaps of mini.surround, mini.ai and
+The plugin lessons emulate the default keymaps (LazyVim's where the starters differ, such as
+mini.surround on `gsa` / `gsd` / `gsr`; flash.nvim is on in every lesson) of mini.surround, mini.ai and
 nvim-treesitter-textobjects, flash.nvim, telescope.nvim, snacks.explorer and neo-tree, gitsigns.nvim, lazygit,
 grug-far.nvim and a LuaSnip/blink.cmp-style completion and snippet flow; their code is not
 included. Fonts (IBM Plex Sans, JetBrains Mono, Space Grotesk) load from Google Fonts under
