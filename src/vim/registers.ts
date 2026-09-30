@@ -3,7 +3,8 @@
 // read-only ones (. : / %) which the editor fills in.
 
 export type RegKind = 'char' | 'line' | 'block';
-export type RegValue = { text: string; kind: RegKind };
+/** width: a block's width for put (Vim's y_width + 1); the longest line when absent. */
+export type RegValue = { text: string; kind: RegKind; width?: number };
 
 const EMPTY: RegValue = { text: '', kind: 'char' };
 

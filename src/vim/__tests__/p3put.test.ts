@@ -24,7 +24,8 @@ const C = (doc: string, keys: string) => {
   lines[line] = lines[line].slice(0, col) + '|' + lines[line].slice(col);
   return lines.join('\n');
 };
-const reg = (v: Vim, name = '"') => v.registers.get(name);
+/** Register text and kind (a block's put width is pinned in fidelity.test.ts). */
+const reg = (v: Vim, name = '"') => { const { text, kind } = v.registers.get(name); return { text, kind }; };
 
 describe('Visual $ selects the end-of-line', () => {
   it.each([
