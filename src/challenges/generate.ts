@@ -24,6 +24,8 @@ export type ChecklistItem = {
   group?: number;
   /** The fix acts on lines inserted this many lines BELOW the item's first goal line (a stray line or block). */
   below?: number;
+  /** An Ex fix (`:%s`, `:g`) that runs from wherever the cursor is: the par spends no motion on it and the cursor stays put. */
+  anywhere?: boolean;
 };
 
 export type Generated = {
@@ -240,6 +242,7 @@ export function generate(c: GeneratedChallenge, seed: number): Generated {
       if (recorded === m.macro.body) { item.fixKeys = `${m.macro.runs}@a`; ms = Math.min(ms, 1000); }
       else recorded = m.macro.body;
     }
+    if (m.anywhere) item.anywhere = true;
     const motion = m.anywhere ? 0 : Math.min(shortestPath(start, prev, item.fixAt, PATH_KEYS, MAX_MOTION_KEYS + 1), MAX_MOTION_KEYS);
     parKeys += motion + parseKeys(item.fixKeys).length;
     parMs += motion * MOTION_MS + ms;

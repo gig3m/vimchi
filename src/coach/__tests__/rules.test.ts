@@ -19,8 +19,9 @@ function suggest(text: string[], keys: string, cursor = { line: 0, col: 0 }, les
 }
 
 describe('former rules, found by the idiom search', () => {
-  it('count-x: xxx → 3x, and a whole word → de', () => {
-    expect(suggest(['abcdef ghi'], 'xxx')?.keys).toBe('3x');
+  it('count-x: xxxx → 4x (a count saving one key, xxx → 3x, is noise), and a whole word → de', () => {
+    expect(suggest(['aaaaaaa b'], 'xxxx')?.keys).toBe('4x');
+    expect(suggest(['abcdef ghi'], 'xxx')?.keys).not.toBe('3x');
     expect(suggest(['abc def'], 'xxx')?.keys).toBe('de');
   });
   it('count-x does not fire at end of line (x walks backwards)', () => {
@@ -36,7 +37,10 @@ describe('former rules, found by the idiom search', () => {
     expect(suggest(['a', 'b', 'c'], 'ddjP')?.keys).toBe('ddp');
     expect(suggest(['a', 'b', 'c'], 'ddjp')?.keys).not.toBe('ddp');
   });
-  it('count-dd', () => { expect(suggest(['a', 'b', 'c', 'd'], 'dddd')?.keys).toBe('2dd'); });
+  it('count-dd: dddddd → 3dd; dddd → 2dd saves one key, so not that', () => {
+    expect(suggest(['a', 'b', 'c', 'd'], 'dddddd')?.keys).toBe('3dd');
+    expect(suggest(['a', 'b', 'c', 'd'], 'dddd')?.keys).not.toBe('2dd');
+  });
   it('dot-repeat needs saves ≥ 2', () => {
     expect(suggest(['foo a foo b'], 'cwbar<Esc>wwcwbar<Esc>')?.keys).toBe('cwbar<Esc>ww.');
     expect(suggest(['ab ab'], 'xwx')?.pattern).not.toBe('dot');
