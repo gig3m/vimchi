@@ -17,8 +17,6 @@ type Props = {
   /** The logo: the first lesson (a real link, so it leaves Profile and the Warm-up). */
   homeHref: string;
   onProfile: () => void;
-  aboutOn: boolean;
-  onAbout: () => void;
   onSignIn: () => void;
   onSignOut: () => void;
   coachLive: boolean;
@@ -147,9 +145,6 @@ export function Sidebar(p: Props) {
         {p.who.isGuest
           ? <button className="btn-primary" onClick={p.onSignIn}>Sign in</button>
           : <button className="btn-ghost" onClick={p.onSignOut}>Sign out</button>}
-      </div>
-      <div className="side-about">
-        <button className={'link' + (p.aboutOn ? ' on' : '')} onClick={p.onAbout}>About vimchi</button>
       </div>
     </aside>
   );
