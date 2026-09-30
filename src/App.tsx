@@ -114,8 +114,6 @@ export function App() {
         homeHref={'#' + ORDER[0].id}
         onLesson={go}
         onProfile={openProfile}
-        aboutOn={view === 'about'}
-        onAbout={openAbout}
         onSignIn={() => setSignInOpen(true)}
         onSignOut={prog.signOut}
         coachLive={settings.coachLive}
@@ -156,6 +154,10 @@ export function App() {
           )}
         </div>
       </main>
+      <button className={'about-fab' + (view === 'about' ? ' on' : '')} onClick={openAbout} aria-label="About vimchi">
+        <span className="coffee-tip">about vimchi</span>
+        <span className="about-fab-mark" aria-hidden="true">?</span>
+      </button>
       <a className="coffee" href="https://buymeacoffee.com/kylearrington" target="_blank" rel="noopener noreferrer" aria-label="Buy me a coffee">
         <span className="coffee-tip">buy me a coffee</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
