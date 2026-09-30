@@ -636,9 +636,10 @@ export const codeNavigation: Section = {
         title: 'Out of the box',
         body: (
           <p>
-            Neovim 0.11 maps <Code>K</Code> for you and points <Code>C-]</Code> at the server's definition. Most configs
-            add <Code>gd</Code> with <Code>vim.keymap.set('n', 'gd', vim.lsp.buf.definition)</Code>; without a server it
-            finds the local declaration.
+            Since Neovim 0.10, <Code>K</Code> is mapped to hover when a language server attaches, and{' '}
+            <Code>C-]</Code> goes to the server's definition. LazyVim maps <Code>gd</Code>; kickstart follows the 0.11{' '}
+            <Code>gr</Code> keys and maps <Code>grd</Code> instead, which leaves <Code>gd</Code> as Vim's local
+            declaration search.
           </p>
         ),
       },

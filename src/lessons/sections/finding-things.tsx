@@ -307,8 +307,9 @@ export const findingThings: Section = {
         title: 'Buffers picker',
         body: (
           <p>
-            <Code>Space fb</Code> (kickstart <Code>Space Space</Code>, LazyVim <Code>Space ,</Code>) lists open buffers in
-            the same picker; <Code>dd</Code> on an entry closes that buffer.
+            kickstart's <Code>Space Space</Code> (LazyVim <Code>Space ,</Code> or <Code>Space fb</Code>) lists open
+            buffers in the same picker. To close one from the list, it is <Code>M-d</Code> in Telescope and{' '}
+            <Code>dd</Code> in the snacks picker.
           </p>
         ),
       },
