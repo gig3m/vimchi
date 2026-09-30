@@ -234,6 +234,7 @@ export function addHunkNav(vim: Vim, name: 'diff' | 'gitsigns', nav: Nav) {
     }
     return null;
   };
-  vim.defineMotion(']c', { run: run(1) });
-  vim.defineMotion('[c', { run: run(-1) });
+  // ]c / [c are gitsigns' README keys (and diff mode's); ]h / [h are LazyVim's for the same jumps.
+  for (const k of [']c', ']h']) vim.defineMotion(k, { run: run(1) });
+  for (const k of ['[c', '[h']) vim.defineMotion(k, { run: run(-1) });
 }

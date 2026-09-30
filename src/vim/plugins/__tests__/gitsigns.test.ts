@@ -59,3 +59,15 @@ describe('gitsigns', () => {
     expect(vim.cursor.line).toBe(2);
   });
 });
+
+describe('shared bindings (LazyVim)', () => {
+  it(']h / [h walk hunks like ]c / [c, and <leader>ghs stages like <leader>hs', () => {
+    const vim = mk();
+    vim.feedKeys(']h');
+    expect(vim.cursor.line).toBe(1);
+    vim.feedKeys('[h');
+    expect(vim.cursor.line).toBe(6);
+    vim.feedKeys(']h]h ghs');
+    expect(gitState(vim).index['x.txt']).toBe(['a', 'b', 'c', 'd', 'X', 'e', 'f', 'g', 'h'].join('\n') + '\n');
+  });
+});
