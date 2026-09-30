@@ -7,6 +7,7 @@ import type { Run } from '../state/store';
 import { C, colorize } from '../ui/syntax';
 import { keyFromEvent } from '../vim/keys';
 import { EditorView } from './EditorView';
+import { resultsShortcut } from './shortcuts';
 import { Checklist } from './Checklist';
 import { Results } from './Results';
 import { newSeed, repsHref, seedHref } from '../state/seed';
@@ -32,6 +33,8 @@ type Props = {
   onRun: (run: Run) => void;
   onNext: () => void;
   onStats: () => void;
+  /** Warm-up: "New file" is a whole new Warm-up (its file is pinned to the seed it was checked on). */
+  onNewWarmUp?: () => void;
 };
 
 type Finished = { result: ReturnType<Session['result']>; prevBestTime: number | null; prevBestScore: number | null; report?: Report; callouts?: Record<string, string> };
@@ -188,13 +191,16 @@ export function Practice(p: Props) {
 
   const handle = (key: string) => {
     if (s.done) {
-      if (inReps && (key === '<CR>' || key === 'a')) goReps();
-      else if (inReps && key === 'b') backToLesson();
-      else if (key === '<CR>' || key === 'r') restart();
-      else if (!inReps && key === 'p' && lesson.reps) goReps();
-      else if (key === 'f' && s.view().seed != null) newFile();
-      else if (key === 'n' && p.nextTitle) p.onNext();
-      else if (key === 's') p.onStats();
+      const action = resultsShortcut(key, {
+        inReps, inWarmUp: !!p.onNewWarmUp, hasReps: !!lesson.reps, hasSeed: s.view().seed != null, hasNext: !!p.nextTitle,
+      });
+      if (action === 'reps-again' || action === 'reps') goReps();
+      else if (action === 'back-to-lesson') backToLesson();
+      else if (action === 'restart') restart();
+      else if (action === 'new-file') newFile();
+      else if (action === 'warm-up-again') p.onNewWarmUp?.();
+      else if (action === 'next') p.onNext();
+      else if (action === 'stats') p.onStats();
       return;
     }
     const now = Date.now();
@@ -305,7 +311,7 @@ export function Practice(p: Props) {
             nextTitle={inReps ? null : p.nextTitle}
             seed={v.seed}
             replayHref={v.seed != null ? (inReps ? repsHref : seedHref)(lesson.id, v.seed) : undefined}
-            onNewSeed={v.seed != null && !inReps ? newFile : undefined}
+            onNewSeed={v.seed != null && !inReps ? (p.onNewWarmUp ?? newFile) : undefined}
             reps={inReps ? { onAgain: goReps, onBack: backToLesson } : undefined}
             onReps={!inReps && lesson.reps ? goReps : undefined}
             unitLabel={unitLabel}

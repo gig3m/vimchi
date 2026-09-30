@@ -110,6 +110,7 @@ export function Coach({ profile }: { profile: CoachProfile }) {
   return (
     <section className="cp" aria-label="coach">
       <h2 className="h2 prof">Coach</h2>
+      <p className="empty cp-note" style={{ marginBottom: 12 }}>A hint retires after five coached runs without the habit and comes back if it recurs.</p>
       {top.length > 0 ? (
         <ol className="cp-top">
           {top.map(s => {
@@ -126,7 +127,7 @@ export function Coach({ profile }: { profile: CoachProfile }) {
           })}
         </ol>
       ) : (
-        <p className="empty">Nothing keeps coming back. The coach has retired every hint it gave you.</p>
+        <p className="empty">Nothing keeps coming back: every hint the coach gave you has retired.</p>
       )}
       {mix && (
         <div className="cp-mix">
