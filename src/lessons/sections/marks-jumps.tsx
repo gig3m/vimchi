@@ -426,6 +426,7 @@ export const marksJumps: Section = {
     {
       id: 'back-to-edit',
       title: 'Back to Your Edit',
+      typing: true,
       chips: ['`.', 'gi'],
       keyCards: [
         { key: '`.', glyph: '→✎', label: 'last change', sub: "'. for its line" },
@@ -462,7 +463,7 @@ export const marksJumps: Section = {
         base: { name: 'http.ts' },
         rounds: [
           {
-            prompt: 'You went to check the import mid-line. Finish the throw: "res.status);".',
+            prompt: 'You left mid-line to check the import. The throw ends (res.status);',
             setup: {
               text: [
                 "import { HttpError } from './errors';",
@@ -474,7 +475,7 @@ export const marksJumps: Section = {
                 '}',
               ],
               cursor: { line: 4, col: 0 },
-              init: history('A throw new HttpError(<Esc>gg'),
+              init: history('A throw new HttpError(res.<Esc>gg'),
             },
             goal: {
               text: [
@@ -487,10 +488,10 @@ export const marksJumps: Section = {
                 '}',
               ],
             },
-            solution: 'gires.status);<Esc>',
+            solution: 'gistatus);<Esc>',
           },
           {
-            prompt: 'Jump back to the number you just typed and make it 30_000.',
+            prompt: 'The number you just typed reads 30_000.',
             setup: {
               text: [
                 'export const client = createClient({',
@@ -542,7 +543,7 @@ export const marksJumps: Section = {
             solution: "'.A // ms<Esc>",
           },
           {
-            prompt: 'You jumped to the top to check the title. Finish the sentence: "on first run."',
+            prompt: 'You jumped to the top to check the title. The sentence ends "in your browser tab."',
             setup: {
               name: 'README.md',
               text: [
@@ -569,12 +570,12 @@ export const marksJumps: Section = {
                 '## Setup',
                 '',
                 'Run `npm install`, then `npm run dev`.',
-                'The tutor opens in your browser on first run.',
+                'The tutor opens in your browser tab.',
                 '',
                 '## Lessons',
               ],
             },
-            solution: 'gi on first run.<Esc>',
+            solution: 'gi tab.<Esc>',
           },
         ],
       },
@@ -727,9 +728,9 @@ export const marksJumps: Section = {
             solution: "''",
           },
           {
-            prompt: 'You searched twice. Go back to where the last search started.',
-            setup: { cursor: { line: 0, col: 0 }, init: history('/app.get<CR>n') },
-            goal: { cursor: { line: 6, col: 0 } },
+            prompt: 'You pressed * in the middle of "user". Go back to the exact spot.',
+            setup: { cursor: { line: 9, col: 10 }, init: history('*') },
+            goal: { cursor: { line: 9, col: 10 } },
             solution: '``',
           },
         ],

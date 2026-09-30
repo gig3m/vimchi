@@ -60,7 +60,7 @@ export const textObjects: Section = {
         base: { name: 'cart.ts' },
         rounds: [
           {
-            prompt: 'Rename "itemCount" to "count" with ciw.',
+            prompt: '"itemCount" is "count".',
             setup: {
               text: [
                 'export function isEmpty(cart: Cart) {',
@@ -81,14 +81,14 @@ export const textObjects: Section = {
             solution: 'jfCciwcount<Esc>',
           },
           {
-            prompt: 'Delete both "very"s and their spaces: daw, then . on the next line.',
+            prompt: 'Both "very"s are gone, with their spaces.',
             setup: {
               name: 'README.md',
               text: [
                 '# vimchi',
                 '',
                 'This is a very short guide.',
-                'It covers the very keys you use.',
+                'Each step is very small.',
               ],
               cursor: { line: 0, col: 0 },
             },
@@ -97,13 +97,13 @@ export const textObjects: Section = {
                 '# vimchi',
                 '',
                 'This is a short guide.',
-                'It covers the keys you use.',
+                'Each step is small.',
               ],
             },
             solution: 'jjfvdawjfv.',
           },
           {
-            prompt: 'Change the string to "dark" with ci".',
+            prompt: 'The string is "dark".',
             setup: {
               text: [
                 'const theme = "light";',
@@ -122,7 +122,7 @@ export const textObjects: Section = {
             solution: 'ci"dark<Esc>',
           },
           {
-            prompt: 'Empty both argument lists: di(, then . on the next line.',
+            prompt: 'Both argument lists are empty.',
             setup: {
               text: [
                 'export function reset(cart: Cart) {',
@@ -421,7 +421,7 @@ export const textObjects: Section = {
             solution: 'jjf-daWj.',
           },
           {
-            prompt: 'Both links are dead: replace each one with TBD.',
+            prompt: 'Both dead links read n/a.',
             setup: {
               name: 'README.md',
               text: [
@@ -436,33 +436,32 @@ export const textObjects: Section = {
               text: [
                 '# vimchi',
                 '',
-                'Docs: TBD',
-                'Wiki: TBD',
+                'Docs: n/a',
+                'Wiki: n/a',
               ],
             },
-            solution: 'jjWciWTBD<Esc>j.',
+            solution: 'jjWciWn/a<Esc>j.',
           },
           {
-            prompt: 'Replace the whole optional chain with user.',
+            prompt: 'The return uses name instead of repeating the chain.',
             setup: {
               text: [
                 'function displayName(data: Payload) {',
-                "  const name = data?.user?.profile?.name ?? 'anon';",
-                '  return name.trim();',
+                '  const name = data?.user?.profile?.name;',
+                "  return data?.user?.profile?.name ?? 'anon';",
                 '}',
               ],
-              cursor: { line: 1, col: 22 },
+              cursor: { line: 2, col: 22 },
             },
             goal: {
               text: [
                 'function displayName(data: Payload) {',
-                "  const name = user ?? 'anon';",
-                '  return name.trim();',
+                '  const name = data?.user?.profile?.name;',
+                "  return name ?? 'anon';",
                 '}',
               ],
             },
-            solution: 'ciWuser<Esc>',
-
+            solution: 'ciWname<Esc>',
           },
           {
             prompt: 'Delete the bold "really".',
@@ -577,29 +576,27 @@ export const textObjects: Section = {
             solution: "kkfgci'nord<Esc>",
           },
           {
-            prompt: 'Bump the API version to v2.',
+            prompt: 'DIR comes from `pwd`.',
             setup: {
-              name: 'api.ts',
+              name: 'deploy.sh',
               text: [
-                'export async function listUsers() {',
-                '  const ver = `v1`;',
-                '  return fetch(`/api/${ver}/users`);',
-                '}',
+                '#!/bin/sh',
+                'DIR=`dirname "$0"`',
+                'cd "$DIR" && make build',
               ],
-              cursor: { line: 1, col: 15 },
+              cursor: { line: 1, col: 6 },
             },
             goal: {
               text: [
-                'export async function listUsers() {',
-                '  const ver = `v2`;',
-                '  return fetch(`/api/${ver}/users`);',
-                '}',
+                '#!/bin/sh',
+                'DIR=`pwd`',
+                'cd "$DIR" && make build',
               ],
             },
-            solution: 'ci`v2<Esc>',
+            solution: 'ci`pwd<Esc>',
           },
           {
-            prompt: 'Clear both hard-coded secrets: di", then . on the next line.',
+            prompt: 'Both hard-coded secrets are empty strings.',
             setup: {
               name: 'env.ts',
               text: [
@@ -686,7 +683,7 @@ export const textObjects: Section = {
         base: { name: 'greet.ts' },
         rounds: [
           {
-            prompt: 'Pass the whole user to both calls: ci(, then . on the next line.',
+            prompt: 'Both calls get the whole user.',
             setup: {
               text: [
                 'const user = await loadUser(id);',
@@ -831,7 +828,7 @@ export const textObjects: Section = {
         base: { name: 'data.ts' },
         rounds: [
           {
-            prompt: 'Empty both arrays: di[, then . on the next line.',
+            prompt: 'Both arrays are empty.',
             setup: {
               text: [
                 'const primes = [2, 3, 5, 7, 11];',
@@ -867,7 +864,6 @@ export const textObjects: Section = {
               ],
             },
             solution: 'f{di{j.',
-
           },
           {
             prompt: 'Clear the function body.',
@@ -1022,7 +1018,7 @@ export const textObjects: Section = {
             solution: 'citSave<Esc>',
           },
           {
-            prompt: 'Remove both icon spans: dat, then . on the next line.',
+            prompt: 'Both icon spans are gone.',
             setup: {
               text: [
                 '<nav>',
@@ -1085,25 +1081,25 @@ export const textObjects: Section = {
             solution: 'jjwcitvimchi<Esc>',
           },
           {
-            prompt: 'Mark both list items TBD.',
+            prompt: 'Both prices read 0.',
             setup: {
               text: [
-                '<ul>',
-                '  <li>Draft one</li>',
-                '  <li>Draft two</li>',
-                '</ul>',
+                '<tr>',
+                '  <td>12.50</td>',
+                '  <td>9.99</td>',
+                '</tr>',
               ],
               cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
-                '<ul>',
-                '  <li>TBD</li>',
-                '  <li>TBD</li>',
-                '</ul>',
+                '<tr>',
+                '  <td>0</td>',
+                '  <td>0</td>',
+                '</tr>',
               ],
             },
-            solution: 'jfDcitTBD<Esc>j.',
+            solution: 'jf1cit0<Esc>j.',
           },
         ],
       },
@@ -1151,22 +1147,22 @@ export const textObjects: Section = {
         base: { name: 'notes.md' },
         rounds: [
           {
-            prompt: 'Delete "It has a lot." from both lines.',
+            prompt: 'Both "Easy, right?" asides are gone.',
             setup: {
               text: [
-                '# Modes',
+                '# Basics',
                 '',
-                'Vim is modal. It has a lot. Normal mode is home.',
-                'Insert types. It has a lot. Visual selects.',
+                'Save with :w. Easy, right? Quit with :q.',
+                'Undo with u. Easy, right? Redo with C-r.',
               ],
-              cursor: { line: 2, col: 18 },
+              cursor: { line: 2, col: 16 },
             },
             goal: {
               text: [
-                '# Modes',
+                '# Basics',
                 '',
-                'Vim is modal. Normal mode is home.',
-                'Insert types. Visual selects.',
+                'Save with :w. Quit with :q.',
+                'Undo with u. Redo with C-r.',
               ],
             },
             solution: 'dasj.',
@@ -1358,7 +1354,7 @@ export const textObjects: Section = {
             solution: "jci',<Esc>",
           },
           {
-            prompt: 'Log just the sum: ${sum}.',
+            prompt: 'The log prints sum.',
             setup: {
               name: 'cart.ts',
               text: [
@@ -1372,37 +1368,39 @@ export const textObjects: Section = {
               text: [
                 'const n = cart.items.length;',
                 'const sum = total(cart.items);',
-                'console.log(`${sum}`);',
+                'console.log(sum);',
               ],
             },
-            solution: 'jjci`${sum}<Esc>',
+            solution: 'jjci(sum<Esc>',
           },
           {
-            prompt: 'Simplify the condition to ok.',
+            prompt: 'The if tests admin.',
             setup: {
               name: 'guard.ts',
               text: [
                 'function guard(user: User, next: () => void) {',
+                "  const admin = user.role === 'admin';",
                 "  if (user.role === 'admin') {",
                 '    next();',
                 '  }',
                 '}',
               ],
-              cursor: { line: 1, col: 0 },
+              cursor: { line: 2, col: 0 },
             },
             goal: {
               text: [
                 'function guard(user: User, next: () => void) {',
-                '  if (ok) {',
+                "  const admin = user.role === 'admin';",
+                '  if (admin) {',
                 '    next();',
                 '  }',
                 '}',
               ],
             },
-            solution: 'ci(ok<Esc>',
+            solution: 'ci(admin<Esc>',
           },
           {
-            prompt: 'Empty both tables, reaching each from the start of its line.',
+            prompt: 'Both tables are empty.',
             setup: {
               text: [
                 'local opts = { debug = true }',
@@ -1443,7 +1441,7 @@ export const textObjects: Section = {
             solution: 'jjci"fix<Esc>',
           },
           {
-            prompt: 'Empty all three test names, reaching each from the start of its line.',
+            prompt: 'All three test names are empty.',
             setup: {
               name: 'cart.test.ts',
               text: [
@@ -1465,7 +1463,6 @@ export const textObjects: Section = {
               ],
             },
             solution: "di'j0.j0.",
-
           },
         ],
       },

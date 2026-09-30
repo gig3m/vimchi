@@ -362,10 +362,10 @@ export const quickfix: Section = {
         base: { files: SHOP, open: 'src/cart.ts', height: 18 },
         rounds: [
           {
-            prompt: 'Rename formatPrice to money everywhere.',
+            prompt: 'formatPrice is renamed toMoney everywhere.',
             setup: { search: 'formatPrice', init: qf('vimgrep /formatPrice/ **/*.ts', true) },
-            goal: { files: edited(USES_PRICE, t => t.replaceAll('formatPrice', 'money')) },
-            solution: ':cdo s//money/ | update<CR>',
+            goal: { files: edited(USES_PRICE, t => t.replaceAll('formatPrice', 'toMoney')) },
+            solution: ':cdo s//toMoney/ | update<CR>',
           },
           {
             prompt: 'The TODOs are done. Delete each TODO line.',
@@ -414,7 +414,7 @@ export const quickfix: Section = {
       ),
       practice: total => (
         <p>
-          The location list for this window holds every <Code>lines</Code> in cart.ts. Open it and walk it. {total}{' '}
+          The location list for this window holds every <Code>lines.</Code> in cart.ts, the places that read the array. Open it and walk it. {total}{' '}
           rounds.
         </p>
       ),
@@ -429,16 +429,16 @@ export const quickfix: Section = {
       },
       challenge: {
         kind: 'rounds',
-        base: { files: SHOP, open: 'src/cart.ts', height: 18, init: vim => vim.ex('lvimgrep /\\<lines\\>/ %') },
+        base: { files: SHOP, open: 'src/cart.ts', height: 18, init: vim => vim.ex('lvimgrep /lines\\./ %') },
         rounds: [
           {
             prompt: 'Go to the next entry.',
-            goal: { cursor: at('src/cart.ts', 9, 'lines') },
+            goal: { cursor: at('src/cart.ts', 15, 'lines') },
             solution: ']l',
           },
           {
             prompt: 'Go back one entry.',
-            setup: { init: vim => { vim.ex('lvimgrep /\\<lines\\>/ %'); vim.ex('ll 3'); } },
+            setup: { init: vim => { vim.ex('lvimgrep /lines\\./ %'); vim.ex('ll 2'); } },
             goal: { cursor: at('src/cart.ts', 9, 'lines') },
             solution: '[l',
           },
@@ -498,18 +498,18 @@ export const quickfix: Section = {
         base: { files: SHOP, open: 'src/cart.ts', height: 16 },
         rounds: [
           {
-            prompt: 'Rename formatPrice (the last search) to money in the open buffers.',
+            prompt: 'formatPrice (the last search) is toMoney in every open buffer.',
             setup: { search: 'formatPrice', init: vim => { vim.ex('e src/checkout.ts'); vim.ex('e src/format.ts'); } },
             goal: {
-              check: buffersAre(['src/cart.ts', 'src/checkout.ts', 'src/format.ts'], t => t.replaceAll('formatPrice', 'money')),
+              check: buffersAre(['src/cart.ts', 'src/checkout.ts', 'src/format.ts'], t => t.replaceAll('formatPrice', 'toMoney')),
             },
-            solution: ':bufdo %s//money/ge<CR>',
+            solution: ':bufdo %s//toMoney/ge<CR>',
           },
           {
             prompt: 'Point both API modules at /api/v2/.',
             setup: { open: 'src/api/orders.ts', init: vim => vim.ex('e src/api/products.ts') },
             goal: { check: buffersAre(['src/api/orders.ts', 'src/api/products.ts'], t => t.replace('/api/', '/api/v2/')) },
-            solution: ':bufdo %s#api/#&v2/#e<CR>',
+            solution: ':bufdo %s#api/#api/v2/#e<CR>',
           },
           {
             prompt: 'Switch the open files to euros: USD becomes EUR.',

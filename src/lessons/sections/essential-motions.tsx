@@ -306,7 +306,7 @@ export const essentialMotions: Section = {
           ],
         },
         rounds: [
-          { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: { line: 3, col: 38 } }, solution: 'f,;;;' },
+          { setup: { cursor: { line: 1, col: 0 } }, goal: { cursor: { line: 1, col: 31 } }, solution: 'f,;;' },
           {
             prompt: 'You just typed f, — continue to the fourth comma.',
             setup: { cursor: { line: 0, col: 0 }, init: vim => vim.feedKeys('f,') },
@@ -325,7 +325,7 @@ export const essentialMotions: Section = {
             goal: { cursor: { line: 1, col: 47 } },
             solution: ';',
           },
-          { setup: { cursor: { line: 1, col: 0 } }, goal: { cursor: { line: 3, col: 30 } }, solution: 'jjt,;;' },
+          { setup: { cursor: { line: 1, col: 0 } }, goal: { cursor: { line: 3, col: 42 } }, solution: 'jjt,;;;;' },
           {
             prompt: 'You typed F,;;; and went two commas too far. Go back.',
             setup: { cursor: { line: 0, col: 36 }, init: vim => vim.feedKeys('F,;;;') },

@@ -344,10 +344,10 @@ export const surround: Section = {
             prompt: 'Jump to the closing tag of the paragraph.',
             setup: {
               name: 'note.html',
-              text: ['<p class="note">Thanks for your order.', '  It ships today.</p> <a href="/track">Track</a>', '<hr>'],
+              text: ['<p class="note">Thanks for your order.', '  It ships today, and the tracking', '  link follows.</p> <a href="/track">Track</a>', '<hr>'],
               cursor: { line: 0, col: 26 },
             },
-            goal: { cursor: { line: 1, col: 17 } },
+            goal: { cursor: { line: 2, col: 15 } },
             solution: 'sft',
           },
           {

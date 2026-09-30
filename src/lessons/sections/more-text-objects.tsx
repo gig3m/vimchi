@@ -10,13 +10,16 @@ const users = [
   '  return row && toUser(row);',
   '}',
   '',
+  '// Maps a database row to the public shape',
   'function toUser(row: Row): User {',
-  '  return { id: row.id, name: row.name };',
+  '  const name = row.name.trim();',
+  '  return { id: row.id, name };',
   '}',
   '',
   'export class UserCache {',
   '  private map = new Map<string, User>();',
   '',
+  '  // Cached lookup, no database hit',
   '  get(id: string) {',
   '    return this.map.get(id);',
   '  }',
@@ -80,14 +83,14 @@ export const moreTextObjects: Section = {
             solution: 'cin(render<Esc>',
           },
           {
-            prompt: 'Both results are 0: fix each expected value from inside the call before it.',
+            prompt: 'Both expected values are 0.',
             setup: {
               name: 'math.test.ts',
               text: ["import { add, mul } from './math';", '', "test('zero', () => {", '  expect(add(0, 0)).toBe(1);', '  expect(mul(0, 5)).toBe(1);', '});'],
               cursor: { line: 3, col: 13 },
             },
             goal: { text: ["import { add, mul } from './math';", '', "test('zero', () => {", '  expect(add(0, 0)).toBe(0);', '  expect(mul(0, 5)).toBe(0);', '});'] },
-            solution: 'cin(0<Esc>j0f0.',
+            solution: 'cin(0<Esc>jF0.',
           },
           {
             prompt: 'Change "Hi" to "Hello".',
@@ -96,7 +99,7 @@ export const moreTextObjects: Section = {
             solution: 'cil"Hello<Esc>',
           },
           {
-            prompt: 'Index the column with k on both lines, from inside [i].',
+            prompt: 'Both lines index the column with k.',
             setup: {
               text: ['for (let i = 0; i < rows; i++) {', '  for (let k = 0; k < cols; k++) {', '    const cell = grid[i][j];', '    seen[i][j] = true;', '  }', '}'],
               cursor: { line: 2, col: 22 },
@@ -154,7 +157,7 @@ export const moreTextObjects: Section = {
         base: { name: 'users.ts', plugins: ['mini-ai'] },
         rounds: [
           {
-            prompt: 'Drop the email argument from both calls: daa, then . on the next line.',
+            prompt: 'Neither call passes email.',
             setup: {
               text: ['export async function signUp(form: Form) {', '  saveUser(name, email, role);', '  mailUser(name, email, role);', '}'],
               cursor: { line: 1, col: 18 },
@@ -191,14 +194,14 @@ export const moreTextObjects: Section = {
             solution: 'daajfx.',
           },
           {
-            prompt: 'Map it in visual mode instead.',
+            prompt: 'The check runs after 0 ms.',
             setup: {
-              name: 'keymaps.lua',
-              text: ["local format = require('conform').format", "vim.keymap.set('n', '<leader>f', format, {", "  desc = 'Format',", '})'],
-              cursor: { line: 1, col: 16 },
+              name: 'tick.lua',
+              text: ['local function check()', "  vim.notify('tick')", 'end', 'vim.defer_fn(check, 60 * 1000)'],
+              cursor: { line: 3, col: 23 },
             },
-            goal: { text: ["local format = require('conform').format", "vim.keymap.set('v', '<leader>f', format, {", "  desc = 'Format',", '})'] },
-            solution: "cia'v'<Esc>",
+            goal: { text: ['local function check()', "  vim.notify('tick')", 'end', 'vim.defer_fn(check, 0)'] },
+            solution: 'cia0<Esc>',
           },
         ],
       },
@@ -249,7 +252,7 @@ export const moreTextObjects: Section = {
         base: { name: 'cache.py', plugins: ['mini-ai'] },
         rounds: [
           {
-            prompt: 'Stub both method bodies with pass: cii, then . three lines down.',
+            prompt: 'Both method bodies are just pass.',
             setup: {
               text: ['class Cache:', '    def reset(self):', '        self.cache.clear()', '        self.count = 0', '', '    def size(self):', '        return len(self.cache)'],
               cursor: { line: 3, col: 13 },
@@ -330,7 +333,6 @@ export const moreTextObjects: Section = {
       practice: total => (
         <p>
           Change, delete, indent or copy a function or class from anywhere inside it. {total} rounds.
-
         </p>
       ),
       aside: {
@@ -356,7 +358,7 @@ export const moreTextObjects: Section = {
             solution: '>if',
           },
           {
-            prompt: 'Delete the debug() and dump() methods: daf, then . inside dump().',
+            prompt: 'debug() and dump() are gone.',
             setup: {
               text: [
                 'class Cart {',
@@ -408,18 +410,17 @@ export const moreTextObjects: Section = {
             solution: 'yafP',
           },
           {
-            prompt: 'Turn setup() into a stub whose body is just return.',
+            prompt: 'onSave() has the same body as onOpen().',
             setup: {
-              name: 'init.lua',
-              text: ['local M = {}', '', 'function M.setup(opts)', '  local o = opts or {}', "  M.opts = vim.tbl_deep_extend('force', defaults, o)", 'end', '', 'return M'],
-              cursor: { line: 4, col: 30 },
+              name: 'hooks.ts',
+              text: ['function onOpen(doc: Doc) {', '  lint(doc);', '}', 'function onSave(doc: Doc) {', '  const text = doc.getText();', '  lint(parse(text));', '}'],
+              cursor: { line: 1, col: 4 },
             },
-            goal: { text: ['local M = {}', '', 'function M.setup(opts)', '  return', 'end', '', 'return M'] },
-            solution: 'cifreturn<Esc>',
-
+            goal: { text: ['function onOpen(doc: Doc) {', '  lint(doc);', '}', 'function onSave(doc: Doc) {', '  lint(doc);', '}'] },
+            solution: 'yif3jcif<C-r>0<Esc>',
           },
           {
-            prompt: 'Delete the callback, from anywhere in it.',
+            prompt: 'The callback is gone.',
             setup: {
               text: ['const total = sum(prices);', 'items.forEach(function (item) {', '  if (item.qty > 1) {', '    warn(item);', '  }', '});'],
               cursor: { line: 3, col: 6 },
@@ -470,11 +471,11 @@ export const moreTextObjects: Section = {
         base: { name: 'users.ts', text: users, plugins: ['mini-ai'] },
         rounds: [
           { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 2, col: 0 } }, solution: ']m' },
-          { setup: { cursor: { line: 3, col: 8 } }, goal: { cursor: { line: 7, col: 0 } }, solution: ']m' },
-          { setup: { cursor: { line: 8, col: 20 } }, goal: { cursor: { line: 7, col: 0 } }, solution: '[m' },
-          { setup: { cursor: { line: 12, col: 10 } }, goal: { cursor: { line: 14, col: 2 } }, solution: ']m' },
-          { setup: { cursor: { line: 19, col: 6 } }, goal: { cursor: { line: 14, col: 2 } }, solution: '2[m' },
-          { setup: { cursor: { line: 1, col: 0 } }, goal: { cursor: { line: 14, col: 2 } }, solution: '3]m' },
+          { setup: { cursor: { line: 3, col: 8 } }, goal: { cursor: { line: 8, col: 0 } }, solution: ']m' },
+          { setup: { cursor: { line: 10, col: 20 } }, goal: { cursor: { line: 8, col: 0 } }, solution: '[m' },
+          { setup: { cursor: { line: 14, col: 10 } }, goal: { cursor: { line: 17, col: 2 } }, solution: ']m' },
+          { setup: { cursor: { line: 22, col: 13 } }, goal: { cursor: { line: 17, col: 2 } }, solution: '2[m' },
+          { setup: { cursor: { line: 1, col: 0 } }, goal: { cursor: { line: 17, col: 2 } }, solution: '3]m' },
         ],
       },
     },

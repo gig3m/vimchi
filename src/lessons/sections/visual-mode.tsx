@@ -121,25 +121,23 @@ export const visualMode: Section = {
             solution: 'vf)ohdj.',
           },
           {
-            prompt: 'Keep only the first name.',
+            prompt: 'greet() gets only the first name.',
             setup: {
               text: [
-                'function displayName(first: string, last: string) {',
-                "  const name = first + ' ' + last;",
-                '  return name.trim();',
+                'function welcome(first: string, last: string) {',
+                "  return greet(first + ' ' + last, 'en');",
                 '}',
               ],
               cursor: { line: 1, col: 21 },
             },
             goal: {
               text: [
-                'function displayName(first: string, last: string) {',
-                '  const name = first;',
-                '  return name.trim();',
+                'function welcome(first: string, last: string) {',
+                "  return greet(first, 'en');",
                 '}',
               ],
             },
-            solution: 'vt;ohd',
+            solution: 'vt,ohd',
           },
           {
             prompt: 'Cut the middle sentence.',
@@ -443,13 +441,13 @@ export const visualMode: Section = {
             solution: 'v2f d',
           },
           {
-            prompt: 'Copy "order.id" into both empty arguments.',
+            prompt: 'The buy event gets "order.id" as its second argument.',
             setup: {
-              text: ['const id = order.id;', "track('buy', );", "track('pay', );"],
+              text: ['const id = order.id;', "track('view', order.id);", "track('buy', );", 'await flush();'],
               cursor: { line: 0, col: 11 },
             },
-            goal: { text: ['const id = order.id;', "track('buy', order.id);", "track('pay', order.id);"] },
-            solution: 'vt;yjf)Pjh.',
+            goal: { text: ['const id = order.id;', "track('view', order.id);", "track('buy', order.id);", 'await flush();'] },
+            solution: 'vt;yjjf)P',
           },
           {
             prompt: 'Stub the function body out with todo().',
@@ -461,13 +459,13 @@ export const visualMode: Section = {
             solution: 'Vjjctodo()<Esc>',
           },
           {
-            prompt: 'Turn every flag from "yes" to "no".',
+            prompt: 'The dark flag is "no".',
             setup: {
               text: ['const flags = {', '  beta: "yes",', '  dark: "yes",', '  sync: "yes",', '};'],
               cursor: { line: 1, col: 9 },
             },
-            goal: { text: ['const flags = {', '  beta: "no",', '  dark: "no",', '  sync: "no",', '};'] },
-            solution: 'vi"cno<Esc>jh.jh.',
+            goal: { text: ['const flags = {', '  beta: "yes",', '  dark: "no",', '  sync: "yes",', '};'] },
+            solution: 'jvi"cno<Esc>',
           },
           {
             prompt: 'Copy port and host into the test config.',
@@ -738,21 +736,23 @@ export const visualMode: Section = {
             solution: 'vi(i(capp<Esc>',
           },
           {
-            prompt: 'Replace the whole "(isAdmin || isOwner)" group with staff.',
+            prompt: 'The if tests staff instead of repeating its definition.',
             setup: {
               text: [
                 'function canSave(user: User) {',
+                '  const staff = isAdmin(user) || isOwner(user);',
                 '  if (isReady(user) && (isAdmin(user) || isOwner(user))) {',
                 '    return true;',
                 '  }',
                 '  return false;',
                 '}',
               ],
-              cursor: { line: 1, col: 32 },
+              cursor: { line: 2, col: 32 },
             },
             goal: {
               text: [
                 'function canSave(user: User) {',
+                '  const staff = isAdmin(user) || isOwner(user);',
                 '  if (isReady(user) && staff) {',
                 '    return true;',
                 '  }',
@@ -786,27 +786,26 @@ export const visualMode: Section = {
             solution: 'vi(i(i(cbody<Esc>',
           },
           {
-            prompt: 'Empty all three grids, keeping the outer brackets.',
+            prompt: 'The board is empty, outer brackets kept.',
             setup: {
-              text: ['const a = [[1, 2], [3, 4]];', 'const b = [[5, 6], [7, 8]];', 'const c = [[9, 0], [1, 2]];'],
-              cursor: { line: 0, col: 14 },
+              text: ['const board = [[1, 2], [3, 4]];', 'const size = board.length;', 'render(board, size);'],
+              cursor: { line: 0, col: 16 },
             },
-            goal: { text: ['const a = [];', 'const b = [];', 'const c = [];'] },
-            solution: 'vi[i[dj.j.',
+            goal: { text: ['const board = [];', 'const size = board.length;', 'render(board, size);'] },
+            solution: 'vi[i[d',
           },
           {
-            prompt: 'Replace both whole config objects with {}.',
+            prompt: 'config is an empty object.',
             setup: {
               text: [
                 "import { start } from './server';",
-                'const dev = { srv: { port: 80 }, log: true };',
-                'const prd = { srv: { port: 81 }, log: null };',
-                'start(dev, prd);',
+                'const config = { server: { port: 8080 }, debug: true };',
+                'start(config);',
               ],
               cursor: { line: 1, col: 27 },
             },
-            goal: { text: ["import { start } from './server';", 'const dev = {};', 'const prd = {};', 'start(dev, prd);'] },
-            solution: 'va{a{c{}<Esc>jh.',
+            goal: { text: ["import { start } from './server';", 'const config = {};', 'start(config);'] },
+            solution: 'va{a{c{}<Esc>',
           },
         ],
       },
