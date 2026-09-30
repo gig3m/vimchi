@@ -82,7 +82,7 @@ Survive, then learn the grammar: motions and search, operators, text objects, vi
 | 11 | Insert at Line Ends | `I` `A` | transform |
 | 12 | Opening New Lines | `o` `O` | transform |
 | 13 | Blank Lines | `[␣` `]␣` | transform |
-| 14 | Substitute | `s` `S` | transform |
+| 14 | Substitute Characters | `s` `S` | transform |
 | 15 | Replace Mode | `R` | transform |
 
 ### Motions Worth Knowing
@@ -193,7 +193,6 @@ Make one edit do the work of many: registers and macros (the dot command lives i
 | 80 | Robust Macros | `macros` | transform |
 | 81 | Recursive Macros | `qaq` `@a` | transform |
 | 82 | Editing a Macro | `"ap` `"ay$` | transform |
-| 83 | Macros over Lines | `:norm @a` | transform |
 | ★ | Boss: CSV to Object Literal | `q` `@a` | transform |
 
 ## Project
@@ -203,66 +202,66 @@ Move through a codebase, not a file: buffers, windows, jumps, quickfix, definiti
 ### Buffers & Files
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 84 | Opening Files | `:e` | transform |
-| 85 | Buffer List | `:ls` `:b` | transform |
-| 86 | Cycling Buffers | `[b` `]b` | transform |
-| 87 | Alternate File | `C-^` | transform |
-| 88 | Closing Buffers | `:bd` | transform |
-| 89 | Go to File | `gf` | transform |
-| 90 | Finding Files | `:find` | transform |
+| 83 | Opening Files | `:e` | transform |
+| 84 | Buffer List | `:ls` `:b` | transform |
+| 85 | Cycling Buffers | `[b` `]b` | transform |
+| 86 | Alternate File | `C-^` | transform |
+| 87 | Closing Buffers | `:bd` | transform |
+| 88 | Go to File | `gf` | transform |
+| 89 | Finding Files | `:find` | transform |
 
 ### Windows & Tabs
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 91 | Splitting | `:sp` `:vs` | transform |
-| 92 | Moving Between Windows | `C-w h` `C-w j` `C-w k` `C-w l` | transform |
-| 93 | Closing Windows | `C-w c` `C-w o` | transform |
-| 94 | Resizing | `C-w =` `C-w _` `C-w |` | transform |
-| 95 | Rearranging | `C-w H` `C-w J` `C-w K` `C-w L` | transform |
-| 96 | Tab Pages | `:tabnew` `gt` `gT` | transform |
+| 90 | Splitting | `:sp` `:vs` | transform |
+| 91 | Moving Between Windows | `C-w h` `C-w j` `C-w k` `C-w l` | transform |
+| 92 | Closing Windows | `C-w c` `C-w o` | transform |
+| 93 | Resizing | `C-w =` `C-w _` `C-w |` | transform |
+| 94 | Rearranging | `C-w H` `C-w J` `C-w K` `C-w L` | transform |
+| 95 | Tab Pages | `:tabnew` `gt` `gT` | transform |
 
 ### Marks & Jumps
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 97 | Setting Marks | `m` `'` ``` | transform |
-| 98 | Operating to Marks | `d'a` `y`a` | transform |
-| 99 | File Marks | `mA` | transform |
-| 100 | Back to Your Edit | ``.` `gi` | transform |
-| 101 | Edges of a Change | ``[` ``]` | transform |
-| 102 | Previous Position | ```` `''` | transform |
-| 103 | Jump List | `C-o` `C-i` | transform |
-| 104 | Change List | `g;` `g,` | transform |
+| 96 | Setting Marks | `m` `'` ``` | transform |
+| 97 | Operating to Marks | `d'a` `y`a` | transform |
+| 98 | File Marks | `mA` | transform |
+| 99 | Back to Your Edit | ``.` `gi` | transform |
+| 100 | Edges of a Change | ``[` ``]` | transform |
+| 101 | Previous Position | ```` `''` | transform |
+| 102 | Jump List | `C-o` `C-i` | transform |
+| 103 | Change List | `g;` `g,` | transform |
 
 ### Quickfix & Multi-File
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 105 | Grep | `:grep` `:vimgrep` | transform |
-| 106 | Quickfix List | `:copen` `:cclose` | transform |
-| 107 | Walking Results | `[q` `]q` | transform |
-| 108 | Edit Every Match | `:cdo` | transform |
-| 109 | Location List | `:lopen` `[l` `]l` | transform |
-| 110 | Every Buffer | `:bufdo` | transform |
+| 104 | Grep | `:grep` `:vimgrep` | transform |
+| 105 | Quickfix List | `:copen` `:cclose` | transform |
+| 106 | Walking Results | `[q` `]q` | transform |
+| 107 | Edit Every Match | `:cdo` | transform |
+| 108 | Location List | `:lopen` `[l` `]l` | transform |
+| 109 | Every Buffer | `:bufdo` | transform |
 
 ### Code Navigation
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 111 | Diagnostics | `[d` `]d` | transform |
-| 112 | Definitions & Hover | `gd` `K` | transform |
-| 113 | References | `grr` `gri` | transform |
+| 110 | Diagnostics | `[d` `]d` | transform |
+| 111 | Definitions & Hover | `gd` `K` | transform |
+| 112 | References | `grr` `gri` | transform |
 
 ### Pickers
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 114 | Find Files | `␣sf` `C-n` `C-v` | transform |
-| 115 | Live Grep | `␣sg` | transform |
-| 116 | Word Under Cursor | `␣sw` | transform |
-| 117 | Send to Quickfix | `C-q` | transform |
+| 113 | Find Files | `␣sf` `C-n` `C-v` | transform |
+| 114 | Live Grep | `␣sg` | transform |
+| 115 | Grep Word Under Cursor | `␣sw` | transform |
+| 116 | Send to Quickfix | `C-q` | transform |
 
 ### Explorer
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 118 | Open the Directory | `-` `CR` | transform |
-| 119 | Edit a Directory | `dd` `cw` `:w` | transform |
+| 117 | Open the Directory | `-` `CR` | transform |
+| 118 | Edit a Directory | `dd` `cw` `:w` | transform |
 
 ## Patterns
 
@@ -271,12 +270,13 @@ Edit at scale: the command line, substitute, global commands, project replace.
 ### Command Line
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 120 | Jump to Line | `:42` | transform |
-| 121 | Ranges | `%` `.` `$` | transform |
-| 122 | Visual Ranges | `'<,'>` `gv` | transform |
-| 123 | Delete & Yank Lines | `:d` `:y` | transform |
-| 124 | Move & Copy Lines | `:m` `:t` | transform |
-| 125 | Normal over a Range | `:norm` | transform |
+| 119 | Jump to Line | `:42` | transform |
+| 120 | Ranges | `%` `.` `$` | transform |
+| 121 | Visual Ranges | `'<,'>` | transform |
+| 122 | Delete & Yank Lines | `:d` `:y` | transform |
+| 123 | Move & Copy Lines | `:m` `:t` | transform |
+| 124 | Normal over a Range | `:norm` | transform |
+| 125 | Macros over a Range | `:norm @a` | transform |
 | 126 | Repeat a Command | `@:` `@@` | transform |
 | 127 | Insert Word Under Cursor | `C-r C-w` `C-r C-a` | transform |
 | 128 | Command Window | `q:` | transform |
@@ -395,9 +395,9 @@ editor as you type. Every reference solution yields zero critiques (tested).
 | Band | Sections | Lessons | Counted |
 |---|---|---|---|
 | Core | 11 | 70 | 68 |
-| Repeat | 2 | 16 | 15 |
+| Repeat | 2 | 15 | 14 |
 | Project | 7 | 36 | 36 |
-| Patterns | 3 | 33 | 32 |
+| Patterns | 3 | 34 | 33 |
 | Code | 6 | 24 | 24 |
 | Challenges | 1 | 5 | 0 |
 | **Total** | **30** | **184** | **175** |
