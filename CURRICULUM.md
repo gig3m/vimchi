@@ -92,7 +92,7 @@ Survive, then learn the grammar: motions and search, operators, text objects, vi
 |---|---|---|---|
 | 18 | Moving by WORDs | `W` `E` `B` | transform |
 | 19 | Word Ends Backward | `ge` `gE` | transform |
-| 20 | First Character | `^` `_` | transform |
+| 20 | First Character | `^` `_` `g_` `+` | transform |
 | 21 | Find Backward | `F` `T` | transform |
 | 22 | Repeat Find | `;` `,` | transform |
 | 23 | Top & Bottom | `gg` `G` | transform |
@@ -241,32 +241,30 @@ Move through a codebase, not a file: buffers, windows, jumps, quickfix, definiti
 | 107 | Grep | `:grep` `:vimgrep` | transform |
 | 108 | Quickfix List | `:copen` `:cclose` | transform |
 | 109 | Walking Results | `[q` `]q` | transform |
-| 110 | Edit Every Match | `:cdo` | transform |
-| 111 | Location List | `:lopen` `[l` `]l` | transform |
-| 112 | Every Buffer | `:bufdo` | transform |
+| 110 | Location List | `:lopen` `[l` `]l` | transform |
 
 ### Code Navigation
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 113 | Diagnostics | `[d` `]d` | transform |
-| 114 | Definitions & Hover | `gd` `K` | transform |
-| 115 | References | `grr` `gri` | transform |
-| 116 | Document Symbols | `gO` | transform |
+| 111 | Diagnostics | `[d` `]d` | transform |
+| 112 | Definitions & Hover | `gd` `K` | transform |
+| 113 | References | `grr` `gri` | transform |
+| 114 | Document Symbols | `gO` | transform |
 
 ### Pickers
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 117 | Discover Keys | `␣` `␣sk` | transform |
-| 118 | Find Files | `␣sf` `C-n` `C-v` | transform |
-| 119 | Live Grep | `␣sg` | transform |
-| 120 | Grep Word Under Cursor | `␣sw` | transform |
-| 121 | Send to Quickfix | `C-q` | transform |
+| 115 | Discover Keys | `␣` `␣sk` | transform |
+| 116 | Find Files | `␣sf` `C-n` `C-v` | transform |
+| 117 | Live Grep | `␣sg` | transform |
+| 118 | Grep Word Under Cursor | `␣sw` | transform |
+| 119 | Send to Quickfix | `C-q` | transform |
 
 ### Explorer
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 122 | Open the Tree | `␣e` `l` `h` `q` | transform |
-| 123 | Edit the Tree | `a` `d` `r` | transform |
+| 120 | Open the Tree | `␣e` `l` `h` `q` | transform |
+| 121 | Edit the Tree | `a` `d` `r` | transform |
 
 ## Patterns
 
@@ -275,49 +273,52 @@ Edit at scale: the command line, substitute, global commands, project replace.
 ### Command Line
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 124 | Jump to Line | `:42` | transform |
-| 125 | Ranges | `%` `.` `$` | transform |
-| 126 | Visual Ranges | `'<,'>` | transform |
-| 127 | Delete & Yank Lines | `:d` `:y` | transform |
-| 128 | Move & Copy Lines | `:m` `:t` | transform |
-| 129 | Normal over a Range | `:norm` | transform |
-| 130 | Macros over a Range | `:norm @a` | transform |
-| 131 | Repeat a Command | `@:` `@@` | transform |
-| 132 | Insert Word Under Cursor | `C-r C-w` `C-r C-a` | transform |
-| 133 | Command Window | `q:` | transform |
-| 134 | Options | `:set x` `:set x!` `:set x?` | transform |
+| 122 | Jump to Line | `:42` | transform |
+| 123 | Ranges | `%` `.` `$` | transform |
+| 124 | Visual Ranges | `'<,'>` | transform |
+| 125 | Delete & Yank Lines | `:d` `:y` | transform |
+| 126 | Move & Copy Lines | `:m` `:t` | transform |
+| 127 | Normal over a Range | `:norm` | transform |
+| 128 | Macros over a Range | `:norm @a` | transform |
+| 129 | Repeat a Command | `@:` `@@` | transform |
+| 130 | Command Window | `q:` | transform |
+| 131 | Options | `:set x` `:set x!` `:set x?` | transform |
 
 ### Substitute
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 135 | Substitute | `:s` | transform |
-| 136 | Whole File | `%s` `/g` | transform |
-| 137 | Confirm Each | `/c` | transform |
-| 138 | Ignoring Case | `/i` `\c` | transform |
-| 139 | Word Boundaries | `\<` `\>` | transform |
-| 140 | Very Magic | `\v` | transform |
-| 141 | Capture Groups | `()` `\1` | transform |
-| 142 | The Whole Match | `&` | transform |
-| 143 | Case in Replacements | `\u` `\U` `\E` | transform |
-| 144 | Line Breaks | `\r` `\n` | transform |
-| 145 | Trimming a Match | `\zs` `\ze` | transform |
-| 146 | Lazy Matches | `\{-}` | transform |
-| 147 | Reuse the Last Search | `:s//` | transform |
-| 148 | Repeat Substitute | `&` `g&` | transform |
-| 149 | Expressions | `\=` | transform |
-| 150 | Project Replace | `␣sr` | transform |
+| 132 | Pattern Atoms | `^` `$` `.` `\s` | transform |
+| 133 | Substitute | `:s` | transform |
+| 134 | Whole File | `%s` `/g` | transform |
+| 135 | Confirm Each | `/c` | transform |
+| 136 | Ignoring Case | `/i` `\c` | transform |
+| 137 | Word Boundaries | `\<` `\>` | transform |
+| 138 | Very Magic | `\v` | transform |
+| 139 | Capture Groups | `()` `\1` | transform |
+| 140 | The Whole Match | `&` | transform |
+| 141 | Case in Replacements | `\u` `\U` `\E` | transform |
+| 142 | Line Breaks | `\r` `\n` | transform |
+| 143 | Trimming a Match | `\zs` `\ze` | transform |
+| 144 | Lazy Matches | `\{-}` | transform |
+| 145 | Reuse the Last Search | `:s//` | transform |
+| 146 | Insert Word Under Cursor | `C-r C-w` `C-r C-a` | transform |
+| 147 | Repeat Substitute | `&` `g&` | transform |
+| 148 | Expressions | `\=` | transform |
+| 149 | Edit Every Match | `:cdo` | transform |
+| 150 | Every Buffer | `:bufdo` | transform |
+| 151 | Project Replace | `␣sr` | transform |
 | ★ | Rename & Reformat | `:%s` | transform |
 
 ### Global Commands
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 151 | Delete Matching Lines | `:g` `/d` | transform |
-| 152 | Keep Matching Lines | `:v` `:g!` | transform |
-| 153 | Global Normal | `:g` `norm` | transform |
-| 154 | Reverse Lines | `:g/^/m0` `m$` `t$` | transform |
-| 155 | Sorting | `:sort` `n` `!` `i` | transform |
-| 156 | Unique Sort | `:sort u` | transform |
-| 157 | Shell Filters | `!` `:%!` | transform |
+| 152 | Delete Matching Lines | `:g` `/d` | transform |
+| 153 | Keep Matching Lines | `:v` `:g!` | transform |
+| 154 | Global Normal | `:g` `norm` | transform |
+| 155 | Reverse Lines | `:g/^/m0` `m$` `t$` | transform |
+| 156 | Sorting | `:sort` `n` `!` `i` | transform |
+| 157 | Unique Sort | `:sort u` | transform |
+| 158 | Shell Filters | `!` `:%!` | transform |
 
 ## Code
 
@@ -326,52 +327,52 @@ What a starter config adds: LSP edits, richer text objects, flash, surround, com
 ### Neovim Built-ins
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 158 | Commenting | `gcc` `gc` | transform |
-| 159 | Rename | `grn` | transform |
-| 160 | Code Actions | `gra` | transform |
-| 161 | Format the File | `␣f` | transform |
+| 159 | Commenting | `gcc` `gc` | transform |
+| 160 | Rename | `grn` | transform |
+| 161 | Code Actions | `gra` | transform |
+| 162 | Format the File | `␣f` | transform |
 
 ### More Text Objects
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 162 | Next & Last Objects | `in(` `il"` | transform |
-| 163 | Arguments | `ia` `aa` | transform |
-| 164 | Indent Objects | `ii` `ai` | transform |
-| 165 | Functions & Classes | `if` `af` `ic` `ac` | transform |
-| 166 | Function Motions | `]m` `[m` | transform |
-| 167 | Folds | `za` `zR` `zM` | transform |
+| 163 | Next & Last Objects | `in(` `il"` | transform |
+| 164 | Arguments | `ia` `aa` | transform |
+| 165 | Indent Objects | `ii` `ai` | transform |
+| 166 | Functions & Classes | `if` `af` `ic` `ac` | transform |
+| 167 | Function Motions | `]f` `[f` | transform |
+| 168 | Folds | `za` `zR` `zM` | transform |
 
 ### Jumping
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 168 | Label Jumps | `s` | transform |
-| 169 | Jumps as Motions | `d` `s` | transform |
-| 170 | Treesitter Select | `S` | transform |
+| 169 | Label Jumps | `s` | transform |
+| 170 | Jumps as Motions | `d` `s` | transform |
+| 171 | Treesitter Select | `S` | transform |
 
 ### Surround
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 171 | Add Surroundings | `gsa` | transform |
-| 172 | Change Surroundings | `gsr` | transform |
-| 173 | Delete Surroundings | `gsd` | transform |
-| 174 | Find a Surrounding | `gsf` `gsF` | transform |
-| 175 | Surround a Selection | `v` `gsa` | transform |
-| 176 | Surround with Tags | `gsrtt` `gsaiwt` | transform |
+| 172 | Add Surroundings | `gsa` | transform |
+| 173 | Change Surroundings | `gsr` | transform |
+| 174 | Delete Surroundings | `gsd` | transform |
+| 175 | Find a Surrounding | `gsf` `gsF` | transform |
+| 176 | Surround a Selection | `v` `gsa` | transform |
+| 177 | Surround with Tags | `gsrtt` `gsaiwt` | transform |
 
 ### Insert Mode Power
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 177 | Deleting While Typing | `C-w` `C-u` | transform |
-| 178 | One Normal Command | `C-o` | transform |
-| 179 | Completion Menu | `C-n` `C-y` `C-e` | transform |
-| 180 | Snippets | `tab` `S-tab` | transform |
+| 178 | Deleting While Typing | `C-w` `C-u` | transform |
+| 179 | One Normal Command | `C-o` | transform |
+| 180 | Completion Menu | `C-n` `C-y` `C-e` | transform |
+| 181 | Snippets | `tab` `S-tab` | transform |
 
 ### Git
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 181 | Walking Hunks | `]h` `[h` | transform |
-| 182 | Stage a Hunk | `␣ghs` `␣ghr` | transform |
-| 183 | Lazygit | `␣gg` `q` | transform |
+| 182 | Walking Hunks | `]h` `[h` | transform |
+| 183 | Stage a Hunk | `␣ghs` `␣ghr` | transform |
+| 184 | Lazygit | `␣gg` `q` | transform |
 
 ## Challenges
 
@@ -404,8 +405,8 @@ editor as you type. Every reference solution yields zero critiques (tested).
 |---|---|---|---|
 | Core | 11 | 73 | 71 |
 | Repeat | 2 | 15 | 14 |
-| Project | 7 | 38 | 38 |
-| Patterns | 3 | 35 | 34 |
+| Project | 7 | 36 | 36 |
+| Patterns | 3 | 38 | 37 |
 | Code | 6 | 26 | 26 |
 | Challenges | 1 | 5 | 0 |
-| **Total** | **30** | **192** | **183** |
+| **Total** | **30** | **193** | **184** |

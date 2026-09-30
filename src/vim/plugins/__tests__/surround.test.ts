@@ -100,6 +100,11 @@ describe('mini.surround on LazyVim keys (gsa gsd gsr gsf gsF)', () => {
     expect(run("x = 'a'", 0, `gsr'"`).buf.text()).toBe("x = 'a'");
     expect(run('x = (a)', 5, 'gsd)').buf.text()).toBe('x = a');
   });
+  it('gsf and gsF only find a pair around the cursor too (mini.surround find uses search_method cover)', () => {
+    expect(run('x = (a)', 0, 'gsf)').cursor).toEqual({ line: 0, col: 0 });
+    expect(run('x = (a)', 0, 'gsF)').cursor).toEqual({ line: 0, col: 0 });
+    expect(run('x = (a)', 5, 'gsf)').cursor).toEqual({ line: 0, col: 6 });
+  });
   it('b means any bracket for gsd, gsr and gsf; q any quote', () => {
     expect(run('f[a]', 2, 'gsdb').buf.text()).toBe('fa');
     expect(run('f{a}', 2, 'gsrb)').buf.text()).toBe('f(a)');

@@ -66,6 +66,7 @@ export const jumping: Section = {
         kind: 'rounds',
         showGoal: false,
         base: { name: 'auth.ts', text: auth, plugins: ['flash'] },
+        carryCursor: false,
         rounds: [
           { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 11, col: 22 } }, solution: 'sref' },
           { setup: { cursor: { line: 4, col: 2 } }, goal: { cursor: { line: 13, col: 18 } }, solution: 'sinq' },
@@ -113,6 +114,7 @@ export const jumping: Section = {
       challenge: {
         kind: 'rounds',
         base: { name: 'user.ts', plugins: ['flash'] },
+        carryCursor: false,
         rounds: [
           {
             prompt: "Delete \"role: 'admin', \" backwards from email.",
@@ -191,6 +193,7 @@ export const jumping: Section = {
       challenge: {
         kind: 'rounds',
         base: { name: 'app.ts', plugins: ['flash'] },
+        carryCursor: false,
         rounds: [
           {
             prompt: 'Empty the parentheses of sum().',

@@ -139,7 +139,7 @@ export const buffersFiles: Section = {
       ),
       practice: total => (
         <p>
-          The notes API is open. Open each file with <Code>:e</Code> and press <Code>Enter</Code>. {total} rounds.
+          The notes API is open. Open each file with <Code>:e</Code> and press <Code>enter</Code>. {total} rounds.
         </p>
       ),
       aside: {
@@ -335,11 +335,11 @@ export const buffersFiles: Section = {
       id: 'alternate-file',
       title: 'Alternate File',
       chips: ['C-^'],
-      keyCards: [{ key: 'C-^', glyph: '⇄', label: 'alternate file', sub: 'Ctrl-6' }],
+      keyCards: [{ key: 'C-^', glyph: '⇄', label: 'alternate file', sub: 'C-6' }],
       intro: (
         <>
           <p>
-            <Code>C-^</Code> (Ctrl-6 on most keyboards) jumps back to the file you were in before this one, the
+            <Code>C-^</Code> (<Code>C-6</Code> on most keyboards) jumps back to the file you were in before this one, the
             alternate file marked <Code>#</Code> in <Code>:ls</Code>. Press it again to come back.
           </p>
           <p>
@@ -350,7 +350,7 @@ export const buffersFiles: Section = {
       ),
       practice: total => (
         <p>
-          Flip back to the file the round asks for. In the browser, press <Code>Ctrl-Shift-6</Code>: plain Ctrl-6
+          Flip back to the file the round asks for. In the browser, press <Code>C-S-6</Code>: plain <Code>C-6</Code>
           switches browser tabs. {total} rounds.
         </p>
       ),

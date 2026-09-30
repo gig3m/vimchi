@@ -30,6 +30,14 @@ no "let's". Say what a key does before why it matters. Prefer concrete code over
 Neovim is the default: `Y` is `y$`, `gc` comments, `hlsearch` is on, 0.11 maps (`[b`, `grn`, `[d`) exist.
 Put classic-Vim differences in the aside.
 
+### Key names: `CR` vs `enter`
+
+One rule for the Enter key. **Chips and key cards use `CR`** (`key: 'CR'`, `:w CR`), matching the
+`<CR>` notation the engine and every `solution` use. **Prose** (intro, practice, aside, prompts)
+**says `enter`**, lowercase in `<Code>`, like the `esc` chip: "type `:w` then `enter`". Never
+`Enter`, `Return` or `<CR>` in prose. Other named keys in prose use their chip spelling in
+`<Code>`: `esc`, `C-w`, `C-[` (not `Esc`, `Ctrl-w`). Plain-string aside titles are exempt.
+
 ## Rules from review
 
 These are enforced by the validator where possible.
