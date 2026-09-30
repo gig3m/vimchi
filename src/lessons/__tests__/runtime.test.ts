@@ -9,6 +9,26 @@ describe('createVim', () => {
     expect(v.mode).toBe('insert');
     expect(v.cursor).toEqual({ line: 0, col: 2 });
   });
+  it('always has flash: s is a label jump in every lesson, S a treesitter select', () => {
+    const v = createVim({ text: ['alpha beta', 'gamma delta'], name: 'a.ts' });
+    v.feedKeys('sde');
+    expect(v.pluginData.flash).toBeTruthy();
+    v.feedKeys('<CR>');
+    expect(v.cursor).toEqual({ line: 1, col: 6 });
+    expect(v.buf.lines).toEqual(['alpha beta', 'gamma delta']);
+  });
+  it('a lesson Session in an early lesson jumps with s and stays playable', () => {
+    const l = LESSONS['delete-words'] as { challenge: RoundsChallenge };
+    const s = new Session(l.challenge);
+    const vim = s.vim!;
+    const before = vim.buf.lines.slice();
+    const target = vim.buf.lines.findIndex((t, i) => i > vim.cursor.line && t.trim().length > 2);
+    const word = vim.buf.lines[target].trim().slice(0, 2);
+    for (const k of ['s', ...word, '<CR>']) s.key(k);
+    expect(vim.cursor.line).toBeGreaterThan(0);
+    expect(vim.buf.lines).toEqual(before);
+    expect(vim.mode).toBe('normal');
+  });
 });
 
 describe('fix / replace scoring after undo', () => {
