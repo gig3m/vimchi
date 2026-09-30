@@ -14,13 +14,13 @@ beforeEach(() => {
 });
 
 describe('settings', () => {
-  it('defaults coachLive to false and round-trips', () => {
-    expect(loadSettings().coachLive).toBe(false);
-    saveSettings({ coachLive: true });
+  it('defaults coachLive to true and round-trips', () => {
     expect(loadSettings().coachLive).toBe(true);
+    saveSettings({ coachLive: false });
+    expect(loadSettings().coachLive).toBe(false);
   });
   it('survives corrupt storage', () => {
     localStorage.setItem('vimchi.coach.v1', '{nope');
-    expect(loadSettings().coachLive).toBe(false);
+    expect(loadSettings().coachLive).toBe(true);
   });
 });

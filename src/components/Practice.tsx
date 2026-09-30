@@ -11,6 +11,7 @@ import { Checklist } from './Checklist';
 import { Results } from './Results';
 import { seedHref } from '../state/seed';
 import { type Critique, type Report, coach, coachSegment, nudgeText } from '../coach';
+import { closedSegments } from '../coach/live';
 import { segment } from '../coach/segment';
 import { coachable } from '../coach/vocab';
 
@@ -66,7 +67,8 @@ export function Practice(p: Props) {
   }, [v.startAt, v.done]);
 
   useEffect(() => {
-    clearNudge(); segCount.current = 0; nudgedEnd.current = -1;
+    clearTimeout(advanceT.current); // a round tick from the previous lesson must not advance this one
+    clearNudge(); segCount.current = 0; nudgedEnd.current = -1; nudgedUnit.current = -1;
     ref.current?.focus({ preventScroll: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lesson.id]);
@@ -93,28 +95,25 @@ export function Practice(p: Props) {
     setNudge(nudgeText(c));
     nudgeT.current = window.setTimeout(() => setNudge(null), 4000);
   };
-  /** After a key (or a round/run end), critique any segment that has just closed. */
+  /** After a key (or a round/run end), critique a segment that has closed: at most one hint per round. */
   const nudgedEnd = useRef(-1);
+  const nudgedUnit = useRef(-1);
   const liveCoach = (closing: boolean) => {
     if (!p.coachLive || !coachable(lesson.id)) return;
     const log = s.log();
     const segs = segment(log);
-    const last = segs.length - 1;
-    if (last < 0) return;
-    const settled = log[log.length - 1].after.mode === 'normal' && log[log.length - 1].after.pending === 0;
-    // Something closed when a new segment started after it (a motion run), when an edit just
-    // returned to normal mode, or when the round/run ended. Try the windows that end here.
-    const candidates: number[] = [];
-    if (segs.length > segCount.current && segs.length >= 2) candidates.push(segs.length - 2);
-    if (settled || closing) for (let i = Math.max(0, last - 2); i <= last; i++) candidates.push(i);
     segCount.current = segs.length;
+    if (!segs.length) return;
     const unitStart = s.currentUnitStart();
-    for (const i of [...new Set(candidates)]) {
-      // Only this round's segments, never one still waiting on a pending key, never twice.
-      if (segs[i].logStart < unitStart || log[segs[i].logEnd]?.after.pending) continue;
+    const unit = log[log.length - 1].unit;
+    if (unit === nudgedUnit.current) return;
+    // Newest closed segment first; never a run still being typed, never one already critiqued.
+    for (const i of closedSegments(segs, log, closing).reverse()) {
+      if (segs[i].logStart < unitStart || segs[i].logEnd <= nudgedEnd.current) continue;
       const c = coachSegment(s, lesson.id, segs[i], segs, i);
-      if (!c || c.logEnd <= nudgedEnd.current) continue;
+      if (!c) continue;
       nudgedEnd.current = c.logEnd;
+      nudgedUnit.current = unit;
       showNudge(c);
       return;
     }
@@ -124,7 +123,7 @@ export function Practice(p: Props) {
   const restart = () => {
     session.current = new Session(lesson.challenge, { seed: s.view().seed ?? undefined });
     setFinished(null);
-    clearNudge(); segCount.current = 0; nudgedEnd.current = -1;
+    clearNudge(); segCount.current = 0; nudgedEnd.current = -1; nudgedUnit.current = -1;
     rerender();
     ref.current?.focus({ preventScroll: true });
   };
@@ -133,7 +132,7 @@ export function Practice(p: Props) {
     seedRef.current = null;
     session.current = new Session(lesson.challenge);
     setFinished(null);
-    clearNudge(); segCount.current = 0; nudgedEnd.current = -1;
+    clearNudge(); segCount.current = 0; nudgedEnd.current = -1; nudgedUnit.current = -1;
     if (location.hash.includes('?')) history.replaceState(null, '', '#' + lesson.id);
     rerender();
     ref.current?.focus({ preventScroll: true });
@@ -229,7 +228,8 @@ export function Practice(p: Props) {
   const msg = v.msg || (focused || v.done ? '' : '-- editor not focused --');
   // Tutor notes (not Vim's own messages) go in the command-line row.
   const vimMsg = s.vim?.message?.text.split('\n')[0];
-  const note = v.msg && v.msg !== vimMsg ? { text: v.msg, kind: v.msgKind } : nudge && !v.done ? { text: nudge, kind: 'coach' } : null;
+  // A tutor note wins, then Vim's own message; a coach hint never covers either.
+  const note = v.msg && v.msg !== vimMsg ? { text: v.msg, kind: v.msgKind } : nudge && !v.done && !vimMsg ? { text: nudge, kind: 'coach' } : null;
   const isQuiz = s.challenge.kind === 'quiz';
   const kind = s.challenge.kind;
   const roundLabel = kind === 'rounds' || kind === 'quiz' ? `${Math.min(v.hits + (v.done ? 0 : 1), v.total)} of ${v.total}` : `${v.hits} / ${v.total}`;

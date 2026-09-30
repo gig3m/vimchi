@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 
 export type Settings = { coachLive: boolean };
 const KEY = 'vimchi.coach.v1';
-const DEFAULTS: Settings = { coachLive: false };
+const DEFAULTS: Settings = { coachLive: true };
 
 export function loadSettings(): Settings {
   try {
