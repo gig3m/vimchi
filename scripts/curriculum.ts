@@ -4,11 +4,11 @@ import { SECTIONS, numberOf } from '../src/lessons';
 import type { Section } from '../src/lessons/types';
 
 const BANDS: Record<Section['band'], { title: string; blurb: string }> = {
-  core: { title: 'Core', blurb: 'Survive, then learn the grammar: motions, operators, text objects, visual mode, search.' },
+  core: { title: 'Core', blurb: 'Survive, then learn the grammar: motions and search, operators, text objects, visual mode.' },
   repeat: { title: 'Repeat', blurb: 'Make one edit do the work of many: registers and macros (the dot command lives in First Operators).' },
-  project: { title: 'Project', blurb: 'Move through a codebase, not a file: buffers, windows, jumps, quickfix, pickers, the explorer.' },
+  project: { title: 'Project', blurb: 'Move through a codebase, not a file: buffers, windows, jumps, quickfix, definitions and references, pickers, the explorer.' },
   patterns: { title: 'Patterns', blurb: 'Edit at scale: the command line, substitute, global commands, project replace.' },
-  code: { title: 'Code', blurb: 'What a starter config adds: LSP, richer text objects, flash, surround, completion, git.' },
+  code: { title: 'Code', blurb: 'What a starter config adds: LSP edits, richer text objects, flash, surround, completion, git.' },
   challenges: { title: 'Challenges', blurb: 'Generated files with many edits at once; the Coach reviews your keys.' },
 };
 

@@ -38,9 +38,9 @@ describe('a count-only rewrite of a key run must save two keys', () => {
 
 describe('the Warm-up coaches only what its picks taught', () => {
   it('warmUpTaught is the union of the picks\' vocabularies', () => {
-    const t = warmUpTaught(['change-words', 'delete-words']);
+    const t = warmUpTaught(['change-words', 'open-lines']);
     for (const k of taughtBy('change-words')) expect(t.has(k)).toBe(true);
-    for (const k of taughtBy('delete-words')) expect(t.has(k)).toBe(true);
+    for (const k of taughtBy('open-lines')) expect(t.has(k)).toBe(true);
     expect(t.has('#')).toBe(false);
     expect(t.has('*')).toBe(false);
     expect(t.has('gn')).toBe(false);

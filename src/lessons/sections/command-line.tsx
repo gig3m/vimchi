@@ -357,7 +357,7 @@ export const commandLine: Section = {
     {
       id: 'visual-ranges',
       title: 'Visual Ranges',
-      chips: ["'<,'>", 'gv'],
+      chips: ["'<,'>"],
       keyCards: [
         { key: 'V :', glyph: "'<,'>", label: 'selected lines' },
         { key: "'<", glyph: '⌈', label: 'selection start' },
@@ -812,6 +812,90 @@ export const commandLine: Section = {
               text: ['struct Config {', '    pub host: String,', '    pub port: u16,', '    pub tls: bool,', '}'],
             },
             solution: 'Ipub <Esc>:3,4norm .<CR>',
+          },
+        ],
+      },
+    },
+    {
+      id: 'macros-over-lines',
+      title: 'Macros over a Range',
+      chips: [':norm @a'],
+      keyCards: [
+        { key: ':norm', glyph: ':n', label: 'run normal keys', sub: 'on every line in a range' },
+        { key: '@a', glyph: '▶', label: 'the macro to run' },
+      ],
+      intro: (
+        <>
+          <p>
+            Record a macro once, then hand it to <Code>:norm</Code>: <Code>:'&lt;,'&gt;norm @a</Code> runs macro{' '}
+            <Code>a</Code> on every selected line, with the cursor at the start of each.
+          </p>
+          <p>
+            The macro needs no <Code>j</Code> to move on, and a line where it fails is skipped instead of ending the
+            run. That makes it safer than <Code>5@a</Code> when only some lines fit.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Record or reuse a macro, then run it over a range with <Code>:norm</Code>. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Pick lines by pattern',
+        body: (
+          <p>
+            Global Commands pairs this with <Code>:g</Code>: <Code>:g/=/norm @a</Code> runs the macro only on lines
+            that contain an <Code>=</Code>, wherever they are in the file.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'keys.ts' },
+        rounds: [
+          {
+            prompt: 'Record a macro that drops the trailing comment, then run it on the rest.',
+            setup: {
+              text: ['const retries = 3 // tries', 'const delayMs = 250', 'const timeoutMs = 5000 // ms', 'const jitter = true'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['const retries = 3', 'const delayMs = 250', 'const timeoutMs = 5000', 'const jitter = true'] },
+            solution: 'qaf/hDq:2,$norm @a<CR>',
+          },
+          {
+            prompt: 'Record a macro that makes a line a numbered step, then run it on the other lines.',
+            setup: {
+              name: 'deploy.md',
+              text: ['# Deploy', '', 'Tag the release', 'Build the image', 'Push to the registry', 'Roll out to staging', 'Promote to prod'],
+              cursor: { line: 2, col: 0 },
+            },
+            goal: {
+              text: ['# Deploy', '', '1. Tag the release', '1. Build the image', '1. Push to the registry', '1. Roll out to staging', '1. Promote to prod'],
+            },
+            solution: 'qaI1. <Esc>q:4,$norm @a<CR>',
+          },
+          {
+            prompt: 'Register q quotes a line and adds a comma. Select the three hosts and run it.',
+            setup: {
+              name: 'allow.ts',
+              text: ['export const ALLOWED = [', 'example.com', 'api.example.com', 'cdn.example.com', '];'],
+              registers: { q: `I  '\x1bA',\x1b` },
+              cursor: { line: 1, col: 0 },
+            },
+            goal: { text: ['export const ALLOWED = [', "  'example.com',", "  'api.example.com',", "  'cdn.example.com',", '];'] },
+            solution: 'Vjj:norm @q<CR>',
+          },
+          {
+            prompt: 'Register a turns "key = value" into "key: value". Run it on every line; the comments have no "=" and are skipped.',
+            setup: {
+              name: 'settings.toml',
+              text: ['# server', 'host = "0.0.0.0"', 'port = 8080', '# logging', 'level = "info"', 'format = "json"'],
+              registers: { a: '0f=hxr:' },
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['# server', 'host: "0.0.0.0"', 'port: 8080', '# logging', 'level: "info"', 'format: "json"'] },
+            solution: ':%norm @a<CR>',
           },
         ],
       },

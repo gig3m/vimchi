@@ -291,8 +291,8 @@ export const screenMovement: Section = {
           },
           {
             prompt: 'Scroll down to the class declaration.',
-            setup: { cursor: { line: 12, col: 0 } },
-            goal: { cursor: { line: 24, col: 0 } },
+            setup: { cursor: { line: 12, col: 7 } },
+            goal: { cursor: { line: 24, col: 7 } },
             solution: '<C-d><C-d>',
           },
           {

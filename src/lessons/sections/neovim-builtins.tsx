@@ -284,206 +284,6 @@ export const neovimBuiltins: Section = {
       },
     },
     {
-      id: 'diagnostics',
-      title: 'Diagnostics',
-      chips: ['[d', ']d'],
-      keyCards: [
-        { key: '[d', glyph: '↑!', glyphColor: 'var(--red)', label: 'previous diagnostic' },
-        { key: ']d', glyph: '↓!', glyphColor: 'var(--red)', label: 'next diagnostic' },
-      ],
-      intro: (
-        <>
-          <p>
-            A language server reports errors and warnings as diagnostics: a letter in the sign column and the message
-            at the end of the line. <Code>]d</Code> jumps to the next one, <Code>[d</Code> to the previous.
-          </p>
-          <p>
-            Both wrap around the file and take a count. Fix, <Code>]d</Code>, fix: no scrolling to find the next red
-            squiggle.
-          </p>
-        </>
-      ),
-      practice: total => (
-        <p>
-          Reach the <span className="hl-green">green box</span> on each diagnostic with <Code>]d</Code> and{' '}
-          <Code>[d</Code>. {total} rounds.
-        </p>
-      ),
-      aside: {
-        title: 'First, last and the full message',
-        body: (
-          <p>
-            <Code>[D</Code> and <Code>]D</Code> jump to the first and last diagnostic. <Code>C-w d</Code> opens the one
-            under the cursor in a float, for messages too long to read at the end of the line.
-          </p>
-        ),
-      },
-      challenge: {
-        kind: 'rounds',
-        base: { name: 'profile.ts', text: PROFILE, plugins: ['lsp'], init: server({ diagnostics: PROFILE_DIAGS }) },
-        rounds: [
-          { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: P(0) }, solution: ']d' },
-          { setup: { cursor: { line: 4, col: 2 } }, goal: { cursor: P(1) }, solution: ']d' },
-          { setup: { cursor: { line: 10, col: 2 } }, goal: { cursor: P(4) }, solution: '[d' },
-          { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: P(2) }, solution: '2]d' },
-          { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: P(4) }, solution: '[d' },
-          { setup: { cursor: { line: 8, col: 4 } }, goal: { cursor: P(1) }, solution: '3[d' },
-        ],
-      },
-    },
-    {
-      id: 'definition-hover',
-      title: 'Definitions & Hover',
-      chips: ['gd', 'K'],
-      keyCards: [
-        { key: 'gd', glyph: '→def', label: 'go to definition' },
-        { key: 'K', glyph: '?', label: 'hover docs' },
-      ],
-      intro: (
-        <>
-          <p>
-            With a language server attached, <Code>gd</Code> jumps to where the name under the cursor is defined, even
-            in another file. <Code>K</Code> shows its type and documentation in a float.
-          </p>
-          <p>
-            <Code>C-o</Code> takes you back after a jump, so you can dive into a definition, read it and return to
-            where you were.
-          </p>
-        </>
-      ),
-      practice: total => (
-        <p>
-          Jump to definitions with <Code>gd</Code> and open docs with <Code>K</Code>. Any key closes the float. {total}{' '}
-          rounds.
-        </p>
-      ),
-      aside: {
-        title: 'Out of the box',
-        body: (
-          <p>
-            Neovim 0.11 maps <Code>K</Code> for you and points <Code>C-]</Code> at the server's definition. Most configs
-            add <Code>gd</Code> with <Code>vim.keymap.set('n', 'gd', vim.lsp.buf.definition)</Code>; without a server it
-            finds the local declaration.
-          </p>
-        ),
-      },
-      challenge: {
-        kind: 'rounds',
-        base: { plugins: ['lsp'] },
-        rounds: [
-          {
-            prompt: 'Jump to where formatMoney is defined.',
-            setup: shop('src/cart.ts', at(CART, 6, 'formatMoney')),
-            goal: { buffer: 'src/money.ts', cursor: at(MONEY, 1, 'formatMoney') },
-            solution: 'gd',
-          },
-          {
-            prompt: 'Read the docs for formatMoney.',
-            setup: shop('src/receipt.ts', at(RECEIPT, 3, 'return')),
-            goal: { check: hoverOpen },
-            solution: 'ffK',
-          },
-          {
-            prompt: 'Go to the TAX_RATE constant.',
-            setup: shop('src/cart.ts', at(CART, 14, 'TAX_RATE')),
-            goal: { buffer: 'src/cart.ts', cursor: at(CART, 3, 'TAX_RATE') },
-            solution: 'gd',
-          },
-          {
-            prompt: 'What does CartItem hold? Show its type.',
-            setup: shop('src/cart.ts', at(CART, 5, 'export')),
-            goal: { check: hoverOpen },
-            solution: 'fCK',
-          },
-          {
-            prompt: 'Jump to the CartItem interface.',
-            setup: shop('src/cart.ts', at(CART, 9, 'CartItem')),
-            goal: { buffer: 'src/types.ts', cursor: at(TYPES, 0, 'CartItem') },
-            solution: 'gd',
-          },
-          {
-            prompt: 'What does padEnd take? Show its docs.',
-            setup: shop('src/receipt.ts', at(RECEIPT, 3, 'padEnd')),
-            goal: { check: hoverOpen },
-            solution: 'K',
-          },
-        ],
-      },
-    },
-    {
-      id: 'references',
-      title: 'References',
-      chips: ['grr', 'gri'],
-      keyCards: [
-        { key: 'grr', glyph: '←→', label: 'list references' },
-        { key: 'gri', glyph: '⇣impl', label: 'implementations' },
-      ],
-      intro: (
-        <>
-          <p>
-            <Code>grr</Code> asks the language server for every reference to the name under the cursor and opens them
-            in the quickfix list. <Code>gri</Code> lists implementations: the classes behind an interface, the bodies
-            behind a method.
-          </p>
-          <p>
-            From the list, <Code>]q</Code> and <Code>[q</Code> walk through the hits and <Code>]Q</Code> jumps to the
-            last. With a single implementation, <Code>gri</Code> jumps straight there.
-          </p>
-        </>
-      ),
-      practice: total => (
-        <p>
-          List the references or implementations, then walk the quickfix list to the one the prompt asks for. {total}{' '}
-          rounds.
-        </p>
-      ),
-      aside: {
-        title: 'Better than grep',
-        body: (
-          <p>
-            <Code>:vimgrep</Code> finds text; <Code>grr</Code> finds uses of a symbol, so a <Code>total</Code> in a
-            comment or another scope doesn't show up. The list includes the definition itself.
-          </p>
-        ),
-      },
-      challenge: {
-        kind: 'rounds',
-        base: { plugins: ['lsp'] },
-        rounds: [
-          {
-            prompt: 'List the references to formatMoney and jump to the last one.',
-            setup: shop('src/cart.ts', at(CART, 6, 'formatMoney')),
-            goal: { buffer: 'src/receipt.ts', cursor: at(RECEIPT, 3, 'formatMoney') },
-            solution: 'grr]Q',
-          },
-          {
-            prompt: 'From receipt.ts, list the references and jump to the second: the call in lineTotal.',
-            setup: shop('src/receipt.ts', at(RECEIPT, 3, 'formatMoney')),
-            goal: { buffer: 'src/cart.ts', cursor: at(CART, 6, 'formatMoney') },
-            solution: 'grr]q',
-          },
-          {
-            prompt: 'List the classes implementing PaymentProvider and go to the second.',
-            setup: shop('src/payments.ts', at(PAYMENTS, 0, 'PaymentProvider')),
-            goal: { buffer: 'src/payments.ts', cursor: at(PAYMENTS, 14, 'InvoiceProvider') },
-            solution: 'gri]q',
-          },
-          {
-            prompt: 'Logger has one implementation. Go to it.',
-            setup: shop('src/log.ts', at(LOG, 0, 'Logger')),
-            goal: { buffer: 'src/log.ts', cursor: at(LOG, 4, 'ConsoleLogger') },
-            solution: 'gri',
-          },
-          {
-            prompt: 'Find the charge method implementations and go to the last.',
-            setup: shop('src/payments.ts', at(PAYMENTS, 1, 'charge')),
-            goal: { buffer: 'src/payments.ts', cursor: at(PAYMENTS, 15, 'charge') },
-            solution: 'gri]Q',
-          },
-        ],
-      },
-    },
-    {
       id: 'lsp-rename',
       title: 'Rename',
       chips: ['grn'],
@@ -749,106 +549,212 @@ export const neovimBuiltins: Section = {
         })(),
       },
     },
+  ],
+};
+
+/** LSP navigation: the project-wide jumps (kept here with the LSP helpers; listed in the Project band). */
+export const codeNavigation: Section = {
+  id: 'code-navigation',
+  title: 'Code Navigation',
+  band: 'project',
+  lessons: [
     {
-      id: 'blank-lines',
-      title: 'Blank Lines',
-      chips: ['[␣', ']␣'],
+      id: 'diagnostics',
+      title: 'Diagnostics',
+      chips: ['[d', ']d'],
       keyCards: [
-        { key: '[␣', glyph: '⏎↑', label: 'blank line above' },
-        { key: ']␣', glyph: '⏎↓', label: 'blank line below' },
+        { key: '[d', glyph: '↑!', glyphColor: 'var(--red)', label: 'previous diagnostic' },
+        { key: ']d', glyph: '↓!', glyphColor: 'var(--red)', label: 'next diagnostic' },
       ],
       intro: (
         <>
           <p>
-            <Code>[&lt;Space&gt;</Code> adds a blank line above the cursor and <Code>]&lt;Space&gt;</Code> one below. A
-            count adds that many.
+            A language server reports errors and warnings as diagnostics: a letter in the sign column and the message
+            at the end of the line. <Code>]d</Code> jumps to the next one, <Code>[d</Code> to the previous.
           </p>
           <p>
-            Unlike <Code>o</Code> and <Code>O</Code>, you stay in normal mode and the cursor stays on its line, so you
-            can space out code without stopping what you're doing.
+            Both wrap around the file and take a count. Fix, <Code>]d</Code>, fix: no scrolling to find the next red
+            squiggle.
           </p>
-          <BeforeAfter
-            lines={['}', 'export function lerp() {']}
-            cursor={[0, 0]}
-            keys="]<Space>"
-            caption="A blank line below; the cursor stays on the brace."
-          />
-          <BeforeAfter
-            lines={['import os', 'def main():', '    pass']}
-            cursor={[1, 4]}
-            keys="2[<Space>"
-            caption="With a count: two blank lines above."
-          />
         </>
       ),
-      practice: total => <p>Add the blank lines the goal shows. {total} rounds.</p>,
+      practice: total => (
+        <p>
+          Reach the <span className="hl-green">green box</span> on each diagnostic with <Code>]d</Code> and{' '}
+          <Code>[d</Code>. {total} rounds.
+        </p>
+      ),
       aside: {
-        title: 'Borrowed from unimpaired',
+        title: 'First, last and the full message',
         body: (
           <p>
-            These came from Tim Pope's vim-unimpaired, along with <Code>[b</Code>, <Code>[q</Code> and friends. Neovim
-            0.11 built them in; in classic Vim you still need the plugin. To see how a real config wires the
-            plugins in the next sections together, read kickstart.nvim's single <Code>init.lua</Code> next: it is
-            written to be read top to bottom.
+            <Code>[D</Code> and <Code>]D</Code> jump to the first and last diagnostic. <Code>C-w d</Code> opens the one
+            under the cursor in a float, for messages too long to read at the end of the line.
           </p>
         ),
       },
       challenge: {
         kind: 'rounds',
-        base: { name: 'utils.ts' },
+        base: { name: 'profile.ts', text: PROFILE, plugins: ['lsp'], init: server({ diagnostics: PROFILE_DIAGS }) },
+        rounds: [
+          { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: P(0) }, solution: ']d' },
+          { setup: { cursor: { line: 4, col: 2 } }, goal: { cursor: P(1) }, solution: ']d' },
+          { setup: { cursor: { line: 10, col: 2 } }, goal: { cursor: P(4) }, solution: '[d' },
+          { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: P(2) }, solution: '2]d' },
+          { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: P(4) }, solution: '[d' },
+          { setup: { cursor: { line: 8, col: 4 } }, goal: { cursor: P(1) }, solution: '3[d' },
+        ],
+      },
+    },
+    {
+      id: 'definition-hover',
+      title: 'Definitions & Hover',
+      chips: ['gd', 'K'],
+      keyCards: [
+        { key: 'gd', glyph: '→def', label: 'go to definition' },
+        { key: 'K', glyph: '?', label: 'hover docs' },
+      ],
+      intro: (
+        <>
+          <p>
+            With a language server attached, <Code>gd</Code> jumps to where the name under the cursor is defined, even
+            in another file. <Code>K</Code> shows its type and documentation in a float.
+          </p>
+          <p>
+            <Code>C-o</Code> takes you back after a jump, so you can dive into a definition, read it and return to
+            where you were.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Jump to definitions with <Code>gd</Code> and open docs with <Code>K</Code>. Any key closes the float. {total}{' '}
+          rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Out of the box',
+        body: (
+          <p>
+            Since Neovim 0.10, <Code>K</Code> is mapped to hover when a language server attaches, and{' '}
+            <Code>C-]</Code> goes to the server's definition. LazyVim maps <Code>gd</Code>; kickstart follows the 0.11{' '}
+            <Code>gr</Code> keys and maps <Code>grd</Code> instead, which leaves <Code>gd</Code> as Vim's local
+            declaration search.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { plugins: ['lsp'] },
         rounds: [
           {
-            prompt: 'Separate the two functions.',
-            setup: {
-              text: ['export function clamp(n: number, lo: number, hi: number) {', '  return Math.min(hi, Math.max(lo, n));', '}', 'export function lerp(a: number, b: number, t: number) {', '  return a + (b - a) * t;', '}'],
-              cursor: { line: 2, col: 0 },
-            },
-            goal: {
-              text: ['export function clamp(n: number, lo: number, hi: number) {', '  return Math.min(hi, Math.max(lo, n));', '}', '', 'export function lerp(a: number, b: number, t: number) {', '  return a + (b - a) * t;', '}'],
-            },
-            solution: '] ',
+            prompt: 'Jump to where formatMoney is defined.',
+            setup: shop('src/cart.ts', at(CART, 6, 'formatMoney')),
+            goal: { buffer: 'src/money.ts', cursor: at(MONEY, 1, 'formatMoney') },
+            solution: 'gd',
           },
           {
-            prompt: 'Give the heading room above it.',
-            setup: {
-              name: 'README.md',
-              text: ['Run `npm install` first.', '## Usage', '', 'Start the server with `npm run dev`.'],
-              cursor: { line: 1, col: 3 },
-            },
-            goal: { text: ['Run `npm install` first.', '', '## Usage', '', 'Start the server with `npm run dev`.'] },
-            solution: '[ ',
+            prompt: 'Read the docs for formatMoney.',
+            setup: shop('src/receipt.ts', at(RECEIPT, 3, 'return')),
+            goal: { check: hoverOpen },
+            solution: 'ffK',
           },
           {
-            prompt: 'PEP 8 wants two blank lines before a top-level def.',
-            setup: {
-              name: 'shapes.py',
-              text: ['def area(r):', '    return 3.14159 * r * r', 'def circumference(r):', '    return 2 * 3.14159 * r'],
-              cursor: { line: 2, col: 0 },
-            },
-            goal: { text: ['def area(r):', '    return 3.14159 * r * r', '', '', 'def circumference(r):', '    return 2 * 3.14159 * r'] },
-            solution: '2[ ',
+            prompt: 'Go to the TAX_RATE constant.',
+            setup: shop('src/cart.ts', at(CART, 14, 'TAX_RATE')),
+            goal: { buffer: 'src/cart.ts', cursor: at(CART, 3, 'TAX_RATE') },
+            solution: 'gd',
           },
           {
-            prompt: 'Put a blank line on both sides of the rule.',
-            setup: {
-              name: 'CHANGELOG.md',
-              text: ['- Fixed the login redirect.', '---', '## 1.4.0'],
-              cursor: { line: 1, col: 0 },
-            },
-            goal: { text: ['- Fixed the login redirect.', '', '---', '', '## 1.4.0'] },
-            solution: '[ ] ',
+            prompt: 'What does CartItem hold? Show its type.',
+            setup: shop('src/cart.ts', at(CART, 5, 'export')),
+            goal: { check: hoverOpen },
+            solution: 'fCK',
           },
           {
-            prompt: 'Split the keymaps from the options.',
-            setup: {
-              name: 'init.lua',
-              text: ['vim.opt.number = true', 'vim.opt.relativenumber = true', "vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')", "vim.keymap.set('n', '<leader>w', '<cmd>write<CR>')"],
-              cursor: { line: 1, col: 8 },
-            },
-            goal: {
-              text: ['vim.opt.number = true', 'vim.opt.relativenumber = true', '', "vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')", "vim.keymap.set('n', '<leader>w', '<cmd>write<CR>')"],
-            },
-            solution: '] ',
+            prompt: 'Jump to the CartItem interface.',
+            setup: shop('src/cart.ts', at(CART, 9, 'CartItem')),
+            goal: { buffer: 'src/types.ts', cursor: at(TYPES, 0, 'CartItem') },
+            solution: 'gd',
+          },
+          {
+            prompt: 'What does padEnd take? Show its docs.',
+            setup: shop('src/receipt.ts', at(RECEIPT, 3, 'padEnd')),
+            goal: { check: hoverOpen },
+            solution: 'K',
+          },
+        ],
+      },
+    },
+    {
+      id: 'references',
+      title: 'References',
+      chips: ['grr', 'gri'],
+      keyCards: [
+        { key: 'grr', glyph: '←→', label: 'list references' },
+        { key: 'gri', glyph: '⇣impl', label: 'implementations' },
+      ],
+      intro: (
+        <>
+          <p>
+            <Code>grr</Code> asks the language server for every reference to the name under the cursor and opens them
+            in the quickfix list. <Code>gri</Code> lists implementations: the classes behind an interface, the bodies
+            behind a method.
+          </p>
+          <p>
+            From the list, <Code>]q</Code> and <Code>[q</Code> walk through the hits and <Code>]Q</Code> jumps to the
+            last. With a single implementation, <Code>gri</Code> jumps straight there.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          List the references or implementations, then walk the quickfix list to the one the prompt asks for. {total}{' '}
+          rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Better than grep',
+        body: (
+          <p>
+            <Code>:vimgrep</Code> finds text; <Code>grr</Code> finds uses of a symbol, so a <Code>total</Code> in a
+            comment or another scope doesn't show up. The list includes the definition itself.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { plugins: ['lsp'] },
+        rounds: [
+          {
+            prompt: 'List the references to formatMoney and jump to the last one.',
+            setup: shop('src/cart.ts', at(CART, 6, 'formatMoney')),
+            goal: { buffer: 'src/receipt.ts', cursor: at(RECEIPT, 3, 'formatMoney') },
+            solution: 'grr]Q',
+          },
+          {
+            prompt: 'From receipt.ts, list the references and jump to the second: the call in lineTotal.',
+            setup: shop('src/receipt.ts', at(RECEIPT, 3, 'formatMoney')),
+            goal: { buffer: 'src/cart.ts', cursor: at(CART, 6, 'formatMoney') },
+            solution: 'grr]q',
+          },
+          {
+            prompt: 'List the classes implementing PaymentProvider and go to the second.',
+            setup: shop('src/payments.ts', at(PAYMENTS, 0, 'PaymentProvider')),
+            goal: { buffer: 'src/payments.ts', cursor: at(PAYMENTS, 14, 'InvoiceProvider') },
+            solution: 'gri]q',
+          },
+          {
+            prompt: 'Logger has one implementation. Go to it.',
+            setup: shop('src/log.ts', at(LOG, 0, 'Logger')),
+            goal: { buffer: 'src/log.ts', cursor: at(LOG, 4, 'ConsoleLogger') },
+            solution: 'gri',
+          },
+          {
+            prompt: 'Find the charge method implementations and go to the last.',
+            setup: shop('src/payments.ts', at(PAYMENTS, 1, 'charge')),
+            goal: { buffer: 'src/payments.ts', cursor: at(PAYMENTS, 15, 'charge') },
+            solution: 'gri]Q',
           },
         ],
       },

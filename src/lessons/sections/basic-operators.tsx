@@ -601,11 +601,11 @@ export const basicOperators: Section = {
         </p>
       ),
       aside: {
-        title: 'S is cc',
+        title: 'cc is S',
         body: (
           <p>
-            <Code>S</Code> from the Substitute lesson does exactly what <Code>cc</Code> does. Use whichever your fingers
-            prefer.
+            <Code>S</Code> from the Substitute Characters lesson does exactly what <Code>cc</Code> does. Use whichever
+            your fingers prefer.
           </p>
         ),
       },
@@ -1125,6 +1125,16 @@ export const basicOperators: Section = {
             },
             goal: { text: ['export function a() {}', 'export function b() {}', 'export function c() {}'] },
             solution: 'wd2wj.j.',
+          },
+          {
+            prompt: 'Delete "new public API".',
+            setup: {
+              name: 'CONTRIBUTING.md',
+              text: ['# Contributing', '', 'Write tests for every new public API function.', 'Run the linter before you push.'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['# Contributing', '', 'Write tests for every function.', 'Run the linter before you push.'] },
+            solution: 'jjfn3dw',
           },
           {
             prompt: 'Delete the whole retry block.',

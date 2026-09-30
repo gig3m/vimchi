@@ -179,8 +179,8 @@ export const insertLikeAPro: Section = {
         title: 'Blank lines',
         body: (
           <p>
-            <Code>o</Code> then <Code>esc</Code> adds an empty line below. Neovim 0.11 also maps <Code>]␣</Code> and{' '}
-            <Code>[␣</Code> to add blank lines below and above without leaving normal mode.
+            <Code>o</Code> then <Code>esc</Code> adds an empty line below. The next lesson adds blank lines without
+            leaving normal mode at all.
           </p>
         ),
       },
@@ -250,8 +250,111 @@ export const insertLikeAPro: Section = {
       },
     },
     {
+      id: 'blank-lines',
+      title: 'Blank Lines',
+      chips: ['[␣', ']␣'],
+      keyCards: [
+        { key: '[␣', glyph: '⏎↑', label: 'blank line above' },
+        { key: ']␣', glyph: '⏎↓', label: 'blank line below' },
+      ],
+      intro: (
+        <>
+          <p>
+            <Code>[&lt;Space&gt;</Code> adds a blank line above the cursor and <Code>]&lt;Space&gt;</Code> one below. A
+            count adds that many.
+          </p>
+          <p>
+            Unlike <Code>o</Code> and <Code>O</Code>, you stay in normal mode and the cursor stays on its line, so you
+            can space out code without stopping what you're doing.
+          </p>
+          <BeforeAfter
+            lines={['}', 'export function lerp() {']}
+            cursor={[0, 0]}
+            keys="]<Space>"
+            caption="A blank line below; the cursor stays on the brace."
+          />
+          <BeforeAfter
+            lines={['import os', 'def main():', '    pass']}
+            cursor={[1, 4]}
+            keys="2[<Space>"
+            caption="With a count: two blank lines above."
+          />
+        </>
+      ),
+      practice: total => <p>Add the blank lines the goal shows. {total} rounds.</p>,
+      aside: {
+        title: 'Borrowed from unimpaired',
+        body: (
+          <p>
+            These came from Tim Pope's vim-unimpaired, along with the <Code>[</Code> and <Code>]</Code> pairs you
+            will meet later for buffers and quickfix. Neovim 0.11 built them in; in classic Vim you still need the
+            plugin.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'utils.ts' },
+        rounds: [
+          {
+            prompt: 'Separate the two functions.',
+            setup: {
+              text: ['export function clamp(n: number, lo: number, hi: number) {', '  return Math.min(hi, Math.max(lo, n));', '}', 'export function lerp(a: number, b: number, t: number) {', '  return a + (b - a) * t;', '}'],
+              cursor: { line: 2, col: 0 },
+            },
+            goal: {
+              text: ['export function clamp(n: number, lo: number, hi: number) {', '  return Math.min(hi, Math.max(lo, n));', '}', '', 'export function lerp(a: number, b: number, t: number) {', '  return a + (b - a) * t;', '}'],
+            },
+            solution: '] ',
+          },
+          {
+            prompt: 'Give the heading room above it.',
+            setup: {
+              name: 'README.md',
+              text: ['Run `npm install` first.', '## Usage', '', 'Start the server with `npm run dev`.'],
+              cursor: { line: 1, col: 3 },
+            },
+            goal: { text: ['Run `npm install` first.', '', '## Usage', '', 'Start the server with `npm run dev`.'] },
+            solution: '[ ',
+          },
+          {
+            prompt: 'PEP 8 wants two blank lines before a top-level def.',
+            setup: {
+              name: 'shapes.py',
+              text: ['def area(r):', '    return 3.14159 * r * r', 'def circumference(r):', '    return 2 * 3.14159 * r'],
+              cursor: { line: 2, col: 0 },
+            },
+            goal: { text: ['def area(r):', '    return 3.14159 * r * r', '', '', 'def circumference(r):', '    return 2 * 3.14159 * r'] },
+            solution: '2[ ',
+          },
+          {
+            prompt: 'Put a blank line on both sides of the rule.',
+            setup: {
+              name: 'CHANGELOG.md',
+              text: ['- Fixed the login redirect.', '---', '## 1.4.0'],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: { text: ['- Fixed the login redirect.', '', '---', '', '## 1.4.0'] },
+            solution: '[ ] ',
+          },
+          {
+            prompt: 'Split the keymaps from the options.',
+            setup: {
+              name: 'init.lua',
+              text: ['vim.opt.number = true', 'vim.opt.relativenumber = true', "vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')", "vim.keymap.set('n', '<leader>w', '<cmd>write<CR>')"],
+              cursor: { line: 1, col: 8 },
+            },
+            goal: {
+              text: ['vim.opt.number = true', 'vim.opt.relativenumber = true', '', "vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')", "vim.keymap.set('n', '<leader>w', '<cmd>write<CR>')"],
+            },
+            solution: '] ',
+          },
+        ],
+      },
+    },
+    {
       id: 'substitute',
-      title: 'Substitute',
+      title: 'Substitute Characters',
       chips: ['s', 'S'],
       keyCards: [
         { key: 's', glyph: 'x→…', label: 'substitute character' },
@@ -278,7 +381,7 @@ export const insertLikeAPro: Section = {
         </p>
       ),
       aside: {
-        title: 'S is cc',
+        title: 'S and cc',
         body: (
           <p>
             <Code>S</Code> and <Code>cc</Code> do the same thing. You'll meet <Code>cc</Code> again in Change Lines,
@@ -438,136 +541,6 @@ export const insertLikeAPro: Section = {
             },
             goal: { text: ['{', '  "engine": "2.0",', '  "cli": "2.0"', '}'] },
             solution: 'jf1R2.0<Esc>j0f1R2.0<Esc>',
-          },
-        ],
-      },
-    },
-    {
-      id: 'undo-redo',
-      title: 'Undo & Redo',
-      chips: ['u', 'C-r'],
-      keyCards: [
-        { key: 'u', glyph: '↺', label: 'undo' },
-        { key: 'C-r', glyph: '↻', label: 'redo' },
-      ],
-      intro: (
-        <>
-          <p>
-            <Code>u</Code> undoes the last change. <Code>C-r</Code> redoes what you just undid. Both take a count:{' '}
-            <Code>3u</Code> undoes three changes.
-          </p>
-          <p>
-            A change is one command, however much text it touches. Everything you type between <Code>i</Code> and{' '}
-            <Code>esc</Code> is one change, so a whole line of typing goes with a single <Code>u</Code>.
-          </p>
-        </>
-      ),
-      practice: total => (
-        <p>
-          Someone has been editing these files. Undo and redo until the buffer matches the goal. {total} rounds.
-        </p>
-      ),
-      aside: {
-        title: 'Undo is a tree',
-        body: (
-          <p>
-            Undo, then make a new change, and the undone branch isn't lost. <Code>g-</Code> and <Code>g+</Code> walk
-            through every state the buffer has been in, in time order.
-          </p>
-        ),
-      },
-      challenge: {
-        kind: 'rounds',
-        base: { name: 'cart.ts' },
-        rounds: [
-          {
-            prompt: 'The return line was deleted by mistake. Bring it back.',
-            setup: {
-              text: [
-                'export function total(items: Item[]) {',
-                '  const sum = items.reduce((a, i) => a + i.price, 0);',
-                '  return sum;',
-                '}',
-              ],
-              cursor: { line: 2, col: 0 },
-              init: vim => vim.feedKeys('dd'),
-            },
-            goal: {
-              text: [
-                'export function total(items: Item[]) {',
-                '  const sum = items.reduce((a, i) => a + i.price, 0);',
-                '  return sum;',
-                '}',
-              ],
-            },
-            solution: 'u',
-          },
-          {
-            prompt: 'Undo the whole line that was typed in.',
-            setup: {
-              name: 'init.lua',
-              text: ['vim.opt.number = true', 'vim.opt.wrap = false', 'vim.opt.tabstop = 2'],
-              cursor: { line: 0, col: 0 },
-              init: vim => vim.feedKeys('ovim.opt.mouse = ""<Esc>'),
-            },
-            goal: { text: ['vim.opt.number = true', 'vim.opt.wrap = false', 'vim.opt.tabstop = 2'] },
-            solution: 'u',
-          },
-          {
-            prompt: 'Undo both renames.',
-            setup: {
-              text: [
-                'function lineTotal(price: number, quantity: number) {',
-                '  const total = price * quantity;',
-                '  return total;',
-                '}',
-              ],
-              cursor: { line: 1, col: 2 },
-              init: vim => vim.feedKeys('wcwsum<Esc>4wcwqty<Esc>'),
-            },
-            goal: {
-              text: [
-                'function lineTotal(price: number, quantity: number) {',
-                '  const total = price * quantity;',
-                '  return total;',
-                '}',
-              ],
-            },
-            solution: 'uu',
-          },
-          {
-            prompt: 'You undid one step too many. Redo it.',
-            setup: {
-              name: 'README.md',
-              text: ['# vimchi', 'A Vim tutor.', '', '## Install'],
-              cursor: { line: 1, col: 0 },
-              init: vim => vim.feedKeys('A It runs in the browser.<Esc>oMIT licensed.<Esc>uu'),
-            },
-            goal: { text: ['# vimchi', 'A Vim tutor. It runs in the browser.', '', '## Install'] },
-            solution: '<C-r>',
-          },
-          {
-            prompt: 'Undo all three edits, then redo only the first.',
-            setup: {
-              name: 'routes.ts',
-              text: [
-                "app.get('/users', listUsers);",
-                "app.get('/users/:id', getUser);",
-                "app.post('/users', createUser);",
-                "app.delete('/users/:id', removeUser);",
-              ],
-              cursor: { line: 0, col: 0 },
-              init: vim => vim.feedKeys("f/aapi/<Esc>jdd0x"),
-            },
-            goal: {
-              text: [
-                "app.get('/api/users', listUsers);",
-                "app.get('/users/:id', getUser);",
-                "app.post('/users', createUser);",
-                "app.delete('/users/:id', removeUser);",
-              ],
-            },
-            solution: '3u<C-r>',
           },
         ],
       },

@@ -39,8 +39,8 @@ export const gettingAround: Section = {
         title: 'Why hjkl?',
         body: (
           <p>
-            They pull your right hand off the home row, and every trip there and back costs time. Arrow keys are turned off
-            in these lessons.
+            Arrow keys pull your right hand off the home row, and every trip there and back costs time. They are turned
+            off in these lessons.
           </p>
         ),
       },

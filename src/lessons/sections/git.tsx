@@ -196,8 +196,9 @@ export const git: Section = {
         title: 'Look before you stage',
         body: (
           <p>
-            <Code>Space hp</Code> previews the hunk in a float. kickstart keeps gitsigns' README keys, <Code>Space hs</Code> and{' '}
-            <Code>Space hr</Code>; in visual mode either stages just the selected lines' hunks.
+            <Code>Space ghp</Code> previews the hunk in a float. kickstart keeps gitsigns' README keys,{' '}
+            <Code>Space hp</Code>, <Code>Space hs</Code> and <Code>Space hr</Code>; in visual mode staging takes just the
+            selected lines.
           </p>
         ),
       },
@@ -269,7 +270,8 @@ export const git: Section = {
         body: (
           <p>
             kickstart does not ship lazygit; <Code>:!git status</Code> or a second terminal fills the gap until you add
-            it.
+            it. To see how a config wires in the plugins from this band, read kickstart.nvim's single{' '}
+            <Code>init.lua</Code>: it is written to be read top to bottom.
           </p>
         ),
       },
