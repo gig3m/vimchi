@@ -55,6 +55,7 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/me", s.requireUser(s.handleMe))
 	mux.HandleFunc("GET /api/runs", s.requireUser(s.handleRuns))
 	mux.HandleFunc("POST /api/runs", s.limited(writeLimit, s.requireUser(s.handleAddRun)))
+	mux.HandleFunc("GET /api/coach/profile", s.requireUser(s.handleCoachProfile))
 	mux.HandleFunc("POST /api/runs/import", s.limited(writeLimit, s.requireUser(s.handleImportRuns)))
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "not found")

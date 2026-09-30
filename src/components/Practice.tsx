@@ -15,6 +15,7 @@ import { type Critique, type Report, coach, coachSegment, nudgeText } from '../c
 import { closedSegments } from '../coach/live';
 import { segment } from '../coach/segment';
 import { coachable } from '../coach/vocab';
+import { type CoachFields, callouts as calloutsFor, coachEvents, calloutPrefix, getCoachProfile, keyMixOf, recordCoachRun, retired, useCoachProfile } from '../state/coach';
 
 type Props = {
   lesson: Lesson;
@@ -33,7 +34,7 @@ type Props = {
   onStats: () => void;
 };
 
-type Finished = { result: ReturnType<Session['result']>; prevBestTime: number | null; prevBestScore: number | null; report?: Report };
+type Finished = { result: ReturnType<Session['result']>; prevBestTime: number | null; prevBestScore: number | null; report?: Report; callouts?: Record<string, string> };
 
 /** Browser-reserved Ctrl keys get an Alt stand-in outside fullscreen. */
 const STAND_INS: Record<string, string> = { '<A-w>': '<C-w>', '<A-n>': '<C-n>', '<A-t>': '<C-t>', '<A-q>': '<C-q>' };
@@ -44,6 +45,8 @@ export function Practice(p: Props) {
   const seedRef = useRef<number | null>(p.seed);
   const [, rerender] = useReducer((n: number) => n + 1, 0);
   const [finished, setFinished] = useState<Finished | null>(null);
+  // Coach memory: recurring patterns get a callout, mastered ones lose their live hint.
+  const coachProfile = useCoachProfile();
   // The component stays mounted across lessons (a remount would drop full screen), so a
   // lesson change resets the per-lesson state here instead of via a React key.
   // Reps swap the lesson's authored challenge for its generated Reps (same lesson, same page).
@@ -96,10 +99,9 @@ export function Practice(p: Props) {
   const nudgeT = useRef<number>(undefined);
   const clearNudge = () => { clearTimeout(nudgeT.current); setNudge(null); };
   const showNudge = (c: Critique) => {
-    const b = c.better[0];
-    void b;
+    const prefix = calloutPrefix(coachProfile, c.better[0].pattern);
     clearTimeout(nudgeT.current);
-    setNudge(nudgeText(c));
+    setNudge((prefix ? prefix + ' ' : '') + nudgeText(c));
     nudgeT.current = window.setTimeout(() => setNudge(null), 4000);
   };
   /** After a key (or a round/run end), critique a segment that has closed: at most one hint per round. */
@@ -117,7 +119,7 @@ export function Practice(p: Props) {
     for (const i of closedSegments(segs, log, closing).reverse()) {
       if (segs[i].logStart < unitStart || segs[i].logEnd <= nudgedEnd.current) continue;
       const c = coachSegment(s, lesson.id, segs[i], segs, i);
-      if (!c) continue;
+      if (!c || retired(coachProfile, c.better[0].pattern)) continue; // mastered: the report still lists it
       nudgedEnd.current = c.logEnd;
       nudgedUnit.current = unit;
       showNudge(c);
@@ -163,16 +165,25 @@ export function Practice(p: Props) {
   const complete = (now: number) => {
     const result = s.result();
     const times = p.history.map(r => r.time), scores = p.history.map(r => r.score);
+    const report = coachable(lesson.id) ? coach(s, lesson.id) : undefined;
+    // Coach memory: one event per critique (patterns and counts only) and the key mix ride on
+    // the run; callouts compare against the profile as it was before this run.
+    const events = report ? coachEvents(report, runId, now) : [];
+    const mix = report ? keyMixOf(report.summary) : undefined;
     setFinished({
       result,
       prevBestTime: times.length ? Math.min(...times) : null,
       prevBestScore: scores.length ? Math.max(...scores) : null,
-      report: coachable(lesson.id) ? coach(s, lesson.id) : undefined,
+      report,
+      callouts: calloutsFor(getCoachProfile(), events),
     });
-    p.onRun({
+    const run: Run & CoachFields = {
       lesson: runId, at: now, time: result.elapsed, keys: result.keys,
       speed: result.speed, acc: result.acc, correct: result.correct, score: result.score,
-    });
+      ...(report ? { coach: events, mix } : {}),
+    };
+    p.onRun(run);
+    if (report) recordCoachRun({ lesson: runId, at: now, mix, events });
   };
 
   const handle = (key: string) => {

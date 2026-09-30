@@ -166,16 +166,38 @@ func (s *Store) AddRuns(ctx context.Context, userID int64, runs []Run) error {
 	}
 	defer tx.Rollback()
 	stmt, err := tx.PrepareContext(ctx, `
-INSERT INTO runs (user_id, lesson, at, time_ms, keys, speed, acc, correct, score)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-ON CONFLICT (user_id, lesson, at) DO NOTHING`)
+INSERT INTO runs (user_id, lesson, at, time_ms, keys, speed, acc, correct, score, moving, typing, editing)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT (user_id, lesson, at) DO NOTHING
+RETURNING id`)
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
+	ev, err := tx.PrepareContext(ctx, `
+INSERT INTO coach_events (run_id, pattern, lesson, unit, you, better, used, at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)`)
+	if err != nil {
+		return err
+	}
+	defer ev.Close()
 	for _, r := range runs {
-		if _, err := stmt.ExecContext(ctx, userID, r.Lesson, r.At, r.Time, r.Keys, r.Speed, r.Acc, r.Correct, r.Score); err != nil {
+		var moving, typing, editing any
+		if r.Mix != nil {
+			moving, typing, editing = r.Mix.Moving, r.Mix.Typing, r.Mix.Editing
+		}
+		var id int64
+		err := stmt.QueryRowContext(ctx, userID, r.Lesson, r.At, r.Time, r.Keys, r.Speed, r.Acc, r.Correct, r.Score, moving, typing, editing).Scan(&id)
+		if errors.Is(err, sql.ErrNoRows) {
+			continue // a resend: the run and its events are already stored
+		}
+		if err != nil {
 			return err
+		}
+		for _, e := range r.Coach {
+			if _, err := ev.ExecContext(ctx, id, e.Pattern, e.Lesson, e.Unit, e.You, e.Better, e.Used, e.At); err != nil {
+				return err
+			}
 		}
 	}
 	// Keep only the newest MaxRunsPerUser (by time, then insertion order).
