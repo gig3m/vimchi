@@ -1,7 +1,8 @@
 import { Code } from '../../components/Code';
-import { BeforeAfter } from '../../components/diagrams';
+import { BeforeAfter, Motions } from '../../components/diagrams';
 import type { Section } from '../types';
 import type { Vim } from '../../vim/editor';
+import { SHOP, SRC, USES_PRICE, buffersAre, edited, qf } from './quickfix';
 
 /** The grug-far report float has been dismissed (the round ends on reading and closing it). */
 const closed = (vim: Vim) => !vim.floats.some(f => f.id === 'grug-far');
@@ -11,6 +12,145 @@ export const substitute: Section = {
   title: 'Substitute',
   band: 'patterns',
   lessons: [
+    {
+      id: 'pattern-atoms',
+      title: 'Pattern Atoms',
+      chips: ['^', '$', '.', '\\s'],
+      keyCards: [
+        { key: '^', glyph: '|←', label: 'line start', sub: '/^import' },
+        { key: '$', glyph: '→|', label: 'line end', sub: '/;$' },
+        { key: '.', glyph: '?', label: 'any character', sub: '/gr.y' },
+        { key: '\\s', glyph: '␣', label: 'space or tab', sub: '/id\\s' },
+      ],
+      intro: (
+        <>
+          <p>
+            A pattern is more than literal text. <Code>^</Code> matches the start of a line and <Code>$</Code> its
+            end, so <Code>/^import</Code> finds only an import that begins a line and <Code>/;$</Code> only a{' '}
+            <Code>;</Code> that ends one. <Code>.</Code> matches any one character and <Code>\s</Code> a space or a
+            tab.
+          </p>
+          <p>
+            These atoms pick which matches you get. Every <Code>/</Code>, <Code>:s</Code> and <Code>:g</Code> from
+            here on is built from them.
+          </p>
+          <Motions
+            text="for (i = 0; i < n; i++) total += i;"
+            cursor={0}
+            keys={['/;<CR>', '/;$<CR>']}
+            caption="/; stops at the first semicolon, /;$ only at one that ends the line."
+          />
+        </>
+      ),
+      practice: total => (
+        <p>
+          Search with an atom, then edit with keys you know: <Code>cgn</Code>, <Code>dgn</Code>, <Code>x</Code>,{' '}
+          <Code>n</Code> and <Code>.</Code>. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'More atoms',
+        body: (
+          <p>
+            Previews, used later in this section: <Code>\d</Code> is a digit, <Code>\w</Code> a word character,{' '}
+            <Code>\S</Code> anything but a space or tab, <Code>[^,]</Code> anything but a comma.{' '}
+            <Code>*</Code> repeats the atom before it any number of times and <Code>\+</Code> at least once, so{' '}
+            <Code>.*</Code> is the rest of the line and <Code>\d\+</Code> a whole number. A backslash makes a
+            special character plain: <Code>\.</Code> is a dot, <Code>\[</Code> a bracket.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: {},
+        rounds: [
+          {
+            prompt: 'Change "gray" and "grey" to "silver".',
+            setup: {
+              name: 'card.css',
+              text: ['.card {', '  color: gray;', '  border: 1px solid grey;', '  padding: 8px;', '}'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['.card {', '  color: silver;', '  border: 1px solid silver;', '  padding: 8px;', '}'] },
+            solution: '/gr.y<CR>cgnsilver<Esc>.',
+          },
+          {
+            prompt: 'Delete the ";" at the end of each line. The two inside for (…) stay.',
+            setup: {
+              name: 'total.js',
+              text: [
+                'let total = 0;',
+                'for (let i = 0; i < rows.length; i++) {',
+                '  total += rows[i].price;',
+                '}',
+                'console.log(total);',
+              ],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: [
+                'let total = 0',
+                'for (let i = 0; i < rows.length; i++) {',
+                '  total += rows[i].price',
+                '}',
+                'console.log(total)',
+              ],
+            },
+            solution: '/;$<CR>dgn..',
+          },
+          {
+            prompt: 'Put "async " before each "function" that starts a line.',
+            setup: {
+              name: 'parse.ts',
+              text: [
+                'function parse(raw: string) {',
+                '  // Used by every function below.',
+                "  return raw.trim().split(',');",
+                '}',
+                '',
+                'function count(rows: string[]) {',
+                '  return rows.length;',
+                '}',
+              ],
+              cursor: { line: 2, col: 2 },
+            },
+            goal: {
+              text: [
+                'async function parse(raw: string) {',
+                '  // Used by every function below.',
+                "  return raw.trim().split(',');",
+                '}',
+                '',
+                'async function count(rows: string[]) {',
+                '  return rows.length;',
+                '}',
+              ],
+            },
+            solution: '/^function<CR>Iasync <Esc>n.',
+          },
+          {
+            prompt: 'Rename the variable id to key. ids, idx and row.id stay.',
+            setup: {
+              name: 'index.lua',
+              text: ['local id = row.id', 'local ids = {}', "ids[#ids + 1] = id .. ':' .. idx", 'return ids'],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: { text: ['local key = row.id', 'local ids = {}', "ids[#ids + 1] = key .. ':' .. idx", 'return ids'] },
+            solution: '/id\\s<CR>cwkey<Esc>n.',
+          },
+          {
+            prompt: 'Delete the space or tab at the end of each line.',
+            setup: {
+              name: 'run.sh',
+              text: ['#!/bin/sh', 'set -e ', 'cd "$(dirname "$0")"\t', 'exec ./server --port 8080'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['#!/bin/sh', 'set -e', 'cd "$(dirname "$0")"', 'exec ./server --port 8080'] },
+            solution: '/\\s$<CR>xn.',
+          },
+        ],
+      },
+    },
     {
       id: 'sub-basics',
       title: 'Substitute',
@@ -325,7 +465,7 @@ export const substitute: Section = {
             solution: ':%s/print(/log.info(/gc<CR>na',
           },
           {
-            prompt: 'Change "[ ]" to "[x]" on the first two lines only. In a pattern, write "[" as "\\[".',
+            prompt: 'Change "[ ]" to "[x]" on the first two lines only.',
             setup: {
               name: 'TODO.md',
               text: ['- [ ] Write the migration', '- [ ] Add an index on email', '- [ ] Backfill old rows'],
@@ -600,7 +740,7 @@ export const substitute: Section = {
             solution: ':%s/\\v<lt>(var|let)>/const/g<CR>',
           },
           {
-            prompt: 'Delete the spaces and tabs at the end of every line. \\s is a space or tab; $ is the line end.',
+            prompt: 'Delete the spaces and tabs at the end of every line.',
             setup: {
               name: 'main.py',
               text: ['import sys   ', '', 'def main():  ', '    return 0\t'],
@@ -690,7 +830,7 @@ export const substitute: Section = {
             solution: ':%s#\\v(\\d+)/(\\d+)#\\2/\\1#<CR>',
           },
           {
-            prompt: 'Wrap what follows each "print " in parentheses: print(total). .* matches the rest of a line.',
+            prompt: 'Wrap what follows each "print " in parentheses: print(total).',
             setup: {
               name: 'report.py',
               text: ['#!/usr/bin/python2', 'print total', 'print "done"'],
@@ -749,7 +889,7 @@ export const substitute: Section = {
             solution: ':%s/\\d\\+/&px/g<CR>',
           },
           {
-            prompt: 'Wrap "npm install" and "npm test" in backticks. \\w\\+ matches one word.',
+            prompt: 'Wrap "npm install" and "npm test" in backticks.',
             setup: {
               name: 'CONTRIBUTING.md',
               text: ['## Setup', '', 'Run npm install, then npm test before you push.'],
@@ -758,7 +898,7 @@ export const substitute: Section = {
             solution: ':%s/npm \\w\\+/`&`/g<CR>',
           },
           {
-            prompt: 'Put double quotes around each value between commas. [^,]\\+ matches a run of non-commas.',
+            prompt: 'Put double quotes around each value between commas.',
             setup: { name: 'contacts.csv', text: ['name,city', 'Ada,London', 'Grace,New York'], cursor: { line: 2, col: 4 } },
             goal: { text: ['"name","city"', '"Ada","London"', '"Grace","New York"'] },
             solution: ':%s/[^,]\\+/"&"/g<CR>',
@@ -936,7 +1076,7 @@ export const substitute: Section = {
             solution: ':2,4s/\\n/, /<CR>',
           },
           {
-            prompt: 'Break the cursor line after each ". ", one sentence per line. Write the dot as "\\.".',
+            prompt: 'Break the cursor line after each ". ", one sentence per line.',
             setup: {
               name: 'intro.md',
               text: ['# Modes', '', 'Vim has modes. Normal moves. Insert types. Visual selects.', '', 'Esc gets you back.'],
@@ -1202,7 +1342,7 @@ export const substitute: Section = {
             solution: '*:%s//total/g<CR>',
           },
           {
-            prompt: 'Search for the numbers ending in ms (\\d\\+ms), then wrap each in backticks.',
+            prompt: 'Search for the numbers ending in ms, then wrap each in backticks.',
             setup: {
               name: 'perf.md',
               text: ['## Performance', '', 'Cold start dropped from 900ms to 250ms.', 'The p99 is still 1200ms.'],
@@ -1233,6 +1373,130 @@ export const substitute: Section = {
               ],
             },
             solution: ':s//color/g<CR>',
+          },
+        ],
+      },
+    },
+    {
+      id: 'cmdline-word',
+      title: 'Insert Word Under Cursor',
+      chips: ['C-r C-w', 'C-r C-a'],
+      keyCards: [
+        { key: 'C-r C-w', glyph: '⎀w', label: 'insert word' },
+        { key: 'C-r C-a', glyph: '⎀W', label: 'insert WORD' },
+      ],
+      intro: (
+        <>
+          <p>
+            On the command line, <Code>C-r C-w</Code> inserts the word under the cursor. <Code>C-r C-a</Code> inserts
+            the WORD, which includes dots and other punctuation.
+          </p>
+          <p>
+            Put the cursor on a name, then build the command around it without retyping (or mistyping) it:{' '}
+            <Code>:%s/</Code>, <Code>C-r C-w</Code>, <Code>/newName/g</Code>. Unlike <Code>*</Code>, it can put
+            the word in the replacement too.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          The cursor is already on the word. Pull it into the command with <Code>C-r</Code>. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Registers too',
+        body: (
+          <p>
+            <Code>C-r</Code> followed by any register name pastes it: <Code>C-r "</Code> for the last yank or delete,{' '}
+            <Code>C-r /</Code> for the last search. It works in insert mode as well.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: {},
+        rounds: [
+          {
+            prompt: 'Change every "sm" to "sum". The cursor is on sm.',
+            setup: {
+              name: 'total.ts',
+              text: [
+                'function total(items: Item[]) {',
+                '  let sm = 0;',
+                '  for (const it of items) sm += it.price * it.qty;',
+                '  return sm;',
+                '}',
+              ],
+              cursor: { line: 1, col: 6 },
+            },
+            goal: {
+              text: [
+                'function total(items: Item[]) {',
+                '  let sum = 0;',
+                '  for (const it of items) sum += it.price * it.qty;',
+                '  return sum;',
+                '}',
+              ],
+            },
+            solution: ':%s/<C-r><C-w>/sum/g<CR>',
+          },
+          {
+            prompt: 'Change each "theme" to the word under the cursor, darkMode.',
+            setup: {
+              name: 'flags.ts',
+              text: [
+                'const flags = {',
+                '  newCheckout: true,',
+                '  darkMode: true,',
+                '};',
+                'if (flags.theme) applyDark();',
+                'render(flags.theme);',
+              ],
+              cursor: { line: 2, col: 4 },
+            },
+            goal: {
+              text: [
+                'const flags = {',
+                '  newCheckout: true,',
+                '  darkMode: true,',
+                '};',
+                'if (flags.darkMode) applyDark();',
+                'render(flags.darkMode);',
+              ],
+            },
+            solution: ':%s/theme/<C-r><C-w>/<CR>',
+          },
+          {
+            prompt: 'Change every "cfg.retries" to "cfg.http.retries". The cursor is on it.',
+            setup: {
+              name: 'client.ts',
+              text: [
+                "import { cfg } from './config';",
+                '',
+                'const retries = cfg.retries ?? 3;',
+                'log.info(`retrying up to ${cfg.retries} times`);',
+              ],
+              cursor: { line: 2, col: 16 },
+            },
+            goal: {
+              text: [
+                "import { cfg } from './config';",
+                '',
+                'const retries = cfg.http.retries ?? 3;',
+                'log.info(`retrying up to ${cfg.http.retries} times`);',
+              ],
+            },
+            solution: ':%s/<C-r><C-a>/cfg.http.retries/g<CR>',
+          },
+          {
+            prompt: 'Change "userName" to "login" on the cursor line. The cursor is on it.',
+            setup: {
+              name: 'user.json',
+              text: ['{', '  "id": 7,', '  "userName": "ada",', '  "email": "ada@example.com"', '}'],
+              cursor: { line: 2, col: 5 },
+            },
+            goal: { text: ['{', '  "id": 7,', '  "login": "ada",', '  "email": "ada@example.com"', '}'] },
+            solution: ':s/<C-r><C-w>/login/<CR>',
           },
         ],
       },
@@ -1419,6 +1683,147 @@ export const substitute: Section = {
       },
     },
     {
+      id: 'edit-every-match',
+      title: 'Edit Every Match',
+      chips: [':cdo'],
+      keyCards: [{ key: ':cdo', glyph: '∀', label: 'run on each entry', sub: ':cdo s/a/b/ | update' }],
+      intro: (
+        <>
+          <p>
+            <Code>:cdo</Code> runs a command at every entry in the quickfix list, one after another. With{' '}
+            <Code>:s/old/new/</Code> it becomes a project-wide search and replace that only touches the lines you
+            found with <Code>:vimgrep</Code> or <Code>:grep</Code>.
+          </p>
+          <p>
+            Add <Code>| update</Code> so each file is saved after its change: <Code>:cdo s/old/new/ | update</Code>.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          The quickfix list is open with the matches, and its pattern is your last search, so{' '}
+          <Code>s//new/</Code> reuses it. Change every match with one <Code>:cdo</Code> and save the files. {total}{' '}
+          rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Once per file',
+        body: (
+          <p>
+            <Code>:cfdo</Code> runs the command once per file instead of once per entry, so it pairs with{' '}
+            <Code>%s</Code>: <Code>:cfdo %s/old/new/g | update</Code>.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { files: SHOP, open: 'src/cart.ts', height: 18 },
+        rounds: [
+          {
+            prompt: 'Change every formatPrice to toMoney, and save the files.',
+            setup: { search: 'formatPrice', init: qf('vimgrep /formatPrice/ **/*.ts', true) },
+            goal: { files: edited(USES_PRICE, t => t.replaceAll('formatPrice', 'toMoney')) },
+            solution: ':cdo s//toMoney/ | update<CR>',
+          },
+          {
+            prompt: 'The list holds the TODOs. Delete each TODO line and save.',
+            setup: { init: qf('vimgrep /TODO/ **/*.ts', true) },
+            goal: { files: edited(SRC, t => t.replace(/^ *\/\/ TODO.*\n/m, '')) },
+            solution: ':cdo d | update<CR>',
+          },
+          {
+            prompt: 'The list holds every whole word "total". Change each to cartSum, and save.',
+            setup: { search: '\\<total\\>', init: qf('vimgrep /\\<total\\>/ **/*.ts', true) },
+            goal: {
+              files: edited(['src/cart.ts', 'src/checkout.ts', 'test/cart.test.ts'], t => t.replace(/\btotal\b/g, 'cartSum')),
+            },
+            solution: ':cdo s//cartSum/ | update<CR>',
+          },
+          {
+            prompt: 'The list holds every whole word "Line". Change each to Row, and save.',
+            setup: { search: '\\<Line\\>', init: qf('vimgrep /\\<Line\\>/ **/*.ts', true) },
+            goal: { files: edited(['src/cart.ts', 'src/checkout.ts'], t => t.replace(/\bLine\b/g, 'Row')) },
+            solution: ':cdo s//Row/ | update<CR>',
+          },
+        ],
+      },
+    },
+    {
+      id: 'every-buffer',
+      title: 'Every Buffer',
+      chips: [':bufdo'],
+      keyCards: [{ key: ':bufdo', glyph: '∀', label: 'run in each buffer' }],
+      intro: (
+        <>
+          <p>
+            <Code>:bufdo</Code> runs a command in every buffer in <Code>:ls</Code>. The files you have open are often
+            exactly the ones a change is about.
+          </p>
+          <p>
+            <Code>:bufdo %s/old/new/ge</Code> replaces in every buffer: <Code>%</Code> is the whole file, <Code>g</Code>{' '}
+            every match on a line, and <Code>e</Code> keeps buffers without a match from stopping the run. The changes
+            wait in their buffers; end with <Code>| update</Code> when each one should be saved too.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          A few files are open as buffers. Change them all with one <Code>:bufdo</Code>, and save only when the round
+          asks. Empty patterns reuse the last search. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Every window',
+        body: (
+          <p>
+            <Code>:windo</Code> does the same for the windows in the current tab, which suits window options:{' '}
+            <Code>:windo set wrap</Code>.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { files: SHOP, open: 'src/cart.ts', height: 16 },
+        rounds: [
+          {
+            prompt: 'Change formatPrice, the last search, to toMoney in every open buffer.',
+            setup: { search: 'formatPrice', init: vim => { vim.ex('e src/checkout.ts'); vim.ex('e src/format.ts'); } },
+            goal: {
+              check: buffersAre(['src/cart.ts', 'src/checkout.ts', 'src/format.ts'], t => t.replaceAll('formatPrice', 'toMoney')),
+            },
+            solution: ':bufdo %s//toMoney/ge<CR>',
+          },
+          {
+            prompt: 'In both open buffers, change "fetch" to "http".',
+            setup: { open: 'src/api/orders.ts', init: vim => vim.ex('e src/api/products.ts') },
+            goal: { check: buffersAre(['src/api/orders.ts', 'src/api/products.ts'], t => t.replace('fetch', 'http')) },
+            solution: ':bufdo %s/fetch/http/<CR>',
+          },
+          {
+            prompt: 'Change USD to EUR in every open buffer.',
+            setup: { open: 'src/format.ts', init: vim => { vim.ex('e src/cart.ts'); vim.ex('e README.md'); } },
+            goal: {
+              check: vim =>
+                buffersAre(['src/format.ts'], t => t.replace('USD', 'EUR'))(vim) &&
+                buffersAre(['src/cart.ts', 'README.md'], t => t)(vim),
+            },
+            solution: ':bufdo %s/USD/EUR/ge<CR>',
+          },
+          {
+            prompt: 'TODO is the last search. Change it to DONE in the open buffers and save them.',
+            setup: { open: 'src/api/orders.ts', search: 'TODO', init: vim => { vim.ex('e src/cart.ts'); vim.ex('e src/checkout.ts'); } },
+            goal: {
+              files: {
+                ...edited(['src/api/orders.ts', 'src/cart.ts', 'src/checkout.ts'], t => t.replace('TODO', 'DONE')),
+                'src/format.ts': SHOP['src/format.ts'],
+              },
+            },
+            solution: ':bufdo %s//DONE/ | update<CR>',
+          },
+        ],
+      },
+    },
+    {
       id: 'project-replace',
       title: 'Project Replace',
       chips: ['␣sr'],
@@ -1432,7 +1837,7 @@ export const substitute: Section = {
             <Code>:%s</Code> changes one file. <Code>Space sr</Code> opens grug-far, which takes a search and a
             replacement and applies them to every file in the project, listing what changed. The word under
             the cursor is the default search, so renaming a symbol is: cursor on it, <Code>Space sr</Code>,
-            type the new name, <Code>CR</Code>.
+            type the new name, <Code>enter</Code>.
           </p>
           <p>
             The tutor's panel is a simplified one: it matches whole words, so <Code>id</Code> leaves{' '}
@@ -1454,8 +1859,8 @@ export const substitute: Section = {
             LazyVim ships it on <Code>Space sr</Code>; kickstart does not, and its <Code>Space sr</Code> resumes the
             last Telescope search instead. The real panel starts empty (or with a
             visual selection), the search is a ripgrep regex rather than a whole word, and <Code>&lt;localleader&gt;r</Code>{' '}
-            applies. Before it, <Code>:grep</Code> then <Code>:cdo s/old/new/g | update</Code> did the same by hand —
-            the Quickfix lessons show it.
+            applies. Before it, <Code>:grep</Code> then <Code>:cdo s/old/new/g | update</Code> did the same by hand,
+            as in Edit Every Match.
           </p>
         ),
       },
