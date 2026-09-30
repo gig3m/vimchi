@@ -154,3 +154,21 @@ Motion heuristics live in `motion.ts`; a coincidence that slips through gets a h
 test there, not a rewritten reference. `coach.test.ts` requires every reference solution to
 yield zero critiques: a new lesson whose reference is wasteful fails that test, and a chip
 missing from a lesson (the coach never undercuts a section's chips) shows up the same way.
+
+## History and constraints
+
+Carried over verbatim from the hand-written `CURRICULUM.md` (before it was generated, 2026-09-30).
+Some of it is dated: the engine now covers everything the last bullet lists, and Config Literacy was cut.
+
+### Decisions
+
+1. **Neovim first.** Defaults follow current Neovim: `Y` = `y$`, `hlsearch`/`incsearch` on, `C-l` also clears the highlight, `gc` commenting is built in, and 0.11's `[b ]b [q ]q [d ]d [␣ ]␣` and `grn gra grr gri` maps are built in. Differences in classic Vim go in asides.
+2. **No locking.** Every lesson is open from the start. Sidebar order is only a suggestion.
+3. **Config Literacy: undecided.** Drafted as optional and quiz-only. Can be cut without affecting anything else.
+4. **Plugin variants: deferred.** One standard plugin per slot for now, with alternatives named in the aside. Letting users pick their variant may come later.
+
+### Engine constraints
+
+- **Keys the browser keeps.** A normal tab can't reliably capture `C-w`, `C-n`, `C-t` and `C-q`. The lessons that need them (window moves, insert-mode `C-w`/`C-n`, Telescope `C-q`) are `quiz` for now. They can switch to live challenges if we ship an installed-app (PWA) or fullscreen mode, or remap the keys inside the app.
+- **Regex.** The Substitute and Global sections need a layer that translates Vim regex to JavaScript: magic levels, `\v`, `\< \>`, `\zs \ze`, `\{-}`, `\=`. Drills stay within what that layer supports.
+- **Engine growth.** The custom engine in `src/engine` handles normal-mode motions, `x`, `r` and `u` today. Next it needs, in order: insert mode, operators with motions, text objects, visual mode, the command line, registers, and multi-window rendering for `sim`.
