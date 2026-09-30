@@ -200,6 +200,13 @@ button.nav-item:hover { background: var(--hover); }
   background: transparent; color: var(--fg); border: 1px solid var(--sel); border-radius: 6px; cursor: pointer;
 }
 .res-btn:hover { border-color: var(--comment); }
+.res-btn.primary { border-color: var(--purple); }
+
+/* ---------- reps: link under the practice editor ---------- */
+.practice-foot { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: 8px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.practice-foot-note { margin-right: auto; }
+.link-btn { background: none; border: 0; padding: 2px 0; font: inherit; color: var(--purple); cursor: pointer; }
+.link-btn:hover { text-decoration: underline; }
 
 /* ---------- record strip / bars ---------- */
 .record {
@@ -535,7 +542,11 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 .bw-keys { display: inline-flex; gap: 2px; flex-wrap: wrap; }
 .bw-text { font-family: var(--mono); padding: 0 5px; border: 1px dashed var(--comment); border-radius: 4px; color: var(--yellow); }
 .bw-saves { color: var(--green); font-family: var(--mono); font-size: 11px; }
-.bw-why { color: var(--muted); font-size: 12px; margin-left: 6px; }
+.bw-why { color: var(--muted); font-size: 12px; flex-basis: 100%; }
+.bw-pattern { color: var(--fg); font-weight: 600; }
+.bw-review { color: var(--purple); margin-left: 6px; white-space: nowrap; text-decoration: none; }
+.bw-review:hover, .bw-review:focus-visible { text-decoration: underline; }
+.bw-summary { margin: 0 0 8px; font-family: var(--mono); font-size: 12px; color: var(--fg); }
 .bw-ref { margin-top: 8px; color: var(--muted); }
 .bw-ref-note { font-size: 12px; margin-bottom: 4px; }
 .side-tools { padding: 10px 16px; border-top: 1px solid var(--line); }
