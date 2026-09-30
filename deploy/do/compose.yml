@@ -1,0 +1,32 @@
+# vimchi on the public droplet: Caddy terminates TLS for vimchi.dev and proxies
+# to the same image sleepwalker runs. The image is shipped by deploy.sh
+# (docker save | docker load); nothing is built here.
+name: vimchi
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/data:/data
+      - ./caddy/config:/config
+    logging: {driver: json-file, options: {max-size: "10m", max-file: "3"}}
+
+  vimchi:
+    image: vimchi:latest
+    container_name: vimchi
+    restart: unless-stopped
+    init: true
+    environment:
+      TZ: America/Chicago
+      VIMCHI_BASE_URL: https://vimchi.dev
+      VIMCHI_SECURE_COOKIES: "1"
+      VIMCHI_TRUST_PROXY: "1"
+      GITHUB_CLIENT_ID: ${VIMCHI_GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${VIMCHI_GITHUB_CLIENT_SECRET:-}
+    volumes:
+      - ./var:/data
+    logging: {driver: json-file, options: {max-size: "10m", max-file: "3"}}

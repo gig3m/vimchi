@@ -1,0 +1,73 @@
+#cloud-config
+# vimchi public droplet (vimchi.dev). Rendered by create-droplet.sh, which fills
+# __HUB_KEY__ and __TS_AUTHKEY__. Everything here is idempotent on first boot.
+hostname: vimchi
+manage_etc_hosts: true
+disable_root: true
+ssh_pwauth: false
+package_update: true
+package_upgrade: true
+packages: [ca-certificates, curl, ufw, unattended-upgrades, rsync]
+
+users:
+  - name: kyle
+    groups: [sudo]
+    shell: /bin/bash
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    ssh_authorized_keys:
+      - "__HUB_KEY__"
+
+write_files:
+  # Fleet SSH CA trust: any cert signed by the hub's user CA may log in as kyle.
+  - path: /etc/ssh/fleet_user_ca.pub
+    permissions: "0644"
+    content: |
+      ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPm28zORSvFIPkR05A2VZ17hNtk39iz8Wo/r78Djimrs fleet-user-ca@sleepwalker 2026-09-12
+  - path: /etc/ssh/fleet_revoked_keys
+    permissions: "0644"
+    content: |
+      ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPl19HyVRPVABtk+e4tq6T11EMDAyige9OIUiVLgXh03
+  - path: /etc/ssh/ssh_known_hosts
+    permissions: "0644"
+    content: |
+      @cert-authority * ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM4FEeilr4QY1NYRsmr+8RF6bw1DQAWD/u9h4ZZF3PeK
+  - path: /etc/ssh/sshd_config.d/05-fleet-ca.conf
+    permissions: "0644"
+    content: |
+      TrustedUserCAKeys /etc/ssh/fleet_user_ca.pub
+      RevokedKeys /etc/ssh/fleet_revoked_keys
+  - path: /etc/ssh/sshd_config.d/05-fleet-no-password.conf
+    permissions: "0644"
+    content: |
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PermitRootLogin no
+  - path: /etc/apt/apt.conf.d/52-vimchi-unattended
+    permissions: "0644"
+    content: |
+      Unattended-Upgrade::Automatic-Reboot "true";
+      Unattended-Upgrade::Automatic-Reboot-Time "09:00";
+  - path: /opt/vimchi/.env
+    permissions: "0600"
+    owner: root:root
+    content: |
+      # Filled by hand after the GitHub OAuth app for vimchi.dev exists.
+      VIMCHI_GITHUB_CLIENT_ID=
+      VIMCHI_GITHUB_CLIENT_SECRET=
+
+runcmd:
+  - [sh, -c, "curl -fsSL https://get.docker.com | sh"]
+  - [usermod, -aG, docker, kyle]
+  - [sh, -c, "curl -fsSL https://tailscale.com/install.sh | sh"]
+  - [tailscale, up, "--authkey=__TS_AUTHKEY__", "--hostname=vimchi"]
+  - [ufw, default, deny, incoming]
+  - [ufw, default, allow, outgoing]
+  - [ufw, allow, in, on, tailscale0]
+  - [ufw, allow, "22/tcp"]
+  - [ufw, allow, "80/tcp"]
+  - [ufw, allow, "443/tcp"]
+  - [ufw, --force, enable]
+  - [mkdir, -p, /opt/vimchi/var, /opt/vimchi/caddy]
+  - [chown, -R, "1000:1000", /opt/vimchi/var]
+  - [chown, -R, kyle:kyle, /opt/vimchi/caddy, /opt/vimchi/.env]
+  - [systemctl, restart, ssh]

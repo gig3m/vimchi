@@ -1,0 +1,13 @@
+vimchi.dev {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+	}
+	reverse_proxy vimchi:8080
+}
+
+www.vimchi.dev {
+	redir https://vimchi.dev{uri} permanent
+}
