@@ -214,3 +214,27 @@ describe('chips: keys rendered from the engine, not a regex', () => {
     ]);
   });
 });
+
+describe('generated challenges: per-item par and the key summary', () => {
+  it('items well over par get "par a, you b" lines, worst first, at most three', () => {
+    const ch = CHALLENGES[0];
+    const s = new Session(ch.challenge, { seed: 3 });
+    let t = 0;
+    // A novice: walks with j and l to every item, then fixes it with the reference keys.
+    for (const item of s.generated!.items) {
+      while (s.vim!.cursor.line < item.fixAt.line) s.key('j', (t += 50));
+      s.key('0', (t += 50));
+      while (s.vim!.cursor.col < item.fixAt.col) s.key('l', (t += 50));
+      for (const k of solutionKeys(item.fixKeys)) s.key(k, (t += 50));
+    }
+    const rep = coach(s, ch.id);
+    expect(rep.reference.length).toBeGreaterThan(0);
+    expect(rep.reference.length).toBeLessThanOrEqual(3);
+    for (const r of rep.reference) { expect(r.kind).toBe('item'); expect(r.you - r.par).toBeGreaterThanOrEqual(2); }
+    const gaps = rep.reference.map(r => r.you - r.par);
+    expect(gaps).toEqual([...gaps].sort((a, b) => b - a));
+    expect(rep.summary.par).toBe(s.generated!.parKeys);
+    expect(rep.summary.moving + rep.summary.typing + rep.summary.editing).toBe(rep.summary.keys);
+    expect(rep.summary.moving).toBeGreaterThan(rep.summary.editing);
+  });
+});

@@ -4,10 +4,10 @@
 import { step } from '../lessons/runtime';
 import type { Pos } from '../vim/types';
 
-export type Cand = { keys: string; cost: number; uses: string[]; family: 'count' | 'word' | 'find' | 'line' | 'search' | 'basic' };
+/** `moves`: commands in the route (a `;` chain or a run of <C-d> is one). */
+export type Cand = { keys: string; cost: number; uses: string[]; family: 'count' | 'word' | 'find' | 'line' | 'search' | 'basic'; moves?: number };
 
-type State = { pos: Pos; want: number };
-type Node = { st: State; keys: string; cost: number; uses: Set<string>; family: Cand['family'] };
+export type State = { pos: Pos; want: number };
 
 const key = (s: State) => `${s.pos.line}:${s.pos.col}:${s.want === Infinity ? '$' : ''}`;
 const isBlank = (l: string) => l.trim() === '';
@@ -60,17 +60,23 @@ function move(lines: readonly string[], st: State, m: string, count: number): St
   return { pos: p, want: w };
 }
 
-const SINGLES = ['h', 'j', 'k', 'l', 'w', 'b', 'e', 'W', 'B', 'E', '0', '^', '$', 'ge', 'gE'];
+/** Horizontal moves: the second leg of a canonical route, on the target line. */
+const HORIZ = ['h', 'l', 'w', 'b', 'e', 'W', 'B', 'E', '0', '^', '$', 'ge', 'gE'];
 const WORDS = new Set(['w', 'b', 'e', 'W', 'B', 'E', 'ge', 'gE']);
 const LINE = new Set(['0', '^', '$']);
 const isFind = (m: string) => m.length === 2 && /^[ftFT]/.test(m);
-/** f{ch} costs 2; each `;` after it costs 1; a count prefix costs 1; gg/ge/gE cost 2. */
-const keyCost = (m: string, count: number) => (isFind(m) ? 2 + (count - 1) : (count > 1 ? 1 : 0) + (m.length === 2 ? 2 : 1));
+/** f{ch} costs 2; each `;` after it costs 1; a count prefix costs its digits; gg/ge/gE cost 2. */
+const keyCost = (m: string, count: number) => (isFind(m) ? 2 + (count - 1) : (count > 1 ? String(count).length : 0) + (m.length === 2 ? 2 : 1));
+/** At most this many horizontal commands after the vertical leg (`0f(`, `$b`): more is a walk, not a route. */
+const MAX_HORIZ = 2;
 
 /** A good alternative is short; searching deeper only finds long routes nobody would suggest. */
 export const MAX_SEARCH_COST = 10;
 
-export type MotionOpts = { relativenumber?: boolean; prefer?: Set<string> };
+/** Runs keys on the real engine from the segment's start (no `from`) or from a position on the same
+ * buffer: for moves that depend on the screen or engine state (<C-d>, H/M/L, n, %). */
+export type Oracle = (keys: string, from?: State) => State | null;
+export type MotionOpts = { relativenumber?: boolean; prefer?: Set<string>; oracle?: Oracle };
 
 /** The keyword under or after the cursor on its line, as Vim's * sees it. */
 function wordUnder(l: string, col: number): { text: string; col: number } | null {
@@ -89,77 +95,104 @@ function wholeWordMatch(lines: readonly string[], from: Pos, word: string, dir: 
   return null;
 }
 
-/** Shorter ways from `from` to `to`, cost < maxCost, unverified, best first. */
+/**
+ * Shorter ways from `from` to `to`, cost < maxCost, unverified, best first. Routes are canonical:
+ * at most one vertical leg (Nj, NG, gg/G, {/}, <C-d>, H/M/L, or a jump: * # n % /search) that
+ * reaches the target line, then at most two horizontal moves on that line (0 ^ $ f t w b e, `;`).
+ * Interleaved routes (`2wjl`, `3jEj3j`) are search artefacts no teacher would give.
+ */
 export function betterMotions(lines: readonly string[], from: Pos, want: number, to: Pos, maxCost: number, taught: Set<string>, opts: MotionOpts = {}): Cand[] {
   maxCost = Math.min(maxCost, MAX_SEARCH_COST + 1);
   if (same(from, to) || maxCost <= 1) return [];
   const allow = (t: string) => taught.has(t);
   const counts = taught.has('COUNT');
-  const start: Node = { st: { pos: from, want }, keys: '', cost: 0, uses: new Set(), family: 'basic' };
-  const best = new Map<string, number>([[key(start.st), 0]]);
-  // Costs are small integers: a bucket per cost is a queue that pops in order without sorting.
-  const buckets: Node[][] = Array.from({ length: maxCost + 1 }, () => []);
-  buckets[0].push(start);
+  const oracle = opts.oracle;
+  const start: State = { pos: from, want };
   const found: Cand[] = [];
-  // G / gg are line jumps: never for a target on the line you are already on.
-  const targetLast = to.line === lines.length - 1 && to.line !== from.line, targetFirst = to.line === 0 && to.line !== from.line, targetBlank = isBlank(lines[to.line]);
-
-  const expand = (n: Node, m: string, count: number, family: Cand['family'], uses: string[]) => {
-    if (!uses.every(allow)) return;
-    const cost = n.cost + keyCost(m, count);
-    if (cost >= maxCost) return;
-    const st = move(lines, n.st, m, count);
-    if (!st) return;
-    const k = key(st);
-    const prev = best.get(k) ?? Infinity;
-    const hit = same(st.pos, to);
-    // A cheaper route to a state wins; equal-cost routes to the TARGET are all kept so ties can be
-    // ranked by family (0 before b, Fc before 6h) rather than by expansion order. A dearer route
-    // to the target that uses a preferred key (the current lesson's own) is kept too, so the coach
-    // can reinforce the lesson instead of only naming the cheapest way.
-    const preferred = hit && !!opts.prefer && uses.some(u => opts.prefer!.has(u));
-    if (!preferred && (prev < cost || (prev === cost && !hit))) return;
-    if (cost <= prev) best.set(k, cost);
-    const typed = isFind(m) ? m + ';'.repeat(count - 1) : (count > 1 ? String(count) : '') + m;
-    const node: Node = { st, keys: n.keys + typed, cost, uses: new Set([...n.uses, ...uses]), family: n.keys ? n.family : family };
-    if (hit) found.push({ keys: node.keys, cost, uses: [...node.uses], family: node.family });
-    else buckets[cost].push(node);
+  type Leg = { st: State; keys: string; cost: number; uses: string[]; family: Cand['family']; moves: number };
+  const legs: Leg[] = [];
+  if (from.line === to.line) legs.push({ st: start, keys: '', cost: 0, uses: [], family: 'basic', moves: 0 });
+  const leg = (st: State | null, keys: string, cost: number, uses: string[], family: Cand['family']) => {
+    if (!st || cost >= maxCost || !uses.every(allow)) return;
+    if (same(st.pos, to)) found.push({ keys, cost, uses, family, moves: 1 });
+    else if (st.pos.line === to.line) legs.push({ st, keys, cost, uses, family, moves: 1 });
   };
 
-  for (let c = 0; c < maxCost; c++) for (let bi = 0; bi < buckets[c].length; bi++) {
-    const n = buckets[c][bi];
-    if ((best.get(key(n.st)) ?? Infinity) < n.cost) continue; // superseded by a cheaper route
-    if (n.cost + 1 >= maxCost) continue;
-    for (const m of SINGLES) {
-      const family: Cand['family'] = WORDS.has(m) ? 'word' : LINE.has(m) ? 'line' : 'basic';
-      expand(n, m, 1, family, [m]);
-      if (counts) {
-        // A count on j/k beyond 3 is only fair advice when relative numbers show it on screen.
-        const max = 'hl'.includes(m) ? 9 : 'jk'.includes(m) ? (opts.relativenumber ? 9 : 3) : WORDS.has(m) && m.length === 1 ? 3 : 1;
-        for (let c = 2; c <= max; c++) expand(n, m, c, 'count', [m, 'COUNT']);
-      }
+  // ---- vertical leg: one command (or a short run of the same paging key) onto the target line
+  const dl = to.line - from.line;
+  if (dl !== 0) {
+    const m = dl > 0 ? 'j' : 'k', n = Math.abs(dl);
+    // A count on j/k beyond 3 is only fair advice when relative numbers show it on screen.
+    if (n === 1) leg(move(lines, start, m, 1), m, 1, [m], 'basic');
+    else if (counts && n <= (opts.relativenumber ? 99 : 3)) leg(move(lines, start, m, n), `${n}${m}`, String(n).length + 1, [m, 'COUNT'], 'count');
+    // Line jumps keep the wanted column (nostartofline, Neovim's default).
+    const jump = (l: number): State => ({ pos: { line: l, col: Math.min(want, Math.max(0, lines[l].length - 1)) }, want });
+    // Jumps are for far lines: within three, j/k is the advice (G one line above the last is a coincidence).
+    const far = n > 3;
+    if (far && to.line === lines.length - 1) leg(oracle ? oracle('G') : jump(to.line), 'G', 1, ['G'], 'line');
+    else if (far && to.line === 0) leg(oracle ? oracle('gg') : jump(0), 'gg', 2, ['gg'], 'line');
+    else if (far && counts) { const k = `${to.line + 1}G`; leg(oracle ? oracle(k) : jump(to.line), k, k.length, ['G', 'COUNT'], 'line'); }
+    // { and } are for blank lines; landing on text because the file has none is a coincidence.
+    if (isBlank(lines[to.line])) for (const p of ['}', '{']) for (let r = 1; r <= 3; r++) leg(move(lines, start, p, r), p.repeat(r), r, [p], 'line');
+    if (oracle && far) {
+      for (const p of ['<C-d>', '<C-u>']) for (let r = 1; r <= 3; r++) leg(oracle(p.repeat(r)), p.repeat(r), r, [p], 'line');
+      for (const p of ['H', 'M', 'L']) leg(oracle(p), p, 1, [p], 'line');
     }
-    // * and # : the word under the cursor must be the target word, and the first match must be the target.
-    const wu = wordUnder(lines[n.st.pos.line], n.st.pos.col);
-    if (wu) for (const [k, dir] of [['*', 1], ['#', -1]] as const) {
-      if (!allow(k)) continue;
-      const hit = wholeWordMatch(lines, n.st.pos, wu.text, dir);
-      if (hit && same(hit, to) && n.cost + 1 < maxCost) {
-        const node: Node = { st: { pos: hit, want: hit.col }, keys: n.keys + k, cost: n.cost + 1, uses: new Set([...n.uses, k]), family: n.keys ? n.family : 'search' };
-        if ((best.get(key(node.st)) ?? Infinity) >= node.cost) { best.set(key(node.st), node.cost); found.push({ keys: node.keys, cost: node.cost, uses: [...node.uses], family: node.family }); }
+  }
+  // ---- jumps: land anywhere; on the target line a horizontal leg may follow
+  const wu = wordUnder(lines[from.line], from.col);
+  if (wu) for (const [k, dir] of [['*', 1], ['#', -1]] as const) {
+    const hit = wholeWordMatch(lines, from, wu.text, dir);
+    if (hit) leg({ pos: hit, want: hit.col }, k, 1, [k], 'search');
+  }
+  if (oracle) {
+    for (const k of ['n', 'N']) for (let r = 1; r <= 3; r++) leg(oracle(k.repeat(r)), k.repeat(r), r, [k], 'search');
+    leg(oracle('%'), '%', 1, ['%'], 'line');
+  }
+
+  // ---- horizontal leg on the target line
+  for (const lg of legs) {
+    const best = new Map<string, number>([[key(lg.st), lg.cost]]);
+    let frontier: Leg[] = [lg];
+    for (let depth = 0; depth < MAX_HORIZ && frontier.length; depth++) {
+      const next: Leg[] = [];
+      const expand = (n: Leg, m: string, count: number, family: Cand['family'], uses: string[], st?: State | null) => {
+        const cost = n.cost + keyCost(m, count);
+        if (cost >= maxCost || !uses.every(allow)) return;
+        st = st === undefined ? move(lines, n.st, m, count) : st;
+        if (!st || st.pos.line !== to.line) return;
+        const typed = isFind(m) ? m + ';'.repeat(count - 1) : (count > 1 ? String(count) : '') + m;
+        const node: Leg = { st, keys: n.keys + typed, cost, uses: [...new Set([...n.uses, ...uses])], family: n.keys ? n.family : family, moves: n.moves + 1 };
+        if (same(st.pos, to)) { found.push({ keys: node.keys, cost, uses: node.uses, family: node.family, moves: node.moves }); return; }
+        const k = key(st);
+        if ((best.get(k) ?? Infinity) <= cost) return;
+        best.set(k, cost);
+        next.push(node);
+      };
+      for (const n of frontier) {
+        // A second horizontal move follows one real move (`0f(`, `$b`, `f{w`, `2eh`), never a
+        // `;` chain: `fu;e` is fiddling.
+        if (depth > 0 && n.keys.endsWith(';')) continue;
+        for (const m of HORIZ) {
+          // h/l after a vertical leg is the interleaving the canonical shape forbids (`2wjl`).
+          if ((m === 'h' || m === 'l') && n.keys && depth === 0) continue;
+          const family: Cand['family'] = WORDS.has(m) ? 'word' : LINE.has(m) ? 'line' : 'basic';
+          expand(n, m, 1, family, [m]);
+          if (counts) {
+            const max = 'hl'.includes(m) ? (depth ? 1 : 9) : WORDS.has(m) && m.length === 1 ? 3 : 1;
+            for (let c = 2; c <= max; c++) expand(n, m, c, 'count', [m, 'COUNT']);
+          }
+        }
+        // f/t stay on their line. `;` repeats the same find.
+        const seen = new Set<string>();
+        for (const ch of lines[to.line]) {
+          if (ch === ' ' || seen.has(ch)) continue;
+          seen.add(ch);
+          for (const f of ['f', 't', 'F', 'T']) for (let r = 1; r <= 4; r++) expand(n, f + ch, r, 'find', r > 1 ? [f, ';'] : [f]);
+        }
+        if (oracle && allow('%')) expand(n, '%', 1, 'line', ['%'], oracle('%', n.st));
       }
-    }
-    if (targetLast) expand(n, 'G', 1, 'line', ['G']);
-    if (targetFirst) expand(n, 'gg', 1, 'line', ['gg']);
-    if (targetBlank) { expand(n, '}', 1, 'line', ['}']); expand(n, '{', 1, 'line', ['{']); }
-    // f/t stay on their line, so they only help once on the target line. `;` repeats the same find.
-    if (n.st.pos.line === to.line) {
-      const seen = new Set<string>();
-      for (const ch of lines[to.line]) {
-        if (ch === ' ' || seen.has(ch)) continue;
-        seen.add(ch);
-        for (const f of ['f', 't', 'F', 'T']) for (let r = 1; r <= 4; r++) expand(n, f + ch, r, 'find', r > 1 ? [f, ';'] : [f]);
-      }
+      frontier = next;
     }
   }
   // /prefix<CR>: the shortest prefix of the identifier at `to` whose first match after `from` is `to`.
@@ -168,15 +201,18 @@ export function betterMotions(lines: readonly string[], from: Pos, want: number,
     for (let len = 1; len <= word.length; len++) {
       const pre = word.slice(0, len);
       const first = firstMatch(lines, from, pre);
-      if (first && same(first, to)) { const cost = 2 + len; if (cost < maxCost) found.push({ keys: `/${pre}<CR>`, cost, uses: ['/'], family: 'search' }); break; }
+      if (first && same(first, to)) { const cost = 2 + len; if (cost < maxCost) found.push({ keys: `/${pre}<CR>`, cost, uses: ['/'], family: 'search', moves: 1 }); break; }
     }
   }
-  // Ties: what an experienced user reaches for first. Line motions, then word motions, then
-  // f/t, then counts, then plain hjkl and search.
+  // Ties: fewer commands, then what an experienced user reaches for first. Line motions, then word motions, then
+  // f/t, then counts, then plain hjkl and search. A search to a target on the line you are on
+  // ranks below every f/t route whatever it costs: f/t is the tool for what you can see.
   const FAMILY: Record<Cand['family'], number> = { line: 0, word: 1, find: 2, count: 3, basic: 4, search: 5 };
   const distinct = (c: Cand) => new Set(c.keys.replace(/[0-9]/g, '').replace(/<CR>/, '')).size;
+  const sameLineSearch = (c: Cand) => from.line === to.line && c.uses.some(u => u === '/' || u === '?' || u === 'n' || u === 'N');
   // Among finds: f/F before t/T, and a target character that occurs once on the line before one that repeats.
-  const rank = (c: Cand) => c.cost * 1000 + FAMILY[c.family] * 100 + distinct(c) * 10
+  // Then one command before two (`6h` before `bl`).
+  const rank = (c: Cand) => (sameLineSearch(c) ? 1e6 : 0) + c.cost * 1000 + (c.moves ?? 1) * 500 + FAMILY[c.family] * 100 + distinct(c) * 10
     + (c.family === 'find' && /^[tT]/.test(c.keys) ? 2 : 0)
     + (c.family === 'find' && lines[to.line].split(c.keys[1] ?? '\0').length > 2 ? 1 : 0);
   found.sort((a, b) => rank(a) - rank(b));
