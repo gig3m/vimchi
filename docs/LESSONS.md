@@ -52,7 +52,12 @@ These are enforced by the validator where possible.
    - `<BeforeAfter lines={['…']} cursor={[0, 4]} keys="dw" name="app.ts"? />` — buffer, keys, result (`name` sets the filetype, e.g. for gc).
    All take an optional `caption`. Keep diagram text ≤ 60 columns. One or two per lesson at most;
    put them in the intro or aside where they explain the idea. Most lessons in the Core band and many
-   in Deep Water benefit from one; concept lessons (Intro to Operators/Text Objects) should have them.
+   in Repeat/Project/Patterns benefit from one; concept lessons (Intro to Operators/Text Objects) should have them.
+5. **Bands:** `core`, `repeat`, `project`, `patterns`, `code`, `challenges`, in that order in
+   `src/lessons/index.ts`; `registry.test.ts` pins the order. A new plugin lesson shows the
+   kickstart/LazyVim shared key and names the alternative in its aside. Keep a lesson only if its
+   keys are in the shared bindings or two of the surveyed sources teach them (see
+   `docs/superpowers/specs/2026-09-30-curriculum-revamp-design.md`).
 
 ## Challenges
 
