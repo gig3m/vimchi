@@ -354,7 +354,7 @@ export const insertLikeAPro: Section = {
     },
     {
       id: 'substitute',
-      title: 'Substitute',
+      title: 'Substitute Characters',
       chips: ['s', 'S'],
       keyCards: [
         { key: 's', glyph: 'x→…', label: 'substitute character' },
@@ -381,7 +381,7 @@ export const insertLikeAPro: Section = {
         </p>
       ),
       aside: {
-        title: 'S is cc',
+        title: 'S and cc',
         body: (
           <p>
             <Code>S</Code> and <Code>cc</Code> do the same thing. You'll meet <Code>cc</Code> again in Change Lines,

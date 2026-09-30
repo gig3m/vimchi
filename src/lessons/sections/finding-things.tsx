@@ -278,7 +278,7 @@ export const findingThings: Section = {
     },
     {
       id: 'picker-word',
-      title: 'Word Under Cursor',
+      title: 'Grep Word Under Cursor',
       chips: ['␣sw'],
       keyCards: [
         { key: '␣sw', glyph: '⌕w', label: 'grep this word', sub: 'kickstart' },
