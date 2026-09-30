@@ -63,7 +63,7 @@ export function createVim(setup: Setup): Vim {
   vim.screenRows = rows;
   vim.win.height = rows;
   setup.init?.(vim);
-  vim.clampCursor(false);
+  vim.clampCursor();
   vim.scrollToCursor();
   vim.buf.modified = false;
   return vim;

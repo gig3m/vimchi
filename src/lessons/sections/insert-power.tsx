@@ -255,5 +255,129 @@ export const insertPower: Section = {
         ],
       },
     },
+    {
+      id: 'completion-menu',
+      title: 'Completion Menu',
+      chips: ['C-n', 'C-y', 'C-e'],
+      keyCards: [
+        { key: 'C-n', glyph: '↓', label: 'next candidate', sub: 'C-p: previous' },
+        { key: 'C-y', glyph: '✓', label: 'accept' },
+        { key: 'C-e', glyph: '✕', label: 'dismiss' },
+      ],
+      intro: (
+        <>
+          <p>
+            In a starter config the completion menu (blink.cmp or nvim-cmp) pops up as you type: names from
+            your buffers, the language server, snippets. <Code>C-n</Code> and <Code>C-p</Code> move through
+            it, <Code>C-y</Code> takes the highlighted item, <Code>C-e</Code> closes it and keeps what you typed.
+          </p>
+          <p>
+            Vim's own menu works the same way without a plugin: <Code>C-n</Code> opens it on words from open
+            buffers, and the same <Code>C-y</Code> / <Code>C-e</Code> apply. That is what you practise here.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Each round starts in insert mode. Open the menu, accept the right word, then <Code>esc</Code>. {total}{' '}
+          rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Enter or C-y?',
+        body: (
+          <p>
+            LazyVim accepts with <Code>CR</Code> as well as <Code>C-y</Code>; kickstart uses <Code>C-y</Code> only,
+            so a stray Enter never grabs a candidate you did not want.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'orders.ts' },
+        rounds: [
+          {
+            prompt: 'Complete "cus" to customerName.',
+            setup: typing(['const customerName = order.name;', 'const count = 1;', 'const label = cus‸']),
+            goal: { text: ['const customerName = order.name;', 'const count = 1;', 'const label = customerName'] },
+            solution: '<C-n><C-y><Esc>',
+          },
+          {
+            prompt: 'Complete "inv" to invoiceTotal, not invoiceId (it comes first).',
+            setup: typing(['let invoiceId = 1;', 'let invoiceTotal = 0;', 'return inv‸']),
+            goal: { text: ['let invoiceId = 1;', 'let invoiceTotal = 0;', 'return invoiceTotal'] },
+            solution: '<C-n><C-n><C-y><Esc>',
+          },
+          {
+            prompt: 'Open the menu, then dismiss it and keep "ord".',
+            setup: typing(['const orders = [];', 'const order = 1;', 'const x = ord‸']),
+            goal: { text: ['const orders = [];', 'const order = 1;', 'const x = ord'] },
+            solution: '<C-n><C-e><Esc>',
+          },
+        ],
+      },
+    },
+    {
+      id: 'snippets',
+      title: 'Snippets',
+      chips: ['tab', 'S-tab'],
+      keyCards: [
+        { key: 'tab', glyph: '⇥', label: 'expand / next field' },
+        { key: 'S-tab', glyph: '⇤', label: 'previous field' },
+      ],
+      intro: (
+        <>
+          <p>
+            A snippet turns a short trigger into a block with blanks to fill: type <Code>fn</Code>, press{' '}
+            <Code>tab</Code>, and a whole function skeleton appears with the cursor on its name. Each{' '}
+            <Code>tab</Code> jumps to the next blank; <Code>S-tab</Code> goes back.
+          </p>
+          <p>
+            friendly-snippets ships hundreds of these for every language; both starters wire them into the
+            completion menu. The tutor has four: <Code>fn</Code>, <Code>for</Code>, <Code>if</Code>,{' '}
+            <Code>log</Code>.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Each round starts in insert mode after a trigger. Expand it and fill its fields, then <Code>esc</Code>.{' '}
+          {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Where tab goes',
+        body: (
+          <p>
+            Kickstart's LuaSnip binds <Code>C-l</Code> / <Code>C-h</Code> to jump fields instead, keeping{' '}
+            <Code>tab</Code> for indentation.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'util.ts', plugins: ['snippets'] },
+        rounds: [
+          {
+            prompt: 'Expand fn into function greet(name) { return name; }.',
+            setup: typing(['// greeting helper', '', 'fn‸']),
+            goal: { text: ['// greeting helper', '', 'function greet(name) {', '  return name;', '}'] },
+            solution: '<Tab>greet<Tab>name<Tab>return name;<Esc>',
+          },
+          {
+            prompt: 'Expand log to print total.',
+            setup: typing(['const prices = [1, 2];', 'const total = 3;', 'log‸']),
+            goal: { text: ['const prices = [1, 2];', 'const total = 3;', 'console.log(total);'] },
+            solution: '<Tab>total<Esc>',
+          },
+          {
+            prompt: 'Expand for over items as item, with the body item.run().',
+            setup: typing(['const items = load();', '', 'for‸']),
+            goal: { text: ['const items = load();', '', 'for (const item of items) {', '  item.run();', '}'] },
+            solution: '<Tab>item<Tab>items<Tab>item.run();<Esc>',
+          },
+        ],
+      },
+    },
   ],
 };
