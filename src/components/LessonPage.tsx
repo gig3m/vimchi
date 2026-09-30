@@ -11,15 +11,21 @@ type Props = {
   lesson: Lesson;
   /** Generated challenges: replay this seed (from the URL); null = fresh. */
   seed: number | null;
+  /** Reps mode (`#id?reps=N`): the seed; null = the authored practice. */
+  reps: number | null;
   coachLive: boolean;
   runs: Run[];
+  /** Runs of this lesson's Reps (saved as `<id>-reps`). */
+  repsRuns: Run[];
   isGuest: boolean;
   onRun: (run: Run) => void;
   onGo: (id: string) => void;
   onStats: () => void;
 };
 
-export function LessonPage({ lesson, seed, coachLive, runs, isGuest, onRun, onGo, onStats }: Props) {
+export function LessonPage({ lesson, seed, reps, coachLive, runs: lessonRuns, repsRuns, isGuest, onRun, onGo, onStats }: Props) {
+  const inReps = reps != null && !!lesson.reps;
+  const runs = inReps ? repsRuns : lessonRuns;
   const [flash, setFlash] = useState<string | null>(null);
   const flashT = useRef<number>(undefined);
   useEffect(() => () => clearTimeout(flashT.current), []);
@@ -52,12 +58,17 @@ export function LessonPage({ lesson, seed, coachLive, runs, isGuest, onRun, onGo
         ))}
       </div>
 
-      <h2 className="h2">Practice</h2>
-      <div className="practice-note">{lesson.practice(total)}</div>
+      <h2 className="h2">{inReps ? 'Reps' : 'Practice'}</h2>
+      <div className="practice-note">
+        {inReps ? (
+          <p>The same edit, again and again, on a real file. Work down the checklist in any order; the goal is shown inline.</p>
+        ) : lesson.practice(total)}
+      </div>
 
       <Practice
         lesson={lesson}
         seed={seed}
+        reps={reps}
         coachLive={coachLive}
         history={runs}
         nextTitle={next?.title ?? null}
@@ -68,7 +79,7 @@ export function LessonPage({ lesson, seed, coachLive, runs, isGuest, onRun, onGo
       />
 
       <div className="record">
-        <span className="owner">{isGuest ? 'Guest record' : 'Your record'}</span>
+        <span className="owner">{isGuest ? 'Guest record' : 'Your record'}{inReps ? ' · reps' : ''}</span>
         {runs.length ? (
           <>
             <span>Best <span className="best">{Math.max(...runs.map(r => r.score))}</span></span>
@@ -77,7 +88,7 @@ export function LessonPage({ lesson, seed, coachLive, runs, isGuest, onRun, onGo
             <Bars runs={runs} />
           </>
         ) : (
-          <span>No runs yet. Finish the challenge to set a score.</span>
+          <span>{inReps ? 'No reps yet. Finish a set to set a score.' : 'No runs yet. Finish the challenge to set a score.'}</span>
         )}
       </div>
 

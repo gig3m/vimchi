@@ -55,6 +55,7 @@ export const basicOperators: Section = {
           </p>
         ),
       },
+      reps: { mutations: ['stray-word', 'wrong-word-run'], count: [10, 15], sections: ['basic-operators'] },
       challenge: {
         kind: 'rounds',
         base: { name: 'main.ts' },
@@ -195,6 +196,7 @@ export const basicOperators: Section = {
           </p>
         ),
       },
+      reps: { mutations: ['stray-word'], count: [10, 15], sections: ['basic-operators'] },
       challenge: {
         kind: 'rounds',
         base: { name: 'user.ts' },
@@ -411,6 +413,7 @@ export const basicOperators: Section = {
           </p>
         ),
       },
+      reps: { mutations: ['stray-line', 'stray-tail'], count: [10, 15], sections: ['basic-operators'] },
       challenge: {
         kind: 'rounds',
         base: { name: 'cart.ts' },
@@ -1024,6 +1027,7 @@ export const basicOperators: Section = {
           </p>
         ),
       },
+      reps: { mutations: ['stray-line-run', 'wrong-word-run'], count: [10, 15], sections: ['basic-operators'] },
       challenge: {
         kind: 'rounds',
         base: { name: 'legacy.js' },
@@ -1103,6 +1107,7 @@ export const basicOperators: Section = {
           </p>
         ),
       },
+      reps: { mutations: ['stray-words', 'stray-lines'], count: [10, 15], sections: ['basic-operators'] },
       challenge: {
         kind: 'rounds',
         base: { name: 'handler.ts' },

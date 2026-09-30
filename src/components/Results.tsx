@@ -18,6 +18,10 @@ type Props = {
   /** The coach's report for this run, when the lesson is coachable. */
   report?: Report;
   unitLabel?: (u: number) => string;
+  /** Reps mode: "Again" is a fresh seed, "Back to lesson" leaves Reps. */
+  reps?: { onAgain: () => void; onBack: () => void };
+  /** The lesson has Reps: offer them after its authored practice. */
+  onReps?: () => void;
 };
 
 const CIRC = 314.16; // 2πr for r = 50
@@ -41,7 +45,7 @@ function Ring({ label, value, color, sub }: { label: string; value: number; colo
   );
 }
 
-export function Results({ result: R, prevBestTime, prevBestScore, nextTitle, onRepeat, onNext, onStats, seed, replayHref, onNewSeed, report, unitLabel }: Props) {
+export function Results({ result: R, prevBestTime, prevBestScore, nextTitle, onRepeat, onNext, onStats, seed, replayHref, onNewSeed, report, unitLabel, reps, onReps }: Props) {
   const newBestTime = prevBestTime != null && R.elapsed < prevBestTime;
   const newBestScore = prevBestScore != null && R.score > prevBestScore;
   return (
@@ -73,18 +77,28 @@ export function Results({ result: R, prevBestTime, prevBestScore, nextTitle, onR
         <Ring label={R.correctLabel} value={R.correct} color="#f1fa8c" sub={R.correctText} />
       </div>
       {report && <BetterWays report={report} unitLabel={unitLabel ?? (u => `Round ${u + 1}`)} />}
+      {reps ? (
+        <div className="res-actions">
+          <button className="res-btn primary" onClick={reps.onAgain}><span className="kbd kbd-sm">a</span>Again</button>
+          <button className="res-btn" onClick={onRepeat}><span className="kbd kbd-sm">r</span>Same file</button>
+          <button className="res-btn" onClick={reps.onBack}><span className="kbd kbd-sm">b</span>Back to lesson</button>
+          <button className="res-btn" onClick={onStats}><span className="kbd kbd-sm">s</span>Your stats</button>
+        </div>
+      ) : (
       <div className="res-actions">
         <button className="res-btn" onClick={onRepeat}><span className="kbd kbd-sm">r</span>Repeat</button>
+        {onReps && <button className="res-btn" onClick={onReps} title="10–15 generated edits of this lesson's keys on a real file"><span className="kbd kbd-sm">p</span>Reps</button>}
         {nextTitle && (
           <button className="res-btn" onClick={onNext}><span className="kbd kbd-sm">n</span>Next: {nextTitle}</button>
         )}
         <button className="res-btn" onClick={onStats}><span className="kbd kbd-sm">s</span>Your stats</button>
         {onNewSeed && <button className="res-btn" onClick={onNewSeed}><span className="kbd kbd-sm">f</span>New file</button>}
       </div>
+      )}
       {seed != null && (
         <div className="result-seed">
           <span>seed {seed}</span>
-          {replayHref && <a href={replayHref}>link to this file</a>}
+          {replayHref && <a href={replayHref}>{reps ? 'link to these reps' : 'link to this file'}</a>}
         </div>
       )}
     </div>

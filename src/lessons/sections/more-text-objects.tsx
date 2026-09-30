@@ -152,6 +152,7 @@ export const moreTextObjects: Section = {
           </p>
         ),
       },
+      reps: { mutations: ['stray-arg', 'wrong-arg'], count: [10, 15], sections: ['more-text-objects'] },
       challenge: {
         kind: 'rounds',
         base: { name: 'users.ts', plugins: ['mini-ai'] },
@@ -247,6 +248,7 @@ export const moreTextObjects: Section = {
           </p>
         ),
       },
+      reps: { mutations: ['scope-over-indented', 'stray-scope'], count: [10, 15], sections: ['more-text-objects'] },
       challenge: {
         kind: 'rounds',
         base: { name: 'cache.py', plugins: ['mini-ai'] },
@@ -344,6 +346,7 @@ export const moreTextObjects: Section = {
           </p>
         ),
       },
+      reps: { mutations: ['fn-body-dedented', 'extra-function'], count: [10, 15], sections: ['more-text-objects'] },
       challenge: {
         kind: 'rounds',
         base: { name: 'cart.ts', plugins: ['mini-ai'] },
