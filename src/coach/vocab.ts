@@ -11,7 +11,9 @@ const NAMED: Record<string, string> = {
 /** Words that are prose, not keys: init.lua, vim.opt, macros, norm. */
 const PROSE = /^[a-z]+(\.[a-z]+)+$|^[a-z]{4,}$/i;
 const PROSE_WORDS = new Set(['tab', 'norm', 'macros']);
-const TWO = /^(dd|yy|cc|cl|gg|ge|gE|g-|g\+|gc|gu|gU|g~|gv|gn|gN|gJ|gJ|gq|gw|gi|gd|gf|gt|gT|gs|gr|ga|g8|g;|g&|zz|zt|zb|zo|zc|za|zM|zR|zf|zj|zk|cs|ds|ys|yS|sa|sd|sr|sf|sF|cx|cr|ZZ|<<|>>|==|\[[a-zA-Z]|\][a-zA-Z]|q:)/;
+/** mini.surround on LazyVim's keys: one token each, tried before the two-key gs. */
+const THREE = /^gs[adrfF]/;
+const TWO = /^(dd|yy|cc|cl|gg|ge|gE|g-|g\+|gc|gu|gU|g~|gv|gn|gN|gJ|gJ|gq|gw|gi|gd|gf|gt|gT|gs|gr|ga|g8|g;|g&|zz|zt|zb|zo|zc|za|zM|zR|zf|zj|zk|cs|ds|ys|yS|cx|cr|ZZ|<<|>>|==|\[[a-zA-Z]|\][a-zA-Z]|q:)/;
 
 /** Split a chip into engine tokens: operators, motions, text objects, prefixes, specials. */
 export function tokenize(chip: string, opts: { prose?: boolean } = {}): string[] {
@@ -23,7 +25,7 @@ export function tokenize(chip: string, opts: { prose?: boolean } = {}): string[]
     if (/^<c-.>$/i.test(p)) { out.push(`<C-${p[3].toLowerCase()}>`); continue; }
     if (/^C-.$/i.test(p)) { out.push(`<C-${p[2].toLowerCase()}>`); continue; }
     if (/^<[A-Za-z-]+>$/.test(p)) { out.push(p); continue; }
-    if (opts.prose !== false && (PROSE_WORDS.has(low) || (PROSE.test(p) && !/^[gz][a-z]$/.test(p)))) continue;
+    if (opts.prose !== false && (PROSE_WORDS.has(low) || (PROSE.test(p) && !/^[gz][a-z]$/.test(p) && !THREE.test(p)))) continue;
     if (p.startsWith(':')) { out.push(':'); continue; }
     if (/^[/?]/.test(p)) { out.push(p[0]); continue; }
     if (p.startsWith('\\')) continue;                       // regex atoms, not keys
@@ -33,6 +35,7 @@ export function tokenize(chip: string, opts: { prose?: boolean } = {}): string[]
       if (p.startsWith('␣')) { out.push('<Space>'); p = p.slice(1); continue; }
       if ((m = p.match(/^"[^\s]?/))) { out.push('"'); p = p.slice(m[0].length); continue; }          // register prefix
       if ((m = p.match(/^[ia][wWsSpPbBt(){}\[\]<>"'`]/))) { out.push(m[0]); p = p.slice(2); continue; } // text object
+      if ((m = p.match(THREE))) { out.push(m[0]); p = p.slice(3); continue; }
       if ((m = p.match(TWO))) { out.push(m[0]); p = p.slice(m[0].length); continue; }
       if ((m = p.match(/^[0-9]+/))) { p = p.slice(m[0].length); continue; }                          // inner count (d3w)
       out.push(p[0]); p = p.slice(1);
@@ -64,11 +67,11 @@ export function commandTokens(keys: readonly string[]): string[] {
     const prev = rest[rest.length - 2];
     if (ARG_HEADS.has(k) && !/^[ia]$/.test(prev ?? '')) break; // an argument follows (it/at keep their t)
   }
-  // Surround commands take their pair character as an argument: after the motion for sa/ys,
-  // right after the command for sd/sf/sF/ds and sr/cs (two of them).
-  const head = rest.slice(0, 2).join('');
-  if (/^(sd|sf|sF|ds|sr|cs)$/.test(head)) return [...out, head];
-  if (/^(sa|ys|yS)$/.test(head) && rest.length > 2) rest.pop();
+  // Surround commands take their pair character as an argument: after the motion for gsa/ys,
+  // right after the command for gsd/gsf/gsF/ds and gsr/cs (two of them).
+  const head = rest.slice(0, rest[0] === 'g' ? 3 : 2).join('');
+  if (/^(gsd|gsf|gsF|ds|gsr|cs)$/.test(head)) return [...out, head];
+  if (/^(gsa|ys|yS)$/.test(head) && rest.length > head.length) rest.pop();
   if (rest[0] === 'S' && rest.length === 2) return [...out, 'S'];
   // Special keys (<C-v>, <Esc>) are their own chips; plain keys run together so gg/ge/ciw tokenize as units.
   const text = rest.map(k => (k.length > 1 ? ` ${k} ` : k)).join('');

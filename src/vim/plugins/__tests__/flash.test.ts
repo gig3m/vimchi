@@ -118,3 +118,19 @@ describe('flash beside mini.surround on LazyVim keys', () => {
     }
   });
 });
+
+describe('flash reports one command for s + pattern + label', () => {
+  const feed = (vim: Vim, keys: string[]) => keys.map(k => { vim.feed(k); return vim.lastCommand; });
+  it('a jump completes as a motion on the label, with every key in it', () => {
+    const vim = make('abc def\nabc xyz');
+    const cmds = feed(vim, ['s', 'a', 'b', 'a']);
+    expect(cmds.slice(0, 3)).toEqual([null, null, null]);
+    expect(cmds[3]).toEqual({ keys: ['s', 'a', 'b', 'a'], kind: 'motion', error: false });
+  });
+  it('a cancelled jump completes as other; S completes as visual', () => {
+    const vim = make('abc def\nabc xyz');
+    expect(feed(vim, ['s', 'a', '<Esc>'])[2]).toEqual({ keys: ['s', 'a', '<Esc>'], kind: 'other', error: false });
+    const w = make('f(a, b)', { line: 0, col: 2 });
+    expect(feed(w, ['S', 'a'])[1]?.kind).toBe('visual');
+  });
+});
