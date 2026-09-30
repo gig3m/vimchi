@@ -6,6 +6,7 @@ import type { CorpusFile, GeneratedChallenge, Lesson, RepsSpec } from '../lesson
 import { CORPUS, JOINED } from './corpus';
 import { generate } from './generate';
 import { KINDS } from './mutations';
+import { REPS_TABLE, type RepsFit } from './repsTable';
 
 /** The run id Reps are saved under (the server allows [a-z0-9-]{1,64}). */
 export const repsRunId = (lessonId: string) => `${lessonId}-reps`;
@@ -40,20 +41,24 @@ function base(lesson: Lesson, spec: RepsSpec, corpus: CorpusFile[], edits: [numb
 const least = (c: GeneratedChallenge, f: CorpusFile) => Math.min(...PROBE_SEEDS.map(s => generate({ ...c, corpus: [f] }, s).items.length));
 
 const cache = new Map<string, GeneratedChallenge>();
+const BY_NAME = new Map([...CORPUS, ...JOINED].map(f => [f.name, f] as const));
 
-/**
- * The lesson's Reps as a generated challenge. The seed does not change the challenge: it picks
- * the file and the sites when a Session (or `generate`) runs it; the parameter is accepted so
- * callers can pass one through. Files that cannot hold the run's minimum are
- * left out: single files first, joined files when no single file can. If none can, the range
- * shrinks to what the best file holds, so a run never falls short of its own minimum.
- */
-export function repsChallenge(lesson: Lesson, _seed?: number): GeneratedChallenge {
-  const hit = cache.get(lesson.id);
-  if (hit) return hit;
+function specOf(lesson: Lesson): RepsSpec {
   const spec = lesson.reps;
   if (!spec) throw new Error(`Lesson "${lesson.id}" has no reps`);
   for (const m of spec.mutations) if (!KINDS[m]) throw new Error(`Lesson "${lesson.id}" reps: unknown mutation "${m}"`);
+  return spec;
+}
+
+/**
+ * The files a lesson's Reps may draw on and its edit range, computed live (expensive: 8 probe
+ * seeds of `generate` per file). Files that cannot hold the run's minimum are left out: single
+ * files first, joined files when no single file can. If none can, the range shrinks to what the
+ * best file holds, so a run never falls short of its own minimum. `repsChallenge` reads the
+ * precomputed REPS_TABLE instead; a test keeps the two equal.
+ */
+export function computeRepsFit(lesson: Lesson): RepsFit {
+  const spec = specOf(lesson);
   // No prose corpus exists yet; every Reps run draws on the code corpus.
   const probe = base(lesson, spec, CORPUS, spec.count);
   // A file must carry every kind of the spec, so each run drills all of the lesson's keys.
@@ -70,7 +75,26 @@ export function repsChallenge(lesson: Lesson, _seed?: number): GeneratedChalleng
     scored = all.filter(x => x.n === best);
     edits = [best, Math.max(best, Math.min(spec.count[1], best + 2))];
   }
-  const out = base(lesson, spec, scored.map(x => x.f), edits);
+  return { files: scored.map(x => x.f.name), edits: [edits[0], edits[1]] };
+}
+
+/**
+ * The lesson's Reps as a generated challenge. The seed does not change the challenge: it picks
+ * the file and the sites when a Session (or `generate`) runs it; the parameter is accepted so
+ * callers can pass one through. The files and edit range come from REPS_TABLE (see
+ * computeRepsFit); a lesson missing from the table is computed live.
+ */
+export function repsChallenge(lesson: Lesson, _seed?: number): GeneratedChallenge {
+  const hit = cache.get(lesson.id);
+  if (hit) return hit;
+  const spec = specOf(lesson);
+  const fit = REPS_TABLE[lesson.id] ?? computeRepsFit(lesson);
+  const corpus = fit.files.map(n => {
+    const f = BY_NAME.get(n);
+    if (!f) throw new Error(`Reps table: unknown corpus file "${n}" for "${lesson.id}"`);
+    return f;
+  });
+  const out = base(lesson, spec, corpus, fit.edits);
   cache.set(lesson.id, out);
   return out;
 }
