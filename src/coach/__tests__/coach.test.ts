@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { CHALLENGES } from '../../challenges';
 import { generate } from '../../challenges/generate';
 import { SECTIONS } from '../../lessons';
-import { Session, solutionKeys } from '../../lessons/runtime';
+import { Session, createVim, solutionKeys } from '../../lessons/runtime';
 import type { RoundsChallenge } from '../../lessons/types';
 import { parseKeys } from '../../vim/keys';
-import { coach } from '../index';
+import { coach, keyChips } from '../index';
 import { coachable } from '../vocab';
 import { LESSONS } from '../../lessons';
 
@@ -195,5 +195,22 @@ describe('coach: star and relative numbers', () => {
     expect(early.critiques.some(c => c.better.some(b => b.keys === '*'))).toBe(false);
     const late = play(lines, 'jjjx', 'clear-highlights', { line: 0, col: 0 });   // Search section
     expect(late.critiques.some(c => c.better.some(b => b.keys === '*'))).toBe(true);
+  });
+});
+
+describe('chips: keys rendered from the engine, not a regex', () => {
+  it('splits a reference into command keys and one text chip per insert', () => {
+    const c: RoundsChallenge = { kind: 'rounds', base: { text: ['old in v1.1', 'x', 'y'], name: 'a.md', cursor: { line: 0, col: 0 } }, rounds: [{ goal: { text: ['DONE in v1.2', 'x', 'y'] }, solution: 'RDONE in v1.2<Esc>' }] };
+    const s = new Session(c);
+    let t = 0;
+    for (const k of parseKeys('lllllllllllllllllllhhhhhhhhhhhhhhhhhhhRDONE in v1.2<Esc>')) s.key(k, (t += 50)); // a wasteful walk back to column 0, then the edit
+    const r = coach(s, 'replace-mode');
+    expect(r.reference[0]?.chips).toEqual([{ kind: 'key', v: 'R' }, { kind: 'text', v: 'DONE in v1.2' }, { kind: 'key', v: '<Esc>' }]);
+    expect(r.reference[0]?.par).toBe(14);
+  });
+  it('find arguments and counts stay keys; typed digits inside insert are text', () => {
+    expect(keyChips(createVim({ text: ['v1 = 1.0', 'x', 'y'], name: 'a.ts' }), parseKeys('f1R2.0<Esc>'))).toEqual([
+      { kind: 'key', v: 'f' }, { kind: 'key', v: '1' }, { kind: 'key', v: 'R' }, { kind: 'text', v: '2.0' }, { kind: 'key', v: '<Esc>' },
+    ]);
   });
 });

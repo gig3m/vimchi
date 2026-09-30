@@ -3,14 +3,32 @@ import { LESSONS, sectionOf } from '../lessons';
 import { createVim, solutionKeys } from '../lessons/runtime';
 import type { Challenge, Setup } from '../lessons/types';
 import { betterMotions } from './motion';
+import { parseKeys } from '../vim/keys';
+import type { Vim } from '../vim/editor';
 import { type SessionLike, sameOutcome, stateBefore, stateNeeds } from './replay';
 import { RULES, type Suggestion, WHY, keyCount } from './rules';
 import { type Segment, segment } from './segment';
 import { TEXT_MODES, coachable, commandTokens, taughtBy, tokenize, usesAllowed } from './vocab';
 
 export type { Suggestion };
-export type Critique = { unit: number; you: string; better: Suggestion[]; logStart: number; logEnd: number };
-export type RefLine = { unit: number; you: number; par: number; ref?: string };
+/** A key sequence for display: command keys one by one, text typed in insert/replace/cmdline mode as one run. */
+export type Chip = { kind: 'key' | 'text'; v: string };
+export type Critique = { unit: number; you: string; youChips: Chip[]; better: (Suggestion & { chips: Chip[] })[]; logStart: number; logEnd: number };
+export type RefLine = { unit: number; you: number; par: number; ref?: string; chips?: Chip[] };
+
+/** Replay keys on a scratch editor and group them by the mode each was fed in. The editor is mutated. */
+export function keyChips(vim: Vim, keys: readonly string[]): Chip[] {
+  const out: Chip[] = [];
+  for (const k of keys) {
+    const text = TEXT_MODES.has(vim.mode) && !vim.modal && /^(.|<Space>|<lt>|<Bslash>|<Bar>)$/.test(k);
+    const ch = k === '<Space>' ? ' ' : k === '<lt>' ? '<' : k === '<Bslash>' ? '\\' : k === '<Bar>' ? '|' : k;
+    const last = out[out.length - 1];
+    if (text && last?.kind === 'text') last.v += ch;
+    else out.push(text ? { kind: 'text', v: ch } : { kind: 'key', v: k });
+    vim.feed(k);
+  }
+  return out;
+}
 export type Report = { critiques: Critique[]; reference: RefLine[] };
 export type CoachSession = SessionLike & {
   challenge: Challenge;
@@ -121,7 +139,8 @@ export function coachSegment(session: CoachSession, lessonId: string, seg: Segme
       for (const sug of hit.suggestions) {
         if (!worth(learner, sug) || !usesAllowed(sug.uses, taught)) continue;
         if (!verify(session, seg, span[span.length - 1], sug.keys)) continue;
-        return { unit: seg.unit, you: span.map(s => notation(s.keys)).join(''), better: [sug], logStart: seg.logStart, logEnd: span[span.length - 1].logEnd };
+        const you = span.map(s => notation(s.keys)).join('');
+        return { unit: seg.unit, you, youChips: keyChips(stateBefore(session, seg.logStart), parseKeys(you)), better: [{ ...sug, chips: keyChips(stateBefore(session, seg.logStart), parseKeys(sug.keys)) }], logStart: seg.logStart, logEnd: span[span.length - 1].logEnd };
       }
     }
   }
@@ -141,7 +160,9 @@ export function coachSegment(session: CoachSession, lessonId: string, seg: Segme
       better.push(s);
       if (better.length === 2) break;
     }
-    return better.length ? { unit: seg.unit, you: notation(seg.keys), better, logStart: seg.logStart, logEnd: seg.logEnd } : null;
+    if (!better.length) return null;
+    const you = notation(seg.keys);
+    return { unit: seg.unit, you, youChips: keyChips(stateBefore(session, seg.logStart), parseKeys(you)), better: better.map(b => ({ ...b, chips: keyChips(stateBefore(session, seg.logStart), parseKeys(b.keys)) })), logStart: seg.logStart, logEnd: seg.logEnd };
   }
   return null;
 }
@@ -174,7 +195,8 @@ export function coach(session: CoachSession, lessonId: string): Report {
       const you = log.filter(e => e.unit === u).length;
       if (you - par < MIN_SAVES) continue;
       const ok = usesAllowed(referenceTokens(session, u, sol), taught);
-      reference.push({ unit: u, you, par, ref: ok && !session.carried(u) ? sol : undefined });
+      const show = ok && !session.carried(u);
+      reference.push({ unit: u, you, par, ref: show ? sol : undefined, chips: show ? keyChips(createVim(session.setupFor(u)), solutionKeys(sol)) : undefined });
     }
   }
   reference.sort((a, b) => (b.you - b.par) - (a.you - a.par));
