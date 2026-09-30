@@ -5,7 +5,7 @@ import type { Section } from '../types';
 export const substitute: Section = {
   id: 'substitute',
   title: 'Substitute',
-  band: 'deep',
+  band: 'patterns',
   lessons: [
     {
       id: 'sub-basics',

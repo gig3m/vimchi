@@ -104,7 +104,7 @@ const SERVER_TS = [
 export const commandLine: Section = {
   id: 'command-line',
   title: 'Command Line',
-  band: 'deep',
+  band: 'patterns',
   lessons: [
     {
       id: 'command-line-mode',

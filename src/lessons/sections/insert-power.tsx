@@ -32,7 +32,7 @@ const DOCS_FILES = {
 export const insertPower: Section = {
   id: 'insert-power',
   title: 'Insert Mode Power',
-  band: 'deep',
+  band: 'code',
   lessons: [
     {
       id: 'insert-delete-word',

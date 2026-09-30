@@ -22,7 +22,7 @@ const auth = [
 export const jumping: Section = {
   id: 'jumping',
   title: 'Jumping',
-  band: 'plugins',
+  band: 'code',
   lessons: [
     {
       id: 'flash-jump',

@@ -147,7 +147,7 @@ const line = (text: string) => API.indexOf(text);
 export const git: Section = {
   id: 'git',
   title: 'Git',
-  band: 'plugins',
+  band: 'code',
   lessons: [
     {
       id: 'fugitive-status',

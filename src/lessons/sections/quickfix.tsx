@@ -112,7 +112,7 @@ const at = (name: string, line: number, word: string) => ({ line, col: SHOP[name
 export const quickfix: Section = {
   id: 'quickfix',
   title: 'Quickfix & Multi-File',
-  band: 'deep',
+  band: 'project',
   lessons: [
     {
       id: 'grep',

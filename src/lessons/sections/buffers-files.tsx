@@ -114,7 +114,7 @@ const listed = (vim: Vim, name: string) => vim.buffers.some(b => b.listed && b.n
 export const buffersFiles: Section = {
   id: 'buffers-files',
   title: 'Buffers & Files',
-  band: 'deep',
+  band: 'project',
   lessons: [
     {
       id: 'opening-files',

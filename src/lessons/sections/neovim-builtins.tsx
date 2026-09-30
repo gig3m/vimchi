@@ -151,7 +151,7 @@ const rename = (lines: string[], from: RegExp, to: string) => lines.map(l => l.r
 export const neovimBuiltins: Section = {
   id: 'neovim-builtins',
   title: 'Neovim Built-ins',
-  band: 'deep',
+  band: 'code',
   lessons: [
     {
       id: 'commenting',
