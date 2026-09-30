@@ -338,7 +338,7 @@ What a starter config adds: LSP edits, richer text objects, flash, surround, com
 | 163 | Arguments | `ia` `aa` | transform |
 | 164 | Indent Objects | `ii` `ai` | transform |
 | 165 | Functions & Classes | `if` `af` `ic` `ac` | transform |
-| 166 | Function Motions | `]m` `[m` | transform |
+| 166 | Function Motions | `]f` `[f` | transform |
 | 167 | Folds | `za` `zR` `zM` | transform |
 
 ### Jumping

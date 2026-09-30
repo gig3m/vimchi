@@ -286,7 +286,7 @@ export class Session {
     // round sets up folds: its cursor was placed against them, and a carried one can land hidden
     // inside a closed fold, where the reference keys no longer work.
     const carryLine = prev ? Math.min(prev.cursor.line, this.vim.buf.lineCount - 1) : 0;
-    if (carry && this.carryCursor && prev && !setup.init && !setup.folds?.length && this.vim.closedFoldAt(carryLine) === null && prev.buf.name === this.vim.buf.name && prev.buf.text() === this.vim.buf.text() && this.vim.mode === 'normal') {
+    if (carry && this.carryCursor && c.carryCursor !== false && prev && !setup.init && !setup.folds?.length && this.vim.closedFoldAt(carryLine) === null && prev.buf.name === this.vim.buf.name && prev.buf.text() === this.vim.buf.text() && this.vim.mode === 'normal') {
       const start = { ...this.vim.cursor };
       const line = carryLine;
       const col = Math.min(prev.cursor.col, Math.max(0, this.vim.line(line).length - 1));
