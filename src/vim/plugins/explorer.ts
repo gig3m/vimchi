@@ -154,6 +154,7 @@ export function openExplorer(vim: Vim) {
   let win = treeWin(vim);
   if (!win) {
     win = new Window(buf);
+    win.opts = { number: false, relativenumber: false };
     const tab = vim.tab;
     const leaf: LayoutNode = { type: 'leaf', win, size: 1 };
     if (tab.root.type === 'row') tab.root.children.unshift(leaf);
