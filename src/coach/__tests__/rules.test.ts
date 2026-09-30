@@ -38,8 +38,11 @@ describe('former rules, found by the idiom search', () => {
     expect(suggest(['a', 'b', 'c'], 'ddjp')?.keys).not.toBe('ddp');
   });
   it('count-dd: dddddd → 3dd; dddd → 2dd saves one key, so not that', () => {
-    expect(suggest(['a', 'b', 'c', 'd'], 'dddddd')?.keys).toBe('3dd');
-    expect(suggest(['a', 'b', 'c', 'd'], 'dddd')?.keys).not.toBe('2dd');
+    // Past counts-operators: in that lesson d3w (its own chip) makes the same linewise delete
+    // of one-word lines, as in Neovim, and the coach reinforces the lesson first.
+    const past = 'boss-tidy-function';
+    expect(suggest(['a', 'b', 'c', 'd'], 'dddddd', undefined, past)?.keys).toBe('3dd');
+    expect(suggest(['a', 'b', 'c', 'd'], 'dddd', undefined, past)?.keys).not.toBe('2dd');
   });
   it('dot-repeat needs saves ≥ 2', () => {
     expect(suggest(['foo a foo b'], 'cwbar<Esc>wwcwbar<Esc>')?.keys).toBe('cwbar<Esc>ww.');
