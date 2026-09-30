@@ -1,13 +1,10 @@
 // "Better ways": what a better Vim user would have typed, from the learner's own keys.
-import type { Report } from '../coach';
-import { parseKeys } from '../vim/keys';
+import type { Chip, Report } from '../coach';
 import { Kbd } from './Kbd';
 
-/** Keys as chips; text typed inside an insert (i…<Esc>, cw…<Esc>) collapses to one literal chip. */
-function Keys({ s }: { s: string }) {
-  const m = /^(.*?)([iaAIoOsSC]|c[wWe]|cc)(.+?)(<Esc>)(.*)$/.exec(s);
-  const parts = m ? [...parseKeys(m[1] + m[2]), `‹${m[3]}›`, '<Esc>', ...parseKeys(m[5])] : parseKeys(s);
-  return <span className="bw-keys">{parts.map((k, i) => (k.startsWith('‹') ? <span key={i} className="bw-text">{k.slice(1, -1)}</span> : <Kbd key={i} k={k} />))}</span>;
+/** Keys as chips: command keys one by one, typed text as one literal chip. Computed by the coach from the engine. */
+function Keys({ chips }: { chips: Chip[] }) {
+  return <span className="bw-keys">{chips.map((c, i) => (c.kind === 'text' ? <span key={i} className="bw-text">{c.v}</span> : <Kbd key={i} k={c.v} />))}</span>;
 }
 
 export function BetterWays({ report, unitLabel }: { report: Report; unitLabel: (u: number) => string }) {
@@ -19,10 +16,10 @@ export function BetterWays({ report, unitLabel }: { report: Report; unitLabel: (
         {report.critiques.slice(0, 5).map((c, i) => (
           <li key={i} className="bw-item">
             <span className="bw-unit">{unitLabel(c.unit)}</span>
-            <span className="bw-you">you <Keys s={c.you} /></span>
+            <span className="bw-you">you <Keys chips={c.youChips} /></span>
             {c.better.map((b, j) => (
               <span key={j} className="bw-better">
-                → <Keys s={b.keys} /> <span className="bw-saves">saves {b.saves}</span>
+                → <Keys chips={b.chips} /> <span className="bw-saves">saves {b.saves}</span>
                 <span className="bw-why">{b.why}</span>
               </span>
             ))}
@@ -31,10 +28,11 @@ export function BetterWays({ report, unitLabel }: { report: Report; unitLabel: (
       </ol>
       {report.reference.length > 0 && (
         <ul className="bw-ref">
+          <li className="bw-ref-note">The lesson's own solution for rounds where you used well over par:</li>
           {report.reference.map((r, i) => (
             <li key={i}>
-              {unitLabel(r.unit)} reference: {r.ref ? <Keys s={r.ref} /> : <span className="bw-text">par {r.par} keys</span>}{' '}
-              <span className="bw-saves">you used {r.you}</span>
+              {unitLabel(r.unit)}: {r.chips ? <Keys chips={r.chips} /> : <span className="bw-text">(uses a key from a later lesson)</span>}{' '}
+              <span className="bw-saves">par {r.par}, you used {r.you}</span>
             </li>
           ))}
         </ul>
