@@ -25,6 +25,9 @@ const retry: Setup = {
   ],
 };
 
+/** retry.ts with every line passed through `f`: the goal of a round that edits the whole file. */
+const retryWith = (f: (l: string) => string) => (retry.text as string[]).map(f);
+
 const options: Setup = {
   name: 'options.lua',
   text: [
@@ -108,6 +111,18 @@ export const search: Section = {
             goal: { cursor: { line: 7, col: 44 } },
             solution: 'N',
           },
+          {
+            prompt: 'Delete both "await "s: search, dw, then n and . for the other.',
+            setup: { cursor: { line: 0, col: 0 } },
+            goal: { text: retryWith(l => l.replace('await ', '')) },
+            solution: '/await<CR>dwn.',
+          },
+          {
+            prompt: 'Rename both "fn"s to "task".',
+            setup: { cursor: { line: 0, col: 0 } },
+            goal: { text: retryWith(l => l.replace(/\bfn\b/, 'task')) },
+            solution: '/fn<CR>cwtask<Esc>n.',
+          },
         ],
       },
     },
@@ -153,6 +168,18 @@ export const search: Section = {
           { setup: { cursor: { line: 11, col: 6 } }, goal: { cursor: { line: 0, col: 0 } }, solution: '?import<CR>' },
           { goal: { cursor: { line: 9, col: 13 } }, solution: '?await<CR>n' },
           { setup: { cursor: { line: 7, col: 8 } }, goal: { cursor: { line: 5, col: 3 } }, solution: '?Promise<CR>' },
+          {
+            prompt: 'Rename every "attempt" to "i", working up the file.',
+            setup: { cursor: { line: 15, col: 2 } },
+            goal: { text: retryWith(l => l.replace(/attempt/g, 'i')) },
+            solution: '?attempt<CR>cwi<Esc>n.n.n.',
+          },
+          {
+            prompt: 'Delete both "await "s, working up the file.',
+            setup: { cursor: { line: 15, col: 2 } },
+            goal: { text: retryWith(l => l.replace('await ', '')) },
+            solution: '?await<CR>dwn.',
+          },
         ],
       },
     },
@@ -205,6 +232,18 @@ export const search: Section = {
           { setup: { cursor: { line: 12, col: 12 } }, goal: { cursor: { line: 0, col: 9 } }, solution: '#' },
           { setup: { cursor: { line: 2, col: 32 } }, goal: { cursor: { line: 3, col: 20 } }, solution: '*' },
           { setup: { cursor: { line: 7, col: 11 } }, goal: { cursor: { line: 7, col: 44 } }, solution: '2*' },
+          {
+            prompt: 'Rename both "retries" to "max": * to the other one, change it, then n and .',
+            setup: { cursor: { line: 4, col: 2 } },
+            goal: { text: retryWith(l => l.replace(/retries/g, 'max')) },
+            solution: '*cwmax<Esc>n.',
+          },
+          {
+            prompt: 'Rename every "lastError" to "last", working up with #.',
+            setup: { cursor: { line: 15, col: 8 } },
+            goal: { text: retryWith(l => l.replace(/lastError/g, 'last')) },
+            solution: '#cwlast<Esc>n.n.',
+          },
         ],
       },
     },
@@ -247,19 +286,19 @@ export const search: Section = {
         base: { name: 'cart.ts' },
         rounds: [
           {
-            prompt: 'Delete the debug lines, up to "return".',
+            prompt: 'Delete from "It takes" up to "Then", across the line break.',
             setup: {
+              name: 'README.md',
               text: [
-                'function total(items: Item[]) {',
-                '  console.log(items);',
-                '  debugger;',
-                '  return items.reduce((sum, i) => sum + i.price, 0);',
-                '}',
+                '# vimchi',
+                'Install the CLI. It takes a minute or two',
+                'on a slow network. Then run vimchi init.',
+                'The tutor opens in your browser.',
               ],
-              cursor: { line: 1, col: 2 },
+              cursor: { line: 1, col: 17 },
             },
-            goal: { text: ['function total(items: Item[]) {', '  return items.reduce((sum, i) => sum + i.price, 0);', '}'] },
-            solution: 'd/return<CR>',
+            goal: { text: ['# vimchi', 'Install the CLI. Then run vimchi init.', 'The tutor opens in your browser.'] },
+            solution: 'd/Then<CR>',
           },
           {
             prompt: 'Drop the admin check, up to the next "user".',
@@ -287,24 +326,23 @@ export const search: Section = {
             solution: 'd/user<CR>',
           },
           {
-            prompt: 'Replace the concatenation with full_name.',
+            prompt: 'Replace each expression before " AS" with NULL.',
             setup: {
               name: 'users.sql',
-              text: ['SELECT', '  id,', "  first_name || ' ' || last_name AS name", 'FROM users;'],
-              cursor: { line: 0, col: 0 },
+              text: ['SELECT', "  first_name || ' ' || last_name AS name,", "  street || ' ' || city AS addr", 'FROM users;'],
+              cursor: { line: 1, col: 2 },
             },
-            goal: { text: ['SELECT', '  id,', '  full_name AS name', 'FROM users;'] },
-            solution: '/first<CR>c/ AS<CR>full_name<Esc>',
+            goal: { text: ['SELECT', '  NULL AS name,', '  NULL AS addr', 'FROM users;'] },
+            solution: 'c/ AS<CR>NULL<Esc>j^.',
           },
           {
-            prompt: 'Delete the fields before "version".',
+            prompt: 'Delete each type annotation, up to " =".',
             setup: {
-              name: 'package.json',
-              text: ['{', '  "name": "vimchi",', '  "private": true,', '  "type": "module",', '  "version": "0.1.0"', '}'],
-              cursor: { line: 2, col: 2 },
+              text: ['const a: Map<string, number> = new Map();', 'const b: Set<string> = new Set();', 'const c: string[] = [];'],
+              cursor: { line: 0, col: 7 },
             },
-            goal: { text: ['{', '  "name": "vimchi",', '  "version": "0.1.0"', '}'] },
-            solution: 'd/"version<CR>',
+            goal: { text: ['const a = new Map();', 'const b = new Set();', 'const c = [];'] },
+            solution: 'd/ =<CR>j.j.',
           },
           {
             prompt: 'Delete the outdated section, up to "## Usage".',
@@ -471,6 +509,23 @@ export const search: Section = {
             goal: { cursor: { line: 7, col: 9 } },
             solution: '//e<CR>',
           },
+          {
+            prompt: 'Rename every "opts" to "opt": land on the s with /e, x it, then n and .',
+            setup: {
+              text: ['local opts = { noremap = true }', "map('n', 'j', 'gj', opts)", "map('n', 'k', 'gk', opts)"],
+            },
+            goal: { text: ['local opt = { noremap = true }', "map('n', 'j', 'gj', opt)", "map('n', 'k', 'gk', opt)"] },
+            solution: '/opts/e<CR>xn.n.',
+          },
+          {
+            prompt: 'Set the three options to nil: land after "= " with /e+1, then n and .',
+            setup: {
+              text: ['local opt = vim.opt', 'opt.number = true', 'opt.wrap = false', 'opt.tabstop = 2'],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: { text: ['local opt = vim.opt', 'opt.number = nil', 'opt.wrap = nil', 'opt.tabstop = nil'] },
+            solution: '/= /e+1<CR>cwnil<Esc>n.n.',
+          },
         ],
       },
     },
@@ -535,6 +590,22 @@ export const search: Section = {
             setup: { cursor: { line: 0, col: 6 } },
             goal: { cursor: { line: 0, col: 16 }, check: vim => !vim.hlActive },
             solution: '*<C-l>',
+          },
+          {
+            prompt: 'Turn both "true"s to "false", then clear the highlights with C-l.',
+            goal: {
+              text: (options.text as string[]).map(l => l.replace('true', 'false')),
+              check: vim => !vim.hlActive,
+            },
+            solution: '/true<CR>cwfalse<Esc>n.<C-l>',
+          },
+          {
+            prompt: "Make both keymaps visual-mode ('v'), then clear with :noh.",
+            goal: {
+              text: (options.text as string[]).map(l => l.replace("'n'", "'v'")),
+              check: vim => !vim.hlActive,
+            },
+            solution: "/'n/e<CR>rvn.:noh<CR>",
           },
         ],
       },

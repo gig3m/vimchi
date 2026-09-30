@@ -1032,14 +1032,14 @@ export const commandLine: Section = {
             solution: ':%s/<C-r><C-a>/cfg.http.retries/g<CR>',
           },
           {
-            prompt: 'Rename the userName key to username.',
+            prompt: 'Rename the userName key to login.',
             setup: {
               name: 'user.json',
               text: ['{', '  "id": 7,', '  "userName": "ada",', '  "email": "ada@example.com"', '}'],
               cursor: { line: 2, col: 5 },
             },
-            goal: { text: ['{', '  "id": 7,', '  "username": "ada",', '  "email": "ada@example.com"', '}'] },
-            solution: ':s/<C-r><C-w>/username/<CR>',
+            goal: { text: ['{', '  "id": 7,', '  "login": "ada",', '  "email": "ada@example.com"', '}'] },
+            solution: ':s/<C-r><C-w>/login/<CR>',
           },
         ],
       },

@@ -10,11 +10,11 @@ const CONFIG: Record<string, string> = {
   'init.lua': file(
     "vim.g.mapleader = ' '",
     '',
-    "require('config.options')",
-    "require('config.keymaps')",
-    "require('config.lazy')",
+    "require('options')",
+    "require('keymaps')",
+    "require('bootstrap')",
   ),
-  'lua/config/options.lua': file(
+  'lua/options.lua': file(
     'local opt = vim.opt',
     '',
     'opt.number = true',
@@ -26,7 +26,7 @@ const CONFIG: Record<string, string> = {
     'opt.scrolloff = 8',
     'opt.undofile = true',
   ),
-  'lua/config/keymaps.lua': file(
+  'lua/keymaps.lua': file(
     'local map = vim.keymap.set',
     '',
     "map('n', '<Esc>', '<cmd>nohlsearch<CR>')",
@@ -36,7 +36,7 @@ const CONFIG: Record<string, string> = {
     "map('n', '<C-k>', '<C-w>k', { desc = 'Window up' })",
     "map('n', '<C-l>', '<C-w>l', { desc = 'Window right' })",
   ),
-  'lua/config/lazy.lua': file(
+  'lua/bootstrap.lua': file(
     "local path = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'",
     'vim.opt.rtp:prepend(path)',
     '',
@@ -62,8 +62,8 @@ const CONFIG: Record<string, string> = {
   ),
 };
 
-const OPT = 'lua/config/options.lua';
-const KEY = 'lua/config/keymaps.lua';
+const OPT = 'lua/options.lua';
+const KEY = 'lua/keymaps.lua';
 const LSP = 'lua/plugins/lsp.lua';
 const TEL = 'lua/plugins/telescope.lua';
 
@@ -179,10 +179,10 @@ export const windowsTabs: Section = {
             solution: ':vs init.lua<CR>',
           },
           {
-            prompt: 'Open telescope.lua above lsp.lua, on the left.',
-            setup: { init: vim => vim.ex(`vs ${LSP}`) },
-            goal: { buffer: TEL, check: vim => shape(vim) === 'row(col(telescope,lsp),options)' },
-            solution: `:sp ${TEL}<CR>`,
+            prompt: 'Open lsp.lua above telescope.lua, on the left.',
+            setup: { init: vim => vim.ex(`vs ${TEL}`) },
+            goal: { buffer: LSP, check: vim => shape(vim) === 'row(col(lsp,telescope),options)' },
+            solution: `:sp ${LSP}<CR>`,
           },
           {
             prompt: 'Split this window horizontally.',
@@ -508,9 +508,9 @@ export const windowsTabs: Section = {
         base: { files: CONFIG, open: OPT, height: 16 },
         rounds: [
           {
-            prompt: 'Open lsp.lua in a new tab.',
-            goal: { buffer: LSP, check: vim => vim.tabs.length === 2 && vim.tabIdx === 1 },
-            solution: `:tabnew ${LSP}<CR>`,
+            prompt: 'Open keymaps.lua in a new tab.',
+            goal: { buffer: KEY, check: vim => vim.tabs.length === 2 && vim.tabIdx === 1 },
+            solution: `:tabnew ${KEY}<CR>`,
           },
           {
             prompt: 'Go to the next tab.',

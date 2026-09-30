@@ -80,14 +80,14 @@ export const moreTextObjects: Section = {
             solution: 'cin(render<Esc>',
           },
           {
-            prompt: 'The sum is 3: fix the expected value.',
+            prompt: 'Both results are 0: fix each expected value from inside the call before it.',
             setup: {
-              name: 'sum.test.ts',
-              text: ["import { sum } from './sum';", '', "test('adds', () => {", '  expect(sum(1, 2)).toBe(4);', '});'],
+              name: 'math.test.ts',
+              text: ["import { add, mul } from './math';", '', "test('zero', () => {", '  expect(add(0, 0)).toBe(1);', '  expect(mul(0, 5)).toBe(1);', '});'],
               cursor: { line: 3, col: 13 },
             },
-            goal: { text: ["import { sum } from './sum';", '', "test('adds', () => {", '  expect(sum(1, 2)).toBe(3);', '});'] },
-            solution: 'cin(3<Esc>',
+            goal: { text: ["import { add, mul } from './math';", '', "test('zero', () => {", '  expect(add(0, 0)).toBe(0);', '  expect(mul(0, 5)).toBe(0);', '});'] },
+            solution: 'cin(0<Esc>j0f0.',
           },
           {
             prompt: 'Change "Hi" to "Hello".',
@@ -96,13 +96,13 @@ export const moreTextObjects: Section = {
             solution: 'cil"Hello<Esc>',
           },
           {
-            prompt: 'Index the column with k.',
+            prompt: 'Index the column with k on both lines, from inside [i].',
             setup: {
-              text: ['for (let i = 0; i < rows; i++) {', '  for (let k = 0; k < cols; k++) {', '    const cell = grid[i][j];', '  }', '}'],
+              text: ['for (let i = 0; i < rows; i++) {', '  for (let k = 0; k < cols; k++) {', '    const cell = grid[i][j];', '    seen[i][j] = true;', '  }', '}'],
               cursor: { line: 2, col: 22 },
             },
-            goal: { text: ['for (let i = 0; i < rows; i++) {', '  for (let k = 0; k < cols; k++) {', '    const cell = grid[i][k];', '  }', '}'] },
-            solution: 'cin[k<Esc>',
+            goal: { text: ['for (let i = 0; i < rows; i++) {', '  for (let k = 0; k < cols; k++) {', '    const cell = grid[i][k];', '    seen[i][k] = true;', '  }', '}'] },
+            solution: 'cin[k<Esc>jFi.',
           },
           {
             prompt: 'Empty the first condition.',
@@ -154,13 +154,13 @@ export const moreTextObjects: Section = {
         base: { name: 'users.ts', plugins: ['mini-ai'] },
         rounds: [
           {
-            prompt: 'Drop the email argument.',
+            prompt: 'Drop the email argument from both calls: daa, then . on the next line.',
             setup: {
-              text: ['export async function signUp(form: Form) {', '  const { name, email, role } = form;', '  return createUser(name, email, role);', '}'],
-              cursor: { line: 2, col: 28 },
+              text: ['export async function signUp(form: Form) {', '  saveUser(name, email, role);', '  mailUser(name, email, role);', '}'],
+              cursor: { line: 1, col: 18 },
             },
-            goal: { text: ['export async function signUp(form: Form) {', '  const { name, email, role } = form;', '  return createUser(name, role);', '}'] },
-            solution: 'daa',
+            goal: { text: ['export async function signUp(form: Form) {', '  saveUser(name, role);', '  mailUser(name, role);', '}'] },
+            solution: 'daaj.',
           },
           {
             prompt: 'Drop the URL; keep the options.',
@@ -182,20 +182,23 @@ export const moreTextObjects: Section = {
             solution: 'ciasum<Esc>',
           },
           {
-            prompt: 'Remove the last argument.',
-            setup: { text: ['export function warn(msg: string, extra?: unknown) {', "  log('warn', msg, extra);", '}'], cursor: { line: 1, col: 21 } },
-            goal: { text: ['export function warn(msg: string, extra?: unknown) {', "  log('warn', msg);", '}'] },
-            solution: 'daa',
+            prompt: 'Remove the last argument from both calls.',
+            setup: {
+              text: ['export function warn(msg: string, extra?: unknown) {', "  log('warn', msg, extra);", "  send('warn', msg, extra);", '}'],
+              cursor: { line: 1, col: 21 },
+            },
+            goal: { text: ['export function warn(msg: string, extra?: unknown) {', "  log('warn', msg);", "  send('warn', msg);", '}'] },
+            solution: 'daajfx.',
           },
           {
-            prompt: 'Map it in normal and visual mode.',
+            prompt: 'Map it in visual mode instead.',
             setup: {
               name: 'keymaps.lua',
               text: ["local format = require('conform').format", "vim.keymap.set('n', '<leader>f', format, {", "  desc = 'Format',", '})'],
               cursor: { line: 1, col: 16 },
             },
-            goal: { text: ["local format = require('conform').format", "vim.keymap.set({ 'n', 'v' }, '<leader>f', format, {", "  desc = 'Format',", '})'] },
-            solution: "cia{ 'n', 'v' }<Esc>",
+            goal: { text: ["local format = require('conform').format", "vim.keymap.set('v', '<leader>f', format, {", "  desc = 'Format',", '})'] },
+            solution: "cia'v'<Esc>",
           },
         ],
       },
@@ -246,19 +249,22 @@ export const moreTextObjects: Section = {
         base: { name: 'cache.py', plugins: ['mini-ai'] },
         rounds: [
           {
-            prompt: 'Replace the method body with pass.',
+            prompt: 'Stub both method bodies with pass: cii, then . three lines down.',
             setup: {
               text: ['class Cache:', '    def reset(self):', '        self.cache.clear()', '        self.count = 0', '', '    def size(self):', '        return len(self.cache)'],
               cursor: { line: 3, col: 13 },
             },
-            goal: { text: ['class Cache:', '    def reset(self):', '        pass', '', '    def size(self):', '        return len(self.cache)'] },
-            solution: 'ciipass<Esc>',
+            goal: { text: ['class Cache:', '    def reset(self):', '        pass', '', '    def size(self):', '        pass'] },
+            solution: 'ciipass<Esc>3j.',
           },
           {
-            prompt: 'Delete the whole debug branch.',
-            setup: { text: ['def main():', '    if DEBUG:', '        print(state)', '        dump(state)', '    run()'], cursor: { line: 2, col: 8 } },
-            goal: { text: ['def main():', '    run()'] },
-            solution: 'dai',
+            prompt: 'Delete both debug branches.',
+            setup: {
+              text: ['def main():', '    if DEBUG:', '        dump(state)', '    run()', '    if DEBUG:', '        dump(result)', '    return result'],
+              cursor: { line: 2, col: 8 },
+            },
+            goal: { text: ['def main():', '    run()', '    return result'] },
+            solution: 'daijj.',
           },
           {
             prompt: 'Remove the Neovide block.',
@@ -271,20 +277,24 @@ export const moreTextObjects: Section = {
             solution: 'dai',
           },
           {
-            prompt: 'Rewrite the body as one return.',
+            prompt: 'Replace the handler body with a bare raise.',
             setup: {
-              name: 'list.ts',
-              text: ['function isEmpty(list?: string[]) {', '  if (list == null) return true;', '  return list.length === 0;', '}'],
-              cursor: { line: 1, col: 6 },
+              name: 'load.py',
+              text: ['try:', '    load()', 'except OSError:', "    log.warning('load failed')", '    retry()'],
+              cursor: { line: 3, col: 8 },
             },
-            goal: { text: ['function isEmpty(list?: string[]) {', '  return !list?.length;', '}'] },
-            solution: 'ciireturn !list?.length;<Esc>',
+            goal: { text: ['try:', '    load()', 'except OSError:', '    raise'] },
+            solution: 'ciiraise<Esc>',
           },
           {
-            prompt: 'Drop the sub-steps under "Setup".',
-            setup: { name: 'README.md', text: ['- Setup', '  - Install Node 22', '  - Run npm ci', '- Usage'], cursor: { line: 1, col: 6 } },
+            prompt: 'Drop the sub-steps under both items.',
+            setup: {
+              name: 'README.md',
+              text: ['- Setup', '  - Install Node 22', '  - Run npm ci', '- Usage', '  - npm start', '  - npm test'],
+              cursor: { line: 1, col: 6 },
+            },
             goal: { text: ['- Setup', '- Usage'] },
-            solution: 'dii',
+            solution: 'diij.',
           },
         ],
       },
@@ -319,7 +329,8 @@ export const moreTextObjects: Section = {
       ),
       practice: total => (
         <p>
-          Change or delete a function or class from anywhere inside it. {total} rounds.
+          Change, delete, indent or copy a function or class from anywhere inside it. {total} rounds.
+
         </p>
       ),
       aside: {
@@ -336,22 +347,34 @@ export const moreTextObjects: Section = {
         base: { name: 'cart.ts', plugins: ['mini-ai'] },
         rounds: [
           {
-            prompt: 'Replace the body with a single return.',
+            prompt: 'Indent the whole body one more level.',
             setup: {
-              text: ['export function isAdmin(user: User): boolean {', '  const roles = user.roles ?? [];', "  return roles.includes('admin');", '}'],
-              cursor: { line: 1, col: 10 },
+              text: ['function total(xs: number[]) {', '  let sum = 0;', '  for (const x of xs) sum += x;', '  return sum;', '}'],
+              cursor: { line: 2, col: 4 },
             },
-            goal: { text: ['export function isAdmin(user: User): boolean {', "  return user.role === 'admin';", '}'] },
-            solution: "cifreturn user.role === 'admin';<Esc>",
+            goal: { text: ['function total(xs: number[]) {', '    let sum = 0;', '    for (const x of xs) sum += x;', '    return sum;', '}'] },
+            solution: '>if',
           },
           {
-            prompt: 'Delete the debug() method.',
+            prompt: 'Delete the debug() and dump() methods: daf, then . inside dump().',
             setup: {
-              text: ['class Cart {', '  debug() {', '    console.log(this.items);', '  }', '  add(item: Item) {', '    this.items.push(item);', '  }', '}'],
+              text: [
+                'class Cart {',
+                '  debug() {',
+                '    console.log(this.items);',
+                '  }',
+                '  add(item: Item) {',
+                '    this.items.push(item);',
+                '  }',
+                '  dump() {',
+                '    console.log(this);',
+                '  }',
+                '}',
+              ],
               cursor: { line: 2, col: 16 },
             },
             goal: { text: ['class Cart {', '  add(item: Item) {', '    this.items.push(item);', '  }', '}'] },
-            solution: 'daf',
+            solution: 'daf4j.',
           },
           {
             prompt: 'Delete the legacy class.',
@@ -364,24 +387,36 @@ export const moreTextObjects: Section = {
             solution: 'dac',
           },
           {
-            prompt: 'Replace the class body with one field.',
+            prompt: 'Replace the class body with one field: n = 0;',
             setup: {
-              name: 'logger.ts',
-              text: ['export class Logger {', '  log(msg: string) {', '    console.log(msg);', '  }', '}'],
+              name: 'counter.ts',
+              text: ['export class Counter {', '  inc() {', '    this.n++;', '  }', '}'],
               cursor: { line: 2, col: 4 },
             },
-            goal: { text: ['export class Logger {', '  log = console.info;', '}'] },
-            solution: 'ciclog = console.info;<Esc>',
+            goal: { text: ['export class Counter {', '  n = 0;', '}'] },
+            solution: 'cicn = 0;<Esc>',
           },
           {
-            prompt: 'Simplify setup() to store opts as given.',
+            prompt: 'Duplicate the add() method above itself.',
+            setup: {
+              text: ['class Cart {', '  add(item: Item) {', '    this.items.push(item);', '  }', '}'],
+              cursor: { line: 2, col: 6 },
+            },
+            goal: {
+              text: ['class Cart {', '  add(item: Item) {', '    this.items.push(item);', '  }', '  add(item: Item) {', '    this.items.push(item);', '  }', '}'],
+            },
+            solution: 'yafP',
+          },
+          {
+            prompt: 'Turn setup() into a stub whose body is just return.',
             setup: {
               name: 'init.lua',
               text: ['local M = {}', '', 'function M.setup(opts)', '  local o = opts or {}', "  M.opts = vim.tbl_deep_extend('force', defaults, o)", 'end', '', 'return M'],
               cursor: { line: 4, col: 30 },
             },
-            goal: { text: ['local M = {}', '', 'function M.setup(opts)', '  M.opts = opts', 'end', '', 'return M'] },
-            solution: 'cifM.opts = opts<Esc>',
+            goal: { text: ['local M = {}', '', 'function M.setup(opts)', '  return', 'end', '', 'return M'] },
+            solution: 'cifreturn<Esc>',
+
           },
           {
             prompt: 'Delete the callback, from anywhere in it.',

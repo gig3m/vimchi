@@ -10,6 +10,7 @@ export const insertLikeAPro: Section = {
     {
       id: 'insert-line-ends',
       title: 'Insert at Line Ends',
+      typing: true,
       chips: ['I', 'A'],
       keyCards: [
         { key: 'I', glyph: '|←', label: 'insert at start' },
@@ -124,20 +125,25 @@ export const insertLikeAPro: Section = {
             solution: 'I## <Esc>',
           },
           {
-            prompt: 'Store the result and end the statement.',
+            prompt: 'Return the result and end the statement.',
             setup: {
-              text: ['function visibleRows(items: Item[]) {', '  items.filter(isVisible).map(toRow)', '  return rows;', '}'],
-              cursor: { line: 2, col: 4 },
+              text: ['function visibleRows(items: Item[]) {', '  items.filter(isVisible).map(toRow)', '}'],
+              cursor: { line: 1, col: 12 },
             },
             goal: {
-              text: [
-                'function visibleRows(items: Item[]) {',
-                '  const rows = items.filter(isVisible).map(toRow);',
-                '  return rows;',
-                '}',
-              ],
+              text: ['function visibleRows(items: Item[]) {', '  return items.filter(isVisible).map(toRow);', '}'],
             },
-            solution: 'kIconst rows = <Esc>A;<Esc>',
+            solution: 'Ireturn <Esc>A;<Esc>',
+          },
+          {
+            prompt: 'Comment out both options.',
+            setup: {
+              name: 'init.lua',
+              text: ['vim.opt.number = true', 'vim.opt.wrap = false', 'vim.opt.mouse = "a"', 'vim.opt.tabstop = 2'],
+              cursor: { line: 1, col: 9 },
+            },
+            goal: { text: ['vim.opt.number = true', '-- vim.opt.wrap = false', '-- vim.opt.mouse = "a"', 'vim.opt.tabstop = 2'] },
+            solution: 'I-- <Esc>jI-- <Esc>',
           },
         ],
       },
@@ -165,7 +171,8 @@ export const insertLikeAPro: Section = {
       ),
       practice: total => (
         <p>
-          Add the missing line from the goal. The cursor is already on a neighbouring line. {total} rounds.
+          Add the missing lines from the goal, most of them blank. Pick the neighbouring line, then <Code>o</Code>{' '}
+          or <Code>O</Code>. {total} rounds.
         </p>
       ),
       aside: {
@@ -182,35 +189,34 @@ export const insertLikeAPro: Section = {
         base: { name: 'user.ts' },
         rounds: [
           {
-            prompt: 'Add an email field below the name.',
+            prompt: 'Put a blank line between the two functions.',
             setup: {
-              text: ['const user = {', "  name: 'Ada',", "  role: 'admin',", '};'],
-              cursor: { line: 1, col: 5 },
+              name: 'nums.ts',
+              text: ['function one() {', '  return 1;', '}', 'function two() {', '  return 2;', '}'],
+              cursor: { line: 1, col: 4 },
             },
-            goal: { text: ['const user = {', "  name: 'Ada',", "  email: 'ada@example.com',", "  role: 'admin',", '};'] },
-            solution: "oemail: 'ada@example.com',<Esc>",
+            goal: { text: ['function one() {', '  return 1;', '}', '', 'function two() {', '  return 2;', '}'] },
+            solution: 'jo<Esc>',
           },
           {
-            prompt: 'Add a title above the list.',
+            prompt: 'Give the heading a blank line above and below.',
             setup: {
-              name: 'TODO.md',
-              text: ['- [ ] Write the migration', '- [ ] Update the docs', '- [ ] Tag the release'],
-              cursor: { line: 0, col: 8 },
+              name: 'README.md',
+              text: ['# vimchi', 'A browser Vim tutor.', '## Usage', 'Run npm run dev.'],
+              cursor: { line: 2, col: 4 },
             },
-            goal: { text: ['## This week', '- [ ] Write the migration', '- [ ] Update the docs', '- [ ] Tag the release'] },
-            solution: 'O## This week<Esc>',
+            goal: { text: ['# vimchi', 'A browser Vim tutor.', '', '## Usage', '', 'Run npm run dev.'] },
+            solution: 'O<Esc>jo<Esc>',
           },
           {
-            prompt: 'Set the leader before the plugins load.',
+            prompt: 'Close the table with "}" above the return.',
             setup: {
-              name: 'init.lua',
-              text: ["require('config.options')", "require('config.lazy')", "require('config.keymaps')"],
-              cursor: { line: 1, col: 10 },
+              name: 'mod.lua',
+              text: ['local M = {', '  x = 1,', '  y = 2,', 'return M'],
+              cursor: { line: 1, col: 3 },
             },
-            goal: {
-              text: ["require('config.options')", "vim.g.mapleader = ' '", "require('config.lazy')", "require('config.keymaps')"],
-            },
-            solution: "Ovim.g.mapleader = ' '<Esc>",
+            goal: { text: ['local M = {', '  x = 1,', '  y = 2,', '}', 'return M'] },
+            solution: 'jjO}<Esc>',
           },
           {
             prompt: 'Add a blank line after the imports.',
@@ -222,25 +228,23 @@ export const insertLikeAPro: Section = {
             solution: 'O<Esc>',
           },
           {
-            prompt: 'Log the id before the query.',
+            prompt: 'Add "id: 1," below the name (it keeps the indent).',
             setup: {
-              text: ['async function getUser(id: string) {', '  const row = await db.user.find(id);', '  return row;', '}'],
-              cursor: { line: 1, col: 14 },
+              text: ['const user = {', "  name: 'Ada',", "  role: 'admin',", '};'],
+              cursor: { line: 1, col: 5 },
             },
-            goal: {
-              text: ['async function getUser(id: string) {', "  log.debug('getUser', id);", '  const row = await db.user.find(id);', '  return row;', '}'],
-            },
-            solution: "Olog.debug('getUser', id);<Esc>",
+            goal: { text: ['const user = {', "  name: 'Ada',", '  id: 1,', "  role: 'admin',", '};'] },
+            solution: 'oid: 1,<Esc>',
           },
           {
-            prompt: 'Add a "lint" script under "build".',
+            prompt: 'Put a blank line after each of the first two functions.',
             setup: {
-              name: 'package.json',
-              text: ['{', '  "scripts": {', '    "build": "vite build",', '    "test": "vitest"', '  }', '}'],
-              cursor: { line: 2, col: 6 },
+              name: 'noop.ts',
+              text: ['function a() {}', 'function b() {}', 'function c() {}'],
+              cursor: { line: 0, col: 9 },
             },
-            goal: { text: ['{', '  "scripts": {', '    "build": "vite build",', '    "lint": "eslint .",', '    "test": "vitest"', '  }', '}'] },
-            solution: 'o"lint": "eslint .",<Esc>',
+            goal: { text: ['function a() {}', '', 'function b() {}', '', 'function c() {}'] },
+            solution: 'o<Esc>jo<Esc>',
           },
         ],
       },
@@ -306,45 +310,42 @@ export const insertLikeAPro: Section = {
             solution: 'jjf&sand<Esc>',
           },
           {
-            prompt: 'Change "14px" to "0.875rem".',
+            prompt: 'Make every bullet a dash.',
+            setup: { name: 'TODO.md', text: ['* Write', '* Test', '* Ship'], cursor: { line: 0, col: 0 } },
+            goal: { text: ['- Write', '- Test', '- Ship'] },
+            solution: 's-<Esc>js-<Esc>js-<Esc>',
+          },
+          {
+            prompt: 'Change "14px" to "1rem".',
             setup: {
               name: 'theme.ts',
               text: ['export const body = {', "  fontFamily: 'Inter, sans-serif',", "  fontSize: '14px',", '  lineHeight: 1.5,', '};'],
               cursor: { line: 1, col: 13 },
             },
             goal: {
-              text: ['export const body = {', "  fontFamily: 'Inter, sans-serif',", "  fontSize: '0.875rem',", '  lineHeight: 1.5,', '};'],
+              text: ['export const body = {', "  fontFamily: 'Inter, sans-serif',", "  fontSize: '1rem',", '  lineHeight: 1.5,', '};'],
             },
-            solution: 'j4s0.875rem<Esc>',
+            solution: 'j4s1rem<Esc>',
           },
           {
-            prompt: 'Replace the debug print with a logger call.',
+            prompt: 'The stray print should be the "end" of the if.',
             setup: {
-              text: ['function save(order: Order) {', "  console.log('saving', order);", '  return db.orders.put(order);', '}'],
-              cursor: { line: 1, col: 10 },
+              name: 'check.lua',
+              text: ['if ok then', '  run()', "print('x')", 'return ok'],
+              cursor: { line: 0, col: 3 },
             },
-            goal: { text: ['function save(order: Order) {', "  logger.info({ order }, 'saving');", '  return db.orders.put(order);', '}'] },
-            solution: "Slogger.info({ order }, 'saving');<Esc>",
+            goal: { text: ['if ok then', '  run()', 'end', 'return ok'] },
+            solution: 'jjSend<Esc>',
           },
           {
-            prompt: 'Rewrite the mapping.',
-            setup: {
-              name: 'keymaps.lua',
-              text: ['local map = vim.keymap.set', "map('n', '<leader>w', ':w<CR>')", "map('n', '<leader>q', ':q<CR>')"],
-              cursor: { line: 1, col: 12 },
-            },
-            goal: { text: ['local map = vim.keymap.set', "map('n', '<leader>w', '<cmd>write<CR>')", "map('n', '<leader>q', ':q<CR>')"] },
-            solution: "Smap('n', '<lt>leader>w', '<lt>cmd>write<lt>CR>')<Esc>",
-          },
-          {
-            prompt: 'Write the missing step.',
+            prompt: 'Rewrite the TODO step as "2. Tag".',
             setup: {
               name: 'deploy.md',
               text: ['1. Build the image.', '2. TODO', '3. Restart the service.'],
               cursor: { line: 1, col: 4 },
             },
-            goal: { text: ['1. Build the image.', '2. Push it to the registry.', '3. Restart the service.'] },
-            solution: 'S2. Push it to the registry.<Esc>',
+            goal: { text: ['1. Build the image.', '2. Tag', '3. Restart the service.'] },
+            solution: 'S2. Tag<Esc>',
           },
         ],
       },
@@ -352,6 +353,7 @@ export const insertLikeAPro: Section = {
     {
       id: 'replace-mode',
       title: 'Replace Mode',
+      typing: true,
       chips: ['R'],
       keyCards: [{ key: 'R', glyph: 'ab→xy', glyphColor: 'var(--orange)', label: 'overwrite text' }],
       intro: (
@@ -412,20 +414,30 @@ export const insertLikeAPro: Section = {
             solution: '2jf0R14:45<Esc>',
           },
           {
-            prompt: 'Set the expiry to 06/15/2027.',
-            setup: { text: ['{', '  "card": "visa",', '  "expires": "12/31/2025"', '}'], cursor: { line: 2, col: 2 } },
-            goal: { text: ['{', '  "card": "visa",', '  "expires": "06/15/2027"', '}'] },
-            solution: 'f1R06/15/2027<Esc>',
+            prompt: 'Set the expiry to 06/2027.',
+            setup: { text: ['{', '  "card": "visa",', '  "expires": "12/2025"', '}'], cursor: { line: 2, col: 2 } },
+            goal: { text: ['{', '  "card": "visa",', '  "expires": "06/2027"', '}'] },
+            solution: 'f1R06/2027<Esc>',
           },
           {
-            prompt: 'Mark the task done and say when.',
+            prompt: 'Mark the task DONE.',
             setup: {
               name: 'notes.ts',
               text: ['// TODO', 'export const retries = 3;', 'export const timeoutMs = 5_000;'],
               cursor: { line: 0, col: 3 },
             },
-            goal: { text: ['// DONE in v1.2', 'export const retries = 3;', 'export const timeoutMs = 5_000;'] },
-            solution: 'RDONE in v1.2<Esc>',
+            goal: { text: ['// DONE', 'export const retries = 3;', 'export const timeoutMs = 5_000;'] },
+            solution: 'RDONE<Esc>',
+          },
+          {
+            prompt: 'Bump both packages to 2.0.',
+            setup: {
+              name: 'versions.json',
+              text: ['{', '  "engine": "1.4",', '  "cli": "1.7"', '}'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['{', '  "engine": "2.0",', '  "cli": "2.0"', '}'] },
+            solution: 'jf1R2.0<Esc>j0f1R2.0<Esc>',
           },
         ],
       },

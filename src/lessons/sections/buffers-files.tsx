@@ -180,7 +180,8 @@ export const buffersFiles: Section = {
           },
           {
             prompt: 'You deleted the wrong lines. Reload the file from disk.',
-            setup: { open: 'src/routes/notes.ts', cursor: { line: 5, col: 0 }, init: vim => vim.feedKeys('4dd') },
+            // Four separate deletes, then a yank: neither one `P` nor one `u` brings the lines back.
+            setup: { open: 'src/routes/notes.ts', cursor: { line: 5, col: 0 }, init: vim => vim.feedKeys('ddddddddggyy') },
             goal: { text: PROJECT['src/routes/notes.ts'].slice(0, -1) },
             solution: ':e!<CR>',
           },

@@ -122,7 +122,7 @@ export const basicOperators: Section = {
             solution: 'jf;ld$',
           },
           {
-            prompt: 'Rewrite the rest of the line with c$.',
+            prompt: 'Rewrite everything after "=" as name; with c$.',
             setup: {
               text: [
                 'function greet(name: string) {',
@@ -135,12 +135,12 @@ export const basicOperators: Section = {
             goal: {
               text: [
                 'function greet(name: string) {',
-                '  const greeting = `Hello, ${name}`;',
+                '  const greeting = name;',
                 '  return greeting;',
                 '}',
               ],
             },
-            solution: "jf'c$`Hello, ${name}`;<Esc>",
+            solution: "jf'c$name;<Esc>",
           },
           {
             prompt: 'Copy "await " with yw. (Putting it back comes in Copy/Paste Lines.)',
@@ -611,63 +611,42 @@ export const basicOperators: Section = {
         base: { name: 'config.ts' },
         rounds: [
           {
-            prompt: 'Point the URL at the environment variable.',
+            prompt: 'Turn every "yes" into "no".',
+            setup: { name: 'flags.yml', text: ['debug: yes', 'verbose: yes', 'color: yes'], cursor: { line: 0, col: 0 } },
+            goal: { text: ['debug: no', 'verbose: no', 'color: no'] },
+            solution: 'fyCno<Esc>j0fyCno<Esc>j0fyCno<Esc>',
+          },
+          {
+            prompt: 'The debug line should close the function.',
             setup: {
-              text: [
-                "import { createClient } from './client';",
-                '',
-                "const url = 'http://localhost:3000';",
-                'export const client = createClient(url);',
-              ],
+              name: 'one.ts',
+              text: ['function one() {', '  return 1;', "console.log('here');", 'one();'],
               cursor: { line: 0, col: 0 },
             },
-            goal: {
-              text: [
-                "import { createClient } from './client';",
-                '',
-                'const url = process.env.API_URL;',
-                'export const client = createClient(url);',
-              ],
-            },
-            solution: "jjf'Cprocess.env.API_URL;<Esc>",
+            goal: { text: ['function one() {', '  return 1;', '}', 'one();'] },
+            solution: 'jjcc}<Esc>',
           },
           {
-            prompt: 'Replace the debug line with a return.',
+            prompt: 'Set the port to 8080 and drop the comment.',
             setup: {
-              text: ['function total(items) {', '  const sum = items.reduce((a, b) => a + b, 0);', "  console.log('here');", '}'],
+              text: ["import { serve } from './server';", 'const port = 3000; // TODO', 'serve(port);'],
               cursor: { line: 0, col: 0 },
             },
-            goal: { text: ['function total(items) {', '  const sum = items.reduce((a, b) => a + b, 0);', '  return sum;', '}'] },
-            solution: 'jjccreturn sum;<Esc>',
+            goal: { text: ["import { serve } from './server';", 'const port = 8080;', 'serve(port);'] },
+            solution: 'jf3C8080;<Esc>',
           },
           {
-            prompt: 'Write the intro over the placeholder.',
-            setup: { name: 'README.md', text: ['# vimchi', '', 'TODO: write an intro', '', '## Install'], cursor: { line: 4, col: 0 } },
-            goal: { text: ['# vimchi', '', 'Learn Vim by doing.', '', '## Install'] },
-            solution: 'kkccLearn Vim by doing.<Esc>',
-          },
-          {
-            prompt: 'Map <leader>w to the write command.',
+            prompt: 'Replace the throw with break; (cc keeps the indent).',
             setup: {
-              name: 'keymaps.lua',
-              text: [
-                "vim.g.mapleader = ' '",
-                "vim.keymap.set('n', '<leader>w', ':w<CR>')",
-                "vim.keymap.set('n', '<leader>q', '<cmd>quit<CR>')",
-              ],
+              name: 'rows.ts',
+              text: ['for (const row of rows) {', '  if (!row) {', "    throw new Error('bad row');", '  }', '}'],
               cursor: { line: 0, col: 0 },
             },
-            goal: {
-              text: [
-                "vim.g.mapleader = ' '",
-                "vim.keymap.set('n', '<leader>w', '<cmd>write<CR>')",
-                "vim.keymap.set('n', '<leader>q', '<cmd>quit<CR>')",
-              ],
-            },
-            solution: "jf:C<lt>cmd>write<lt>CR>')<Esc>",
+            goal: { text: ['for (const row of rows) {', '  if (!row) {', '    break;', '  }', '}'] },
+            solution: 'jjccbreak;<Esc>',
           },
           {
-            prompt: 'Change the condition.',
+            prompt: 'Simplify the condition to "ok".',
             setup: {
               text: [
                 'function checkVoter(user: User) {',
@@ -678,8 +657,8 @@ export const basicOperators: Section = {
               ],
               cursor: { line: 0, col: 0 },
             },
-            goal: { text: ['function checkVoter(user: User) {', '  if (canVote(user)) {', '    allow(user);', '  }', '}'] },
-            solution: 'jfuCcanVote(user)) {<Esc>',
+            goal: { text: ['function checkVoter(user: User) {', '  if (ok) {', '    allow(user);', '  }', '}'] },
+            solution: 'jfuCok) {<Esc>',
           },
         ],
       },
@@ -1129,27 +1108,18 @@ export const basicOperators: Section = {
         base: { name: 'handler.ts' },
         rounds: [
           {
-            prompt: 'Delete "default async ".',
+            prompt: 'Delete "default async " from all three.',
             setup: {
+              name: 'routes.ts',
               text: [
-                "import type { Req, Res } from './types';",
-                '',
-                'export default async function handler(req, res) {',
-                '  res.json(await load(req.query));',
-                '}',
+                'export default async function a() {}',
+                'export default async function b() {}',
+                'export default async function c() {}',
               ],
-              cursor: { line: 3, col: 0 },
+              cursor: { line: 0, col: 0 },
             },
-            goal: {
-              text: [
-                "import type { Req, Res } from './types';",
-                '',
-                'export function handler(req, res) {',
-                '  res.json(await load(req.query));',
-                '}',
-              ],
-            },
-            solution: 'kwd2w',
+            goal: { text: ['export function a() {}', 'export function b() {}', 'export function c() {}'] },
+            solution: 'wd2wj.j.',
           },
           {
             prompt: 'Delete the whole retry block.',
@@ -1161,13 +1131,17 @@ export const basicOperators: Section = {
             solution: '4dd',
           },
           {
-            prompt: 'Change "config.server" to "env".',
+            prompt: 'Change each "config.server" to "env".',
             setup: {
-              text: ["import config from './config';", '', 'const port = config.server.port;', 'app.listen(port);'],
+              text: [
+                'const port = config.server.port;',
+                'const host = config.server.host;',
+                'const name = config.server.name;',
+              ],
               cursor: { line: 0, col: 0 },
             },
-            goal: { text: ["import config from './config';", '', 'const port = env.port;', 'app.listen(port);'] },
-            solution: 'jjfcc3wenv<Esc>',
+            goal: { text: ['const port = env.port;', 'const host = env.host;', 'const name = env.name;'] },
+            solution: 'fcc3wenv<Esc>j0fc.j0fc.',
           },
           {
             prompt: 'Delete "very, very ".',
@@ -1225,7 +1199,7 @@ export const basicOperators: Section = {
       ),
       practice: total => (
         <p>
-          Five cleanups on the same function. Green marks show what to add, red what to remove. {total} rounds.
+          Six cleanups on the same function. Green marks show what to add, red what to remove. {total} rounds.
         </p>
       ),
       aside: {
@@ -1243,7 +1217,7 @@ export const basicOperators: Section = {
         base: { name: 'order.ts' },
         rounds: [
           {
-            prompt: 'Rename calc to orderTotal.',
+            prompt: 'Rename calc to gross.',
             setup: {
               text: [
                 'function calc(items, taxRate, debug) {',
@@ -1260,7 +1234,7 @@ export const basicOperators: Section = {
             },
             goal: {
               text: [
-                'function orderTotal(items, taxRate, debug) {',
+                'function gross(items, taxRate, debug) {',
                 "  console.log('calc called');",
                 '  let total = 0;',
                 '  for (const item of items) {',
@@ -1271,13 +1245,13 @@ export const basicOperators: Section = {
                 '}',
               ],
             },
-            solution: 'wcworderTotal<Esc>',
+            solution: 'wcwgross<Esc>',
           },
           {
             prompt: 'Drop the debug parameter.',
             setup: {
               text: [
-                'function orderTotal(items, taxRate, debug) {',
+                'function gross(items, taxRate, debug) {',
                 "  console.log('calc called');",
                 '  let total = 0;',
                 '  for (const item of items) {',
@@ -1291,7 +1265,7 @@ export const basicOperators: Section = {
             },
             goal: {
               text: [
-                'function orderTotal(items, taxRate) {',
+                'function gross(items, taxRate) {',
                 "  console.log('calc called');",
                 '  let total = 0;',
                 '  for (const item of items) {',
@@ -1308,7 +1282,7 @@ export const basicOperators: Section = {
             prompt: 'Delete both debug lines.',
             setup: {
               text: [
-                'function orderTotal(items, taxRate) {',
+                'function gross(items, taxRate) {',
                 "  console.log('calc called');",
                 '  let total = 0;',
                 '  for (const item of items) {',
@@ -1322,7 +1296,7 @@ export const basicOperators: Section = {
             },
             goal: {
               text: [
-                'function orderTotal(items, taxRate) {',
+                'function gross(items, taxRate) {',
                 '  let total = 0;',
                 '  for (const item of items) {',
                 '    total += item.price * item.qty;',
@@ -1334,10 +1308,10 @@ export const basicOperators: Section = {
             solution: 'jdd4j.',
           },
           {
-            prompt: 'Replace the price maths with lineTotal(item).',
+            prompt: 'Use item.total instead of the price maths.',
             setup: {
               text: [
-                'function orderTotal(items, taxRate) {',
+                'function gross(items, taxRate) {',
                 '  let total = 0;',
                 '  for (const item of items) {',
                 '    total += item.price * item.qty;',
@@ -1349,39 +1323,66 @@ export const basicOperators: Section = {
             },
             goal: {
               text: [
-                'function orderTotal(items, taxRate) {',
+                'function gross(items, taxRate) {',
                 '  let total = 0;',
                 '  for (const item of items) {',
-                '    total += lineTotal(item);',
+                '    total += item.total;',
                 '  }',
                 '  return total * (1 + taxRate); // TODO: rounding?',
                 '}',
               ],
             },
-            solution: 'jf=wct;lineTotal(item)<Esc>',
+            solution: 'jfpct;total<Esc>',
+          },
+          {
+            prompt: 'Rename the local total to sum in all three places.',
+            setup: {
+              text: [
+                'function gross(items, taxRate) {',
+                '  let total = 0;',
+                '  for (const item of items) {',
+                '    total += item.total;',
+                '  }',
+                '  return total * (1 + taxRate); // TODO: rounding?',
+                '}',
+              ],
+              cursor: { line: 1, col: 2 },
+            },
+            goal: {
+              text: [
+                'function gross(items, taxRate) {',
+                '  let sum = 0;',
+                '  for (const item of items) {',
+                '    sum += item.total;',
+                '  }',
+                '  return sum * (1 + taxRate); // TODO: rounding?',
+                '}',
+              ],
+            },
+            solution: 'wcwsum<Esc>2j^.2j^w.',
           },
           {
             prompt: 'Remove the stale comment.',
             setup: {
               text: [
-                'function orderTotal(items, taxRate) {',
-                '  let total = 0;',
+                'function gross(items, taxRate) {',
+                '  let sum = 0;',
                 '  for (const item of items) {',
-                '    total += lineTotal(item);',
+                '    sum += item.total;',
                 '  }',
-                '  return total * (1 + taxRate); // TODO: rounding?',
+                '  return sum * (1 + taxRate); // TODO: rounding?',
                 '}',
               ],
               cursor: { line: 2, col: 2 },
             },
             goal: {
               text: [
-                'function orderTotal(items, taxRate) {',
-                '  let total = 0;',
+                'function gross(items, taxRate) {',
+                '  let sum = 0;',
                 '  for (const item of items) {',
-                '    total += lineTotal(item);',
+                '    sum += item.total;',
                 '  }',
-                '  return total * (1 + taxRate);',
+                '  return sum * (1 + taxRate);',
                 '}',
               ],
             },

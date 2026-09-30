@@ -63,7 +63,7 @@ export const substitute: Section = {
             solution: ':s/var/const/<CR>',
           },
           {
-            prompt: 'Fix the spelling of "instalation".',
+            prompt: 'Fix the spelling of "instalation" (one l is missing).',
             setup: {
               name: 'README.md',
               text: [
@@ -86,7 +86,7 @@ export const substitute: Section = {
                 'Open the page and start typing.',
               ],
             },
-            solution: ':s/instalation/installation/<CR>',
+            solution: ':s/tal/tall/<CR>',
           },
           {
             prompt: 'Turn debug mode off.',
@@ -402,13 +402,13 @@ export const substitute: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Spell JavaScript one way throughout.',
+            prompt: 'Spell JSON in capitals throughout.',
             setup: {
               name: 'notes.md',
-              text: ['## Why javascript', 'Javascript runs everywhere.', 'Most of our JAVASCRIPT is typed now.'],
+              text: ['## Why json', 'Json parses anywhere.', 'Most of our jSON is config now.'],
             },
-            goal: { text: ['## Why JavaScript', 'JavaScript runs everywhere.', 'Most of our JavaScript is typed now.'] },
-            solution: ':%s/javascript/JavaScript/gi<CR>',
+            goal: { text: ['## Why JSON', 'JSON parses anywhere.', 'Most of our JSON is config now.'] },
+            solution: ':%s/json/JSON/gi<CR>',
           },
           {
             prompt: 'Make every log level uppercase.',
@@ -670,33 +670,31 @@ export const substitute: Section = {
             solution: ':%s/\\v(\\w+), (\\w+)/\\2 \\1/<CR>',
           },
           {
-            prompt: 'Rewrite the asserts as expect(…).toBe(…).',
+            prompt: 'Put the value second in each eq(): eq(count, 3).',
             setup: {
               name: 'cart.test.ts',
-              text: ['assert.equal(cart.count, 3);', "assert.equal(cart.currency, 'EUR');", 'assert.equal(total(cart), 42);'],
+              text: ['eq(3, count);', 'eq(0, errors);', 'eq(1, pages);'],
             },
-            goal: {
-              text: ['expect(cart.count).toBe(3);', "expect(cart.currency).toBe('EUR');", 'expect(total(cart)).toBe(42);'],
-            },
-            solution: ':%s/\\vassert.equal\\((.+), (.+)\\)/expect(\\1).toBe(\\2)/<CR>',
+            goal: { text: ['eq(count, 3);', 'eq(errors, 0);', 'eq(pages, 1);'] },
+            solution: ':%s/\\v(\\d), (\\w+)/\\2, \\1/<CR>',
           },
           {
-            prompt: 'Reformat the dates from 2026-03-15 to 15/03/2026.',
+            prompt: 'Reformat the dates from 03/15 (US) to 15/03.',
             setup: {
               name: 'payments.csv',
-              text: ['date,amount', '2026-03-15,120.00', '2026-04-01,89.90', '2026-04-22,15.00'],
+              text: ['date,amount', '03/15,120.00', '04/01,89.90', '04/22,15.00'],
             },
-            goal: { text: ['date,amount', '15/03/2026,120.00', '01/04/2026,89.90', '22/04/2026,15.00'] },
-            solution: ':%s#\\v(\\d+)-(\\d+)-(\\d+)#\\3/\\2/\\1#<CR>',
+            goal: { text: ['date,amount', '15/03,120.00', '01/04,89.90', '22/04,15.00'] },
+            solution: ':%s#\\v(\\d+)/(\\d+)#\\2/\\1#<CR>',
           },
           {
-            prompt: 'Convert the requires to imports.',
+            prompt: 'Turn the Python 2 prints into print() calls.',
             setup: {
-              name: 'index.js',
-              text: ["const fs = require('fs');", "const path = require('path');", '', 'main();'],
+              name: 'report.py',
+              text: ['# report', 'print total', 'print "done"'],
             },
-            goal: { text: ["import fs from 'fs';", "import path from 'path';", '', 'main();'] },
-            solution: ':%s/\\vconst (\\w+).*\\((.*)\\);/import \\1 from \\2;/<CR>',
+            goal: { text: ['# report', 'print(total)', 'print("done")'] },
+            solution: ':%s/\\v(\\w+) (.*)/\\1(\\2)/<CR>',
           },
         ],
       },
@@ -1003,13 +1001,13 @@ export const substitute: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Set the version to 2.0.0.',
+            prompt: 'Set the timeout to 10. Leave retries at 3.',
             setup: {
-              name: 'package.json',
-              text: ['{', '  "name": "vimchi",', '  "version": "1.9.4",', '  "private": true', '}'],
+              name: 'client.toml',
+              text: ['[http]', 'retries = 3', 'timeout = 3', 'workers = 4'],
             },
-            goal: { text: ['{', '  "name": "vimchi",', '  "version": "2.0.0",', '  "private": true', '}'] },
-            solution: ':%s/"version": "\\zs[^"]*/2.0.0/<CR>',
+            goal: { text: ['[http]', 'retries = 3', 'timeout = 10', 'workers = 4'] },
+            solution: ':%s/timeout = \\zs3/10/<CR>',
           },
           {
             prompt: 'Change the "get" prefix to "fetch", only on User functions.',
@@ -1032,13 +1030,13 @@ export const substitute: Section = {
             solution: ':%s/-\\zs2024/2026/<CR>',
           },
           {
-            prompt: 'Change console.log calls to console.debug. logger.log stays.',
+            prompt: 'Rename the db.get( calls to db.load(. cache.get and db.getAll stay.',
             setup: {
-              name: 'poller.js',
-              text: ["console.log('polling', url);", "logger.log('tick');", 'console.log(res.status);'],
+              name: 'repo.js',
+              text: ['const a = db.get(id);', 'const b = cache.get(id);', 'const c = db.getAll();', 'const d = db.get(key);'],
             },
-            goal: { text: ["console.debug('polling', url);", "logger.log('tick');", 'console.debug(res.status);'] },
-            solution: ':%s/console.\\zslog\\ze(/debug/<CR>',
+            goal: { text: ['const a = db.load(id);', 'const b = cache.get(id);', 'const c = db.getAll();', 'const d = db.load(key);'] },
+            solution: ':%s/db.\\zsget\\ze(/load/<CR>',
           },
         ],
       },
@@ -1118,13 +1116,13 @@ export const substitute: Section = {
             solution: ':%s/^.\\{-}] //<CR>',
           },
           {
-            prompt: 'Turn **bold** into _italics_.',
+            prompt: 'Turn *stars* into _underscores_.',
             setup: {
               name: 'release.md',
-              text: ['## 2.1.0', '', 'This release is **faster** and **smaller**.', 'Upgrade is **optional**.'],
+              text: ['## 2.1.0', '', 'This release is *faster* and *smaller*.', 'Upgrade is *optional*.'],
             },
             goal: { text: ['## 2.1.0', '', 'This release is _faster_ and _smaller_.', 'Upgrade is _optional_.'] },
-            solution: ':%s/\\v\\*\\*(.{-})\\*\\*/_\\1_/g<CR>',
+            solution: ':%s/\\v\\*(.{-})\\*/_\\1_/g<CR>',
           },
           {
             prompt: 'Redact every quoted value on the login line.',
@@ -1380,12 +1378,12 @@ export const substitute: Section = {
           {
             prompt: 'Bump the patch version by one.',
             setup: {
-              name: 'package.json',
-              text: ['{', '  "name": "vimchi",', '  "version": "2.4.7"', '}'],
-              cursor: { line: 2, col: 0 },
+              name: 'Makefile',
+              text: ['NAME = vimchi', 'VERSION = 2.4.7', 'PREFIX = /usr/local'],
+              cursor: { line: 1, col: 0 },
             },
-            goal: { text: ['{', '  "name": "vimchi",', '  "version": "2.4.8"', '}'] },
-            solution: ':s/\\d\\+\\ze"/\\=submatch(0)+1/<CR>',
+            goal: { text: ['NAME = vimchi', 'VERSION = 2.4.8', 'PREFIX = /usr/local'] },
+            solution: ':s/\\d\\+$/\\=submatch(0)+1/<CR>',
           },
           {
             prompt: 'Double the recipe.',
@@ -1406,13 +1404,14 @@ export const substitute: Section = {
             solution: ":%s/^\\d\\+/\\=line('.')/<CR>",
           },
           {
-            prompt: 'Pad the track numbers to two digits.',
+            prompt: 'Pad the lone digits (the last search) to two digits.',
             setup: {
               name: 'playlist.m3u',
               text: ['track-1-intro.mp3', 'track-2-theme.mp3', 'track-10-outro.mp3'],
+              search: '\\<\\d\\>',
             },
             goal: { text: ['track-01-intro.mp3', 'track-02-theme.mp3', 'track-10-outro.mp3'] },
-            solution: ":%s/\\d\\+/\\=printf('%02d', submatch(0))/<CR>",
+            solution: ":%s//\\='0'.submatch(0)/<CR>",
           },
         ],
       },
