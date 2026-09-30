@@ -135,5 +135,135 @@ export const smallEdits: Section = {
         ],
       },
     },
+    {
+      id: 'undo-redo',
+      title: 'Undo & Redo',
+      chips: ['u', 'C-r'],
+      keyCards: [
+        { key: 'u', glyph: '↺', label: 'undo' },
+        { key: 'C-r', glyph: '↻', label: 'redo' },
+      ],
+      intro: (
+        <>
+          <p>
+            <Code>u</Code> undoes the last change. <Code>C-r</Code> redoes what you just undid. Both take a count:{' '}
+            <Code>3u</Code> undoes three changes.
+          </p>
+          <p>
+            A change is one command, however much text it touches. A whole line typed in one visit to insert mode
+            (next section) is one change too, so it goes with a single <Code>u</Code>.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Someone has been editing these files. Undo and redo until the buffer matches the goal. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Undo is a tree',
+        body: (
+          <p>
+            Undo, then make a new change, and the undone branch isn't lost. <Code>g-</Code> and <Code>g+</Code> walk
+            through every state the buffer has been in, in time order.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'cart.ts' },
+        rounds: [
+          {
+            prompt: 'The return line was deleted by mistake. Bring it back.',
+            setup: {
+              text: [
+                'export function total(items: Item[]) {',
+                '  const sum = items.reduce((a, i) => a + i.price, 0);',
+                '  return sum;',
+                '}',
+              ],
+              cursor: { line: 2, col: 0 },
+              init: vim => vim.feedKeys('dd'),
+            },
+            goal: {
+              text: [
+                'export function total(items: Item[]) {',
+                '  const sum = items.reduce((a, i) => a + i.price, 0);',
+                '  return sum;',
+                '}',
+              ],
+            },
+            solution: 'u',
+          },
+          {
+            prompt: 'Undo the whole line that was typed in.',
+            setup: {
+              name: 'init.lua',
+              text: ['vim.opt.number = true', 'vim.opt.wrap = false', 'vim.opt.tabstop = 2'],
+              cursor: { line: 0, col: 0 },
+              init: vim => vim.feedKeys('ovim.opt.mouse = ""<Esc>'),
+            },
+            goal: { text: ['vim.opt.number = true', 'vim.opt.wrap = false', 'vim.opt.tabstop = 2'] },
+            solution: 'u',
+          },
+          {
+            prompt: 'Undo both renames.',
+            setup: {
+              text: [
+                'function lineTotal(price: number, quantity: number) {',
+                '  const total = price * quantity;',
+                '  return total;',
+                '}',
+              ],
+              cursor: { line: 1, col: 2 },
+              init: vim => vim.feedKeys('wcwsum<Esc>4wcwqty<Esc>'),
+            },
+            goal: {
+              text: [
+                'function lineTotal(price: number, quantity: number) {',
+                '  const total = price * quantity;',
+                '  return total;',
+                '}',
+              ],
+            },
+            solution: 'uu',
+          },
+          {
+            prompt: 'You undid one step too many. Redo it.',
+            setup: {
+              name: 'README.md',
+              text: ['# vimchi', 'A Vim tutor.', '', '## Install'],
+              cursor: { line: 1, col: 0 },
+              init: vim => vim.feedKeys('A It runs in the browser.<Esc>oMIT licensed.<Esc>uu'),
+            },
+            goal: { text: ['# vimchi', 'A Vim tutor. It runs in the browser.', '', '## Install'] },
+            solution: '<C-r>',
+          },
+          {
+            prompt: 'Undo all three edits, then redo only the first.',
+            setup: {
+              name: 'routes.ts',
+              text: [
+                "app.get('/users', listUsers);",
+                "app.get('/users/:id', getUser);",
+                "app.post('/users', createUser);",
+                "app.delete('/users/:id', removeUser);",
+              ],
+              cursor: { line: 0, col: 0 },
+              init: vim => vim.feedKeys("f/aapi/<Esc>jdd0x"),
+            },
+            goal: {
+              text: [
+                "app.get('/api/users', listUsers);",
+                "app.get('/users/:id', getUser);",
+                "app.post('/users', createUser);",
+                "app.delete('/users/:id', removeUser);",
+              ],
+            },
+            solution: '3u<C-r>',
+          },
+        ],
+      },
+    },
   ],
 };
