@@ -116,7 +116,7 @@ const maxed = (vim: Vim, dir: 'tall' | 'wide') => {
 
 const ALT_NOTE = (
   <>
-    (In the browser, <Code>Alt-w</Code> stands in for <Code>Ctrl-w</Code>; full screen captures the real key.)
+    (In the browser, <Code>Alt-w</Code> stands in for <Code>C-w</Code>; full screen captures the real key.)
   </>
 );
 

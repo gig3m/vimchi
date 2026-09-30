@@ -750,14 +750,14 @@ export const basicOperators: Section = {
             solution: 'ddggP',
           },
           {
-            prompt: 'Copy "name,score" to just above "linus,75".',
+            prompt: 'Copy "name,score" to the end of the file.',
             setup: {
               name: 'scores.csv',
               text: ['name,score', 'ada,92', 'grace,88', 'linus,75'],
               cursor: { line: 3, col: 0 },
             },
-            goal: { text: ['name,score', 'ada,92', 'grace,88', 'name,score', 'linus,75'] },
-            solution: 'ggyyGP',
+            goal: { text: ['name,score', 'ada,92', 'grace,88', 'linus,75', 'name,score'] },
+            solution: 'ggyyGp',
           },
           {
             prompt: 'Copy the two "map(" lines to below the last line.',

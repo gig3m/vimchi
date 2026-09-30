@@ -9,6 +9,8 @@ import { fail, pos } from '../types';
 import { type Hunk, NOT_COMMITTED, addHunkNav, applyHunks, blame, bufLines, diffLines, fromLines, gitState, toLines } from './git-model';
 
 const GREEN = '#50fa7b', CHANGE = '#ffb86c', RED = '#ff5555';
+// Staged hunks keep a dimmer sign (gitsigns' signs_staged_enable, on by default).
+const STAGED: Record<string, string> = { [GREEN]: '#2f8a4a', [CHANGE]: '#99704a', [RED]: '#993838' };
 
 /** Hunks of the buffer against the index (null if the file isn't tracked). */
 export function bufferHunks(vim: Vim, buf: Buffer): Hunk[] | null {
@@ -33,6 +35,18 @@ function signs(hs: Hunk[]): Map<number, { text: string; color: string }> {
       if (h.aCount > h.bCount) out.set(h.bStart + h.bCount - 1, { text: '~', color: CHANGE });
     }
   }
+  return out;
+}
+
+/** Signs for hunks staged in the index (HEAD vs index), placed on the buffer's lines and dimmed. */
+function stagedSigns(vim: Vim, buf: Buffer, unstaged: Hunk[]): Map<number, { text: string; color: string }> {
+  const g = gitState(vim);
+  const out = new Map<number, { text: string; color: string }>();
+  if (!(buf.name in g.head) || g.head[buf.name] === g.index[buf.name]) return out;
+  const staged = signs(diffLines(toLines(g.head[buf.name]), toLines(g.index[buf.name])));
+  // Index line -> buffer line: shift by the unstaged hunks wholly above it.
+  const toBuf = (i: number) => unstaged.reduce((l, h) => (h.aStart + h.aCount <= i ? l + h.bCount - h.aCount : l), i);
+  staged.forEach((v, i) => out.set(toBuf(i), { text: v.text, color: STAGED[v.color] ?? v.color }));
   return out;
 }
 
@@ -99,7 +113,10 @@ export const gitsigns: Plugin = {
   setup: vim => {
     vim.decorators.push((buf): Decoration | null => {
       const hs = bufferHunks(vim, buf);
-      return hs && hs.length ? { signs: signs(hs) } : null;
+      if (!hs) return null;
+      const all = stagedSigns(vim, buf, hs);
+      signs(hs).forEach((v, l) => all.set(l, v));
+      return all.size ? { signs: all } : null;
     });
 
     addHunkNav(vim, 'gitsigns', (dir, count) => {
