@@ -1076,6 +1076,7 @@ export class Vim {
         if (res0) return this.forceKind({ start: cur, end: res0, kind: 'char' }, t.force);
       }
     }
+    if (mkeys === 'w' || mkeys === 'W') return this.operatorWordRange(mkeys === 'W', count, opKeys === 'd', t.force);
     const res = spec.run({ count, hasCount, arg: t.arg, op: opKeys, visual: false });
     if (!res) return null;
     if (res.jump) this.pushJump(cur);
@@ -1085,17 +1086,6 @@ export class Vim {
     if (res.linewise) return this.forceKind({ start: pos(start.line, 0), end: pos(end.line, 0), kind: 'line' }, t.force);
     if (res.inclusive) return this.forceKind({ start, end, kind: 'char' }, t.force);
     // Exclusive motion.
-    if ((mkeys === 'w' || mkeys === 'W') && !backwards && end.line > start.line) {
-      // dw on the last word of a line stops at the end of that line.
-      let l = end.line - 1;
-      while (l > start.line && this.line(l).trim() === '') l--;
-      if (l === start.line || end.col === 0 || this.line(end.line).slice(0, end.col).trim() === '') {
-        const t2 = this.line(l);
-        end = pos(l, t2.length - 1);
-        if (end.col < 0 || (l === start.line && end.col < start.col)) return this.forceKind({ start, end: pos(start.line, Math.max(start.col, t2.length) - 1), kind: 'char' }, t.force);
-        return this.forceKind({ start, end, kind: 'char' }, t.force);
-      }
-    }
     if (cmpPos(start, end) === 0) return t.force ? this.forceKind({ start, end, kind: 'char' }, t.force) : null;
     if (end.col === 0 && end.line > start.line && !t.force) {
       // Exclusive-to-linewise rule (:help exclusive-linewise).
@@ -1123,13 +1113,83 @@ export class Vim {
         if (n === 0 && k !== 0 && cls(line[p.col + 1]) !== k) continue;
         this.win.cursor = p;
         const r = e.spec.run({ count: 1, hasCount: false, arg: '', op: 'c', visual: false });
-        if (!r) return null;
+        if (!r) {
+          // Out of words: Vim's end_word() fails past the last one, and the
+          // operator still runs to the buffer's last character.
+          const last = this.buf.lineCount - 1;
+          return pos(last, Math.max(0, this.line(last).length - 1));
+        }
         p = r.pos;
       }
     } finally {
       this.win.cursor = save;
     }
     return p;
+  }
+
+  /**
+   * w / W under an operator, after Vim's fwd_word(count, eol = TRUE) and
+   * adjust_cursor(): the last word stops at its line's end (so dw never joins
+   * lines) and running out of words ends at the end of the buffer. Then the
+   * exclusive-linewise rule and d's own linewise rule (:help d).
+   */
+  private operatorWordRange(big: boolean, count: number, isDelete: boolean, force: VisualKind | null): Range | null {
+    const L = this.lines, last = L.length - 1;
+    const start = { ...this.cursor };
+    const cls = (q: Pos) => {
+      const ch = L[q.line][q.col];
+      return ch === undefined || ch === ' ' || ch === '\t' ? 0 : big || /[\wÀ-￿]/.test(ch) ? 2 : 1;
+    };
+    let p = { ...start };
+    // inc_cursor(): 0 same line, 2 onto the line's end, 1 next line, -1 end of buffer.
+    const inc = () => {
+      const len = L[p.line].length;
+      if (p.col < len) { p = pos(p.line, p.col + 1); return p.col < len ? 0 : 2; }
+      if (p.line < last) { p = pos(p.line + 1, 0); return 1; }
+      return -1;
+    };
+    words: for (let n = count - 1; n >= 0; n--) {
+      const sclass = cls(p);
+      const lastLine = p.line === last;
+      let i = inc();
+      if (i === -1 || (i >= 1 && lastLine)) break; // no more words
+      if (i >= 1 && n === 0) break; // started on the last char of the line
+      if (sclass !== 0) {
+        while (cls(p) === sclass) {
+          i = inc();
+          if (i === -1 || (i >= 1 && n === 0)) break words;
+        }
+      }
+      while (cls(p) === 0) {
+        if (p.col === 0 && L[p.line].length === 0) break; // an empty line is a word
+        i = inc();
+        if (i === -1 || (i >= 1 && n === 0)) break words;
+      }
+    }
+    let inclusive = false;
+    if (cmpPos(start, p) < 0 && p.col > 0 && p.col >= L[p.line].length) {
+      p = pos(p.line, p.col - 1);
+      inclusive = true;
+    }
+    if (force === 'V' || force === '<C-v>') return this.forceKind({ start, end: p, kind: 'char' }, force);
+    if (force === 'v') inclusive = !inclusive;
+    const inIndent = /^[ \t]*$/.test(L[start.line].slice(0, start.col));
+    if (!inclusive && p.col === 0 && p.line > start.line) {
+      // :help exclusive-linewise
+      if (inIndent) return { start: pos(start.line, 0), end: pos(p.line - 1, 0), kind: 'line' };
+      const len = L[p.line - 1].length;
+      p = pos(p.line - 1, Math.max(0, len - 1));
+      inclusive = len > 0;
+    }
+    // :help d — a multi-line delete from the indent to a line's end is linewise.
+    if (isDelete && !force && p.line > start.line && inIndent && /^[ \t]*$/.test(L[p.line].slice(p.col + (inclusive ? 1 : 0)))) {
+      return { start: pos(start.line, 0), end: pos(p.line, 0), kind: 'line' };
+    }
+    if (!inclusive) {
+      if (cmpPos(start, p) === 0) return null;
+      p = p.col > 0 ? pos(p.line, p.col - 1) : pos(p.line - 1, L[p.line - 1].length);
+    }
+    return { start, end: p, kind: 'char' };
   }
 
   private forceKind(r: Range, force: VisualKind | null): Range {
