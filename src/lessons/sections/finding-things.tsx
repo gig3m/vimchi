@@ -139,18 +139,18 @@ export const findingThings: Section = {
       keyCards: [
         { key: '␣', glyph: '…', label: 'wait for the popup', sub: 'which-key' },
         { key: '␣sk', glyph: '⌕', label: 'search keymaps', sub: 'kickstart & LazyVim' },
-        { key: 'BS', glyph: '←', label: 'back a level', sub: 'Esc: close' },
+        { key: 'BS', glyph: '←', label: 'back a level', sub: 'esc: close' },
       ],
       intro: (
         <>
           <p>
             Press <Code>Space</Code> and stop. which-key opens a popup of every key that can come next, with what it
             does; entries starting with <Mono>+</Mono> are groups. Press a group's key (<Code>s</Code> for Search) and
-            the popup shows what is inside. <Code>BS</Code> goes back a level and <Code>Esc</Code> closes it.
+            the popup shows what is inside. <Code>BS</Code> goes back a level and <Code>esc</Code> closes it.
           </p>
           <p>
             When you remember what a command does but not its key, <Code>Space sk</Code> searches every mapping by
-            its description, and <Code>CR</Code> runs the one you pick.
+            its description, and <Code>enter</Code> runs the one you pick.
           </p>
         </>
       ),
@@ -223,7 +223,7 @@ export const findingThings: Section = {
         <>
           <p>
             <Code>Space sf</Code> opens the file picker (LazyVim binds <Code>Space Space</Code> to the same thing): a
-            prompt, the matching files and a preview of the one selected. Type a few letters of the path, in order but not necessarily together, and <Code>CR</Code> opens
+            prompt, the matching files and a preview of the one selected. Type a few letters of the path, in order but not necessarily together, and <Code>enter</Code> opens
             the best match. <Code>C-n</Code> and <Code>C-p</Code> move down and up the list.
           </p>
           <p>
@@ -301,7 +301,7 @@ export const findingThings: Section = {
         <>
           <p>
             <Code>Space sg</Code> searches the contents of every file as you type and lists each matching line as{' '}
-            <Mono>file:line:col:text</Mono>. <Code>CR</Code> opens the file with the cursor on the match.
+            <Mono>file:line:col:text</Mono>. <Code>enter</Code> opens the file with the cursor on the match.
           </p>
           <p>
             The prompt is a regular expression, run through ripgrep with smart case: all lowercase ignores case, one
@@ -374,7 +374,7 @@ export const findingThings: Section = {
           </p>
           <p>
             The first result is usually the line you are on. <Code>C-n</Code> steps to the others, and the preview
-            shows each one before you commit with <Code>CR</Code>.
+            shows each one before you commit with <Code>enter</Code>.
           </p>
         </>
       ),
@@ -435,7 +435,7 @@ export const findingThings: Section = {
           </p>
           <p>
             Use it when there is more than one hit to visit: grep for a name, <Code>C-q</Code>, then walk the list with{' '}
-            <Code>]q</Code> or <Code>CR</Code>. Later, the Substitute section changes them all at once with{' '}
+            <Code>]q</Code> or <Code>enter</Code>. Later, the Substitute section changes them all at once with{' '}
             <Code>:cdo</Code>.
           </p>
         </>

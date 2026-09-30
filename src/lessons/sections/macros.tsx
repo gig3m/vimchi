@@ -525,7 +525,7 @@ export const macros: Section = {
           </p>
           <p>
             Yank with <Code>y$</Code>, not <Code>yy</Code>. <Code>yy</Code> takes the line's newline too, and the
-            macro would press Enter at the end.
+            macro would press <Code>enter</Code> at the end.
           </p>
         </>
       ),

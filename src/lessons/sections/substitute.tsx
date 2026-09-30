@@ -1837,7 +1837,7 @@ export const substitute: Section = {
             <Code>:%s</Code> changes one file. <Code>Space sr</Code> opens grug-far, which takes a search and a
             replacement and applies them to every file in the project, listing what changed. The word under
             the cursor is the default search, so renaming a symbol is: cursor on it, <Code>Space sr</Code>,
-            type the new name, <Code>CR</Code>.
+            type the new name, <Code>enter</Code>.
           </p>
           <p>
             The tutor's panel is a simplified one: it matches whole words, so <Code>id</Code> leaves{' '}
