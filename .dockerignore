@@ -2,7 +2,8 @@ node_modules
 dist
 var
 docs
-scripts
+scripts/*
+!scripts/curriculum.ts
 .git
 .claude
 *.tsbuildinfo
