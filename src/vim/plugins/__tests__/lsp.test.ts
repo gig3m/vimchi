@@ -199,10 +199,16 @@ describe('lsp: code actions', () => {
     { title: 'Remove unused variable', apply: (v: Vim) => v.buf.splice(3, 1, []), line: 3 },
   ];
 
-  it('gra lists actions; <CR> applies the selection as one undoable change', () => {
+  // Stock vim.ui.select is inputlist(): type the number, then <CR>. Checked in nvim --clean 0.12.5:
+  // '2<CR>' → 2, '2' alone waits, j/k/<Down> are ignored, an empty or out-of-range <CR> cancels (nil),
+  // <BS> edits the number, <Esc> and q cancel.
+  it('gra lists numbered actions; number + <CR> applies as one undoable change', () => {
     const vim = setup({ actions });
     vim.feedKeys('3Ggra');
-    expect(vim.floats[0].lines.map(l => l.text)).toEqual(['1. Add missing import']);
+    expect(vim.floats[0].lines.map(l => l.text)).toEqual(['1: Add missing import', 'Type number and <Enter>: ']);
+    vim.feedKeys('1');
+    expect(vim.floats[0].lines[1].text).toBe('Type number and <Enter>: 1');
+    expect(vim.line(0)).toBe("import { formatPrice } from './format';");
     vim.feedKeys('<CR>');
     expect(vim.floats).toEqual([]);
     expect(vim.line(0)).toBe("import { Item } from './item';");
@@ -210,12 +216,31 @@ describe('lsp: code actions', () => {
     expect(vim.line(0)).toBe("import { formatPrice } from './format';");
   });
 
-  it('j/k move and a number picks directly', () => {
+  it('a bare number does not pick; <CR> after it does', () => {
+    const vim = setup({ actions });
+    vim.feedKeys('4Ggra2');
+    expect(vim.buf.lineCount).toBe(6);
+    expect(vim.floats).toHaveLength(1);
+    vim.feedKeys('<CR>');
+    expect(vim.buf.lineCount).toBe(5);
+  });
+
+  it('j/k do nothing, and <CR> with no number cancels', () => {
     const vim = setup({ actions });
     vim.feedKeys('4Ggrajk');
-    expect(vim.floats[0].sel).toBe(0);
-    vim.feedKeys('2');
-    expect(vim.buf.lineCount).toBe(5);
+    expect(vim.floats).toHaveLength(1);
+    vim.feedKeys('<CR>');
+    expect(vim.floats).toEqual([]);
+    expect(vim.buf.lineCount).toBe(6);
+  });
+
+  it('an out-of-range number cancels; <BS> edits the number', () => {
+    const vim = setup({ actions });
+    vim.feedKeys('4Ggra9<CR>');
+    expect(vim.floats).toEqual([]);
+    expect(vim.buf.lineCount).toBe(6);
+    vim.feedKeys('gra2<BS>1<CR>');
+    expect(vim.line(0)).toBe("import { Item } from './item';");
   });
 
   it('q closes without applying; no actions says so', () => {
