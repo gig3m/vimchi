@@ -1159,6 +1159,9 @@ export class Vim {
     if (backwards) [start, end] = [end, start];
     this.opStart = { ...start };
     if (res.linewise) return this.forceKind({ start: pos(start.line, 0), end: pos(end.line, 0), kind: 'line' }, t.force);
+    // nvim's bundled matchit maps o_% through a forced characterwise Visual selection, so d% never
+    // turns linewise (d/)/e from the same place does).
+    if (mkeys === '%' && !hasCount && !t.force && res.inclusive) return { start, end, kind: 'char' };
     // Charwise: o_v, :help exclusive-linewise and :help d apply to every motion.
     if (!res.inclusive && cmpPos(start, end) === 0 && !t.force) return null;
     return this.vimCharwiseRange(start, end, !!res.inclusive, opKeys === 'd', t.force, true);
