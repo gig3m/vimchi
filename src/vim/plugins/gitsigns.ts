@@ -6,7 +6,6 @@
 import type { Buffer } from '../buffer';
 import type { Decoration, Float, Plugin, Vim } from '../editor';
 import { fail, pos } from '../types';
-import { refreshStatus } from './fugitive';
 import { type Hunk, NOT_COMMITTED, addHunkNav, applyHunks, blame, bufLines, diffLines, fromLines, gitState, toLines } from './git-model';
 
 const GREEN = '#50fa7b', CHANGE = '#ffb86c', RED = '#ff5555';
@@ -49,7 +48,6 @@ function stage(vim: Vim, hs: Hunk[]) {
   if (!hs.length) return;
   const g = gitState(vim);
   g.index[vim.buf.name] = fromLines(applyHunks(toLines(g.index[vim.buf.name]), hs));
-  refreshStatus(vim);
 }
 
 function reset(vim: Vim, hs: Hunk[]) {

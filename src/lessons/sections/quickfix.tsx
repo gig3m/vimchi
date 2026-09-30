@@ -455,69 +455,6 @@ export const quickfix: Section = {
       },
     },
     {
-      id: 'argument-list',
-      title: 'Argument List',
-      chips: [':args', ':argdo'],
-      keyCards: [
-        { key: ':args', glyph: '[…]', label: 'set the file list', sub: ':args src/*.ts' },
-        { key: ':argdo', glyph: '∀', label: 'run in each file' },
-      ],
-      intro: (
-        <>
-          <p>
-            The argument list is the set of files you'd pass to <Code>nvim</Code> on the command line. Replace it at
-            any time with <Code>:args src/api/*.ts</Code>; globs and <Code>**</Code> work.
-          </p>
-          <p>
-            <Code>:argdo</Code> then runs a command in each of those files. It's the tool for a batch edit over a set of
-            files you choose by name rather than by search.
-          </p>
-        </>
-      ),
-      practice: total => (
-        <p>
-          Set the argument list, or run a command over it and save with <Code>| update</Code>. {total} rounds.
-        </p>
-      ),
-      aside: {
-        title: 'Where am I?',
-        body: (
-          <p>
-            <Code>:args</Code> on its own prints the list with the current file in brackets. <Code>]a</Code> and{' '}
-            <Code>[a</Code> step through it.
-          </p>
-        ),
-      },
-      challenge: {
-        kind: 'rounds',
-        base: { files: SHOP, open: 'README.md', height: 16 },
-        rounds: [
-          {
-            prompt: 'Make the argument list the two files in src/api.',
-            goal: { check: vim => vim.args.join(' ') === 'src/api/orders.ts src/api/products.ts' },
-            solution: ':args src/api/*.ts<CR>',
-          },
-          {
-            prompt: 'Make it every .ts file directly in src (not src/api).',
-            goal: { check: vim => vim.args.join(' ') === 'src/cart.ts src/checkout.ts src/format.ts' },
-            solution: ':args src/*.ts<CR>',
-          },
-          {
-            prompt: 'Rename formatPrice to formatMoney in every file in the list.',
-            setup: { init: vim => vim.ex('args src/**/*.ts') },
-            goal: { files: edited(USES_PRICE, t => t.replaceAll('formatPrice', 'formatMoney')) },
-            solution: ':argdo %s/formatPrice/formatMoney/ge | update<CR>',
-          },
-          {
-            prompt: 'Delete the TODO lines in every file in the list.',
-            setup: { init: vim => vim.ex('args src/*.ts') },
-            goal: { files: edited(['src/cart.ts', 'src/checkout.ts', 'src/format.ts'], t => t.replace(/^ *\/\/ TODO.*\n/m, '')) },
-            solution: ':argdo g/TODO/d | update<CR>',
-          },
-        ],
-      },
-    },
-    {
       id: 'every-buffer',
       title: 'Every Buffer',
       chips: [':bufdo'],
