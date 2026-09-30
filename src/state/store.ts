@@ -1,8 +1,9 @@
 // Progress storage. Guests keep runs in localStorage; signed-in users (GitHub)
 // keep them on the server, and guest runs move to the account on first sign-in.
 
-import { useCallback, useEffect, useState } from 'react';
-import { type Account, api } from './api';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { type Account, ApiError, api } from './api';
+import { flushOutbox, loadOutbox, pushOutbox, removeOutbox as removeSent, takeOutbox } from './outbox';
 
 export type Run = {
   lesson: string;
@@ -17,6 +18,8 @@ export type Run = {
 
 type Local = { lesson: string; runs: Run[] };
 const KEY = 'vimchi.v1';
+/** Guest runs go to the account this many at a time (the server caps an import at 5000). */
+const IMPORT_CHUNK = 1000;
 /** Where progress lived before the rename; read once as a fallback. */
 const OLD_KEY = 'hjkl.v1';
 
@@ -66,39 +69,75 @@ export function useProgress(): Progress {
     });
   }, []);
 
+  /** The session is gone: back to guest mode, and any unsent runs join the guest list so the next sign-in imports them. */
+  const sessionExpired = useCallback(() => {
+    const pending = takeOutbox();
+    if (pending.length) updateLocal(v => ({ ...v, runs: [...v.runs, ...pending] }));
+    setAccount(null);
+    setServerRuns([]);
+    setSyncError('Your session expired. Sign in again; nothing was lost.');
+  }, [updateLocal]);
+
+  /** Send whatever is waiting in the outbox; on 429 come back after Retry-After. */
+  const retryT = useRef<number>(undefined);
+  const flush = useCallback(async () => {
+    clearTimeout(retryT.current);
+    const r = await flushOutbox(api.addRun);
+    if (r.status === 'unauthorized') return sessionExpired();
+    if (r.status === 'ok') return setSyncError('');
+    setSyncError('Could not save to the server yet. Saved in this browser; retrying.');
+    retryT.current = window.setTimeout(flush, Math.max(5, r.retryAfter) * 1000);
+  }, [sessionExpired]);
+
   useEffect(() => {
     let live = true;
     (async () => {
       const me = await api.me().catch(() => null);
       if (!live) return;
       if (me) {
+        // Guest runs move to the account in chunks; only the runs that were sent are dropped, so a
+        // run finished while the import is in flight is not wiped with them.
         const guest = loadLocal().runs;
         if (guest.length) {
           try {
-            await api.importRuns(guest);
-            updateLocal(v => ({ ...v, runs: [] }));
+            for (let i = 0; i < guest.length; i += IMPORT_CHUNK) {
+              const chunk = guest.slice(i, i + IMPORT_CHUNK);
+              await api.importRuns(chunk);
+              const sent = new Set(chunk.map(r => `${r.lesson}@${r.at}`));
+              updateLocal(v => ({ ...v, runs: v.runs.filter(r => !sent.has(`${r.lesson}@${r.at}`)) }));
+            }
           } catch {
             setSyncError('Could not move guest runs to your account. They are still saved in this browser.');
           }
         }
+        await flushOutbox(api.addRun).catch(() => undefined);
         const runs = await api.runs().catch(() => [] as Run[]);
         if (!live) return;
         setAccount(me);
-        setServerRuns(runs);
+        // Anything still unsent counts as the learner's until the server takes it.
+        setServerRuns([...runs, ...loadOutbox().filter(o => !runs.some(r => r.lesson === o.lesson && r.at === o.at))]);
       }
       setLoading(false);
     })();
     return () => { live = false; };
   }, [updateLocal]);
 
+  useEffect(() => {
+    if (!account) return;
+    const onOnline = () => { void flush(); };
+    window.addEventListener('online', onOnline);
+    return () => { window.removeEventListener('online', onOnline); clearTimeout(retryT.current); };
+  }, [account, flush]);
+
   const addRun = useCallback((run: Run) => {
     if (!account) return updateLocal(v => ({ ...v, runs: [...v.runs, run] }));
     setServerRuns(rs => [...rs, run]);
+    pushOutbox(run);
     api.addRun(run).then(
-      () => setSyncError(''),
-      () => setSyncError('Could not save that run to the server.'),
+      () => { removeSent(run); void flush(); },
+      (e: unknown) => { if (e instanceof ApiError && e.status === 401) sessionExpired(); else void flush(); },
     );
-  }, [account, updateLocal]);
+  }, [account, updateLocal, flush, sessionExpired]);
 
   const signOut = useCallback(() => {
     api.signOut().finally(() => {
