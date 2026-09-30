@@ -1241,10 +1241,15 @@ export class Vim {
     const cur = this.win.cursor;
     cur.line = Math.max(0, Math.min(res.pos.line, this.buf.lineCount - 1));
     cur.col = res.pos.col;
-    this.clampCursor(this.mode === 'visual' && this.visual?.kind !== 'v' ? false : this.mode === 'visual');
-    if (this.visual) cur.col = Math.min(cur.col, Math.max(0, this.line().length - (this.line().length ? 1 : 0)));
+    // Visual may sit on the end-of-line, like Vim's coladvance() while Visual is active (charwise: the newline).
+    this.clampCursor(this.mode === 'visual');
     if (res.want !== undefined) this.win.want = res.want;
     else if (!res.keepWant) this.win.want = cur.col;
+    // Like Vim's coladvance(MAXCOL): charwise Visual after $ lands on the end-of-line.
+    if (this.visual?.kind === 'v') {
+      this.visual.toEol = this.win.want === Infinity;
+      if (this.visual.toEol) cur.col = this.line().length;
+    }
     if (this.visual?.kind === '<C-v>') this.visual.toEol = res.want === Infinity;
   }
 
@@ -1295,6 +1300,7 @@ export class Vim {
       this.mode = 'visual';
       const endLine = Math.min(this.buf.lineCount - 1, cur.line + c.visual.lines);
       this.win.cursor = pos(endLine, c.visual.kind === 'V' ? cur.col : c.visual.lines ? c.visual.cols + (c.visual.kind === 'v' ? 0 : cur.col) : cur.col + c.visual.cols);
+      if (c.visual.kind === 'v' && c.visual.toEol) this.win.cursor.col = this.line(endLine).length; // a v$ change repeats to the end-of-line
       this.dotReplaying = true;
       try {
         this.runKeys([...keys, ...c.body, ...c.insert]);
@@ -1359,8 +1365,8 @@ export class Vim {
       const c1 = Math.min(v.anchor.col, this.cursor.col), c2 = Math.max(v.anchor.col, this.cursor.col);
       return { start: pos(s.line, c1), end: pos(e.line, c2), kind: 'block', toEol: v.toEol };
     }
-    const endLen = this.line(e.line).length;
-    return { start: s, end: pos(e.line, Math.min(e.col, Math.max(0, endLen - 1)) + (endLen === 0 ? 0 : 0)), kind: 'char' };
+    // An end on the end-of-line (col == length) takes the newline.
+    return { start: { ...s }, end: pos(e.line, Math.min(e.col, this.line(e.line).length)), kind: 'char' }; // copy: s may alias the cursor
   }
 
   reselectVisual() {
