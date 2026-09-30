@@ -1,5 +1,5 @@
 import { Code } from '../../components/Code';
-import { BeforeAfter } from '../../components/diagrams';
+import { BeforeAfter, Motions } from '../../components/diagrams';
 import type { Section } from '../types';
 import type { Vim } from '../../vim/editor';
 
@@ -11,6 +11,145 @@ export const substitute: Section = {
   title: 'Substitute',
   band: 'patterns',
   lessons: [
+    {
+      id: 'pattern-atoms',
+      title: 'Pattern Atoms',
+      chips: ['^', '$', '.', '\\s'],
+      keyCards: [
+        { key: '^', glyph: '|←', label: 'line start', sub: '/^import' },
+        { key: '$', glyph: '→|', label: 'line end', sub: '/;$' },
+        { key: '.', glyph: '?', label: 'any character', sub: '/gr.y' },
+        { key: '\\s', glyph: '␣', label: 'space or tab', sub: '/id\\s' },
+      ],
+      intro: (
+        <>
+          <p>
+            A pattern is more than literal text. <Code>^</Code> matches the start of a line and <Code>$</Code> its
+            end, so <Code>/^import</Code> finds only an import that begins a line and <Code>/;$</Code> only a{' '}
+            <Code>;</Code> that ends one. <Code>.</Code> matches any one character and <Code>\s</Code> a space or a
+            tab.
+          </p>
+          <p>
+            These atoms pick which matches you get. Every <Code>/</Code>, <Code>:s</Code> and <Code>:g</Code> from
+            here on is built from them.
+          </p>
+          <Motions
+            text="for (i = 0; i < n; i++) total += i;"
+            cursor={0}
+            keys={['/;<CR>', '/;$<CR>']}
+            caption="/; stops at the first semicolon, /;$ only at one that ends the line."
+          />
+        </>
+      ),
+      practice: total => (
+        <p>
+          Search with an atom, then edit with keys you know: <Code>cgn</Code>, <Code>dgn</Code>, <Code>x</Code>,{' '}
+          <Code>n</Code> and <Code>.</Code>. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'More atoms',
+        body: (
+          <p>
+            Previews, used later in this section: <Code>\d</Code> is a digit, <Code>\w</Code> a word character,{' '}
+            <Code>\S</Code> anything but a space or tab, <Code>[^,]</Code> anything but a comma.{' '}
+            <Code>*</Code> repeats the atom before it any number of times and <Code>\+</Code> at least once, so{' '}
+            <Code>.*</Code> is the rest of the line and <Code>\d\+</Code> a whole number. A backslash makes a
+            special character plain: <Code>\.</Code> is a dot, <Code>\[</Code> a bracket.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: {},
+        rounds: [
+          {
+            prompt: 'Change "gray" and "grey" to "silver".',
+            setup: {
+              name: 'card.css',
+              text: ['.card {', '  color: gray;', '  border: 1px solid grey;', '  padding: 8px;', '}'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['.card {', '  color: silver;', '  border: 1px solid silver;', '  padding: 8px;', '}'] },
+            solution: '/gr.y<CR>cgnsilver<Esc>.',
+          },
+          {
+            prompt: 'Delete the ";" at the end of each line. The two inside for (…) stay.',
+            setup: {
+              name: 'total.js',
+              text: [
+                'let total = 0;',
+                'for (let i = 0; i < rows.length; i++) {',
+                '  total += rows[i].price;',
+                '}',
+                'console.log(total);',
+              ],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: [
+                'let total = 0',
+                'for (let i = 0; i < rows.length; i++) {',
+                '  total += rows[i].price',
+                '}',
+                'console.log(total)',
+              ],
+            },
+            solution: '/;$<CR>dgn..',
+          },
+          {
+            prompt: 'Put "async " before each "function" that starts a line.',
+            setup: {
+              name: 'parse.ts',
+              text: [
+                'function parse(raw: string) {',
+                '  // Used by every function below.',
+                "  return raw.trim().split(',');",
+                '}',
+                '',
+                'function count(rows: string[]) {',
+                '  return rows.length;',
+                '}',
+              ],
+              cursor: { line: 2, col: 2 },
+            },
+            goal: {
+              text: [
+                'async function parse(raw: string) {',
+                '  // Used by every function below.',
+                "  return raw.trim().split(',');",
+                '}',
+                '',
+                'async function count(rows: string[]) {',
+                '  return rows.length;',
+                '}',
+              ],
+            },
+            solution: '/^function<CR>Iasync <Esc>n.',
+          },
+          {
+            prompt: 'Rename the variable id to key. ids, idx and row.id stay.',
+            setup: {
+              name: 'index.lua',
+              text: ['local id = row.id', 'local ids = {}', "ids[#ids + 1] = id .. ':' .. idx", 'return ids'],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: { text: ['local key = row.id', 'local ids = {}', "ids[#ids + 1] = key .. ':' .. idx", 'return ids'] },
+            solution: '/id\\s<CR>cwkey<Esc>n.',
+          },
+          {
+            prompt: 'Delete the space or tab at the end of each line.',
+            setup: {
+              name: 'run.sh',
+              text: ['#!/bin/sh', 'set -e ', 'cd "$(dirname "$0")"\t', 'exec ./server --port 8080'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['#!/bin/sh', 'set -e', 'cd "$(dirname "$0")"', 'exec ./server --port 8080'] },
+            solution: '/\\s$<CR>xn.',
+          },
+        ],
+      },
+    },
     {
       id: 'sub-basics',
       title: 'Substitute',
@@ -325,7 +464,7 @@ export const substitute: Section = {
             solution: ':%s/print(/log.info(/gc<CR>na',
           },
           {
-            prompt: 'Change "[ ]" to "[x]" on the first two lines only. In a pattern, write "[" as "\\[".',
+            prompt: 'Change "[ ]" to "[x]" on the first two lines only.',
             setup: {
               name: 'TODO.md',
               text: ['- [ ] Write the migration', '- [ ] Add an index on email', '- [ ] Backfill old rows'],
@@ -600,7 +739,7 @@ export const substitute: Section = {
             solution: ':%s/\\v<lt>(var|let)>/const/g<CR>',
           },
           {
-            prompt: 'Delete the spaces and tabs at the end of every line. \\s is a space or tab; $ is the line end.',
+            prompt: 'Delete the spaces and tabs at the end of every line.',
             setup: {
               name: 'main.py',
               text: ['import sys   ', '', 'def main():  ', '    return 0\t'],
@@ -690,7 +829,7 @@ export const substitute: Section = {
             solution: ':%s#\\v(\\d+)/(\\d+)#\\2/\\1#<CR>',
           },
           {
-            prompt: 'Wrap what follows each "print " in parentheses: print(total). .* matches the rest of a line.',
+            prompt: 'Wrap what follows each "print " in parentheses: print(total).',
             setup: {
               name: 'report.py',
               text: ['#!/usr/bin/python2', 'print total', 'print "done"'],
@@ -749,7 +888,7 @@ export const substitute: Section = {
             solution: ':%s/\\d\\+/&px/g<CR>',
           },
           {
-            prompt: 'Wrap "npm install" and "npm test" in backticks. \\w\\+ matches one word.',
+            prompt: 'Wrap "npm install" and "npm test" in backticks.',
             setup: {
               name: 'CONTRIBUTING.md',
               text: ['## Setup', '', 'Run npm install, then npm test before you push.'],
@@ -758,7 +897,7 @@ export const substitute: Section = {
             solution: ':%s/npm \\w\\+/`&`/g<CR>',
           },
           {
-            prompt: 'Put double quotes around each value between commas. [^,]\\+ matches a run of non-commas.',
+            prompt: 'Put double quotes around each value between commas.',
             setup: { name: 'contacts.csv', text: ['name,city', 'Ada,London', 'Grace,New York'], cursor: { line: 2, col: 4 } },
             goal: { text: ['"name","city"', '"Ada","London"', '"Grace","New York"'] },
             solution: ':%s/[^,]\\+/"&"/g<CR>',
@@ -936,7 +1075,7 @@ export const substitute: Section = {
             solution: ':2,4s/\\n/, /<CR>',
           },
           {
-            prompt: 'Break the cursor line after each ". ", one sentence per line. Write the dot as "\\.".',
+            prompt: 'Break the cursor line after each ". ", one sentence per line.',
             setup: {
               name: 'intro.md',
               text: ['# Modes', '', 'Vim has modes. Normal moves. Insert types. Visual selects.', '', 'Esc gets you back.'],
@@ -1202,7 +1341,7 @@ export const substitute: Section = {
             solution: '*:%s//total/g<CR>',
           },
           {
-            prompt: 'Search for the numbers ending in ms (\\d\\+ms), then wrap each in backticks.',
+            prompt: 'Search for the numbers ending in ms, then wrap each in backticks.',
             setup: {
               name: 'perf.md',
               text: ['## Performance', '', 'Cold start dropped from 900ms to 250ms.', 'The p99 is still 1200ms.'],

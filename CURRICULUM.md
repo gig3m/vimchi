@@ -290,34 +290,35 @@ Edit at scale: the command line, substitute, global commands, project replace.
 ### Substitute
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 135 | Substitute | `:s` | transform |
-| 136 | Whole File | `%s` `/g` | transform |
-| 137 | Confirm Each | `/c` | transform |
-| 138 | Ignoring Case | `/i` `\c` | transform |
-| 139 | Word Boundaries | `\<` `\>` | transform |
-| 140 | Very Magic | `\v` | transform |
-| 141 | Capture Groups | `()` `\1` | transform |
-| 142 | The Whole Match | `&` | transform |
-| 143 | Case in Replacements | `\u` `\U` `\E` | transform |
-| 144 | Line Breaks | `\r` `\n` | transform |
-| 145 | Trimming a Match | `\zs` `\ze` | transform |
-| 146 | Lazy Matches | `\{-}` | transform |
-| 147 | Reuse the Last Search | `:s//` | transform |
-| 148 | Repeat Substitute | `&` `g&` | transform |
-| 149 | Expressions | `\=` | transform |
-| 150 | Project Replace | `␣sr` | transform |
+| 135 | Pattern Atoms | `^` `$` `.` `\s` | transform |
+| 136 | Substitute | `:s` | transform |
+| 137 | Whole File | `%s` `/g` | transform |
+| 138 | Confirm Each | `/c` | transform |
+| 139 | Ignoring Case | `/i` `\c` | transform |
+| 140 | Word Boundaries | `\<` `\>` | transform |
+| 141 | Very Magic | `\v` | transform |
+| 142 | Capture Groups | `()` `\1` | transform |
+| 143 | The Whole Match | `&` | transform |
+| 144 | Case in Replacements | `\u` `\U` `\E` | transform |
+| 145 | Line Breaks | `\r` `\n` | transform |
+| 146 | Trimming a Match | `\zs` `\ze` | transform |
+| 147 | Lazy Matches | `\{-}` | transform |
+| 148 | Reuse the Last Search | `:s//` | transform |
+| 149 | Repeat Substitute | `&` `g&` | transform |
+| 150 | Expressions | `\=` | transform |
+| 151 | Project Replace | `␣sr` | transform |
 | ★ | Rename & Reformat | `:%s` | transform |
 
 ### Global Commands
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 151 | Delete Matching Lines | `:g` `/d` | transform |
-| 152 | Keep Matching Lines | `:v` `:g!` | transform |
-| 153 | Global Normal | `:g` `norm` | transform |
-| 154 | Reverse Lines | `:g/^/m0` `m$` `t$` | transform |
-| 155 | Sorting | `:sort` `n` `!` `i` | transform |
-| 156 | Unique Sort | `:sort u` | transform |
-| 157 | Shell Filters | `!` `:%!` | transform |
+| 152 | Delete Matching Lines | `:g` `/d` | transform |
+| 153 | Keep Matching Lines | `:v` `:g!` | transform |
+| 154 | Global Normal | `:g` `norm` | transform |
+| 155 | Reverse Lines | `:g/^/m0` `m$` `t$` | transform |
+| 156 | Sorting | `:sort` `n` `!` `i` | transform |
+| 157 | Unique Sort | `:sort u` | transform |
+| 158 | Shell Filters | `!` `:%!` | transform |
 
 ## Code
 
@@ -326,52 +327,52 @@ What a starter config adds: LSP edits, richer text objects, flash, surround, com
 ### Neovim Built-ins
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 158 | Commenting | `gcc` `gc` | transform |
-| 159 | Rename | `grn` | transform |
-| 160 | Code Actions | `gra` | transform |
-| 161 | Format the File | `␣f` | transform |
+| 159 | Commenting | `gcc` `gc` | transform |
+| 160 | Rename | `grn` | transform |
+| 161 | Code Actions | `gra` | transform |
+| 162 | Format the File | `␣f` | transform |
 
 ### More Text Objects
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 162 | Next & Last Objects | `in(` `il"` | transform |
-| 163 | Arguments | `ia` `aa` | transform |
-| 164 | Indent Objects | `ii` `ai` | transform |
-| 165 | Functions & Classes | `if` `af` `ic` `ac` | transform |
-| 166 | Function Motions | `]m` `[m` | transform |
-| 167 | Folds | `za` `zR` `zM` | transform |
+| 163 | Next & Last Objects | `in(` `il"` | transform |
+| 164 | Arguments | `ia` `aa` | transform |
+| 165 | Indent Objects | `ii` `ai` | transform |
+| 166 | Functions & Classes | `if` `af` `ic` `ac` | transform |
+| 167 | Function Motions | `]m` `[m` | transform |
+| 168 | Folds | `za` `zR` `zM` | transform |
 
 ### Jumping
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 168 | Label Jumps | `s` | transform |
-| 169 | Jumps as Motions | `d` `s` | transform |
-| 170 | Treesitter Select | `S` | transform |
+| 169 | Label Jumps | `s` | transform |
+| 170 | Jumps as Motions | `d` `s` | transform |
+| 171 | Treesitter Select | `S` | transform |
 
 ### Surround
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 171 | Add Surroundings | `gsa` | transform |
-| 172 | Change Surroundings | `gsr` | transform |
-| 173 | Delete Surroundings | `gsd` | transform |
-| 174 | Find a Surrounding | `gsf` `gsF` | transform |
-| 175 | Surround a Selection | `v` `gsa` | transform |
-| 176 | Surround with Tags | `gsrtt` `gsaiwt` | transform |
+| 172 | Add Surroundings | `gsa` | transform |
+| 173 | Change Surroundings | `gsr` | transform |
+| 174 | Delete Surroundings | `gsd` | transform |
+| 175 | Find a Surrounding | `gsf` `gsF` | transform |
+| 176 | Surround a Selection | `v` `gsa` | transform |
+| 177 | Surround with Tags | `gsrtt` `gsaiwt` | transform |
 
 ### Insert Mode Power
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 177 | Deleting While Typing | `C-w` `C-u` | transform |
-| 178 | One Normal Command | `C-o` | transform |
-| 179 | Completion Menu | `C-n` `C-y` `C-e` | transform |
-| 180 | Snippets | `tab` `S-tab` | transform |
+| 178 | Deleting While Typing | `C-w` `C-u` | transform |
+| 179 | One Normal Command | `C-o` | transform |
+| 180 | Completion Menu | `C-n` `C-y` `C-e` | transform |
+| 181 | Snippets | `tab` `S-tab` | transform |
 
 ### Git
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 181 | Walking Hunks | `]h` `[h` | transform |
-| 182 | Stage a Hunk | `␣ghs` `␣ghr` | transform |
-| 183 | Lazygit | `␣gg` `q` | transform |
+| 182 | Walking Hunks | `]h` `[h` | transform |
+| 183 | Stage a Hunk | `␣ghs` `␣ghr` | transform |
+| 184 | Lazygit | `␣gg` `q` | transform |
 
 ## Challenges
 
@@ -405,7 +406,7 @@ editor as you type. Every reference solution yields zero critiques (tested).
 | Core | 11 | 73 | 71 |
 | Repeat | 2 | 15 | 14 |
 | Project | 7 | 38 | 38 |
-| Patterns | 3 | 35 | 34 |
+| Patterns | 3 | 36 | 35 |
 | Code | 6 | 26 | 26 |
 | Challenges | 1 | 5 | 0 |
-| **Total** | **30** | **192** | **183** |
+| **Total** | **30** | **193** | **184** |
