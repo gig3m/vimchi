@@ -12,7 +12,8 @@ for _, r in ipairs(rounds) do
   vim.o.shiftwidth, vim.o.expandtab, vim.o.tabstop, vim.o.autoindent = 2, true, 8, true
   vim.o.ignorecase, vim.o.smartcase, vim.o.textwidth, vim.o.wrapscan = false, false, 0, true
   for k, v in pairs(r.options) do pcall(function() vim.o[k] = v end) end
-  vim.fn.setreg('/', '')
+  vim.fn.setreg('/', r.search or '')
+  if r.search and r.search ~= '' then vim.o.hlsearch = true end
   for _, reg in ipairs({ '"', '0', '1', 'a', 'b', 'q', '-' }) do vim.fn.setreg(reg, '') end
   vim.api.nvim_win_set_cursor(0, { r.cursor.line + 1, r.cursor.col })
   local keys = vim.api.nvim_replace_termcodes(r.keys, true, true, true)
