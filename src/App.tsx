@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LessonPage } from './components/LessonPage';
 import { Profile } from './components/Profile';
+import { About } from './components/About';
 import { Sidebar } from './components/Sidebar';
 import { SignIn } from './components/SignIn';
 import { WarmUp } from './components/WarmUp';
 import type { Who } from './components/Avatar';
 import { COUNTED, LESSONS, ORDER } from './lessons';
 import { repsRunId } from './challenges/reps';
-import { PROFILE_HREF, type Route, newSeed, repsFromHash, repsHref, routeFromHash, seedFromHash, warmUpHref } from './state/seed';
+import { ABOUT_HREF, PROFILE_HREF, type Route, newSeed, repsFromHash, repsHref, routeFromHash, seedFromHash, warmUpHref } from './state/seed';
 import { useSettings } from './state/settings';
 import { useProgress } from './state/store';
 import { WARMUP_ID, todaysWarmUp, warmUpSub } from './warmup';
@@ -64,6 +65,12 @@ export function App() {
     if (location.hash !== PROFILE_HREF) history.pushState(null, '', PROFILE_HREF);
     main.current?.scrollTo(0, 0);
   };
+  /** About has a URL too (`#about`), for the same reason. */
+  const openAbout = () => {
+    setView('about');
+    if (location.hash !== ABOUT_HREF) history.pushState(null, '', ABOUT_HREF);
+    main.current?.scrollTo(0, 0);
+  };
   const closeSignIn = useCallback(() => setSignInOpen(false), []);
   /** The Warm-up on a fresh seed; `#warm-up?seed=N` replays one. */
   const openWarmUp = () => {
@@ -107,6 +114,8 @@ export function App() {
         homeHref={'#' + ORDER[0].id}
         onLesson={go}
         onProfile={openProfile}
+        aboutOn={view === 'about'}
+        onAbout={openAbout}
         onSignIn={() => setSignInOpen(true)}
         onSignOut={prog.signOut}
         coachLive={settings.coachLive}
@@ -127,6 +136,8 @@ export function App() {
               onBack={() => go(lessonId)}
               onStats={openProfile}
             />
+          ) : view === 'about' ? (
+            <About />
           ) : view === 'profile' ? (
             <Profile who={who} sub={profileSub} runs={prog.runs} onGo={go} onReps={goReps} onSignIn={() => setSignInOpen(true)} />
           ) : (

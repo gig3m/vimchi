@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PROFILE_HREF, isWarmUpHash, lessonIdFromHash, repsFromHash, repsHref, routeFromHash, seedFromHash, warmUpHref } from '../seed';
+import { ABOUT_HREF, PROFILE_HREF, isWarmUpHash, lessonIdFromHash, repsFromHash, repsHref, routeFromHash, seedFromHash, warmUpHref } from '../seed';
 
 describe('routeFromHash', () => {
   const known = (id: string) => id === 'hjkl' || id === 'words';
@@ -7,6 +7,7 @@ describe('routeFromHash', () => {
     expect(routeFromHash('#words?seed=3', known)).toEqual({ view: 'lesson', id: 'words', canonical: true });
     expect(routeFromHash('#warm-up?seed=3', known)).toEqual({ view: 'warm-up', id: null, canonical: true });
     expect(routeFromHash(PROFILE_HREF, known)).toEqual({ view: 'profile', id: null, canonical: true });
+    expect(routeFromHash(ABOUT_HREF, known)).toEqual({ view: 'about', id: null, canonical: true });
   });
   it('an empty or unknown hash falls back to a lesson and says the URL needs rewriting', () => {
     expect(routeFromHash('#no-such-lesson', known)).toEqual({ view: 'lesson', id: null, canonical: false });
