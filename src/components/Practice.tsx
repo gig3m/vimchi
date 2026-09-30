@@ -7,7 +7,7 @@ import type { Run } from '../state/store';
 import { C, colorize } from '../ui/syntax';
 import { keyFromEvent } from '../vim/keys';
 import { EditorView } from './EditorView';
-import { resultsShortcut } from './shortcuts';
+import { resultsShortcut, tabToBrowser } from './shortcuts';
 import { Checklist } from './Checklist';
 import { Results } from './Results';
 import { newSeed, repsHref, seedHref } from '../state/seed';
@@ -204,6 +204,9 @@ export function Practice(p: Props) {
       else if (action === 'warm-up-again') p.onNewWarmUp?.();
       else if (action === 'next') p.onNext();
       else if (action === 'stats') p.onStats();
+      else if (action === 'scroll-down' || action === 'scroll-up') {
+        frame.current?.querySelector('.better-ways')?.scrollBy({ top: action === 'scroll-down' ? 60 : -60, behavior: 'smooth' });
+      }
       return;
     }
     const now = Date.now();
@@ -219,12 +222,14 @@ export function Practice(p: Props) {
   };
 
   const onKeyDown = (e: KeyboardEvent) => {
+    // Results: a focused button, link or the Better ways list (reached with Tab) keeps its own keys.
+    if (s.done && e.target !== e.currentTarget) return;
     let key = keyFromEvent(e.nativeEvent);
     if (!key) return;
     if (STAND_INS[key]) key = STAND_INS[key];
     const vim = s.vim;
-    const wantsTab = vim && (vim.mode === 'insert' || vim.mode === 'cmdline' || vim.modal);
-    if ((key === '<Tab>' || key === '<S-Tab>') && !wantsTab && !s.done && s.challenge.kind !== 'quiz') return;
+    const vimWantsTab = !!vim && (vim.mode === 'insert' || vim.mode === 'cmdline' || !!vim.modal);
+    if (tabToBrowser(key, { vimWantsTab, done: s.done, quiz: s.challenge.kind === 'quiz' })) return;
     e.preventDefault();
     e.stopPropagation();
     handle(key);
@@ -337,7 +342,10 @@ export function Practice(p: Props) {
 
         {!focused && !v.done && (
           <div className="focus-hint" onMouseDown={e => { e.preventDefault(); ref.current?.focus({ preventScroll: true }); }}>
-            <span>Click to focus the editor</span>
+            <span>
+              Click to focus the editor
+              <small className="touch-note">vimchi needs a hardware keyboard: a phone or tablet's on-screen keyboard will not open here.</small>
+            </span>
           </div>
         )}
       </div>

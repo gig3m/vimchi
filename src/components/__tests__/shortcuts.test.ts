@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resultsShortcut, type ShortcutCtx } from '../shortcuts';
+import { resultsShortcut, tabToBrowser, type ShortcutCtx } from '../shortcuts';
 
 const lesson: ShortcutCtx = { inReps: false, inWarmUp: false, hasReps: true, hasSeed: true, hasNext: true };
 const reps: ShortcutCtx = { ...lesson, inReps: true };
@@ -41,5 +41,26 @@ describe('resultsShortcut', () => {
 
   it('unmapped keys do nothing', () => {
     expect(resultsShortcut('x', lesson)).toBeNull();
+  });
+
+  it('j / k and the arrows scroll the Better ways list (every key goes to the editor, so it needs its own)', () => {
+    expect(resultsShortcut('j', lesson)).toBe('scroll-down');
+    expect(resultsShortcut('<Down>', lesson)).toBe('scroll-down');
+    expect(resultsShortcut('k', reps)).toBe('scroll-up');
+    expect(resultsShortcut('<Up>', warmUp)).toBe('scroll-up');
+  });
+});
+
+describe('tabToBrowser', () => {
+  const at = (o: Partial<Parameters<typeof tabToBrowser>[1]>) => ({ vimWantsTab: false, done: false, quiz: false, ...o });
+  it('Results: Tab moves focus on to the result buttons', () => {
+    expect(tabToBrowser('<Tab>', at({ done: true }))).toBe(true);
+    expect(tabToBrowser('<S-Tab>', at({ done: true, vimWantsTab: true }))).toBe(true);
+  });
+  it('Normal mode leaves Tab to the browser; Insert, the command line and the quiz keep it', () => {
+    expect(tabToBrowser('<Tab>', at({}))).toBe(true);
+    expect(tabToBrowser('<Tab>', at({ vimWantsTab: true }))).toBe(false);
+    expect(tabToBrowser('<Tab>', at({ quiz: true }))).toBe(false);
+    expect(tabToBrowser('x', at({ done: true }))).toBe(false);
   });
 });
