@@ -176,7 +176,10 @@ button.nav-item:hover { background: var(--hover); }
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   background: rgba(30, 31, 41, .55); cursor: pointer;
 }
-.focus-hint span { padding: 10px 18px; background: var(--bg); border: 1px solid var(--sel); border-radius: 8px; font-size: 13px; color: var(--fg); }
+.focus-hint span { padding: 10px 18px; background: var(--bg); border: 1px solid var(--sel); border-radius: 8px; font-size: 13px; color: var(--fg); max-width: calc(100% - 32px); text-align: center; }
+/* Touch screens: the editor is a focusable div, so no on-screen keyboard comes up. */
+.touch-note { display: none; margin-top: 6px; font-size: 12px; color: var(--orange); }
+@media (hover: none) and (pointer: coarse) { .touch-note { display: block; } }
 
 /* ---------- results ---------- */
 .results { padding: 28px 28px 24px; }
@@ -194,7 +197,7 @@ button.nav-item:hover { background: var(--hover); }
 .ring-pct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; color: var(--fg); }
 .ring-label { font-size: 14px; color: var(--fg); margin-top: 4px; }
 .ring-sub { font-size: 11.5px; color: var(--muted); line-height: 1.4; }
-.res-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.res-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 .res-btn {
   display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 13px; padding: 8px 12px;
   background: transparent; color: var(--fg); border: 1px solid var(--sel); border-radius: 6px; cursor: pointer;
@@ -533,7 +536,12 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 .result-seed a { color: var(--purple); }
 
 /* ---------- coach ---------- */
+.bw-wrap { position: relative; }
 .better-ways { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 13px; max-height: 260px; overflow-y: auto; }
+.better-ways:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; border-radius: 4px; }
+/* More below the fold: fade the last lines and say how to get there. */
+.bw-wrap.more .better-ways { mask-image: linear-gradient(to bottom, #000 calc(100% - 36px), transparent); }
+.bw-more { margin-top: 4px; text-align: center; font-family: var(--mono); font-size: 11px; color: var(--muted); }
 .bw-title { margin: 0 0 8px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .bw-list, .bw-ref { list-style: none; margin: 0; padding: 0; }
 .bw-item { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; padding: 6px 0; border-bottom: 1px dashed rgba(98, 114, 164, .25); }

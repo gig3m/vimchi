@@ -742,7 +742,7 @@ export const marksJumps: Section = {
       chips: ['C-o', 'C-i'],
       keyCards: [
         { key: 'C-o', glyph: '↶', label: 'older jump' },
-        { key: 'C-i', glyph: '↷', label: 'newer jump', sub: 'same key as Tab' },
+        { key: 'C-i', glyph: '↷', label: 'newer jump', sub: 'often the same key as Tab' },
       ],
       intro: (
         <>
