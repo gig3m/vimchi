@@ -22,6 +22,13 @@ export type MutationKind = {
   sites(lines: readonly string[]): Site[];
   /** null when no valid mutation exists at this site (rule 4: never a no-op). */
   apply(lines: readonly string[], site: Site, rng: Rng): Mutation | null;
+  /**
+   * Present on kinds that can repeat one edit on several lines (the same junk line, the same
+   * stray word, the same wrong word) so `.` repeats the fix. True when site `b` can carry the
+   * edit made at `a`. apply() must be a pure function of (lines, site, rng draws): the
+   * generator replays the first member's draws at the others.
+   */
+  repeat?(lines: readonly string[], a: Site, b: Site): boolean;
 };
 
 /** The mutated file: original with line site.line replaced by m.lines. */

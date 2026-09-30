@@ -28,6 +28,7 @@ export const strayLine: MutationKind = {
       checklist: `remove the stray "${junk.trim()}" line`,
     };
   },
+  repeat: () => true,
 };
 
 const NOISE = ['temp', 'old', 'new', 'extra', 'copy'];
@@ -51,6 +52,7 @@ export const strayWord: MutationKind = {
       checklist: `remove the stray word "${noise}"`,
     };
   },
+  repeat: () => true,
 };
 
 /** An identifier replaced by a different word → `cw<word><Esc>`. */
@@ -73,6 +75,8 @@ export const wrongWord: MutationKind = {
       checklist: `"${other}" → "${orig}"`,
     };
   },
+  // Same word, same wrong word: `cw<word><Esc>` once, then `.`.
+  repeat: (lines, a, b) => lines[a.line].slice(a.col, a.col + a.len) === lines[b.line].slice(b.col, b.col + b.len),
 };
 
 /** Adjacent equal-length lines differing in 1–3 columns; `line` is the second of the pair. */
