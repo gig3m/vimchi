@@ -220,8 +220,8 @@ export const buffersFiles: Section = {
           <p>
             <Code>:b</Code> completes buffer names with <Code>Tab</Code>, matching anywhere in the path, so{' '}
             <Code>:b not</Code> then <Code>Tab</Code> finds src/routes/notes.ts.
-           With a picker, kickstart's <Code>Space Space</Code> (LazyVim <Code>Space ,</Code>) lists the same buffers with
-           fuzzy search.</p>
+           With a picker, kickstart's <Code>Space Space</Code> (LazyVim <Code>Space ,</Code>, since its{' '}
+           <Code>Space Space</Code> finds files) lists the same buffers with fuzzy search.</p>
         ),
       },
       challenge: {

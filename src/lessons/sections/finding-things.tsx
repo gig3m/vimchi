@@ -160,12 +160,13 @@ export const findingThings: Section = {
         </p>
       ),
       aside: {
-        title: 'The same picker, other keys',
+        title: 'Two starters, two keymaps',
         body: (
           <p>
-            LazyVim's default is <Code>Space Space</Code> for files and <Code>Space /</Code> for grep, both on
-            snacks.picker; kickstart uses <Code>Space sf</Code> and <Code>Space sg</Code> on Telescope. The prompt,{' '}
-            <Code>C-n</Code> / <Code>C-p</Code> and <Code>CR</Code> behave the same in all of them.
+            LazyVim uses <Code>Space Space</Code> for files and <Code>Space /</Code> for grep on snacks.picker;
+            kickstart uses <Code>Space sf</Code> and <Code>Space sg</Code> on Telescope. Some keys collide:{' '}
+            <Code>Space Space</Code> is files in LazyVim but buffers in kickstart, and <Code>Space sr</Code> is project
+            replace in LazyVim but "resume the last search" in kickstart.
           </p>
         ),
       },
@@ -308,8 +309,8 @@ export const findingThings: Section = {
         body: (
           <p>
             kickstart's <Code>Space Space</Code> (LazyVim <Code>Space ,</Code> or <Code>Space fb</Code>) lists open
-            buffers in the same picker. To close one from the list, it is <Code>M-d</Code> in Telescope and{' '}
-            <Code>dd</Code> in the snacks picker.
+            buffers in the same picker; in LazyVim, <Code>Space Space</Code> finds files instead. To close a buffer
+            from the list, it is <Code>M-d</Code> in Telescope and <Code>dd</Code> in the snacks picker.
           </p>
         ),
       },
