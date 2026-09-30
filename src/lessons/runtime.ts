@@ -26,8 +26,22 @@ export function mergeSetup(base: Setup, over: Setup | undefined): Setup {
   };
 }
 
+/**
+ * Plugins every editor gets whatever the setup lists. flash.nvim is on everywhere (owner ruling):
+ * `s` is a label jump and `S` a treesitter select in every lesson, Reps run, Warm-up and
+ * challenge, as LazyVim maps them. It loads last so its keys win over any other plugin's s/S
+ * (nvim-surround's visual S).
+ */
+export const ALWAYS_PLUGINS = ['flash'];
+
+/** The plugin ids an editor built from `setup` loads, in order. */
+export function pluginIds(setup: Setup): string[] {
+  const listed = (setup.plugins ?? []).filter(id => !ALWAYS_PLUGINS.includes(id));
+  return [...listed, ...ALWAYS_PLUGINS];
+}
+
 export function createVim(setup: Setup): Vim {
-  const plugins = (setup.plugins ?? []).map(id => {
+  const plugins = pluginIds(setup).map(id => {
     const p = PLUGINS[id];
     if (!p) throw new Error(`Unknown plugin "${id}"`);
     return p;

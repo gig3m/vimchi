@@ -100,3 +100,21 @@ describe('flash.nvim treesitter', () => {
     expect(vim.mode).toBe('normal');
   });
 });
+
+describe('flash beside mini.surround on LazyVim keys', () => {
+  it('s jumps, S selects in visual mode, gsa still surrounds', async () => {
+    const { surround } = await import('../surround');
+    for (const plugins of [[surround, flash]]) { // createVim always loads flash last
+      const vim = new Vim({ text: 'let a = b; let c = d;', name: 'a.ts', plugins });
+      vim.feedKeys('sc');
+      const m = flashMatches(vim, 'c')[0];
+      vim.feedKeys(m.label!);
+      expect(vim.cursor).toEqual({ line: 0, col: 15 });
+      vim.feedKeys('gsaiw)');
+      expect(vim.buf.text()).toBe('let a = b; let (c) = d;');
+      vim.feedKeys('<Esc>0wwvS');
+      expect(vim.pluginData.flash).toBeTruthy(); // flash's treesitter labels, not nvim-surround's S
+      vim.feedKeys('<Esc>');
+    }
+  });
+});

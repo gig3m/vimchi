@@ -1,7 +1,8 @@
-// Surround: mini.surround's default keys (what kickstart ships; LazyVim's extra prefixes them
-// with g) and nvim-surround's (the tpope lineage) on the same engine.
-//   mini:  sa{motion}{char} add   sa{char} in visual   sd{char} delete   sr{old}{new} replace
-//          sf{char} / sF{char} jump to the right / left delimiter
+// Surround: mini.surround on LazyVim's keys (its extra maps them under gs so s stays free for
+// flash, which is on in every lesson; kickstart ships the same plugin on bare sa/sd/sr/sf) and
+// nvim-surround's (the tpope lineage) on the same engine.
+//   mini:  gsa{motion}{char} add   gsa{char} in visual   gsd{char} delete   gsr{old}{new} replace
+//          gsf{char} / gsF{char} jump to the right / left delimiter
 //   nvim-surround: ys{motion}{char}  yss{char}  yS / ySS  ds{char}  cs{old}{new}  S{char} (visual)
 // Opening brackets add inner spaces, closing ones don't. Aliases: b=) B=} r=] a=> q=any quote
 // s=any surrounding. t / T are tags (the name is typed at a prompt, ended by <CR>; a whole <tag>
@@ -262,11 +263,10 @@ export const surround: Plugin = {
       run: (r, c) => addAround(vim, r, addPair(vim.opArgument), c.visual === 'V'),
     }, ['v']);
 
-    // mini.surround: the same operations under s-prefixed keys. A lone `s` still substitutes: the
-    // engine runs it when the next key is not a/d/r/f/F.
-    vim.defineOperator('sa', { change: true, argAfter: 'surround', run: add(false) }, ['n']);
+    // mini.surround on LazyVim's gs-prefixed keys (Neovim's own gs, sleep, is not modelled).
+    vim.defineOperator('gsa', { change: true, argAfter: 'surround', run: add(false) }, ['n']);
     // mini's default respect_selection_type = false: a V selection is surrounded as characters.
-    vim.defineOperator('sa', { change: true, argAfter: 'surround', run: r => addAround(vim, r, addPair(vim.opArgument), false) }, ['v']);
+    vim.defineOperator('gsa', { change: true, argAfter: 'surround', run: r => addAround(vim, r, addPair(vim.opArgument), false) }, ['v']);
     // mini searches only around the cursor (search_method 'cover'); its `b` is any bracket.
     const MINI: FindOpts = { coverOnly: true, anyBracket: true };
     const del = (opts: FindOpts) => ({
@@ -278,7 +278,7 @@ export const surround: Plugin = {
       },
     });
     vim.defineAction('ds', del({}));
-    vim.defineAction('sd', del(MINI));
+    vim.defineAction('gsd', del(MINI));
     const jump = (side: 'l' | 'r') => ({
       arg: 'char' as const,
       run: (c: { arg: string }) => {
@@ -287,13 +287,13 @@ export const surround: Plugin = {
         vim.setCursor(side === 'r' ? f.r[0] : f.l[0]);
       },
     });
-    vim.defineAction('sf', jump('r'));
-    vim.defineAction('sF', jump('l'));
-    // sr{input}{output}: the output is read like sa's character, so `t` and `f` prompt for a name
+    vim.defineAction('gsf', jump('r'));
+    vim.defineAction('gsF', jump('l'));
+    // gsr{input}{output}: the output is read like gsa's character, so `t` and `f` prompt for a name
     // and the whole tag is replaced (mini keeps no attributes; type them again if you want them).
     for (const t of TARGETS) {
       if (t === 'T') continue;
-      vim.defineAction(`sr${t === '<' ? '<lt>' : t}`, {
+      vim.defineAction(`gsr${t === '<' ? '<lt>' : t}`, {
         arg: 'surround', change: true,
         run: c => {
           const f = findSurrounding(vim.lines, vim.cursor, t, MINI);

@@ -75,55 +75,48 @@ describe('nvim-surround', () => {
   });
 });
 
-describe('mini.surround keys (kickstart default)', () => {
+describe('mini.surround on LazyVim keys (gsa gsd gsr gsf gsF)', () => {
   it.each([
-    ['surr*ound_words', 4, 'saiw)', '(surround_words)'],
-    ['*make strings', 0, 'sa$"', '"make strings"'],
-    ['hello world', 0, 'saiw(', '( hello ) world'],
-    ['[delete ar*ound me!]', 10, 'sd]', 'delete around me!'],
-    ['remove <b>HTML t*ags</b>', 15, 'sdt', 'remove HTML tags'],
-    ["'change quot*es'", 12, `sr'"`, '"change quotes"'],
-    ['<b>or tag* types</b>', 9, 'srtth1<CR>', '<h1>or tag types</h1>'],                 // sr: input id, output id, then the name
-    ['<div class="c">tag* types</div>', 18, 'srttp<CR>', '<p>tag types</p>'],            // mini replaces the whole tag, attributes included
-    ['delete(functi*on calls)', 13, 'sdf', 'function calls'],
-    ['tag *word here', 4, 'saiwtem<CR>', 'tag <em>word</em> here'],
-    ['tag *word here', 4, 'saiwta href="/"<CR>', 'tag <a href="/">word</a> here'],
+    ['surr*ound_words', 4, 'gsaiw)', '(surround_words)'],
+    ['*make strings', 0, 'gsa$"', '"make strings"'],
+    ['hello world', 0, 'gsaiw(', '( hello ) world'],
+    ['[delete ar*ound me!]', 10, 'gsd]', 'delete around me!'],
+    ['remove <b>HTML t*ags</b>', 15, 'gsdt', 'remove HTML tags'],
+    ["'change quot*es'", 12, `gsr'"`, '"change quotes"'],
+    ['<b>or tag* types</b>', 9, 'gsrtth1<CR>', '<h1>or tag types</h1>'],                 // gsr: input id, output id, then the name
+    ['<div class="c">tag* types</div>', 18, 'gsrttp<CR>', '<p>tag types</p>'],            // mini replaces the whole tag, attributes included
+    ['delete(functi*on calls)', 13, 'gsdf', 'function calls'],
+    ['tag *word here', 4, 'gsaiwtem<CR>', 'tag <em>word</em> here'],
+    ['tag *word here', 4, 'gsaiwta href="/"<CR>', 'tag <a href="/">word</a> here'],
   ])('%s  %s', (text, _col, keys, want) => {
     expect(run(text.replace('*', ''), text.indexOf('*'), keys as string).buf.text()).toBe(want);
   });
-  it('sa surrounds a visual selection; a V selection is treated as characters (respect_selection_type off)', () => {
-    expect(run('hello world', 0, 'vesa)').buf.text()).toBe('(hello) world');
-    expect(run('a\nb\nc', 0, 'Vjsa}').buf.lines).toEqual(['{a', 'b}', 'c']);
+  it('gsa surrounds a visual selection; a V selection is treated as characters (respect_selection_type off)', () => {
+    expect(run('hello world', 0, 'vegsa)').buf.text()).toBe('(hello) world');
+    expect(run('a\nb\nc', 0, 'Vjgsa}').buf.lines).toEqual(['{a', 'b}', 'c']);
   });
-  it('sd and sr only act on a pair around the cursor (search_method cover)', () => {
-    expect(run('x = (a)', 0, 'sd)').buf.text()).toBe('x = (a)');
-    expect(run("x = 'a'", 0, `sr'"`).buf.text()).toBe("x = 'a'");
-    expect(run('x = (a)', 5, 'sd)').buf.text()).toBe('x = a');
+  it('gsd and gsr only act on a pair around the cursor (search_method cover)', () => {
+    expect(run('x = (a)', 0, 'gsd)').buf.text()).toBe('x = (a)');
+    expect(run("x = 'a'", 0, `gsr'"`).buf.text()).toBe("x = 'a'");
+    expect(run('x = (a)', 5, 'gsd)').buf.text()).toBe('x = a');
   });
-  it('b means any bracket for sd, sr and sf; q any quote', () => {
-    expect(run('f[a]', 2, 'sdb').buf.text()).toBe('fa');
-    expect(run('f{a}', 2, 'srb)').buf.text()).toBe('f(a)');
-    expect(run("f('a')", 3, 'sdq').buf.text()).toBe('f(a)');
-    expect(run('f{a}', 2, 'sfb').cursor).toEqual({ line: 0, col: 3 });
+  it('b means any bracket for gsd, gsr and gsf; q any quote', () => {
+    expect(run('f[a]', 2, 'gsdb').buf.text()).toBe('fa');
+    expect(run('f{a}', 2, 'gsrb)').buf.text()).toBe('f(a)');
+    expect(run("f('a')", 3, 'gsdq').buf.text()).toBe('f(a)');
+    expect(run('f{a}', 2, 'gsfb').cursor).toEqual({ line: 0, col: 3 });
   });
-  it('sf and sF jump to the right and left delimiter of the surrounding', () => {
-    const v = run('call(a, (b), c)', 6, 'sf)');
+  it('gsf and gsF jump to the right and left delimiter of the surrounding', () => {
+    const v = run('call(a, (b), c)', 6, 'gsf)');
     expect(v.cursor).toEqual({ line: 0, col: 14 });
-    const w = run('call(a, (b), c)', 6, 'sF)');
+    const w = run('call(a, (b), c)', 6, 'gsF)');
     expect(w.cursor).toEqual({ line: 0, col: 4 });
-    const q = run('say("hi there")', 8, 'sf"');
+    const q = run('say("hi there")', 8, 'gsf"');
     expect(q.cursor).toEqual({ line: 0, col: 13 });
   });
-  it('a lone s still substitutes once a non-surround key follows', () => {
+  it('leaves s and S alone: s substitutes at once, the bare kickstart keys are not bound', () => {
     expect(run('abc', 1, 'sX<Esc>').buf.text()).toBe('aXc');
-  });
-  it('the re-fed key is recorded once in a macro and replays', () => {
-    const v = run('abc\nabc', 1, 'qasX<Esc>jq');
-    expect(v.registers.get('a')?.text).toBe('sX\x1bj');
-    v.feedKeys('0l@a');
-    expect(v.buf.lines).toEqual(['aXc', 'aXc']);
-  });
-  it('s<Esc> substitutes then leaves insert, like Neovim', () => {
+    expect(run('(abc)', 2, 'sd)<Esc>').buf.text()).toBe('(ad)c)');
     expect(run('abc', 1, 's<Esc>').buf.text()).toBe('ac');
   });
 });
