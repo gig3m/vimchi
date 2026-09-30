@@ -8,6 +8,7 @@ COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci --no-audit --no-fund
 COPY tsconfig.json vite.config.ts index.html ./
 COPY src ./src
+COPY scripts/curriculum.ts ./scripts/curriculum.ts
 COPY public ./public
 RUN npm run build
 
