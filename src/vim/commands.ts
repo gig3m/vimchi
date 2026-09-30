@@ -80,6 +80,8 @@ export function installCommands(vim: Vim) {
   M('gM', () => ({ pos: pos(cur().line, Math.floor(ln().length / 2)) }));
 
   /** A jump to line l: first non-blank with 'startofline', the remembered column without it (Neovim's default). */
+  /** Where a linewise change leaves the cursor on line l: first non-blank with 'startofline', else the wanted column. */
+  const landOn = (l: number) => (V.options.startofline ? firstNonBlankPos(L(), l) : pos(l, Math.min(V.win.want, lastCol(ln(l)))));
   const lineJump = (l: number): MotionResult =>
     V.options.startofline
       ? { pos: firstNonBlankPos(L(), l), linewise: true, jump: true }
@@ -349,7 +351,7 @@ export function installCommands(vim: Vim) {
     run: (r, c) => {
       const v = V.deleteRange(r);
       put(c.reg, v, true);
-      if (r.kind === 'line') V.setCursor(firstNonBlankPos(L(), Math.min(r.start.line, V.buf.lineCount - 1)));
+      if (r.kind === 'line') { const l = Math.min(r.start.line, V.buf.lineCount - 1); V.setCursor(landOn(l), V.win.want); }
       else V.setCursor(pos(r.start.line, r.kind === 'block' ? Math.min(r.start.col, r.end.col) : r.start.col));
     },
   });
@@ -401,7 +403,7 @@ export function installCommands(vim: Vim) {
       V.buf.setLine(l, ' '.repeat(n) + t.trimStart());
     }
     V.buf.recordChange(pos(r.start.line, 0));
-    V.setCursor(firstNonBlankPos(L(), r.start.line));
+    V.setCursor(landOn(r.start.line), V.win.want);
     const n = r.end.line - r.start.line + 1;
     if (n > 2) V.msg(`${n} lines ${dir === 1 ? '>' : '<'}ed ${times} time${times > 1 ? 's' : ''}`);
   };
@@ -412,7 +414,7 @@ export function installCommands(vim: Vim) {
     run: r => {
       const out = reindentLines(L(), r.start.line, r.end.line, V.buf.filetype, Number(V.opt('shiftwidth')) || 2);
       V.buf.splice(r.start.line, r.end.line - r.start.line + 1, out);
-      V.setCursor(firstNonBlankPos(L(), r.start.line));
+      V.setCursor(landOn(r.start.line), V.win.want);
       const n = r.end.line - r.start.line + 1;
       if (n > 2) V.msg(`${n} lines indented `);
     },
@@ -807,7 +809,7 @@ export function installCommands(vim: Vim) {
     scroll(() => n, false)({ ...c, hasCount: false });
     const rows = V.visibleLines();
     const top = rows.indexOf(V.win.top);
-    V.win.cursor = pos(rows[top], firstNonBlank(ln(rows[top])));
+    V.win.cursor = landOn(rows[top]);
   }, { modes: ['n', 'v'] });
   A('<PageDown>', c => V.getAction('<C-f>')!.run(c), { modes: ['n', 'v'] });
   A('<C-b>', c => {
@@ -816,7 +818,7 @@ export function installCommands(vim: Vim) {
     const rows = V.visibleLines();
     const top = rows.indexOf(V.win.top);
     const bottom = rows[Math.min(rows.length - 1, top + V.win.height - 1)];
-    V.win.cursor = pos(bottom, firstNonBlank(ln(bottom)));
+    V.win.cursor = landOn(bottom);
   }, { modes: ['n', 'v'] });
   A('<PageUp>', c => V.getAction('<C-b>')!.run(c), { modes: ['n', 'v'] });
   A('<C-e>', c => scroll(() => 1, false)({ ...c, hasCount: c.hasCount }), { modes: ['n', 'v'] });
