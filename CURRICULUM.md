@@ -274,9 +274,9 @@ Edit at scale: the command line, substitute, global commands, project replace.
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
 | 122 | Jump to Line | `:42` | transform |
-| 123 | Ranges | `%` `.` `$` | transform |
-| 124 | Visual Ranges | `'<,'>` | transform |
-| 125 | Delete & Yank Lines | `:d` `:y` | transform |
+| 123 | Delete & Yank Lines | `:d` `:y` | transform |
+| 124 | Ranges | `%` `.` `$` | transform |
+| 125 | Visual Ranges | `'<,'>` | transform |
 | 126 | Move & Copy Lines | `:m` `:t` | transform |
 | 127 | Normal over a Range | `:norm` | transform |
 | 128 | Macros over a Range | `:norm @a` | transform |
