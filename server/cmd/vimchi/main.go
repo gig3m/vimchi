@@ -53,6 +53,7 @@ func run(log *slog.Logger) error {
 		BaseURL:       *baseURL,
 		StaticDir:     *static,
 		SecureCookies: os.Getenv("VIMCHI_SECURE_COOKIES") == "1",
+		TrustProxy:    os.Getenv("VIMCHI_TRUST_PROXY") == "1",
 		Log:           log,
 	}
 	hs := &http.Server{

@@ -7,6 +7,10 @@ import (
 	"regexp"
 )
 
+// MaxRunsPerUser bounds what one account can store; AddRuns drops the oldest
+// runs past it, so a scripted client cannot grow the database without limit.
+const MaxRunsPerUser = 20000
+
 // Run is one completed lesson attempt. Its JSON shape is shared with the
 // frontend.
 type Run struct {
