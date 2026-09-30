@@ -1,12 +1,12 @@
 import { Code } from '../../components/Code';
 import type { Vim } from '../../vim/editor';
-import { openDir } from '../../vim/plugins/oil';
+import { explorerOpen, mainFile, openExplorer, projectHas, treeLines } from '../../vim/plugins/explorer';
 import type { Section } from '../types';
 import { SHOP } from './finding-things';
 
-/** Start in an oil buffer for `dir`, cursor on `focus`. */
-const inOil = (dir: string, focus?: string) => (vim: Vim) => openDir(vim, dir, focus);
-const exists = (vim: Vim, f: string) => vim.fs.read(f) != null;
+/** Start with the tree open, the cursor on the open file. */
+const inTree = (vim: Vim) => openExplorer(vim);
+const shows = (f: string) => (vim: Vim) => mainFile(vim) === f;
 
 export const fileNavigation: Section = {
   id: 'file-navigation',
@@ -14,151 +14,169 @@ export const fileNavigation: Section = {
   band: 'project',
   lessons: [
     {
-      id: 'oil-open-directory',
-      title: 'Open the Directory',
-      chips: ['-', 'CR'],
+      id: 'explorer-open',
+      title: 'Open the Tree',
+      chips: ['␣e', 'l', 'h', 'q'],
       keyCards: [
-        { key: '-', glyph: '↑', label: 'parent directory', sub: 'oil.nvim' },
-        { key: 'CR', glyph: '⏎', label: 'open entry' },
+        { key: '␣e', glyph: '▤', label: 'toggle the tree', sub: 'kickstart: \\' },
+        { key: 'l', glyph: '▸', label: 'expand or open' },
+        { key: 'h', glyph: '◂', label: 'collapse' },
+        { key: 'CR', glyph: '⏎', label: 'open or toggle' },
+        { key: 'q', glyph: '✕', label: 'close the tree' },
       ],
       intro: (
         <>
           <p>
-            With oil.nvim, <Code>-</Code> opens the directory of the current file as an ordinary buffer: one entry per
-            line, directories ending in <Code>/</Code>, the cursor on the file you came from. <Code>CR</Code> opens the
-            entry under the cursor, and <Code>-</Code> again goes up a level.
+            <Code>Space e</Code> opens the file tree in a sidebar on the left, with the cursor on the file you are
+            editing. Move with <Code>j</Code> and <Code>k</Code>. <Code>l</Code> expands a directory or opens a file;{' '}
+            <Code>h</Code> collapses a directory, or closes the one you are in and moves up to it.
           </p>
           <p>
-            Since it is a buffer, you move with <Code>j</Code>, <Code>k</Code>, <Code>/</Code> and the rest, and{' '}
-            <Code>C-^</Code> takes you back to the file.
+            <Code>CR</Code> opens a file or toggles a directory. A file opens in the main window and the tree stays
+            open beside it; <Code>q</Code> in the tree closes it, and <Code>Space e</Code> closes it from anywhere.
           </p>
         </>
       ),
-      practice: total => <p>Walk the project with <Code>-</Code> and <Code>CR</Code> to reach each file. {total} rounds.</p>,
+      practice: total => <p>Walk the tree to each file the prompt names, or close it when asked. {total} rounds.</p>,
       aside: {
-        title: 'Tree explorers',
+        title: 'Two starters',
         body: (
           <p>
-            LazyVim's file explorer (snacks.explorer) is on <Code>Space e</Code>; kickstart ships none (netrw's <Code>:Explore</Code>
-            is built in). The idea is the same: a directory you move through. oil's twist is that the listing is a
-            buffer you edit and <Code>:w</Code>; its README maps it to <Code>-</Code>, replacing a rarely used motion.
+            <Code>Space e</Code> is LazyVim's snacks.explorer. kickstart's explorer is neo-tree, opt-in (uncomment its{' '}
+            <Code>kickstart.plugins.neo-tree</Code> line), on <Code>\</Code>: <Code>CR</Code> toggles a directory and{' '}
+            <Code>BS</Code> goes up, where snacks uses <Code>l</Code> and <Code>h</Code>. If you would rather edit a
+            directory as text, look at oil.nvim.
           </p>
         ),
       },
       challenge: {
         kind: 'rounds',
-        base: { files: SHOP, plugins: ['oil'] },
+        base: { files: SHOP, open: 'README.md', plugins: ['explorer'], height: 16 },
         rounds: [
           {
-            prompt: 'Open the directory this file is in.',
-            setup: { open: 'src/routes/invoices.ts' },
-            goal: { buffer: 'oil:///src/routes/' },
-            solution: '-',
+            prompt: 'Open the tree.',
+            goal: { check: explorerOpen },
+            solution: '<Space>e',
           },
           {
-            prompt: 'Go to the directory and open dates.ts.',
+            prompt: 'Open dates.ts, next to this file.',
             setup: { open: 'src/lib/money.ts' },
-            goal: { buffer: 'src/lib/dates.ts' },
-            solution: '-gg<CR>',
+            goal: { check: shows('src/lib/dates.ts') },
+            solution: '<Space>ekkl',
           },
           {
-            prompt: 'Open the project root.',
+            prompt: 'Open test/money.test.ts.',
             setup: { open: 'src/app.ts' },
-            goal: { buffer: 'oil:///' },
-            solution: '--',
+            goal: { check: shows('test/money.test.ts') },
+            solution: '<Space>ejljjl',
           },
           {
-            prompt: 'From the customers route, open src/lib/logger.ts.',
-            setup: { open: 'src/routes/customers.ts' },
-            goal: { buffer: 'src/lib/logger.ts' },
-            solution: '--k<CR>j<CR>',
+            prompt: 'Open logger.ts, then close the tree.',
+            setup: { open: 'src/lib/dates.ts', init: inTree },
+            goal: { check: vim => shows('src/lib/logger.ts')(vim) && !explorerOpen(vim) },
+            solution: 'jl<Space>e',
           },
           {
-            prompt: 'From the README, open test/invoices.test.ts.',
-            setup: { open: 'README.md' },
-            goal: { buffer: 'test/invoices.test.ts' },
-            solution: '-kk<CR><CR>',
+            prompt: 'Collapse src, then open README.md.',
+            setup: { open: 'src/routes/invoices.ts', init: inTree },
+            goal: { check: vim => shows('README.md')(vim) && treeLines(vim).includes('▸ src') },
+            solution: 'hhGl',
+          },
+          {
+            prompt: 'Open src/db/client.ts.',
+            goal: { check: shows('src/db/client.ts') },
+            solution: '<Space>eggj<CR>j<CR>j<CR>',
+          },
+          {
+            prompt: 'Close the tree.',
+            setup: { open: 'src/routes/customers.ts', init: inTree },
+            goal: { check: vim => !explorerOpen(vim) },
+            solution: 'q',
           },
         ],
       },
     },
     {
-      id: 'oil-edit-directory',
-      title: 'Edit a Directory',
-      chips: ['dd', 'cw', ':w'],
+      id: 'explorer-edit',
+      title: 'Edit the Tree',
+      chips: ['a', 'd', 'r'],
       keyCards: [
-        { key: 'dd', glyph: 'del', label: 'delete entry' },
-        { key: 'cw', glyph: '✎', label: 'rename entry' },
-        { key: 'o', glyph: '+', label: 'new entry' },
-        { key: ':w', glyph: '✓', label: 'apply changes', sub: 'y to confirm' },
+        { key: 'a', glyph: '+', label: 'add', sub: 'end with / for a directory' },
+        { key: 'd', glyph: 'del', label: 'delete', sub: 'y to confirm' },
+        { key: 'r', glyph: '✎', label: 'rename' },
       ],
       intro: (
         <>
           <p>
-            An oil buffer is the file system as text. Delete a line to delete the file, change a name to rename it,
-            add a line to create one. <Code>:w</Code> lists the changes in a float; <Code>y</Code> applies them,{' '}
-            <Code>n</Code> backs out.
+            In the tree, <Code>a</Code> asks for a name and adds a file in the directory under the cursor (or beside
+            the file under it). End the name with <Code>/</Code> to make a directory; <Code>lib/fmt.ts</Code> makes
+            both at once.
           </p>
           <p>
-            All your editing works here: <Code>cw</Code> renames up to the extension, <Code>dj</Code> removes two
-            entries, <Code>dd</Code> in one directory and <Code>p</Code> in another moves a file.
+            <Code>d</Code> deletes the entry under the cursor after you confirm with <Code>y</Code>. <Code>r</Code>{' '}
+            renames it: the prompt starts with the old name, so <Code>C-u</Code> clears it or <Code>BS</Code> trims the
+            end. Open buffers follow a rename.
           </p>
         </>
       ),
-      practice: total => <p>Change the files the prompt asks for, then save and confirm. {total} rounds.</p>,
+      practice: total => <p>Add, delete and rename until the project matches the prompt. {total} rounds.</p>,
       aside: {
-        title: 'How oil keeps track',
+        title: 'Two starters',
         body: (
           <p>
-            Each line starts with a hidden id like <Code>/003</Code>, which is how oil tells a rename from a delete plus
-            a create. Clear a whole line with <Code>cc</Code> and the id goes too, so that entry counts as new.
+            neo-tree, kickstart's opt-in explorer on <Code>\</Code>, uses the same <Code>a</Code>, <Code>d</Code> and{' '}
+            <Code>r</Code>, and moves with <Code>CR</Code> and <Code>BS</Code> where snacks.explorer uses{' '}
+            <Code>l</Code> and <Code>h</Code>. oil.nvim takes another route: the directory is a buffer you edit with{' '}
+            <Code>dd</Code> and <Code>cw</Code>, then <Code>:w</Code>.
           </p>
         ),
       },
       challenge: {
         kind: 'rounds',
-        base: { files: SHOP, open: 'README.md', plugins: ['oil'] },
+        base: { files: SHOP, open: 'README.md', plugins: ['explorer'], height: 16 },
         rounds: [
           {
             prompt: 'dates.ts is called time.ts.',
-            setup: { init: inOil('src/lib', 'dates.ts') },
-            goal: { check: vim => exists(vim, 'src/lib/time.ts') && !exists(vim, 'src/lib/dates.ts') },
-            solution: 'cwtime<Esc>:w<CR>y',
+            setup: { open: 'src/lib/dates.ts', init: inTree },
+            goal: { check: vim => projectHas(vim, 'src/lib/time.ts') && !projectHas(vim, 'src/lib/dates.ts') },
+            solution: 'r<C-u>time.ts<CR>',
           },
           {
             prompt: 'logger.ts is gone.',
-            setup: { init: inOil('src/lib', 'logger.ts') },
-            goal: { check: vim => !exists(vim, 'src/lib/logger.ts') && exists(vim, 'src/lib/money.ts') },
-            solution: 'dd:w<CR>y',
+            setup: { open: 'src/lib/logger.ts', init: inTree },
+            goal: { check: vim => !projectHas(vim, 'src/lib/logger.ts') && projectHas(vim, 'src/lib/money.ts') },
+            solution: 'dy',
           },
           {
             prompt: 'src/lib has a new fmt.ts.',
-            setup: { init: inOil('src/lib', 'money.ts') },
-            goal: { check: vim => exists(vim, 'src/lib/fmt.ts') },
-            solution: 'ofmt.ts<Esc>:w<CR>y',
+            setup: { open: 'src/lib/money.ts', init: inTree },
+            goal: { check: vim => projectHas(vim, 'src/lib/fmt.ts') },
+            solution: 'afmt.ts<CR>',
           },
           {
-            prompt: 'Only setup.ts is left in test/.',
-            setup: {
-              init: vim => {
-                vim.fs.write('test/setup.ts', "process.env.TZ = 'UTC';\n");
-                openDir(vim, 'test');
-              },
-            },
-            goal: { check: vim => vim.fs.list().filter(f => f.startsWith('test/')).join() === 'test/setup.ts' },
-            solution: 'dj:w<CR>y',
+            prompt: 'src has a new services directory.',
+            setup: { open: 'src/app.ts', init: inTree },
+            goal: { check: vim => projectHas(vim, 'src/services') },
+            solution: 'aservices/<CR>',
           },
           {
             prompt: 'The routes directory is called api.',
-            setup: { init: inOil('src', 'routes') },
-            goal: { check: vim => exists(vim, 'src/api/invoices.ts') && !vim.fs.isDir('src/routes') },
-            solution: 'cwapi<Esc>:w<CR>y',
+            setup: { open: 'src/routes/invoices.ts', init: inTree },
+            goal: { check: vim => projectHas(vim, 'src/api/invoices.ts') && !projectHas(vim, 'src/routes') },
+            solution: 'hr<C-u>api<CR>',
           },
           {
-            prompt: 'In one save: money.ts is price.ts and dates.ts is gone.',
-            setup: { init: inOil('src/lib', 'money.ts') },
-            goal: { check: vim => exists(vim, 'src/lib/price.ts') && !exists(vim, 'src/lib/money.ts') && !exists(vim, 'src/lib/dates.ts') },
-            solution: 'cwprice<Esc>ggdd:w<CR>y',
+            prompt: 'The test directory is gone.',
+            goal: { check: vim => !projectHas(vim, 'test') && projectHas(vim, 'README.md') },
+            solution: '<Space>ekkdy',
+          },
+          {
+            prompt: 'money.ts is price.ts and dates.ts is gone.',
+            setup: { open: 'src/lib/money.ts', init: inTree },
+            goal: {
+              check: vim => projectHas(vim, 'src/lib/price.ts') && !projectHas(vim, 'src/lib/money.ts') && !projectHas(vim, 'src/lib/dates.ts'),
+            },
+            solution: 'r<C-u>price.ts<CR>kkdy',
           },
         ],
       },
