@@ -267,7 +267,7 @@ export const surround: Plugin = {
     vim.defineOperator('gsa', { change: true, argAfter: 'surround', run: add(false) }, ['n']);
     // mini's default respect_selection_type = false: a V selection is surrounded as characters.
     vim.defineOperator('gsa', { change: true, argAfter: 'surround', run: r => addAround(vim, r, addPair(vim.opArgument), false) }, ['v']);
-    // mini searches only around the cursor (search_method 'cover'); its `b` is any bracket.
+    // mini searches only around the cursor (search_method 'cover', for find too); its `b` is any bracket.
     const MINI: FindOpts = { coverOnly: true, anyBracket: true };
     const del = (opts: FindOpts) => ({
       arg: 'char' as const, change: true,
@@ -282,7 +282,7 @@ export const surround: Plugin = {
     const jump = (side: 'l' | 'r') => ({
       arg: 'char' as const,
       run: (c: { arg: string }) => {
-        const f = findSurrounding(vim.lines, vim.cursor, c.arg, { anyBracket: true });
+        const f = findSurrounding(vim.lines, vim.cursor, c.arg, MINI);
         if (!f) fail();
         vim.setCursor(side === 'r' ? f.r[0] : f.l[0]);
       },
