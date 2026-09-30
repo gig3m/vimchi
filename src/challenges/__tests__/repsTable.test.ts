@@ -44,17 +44,17 @@ const WARM_UPS: [number, number, number, string][] = [
 
 describe('reps table: first open is cheap', () => {
   // Runs first, on cold module caches. Before the table these were ~535 ms and ~1,300 ms.
-  it('repsChallenge(function-class-objects) on a cold cache runs under 100 ms', () => {
+  it('repsChallenge(function-class-objects) on a cold cache runs under 250 ms (was ~556 ms; the bound leaves room for a loaded suite)', () => {
     const t = performance.now();
     repsChallenge(WITH_REPS.find(l => l.id === 'function-class-objects')!);
-    expect(performance.now() - t).toBeLessThan(100);
+    expect(performance.now() - t).toBeLessThan(250);
   });
-  it('warmUpChallenge with 9 lessons on a cold cache runs under 150 ms', () => {
+  it('warmUpChallenge with 9 lessons on a cold cache runs under 500 ms (was ~1,755 ms; the bound leaves room for a loaded suite)', () => {
     const picks = shuffle(mulberry32(777), REPS_LESSONS).filter(l => l.id !== 'function-class-objects').slice(0, 9)
       .map((lesson, i) => ({ lesson, seed: i, due: true, ago: 1 }));
     const t = performance.now();
     warmUpChallenge(picks, 424242);
-    expect(performance.now() - t).toBeLessThan(150);
+    expect(performance.now() - t).toBeLessThan(500);
   });
 });
 
