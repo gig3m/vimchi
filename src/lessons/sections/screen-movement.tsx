@@ -413,8 +413,9 @@ export const screenMovement: Section = {
       intro: (
         <>
           <p>
-            <Code>H</Code>, <Code>M</Code> and <Code>L</Code> move the cursor to the top, middle and bottom line of the
-            window, landing on the first non-blank character. Nothing scrolls.
+            <Code>H</Code>, <Code>M</Code> and <Code>L</Code> stand for <b>High</b>, <b>Middle</b> and <b>Low</b>: they
+            move the cursor to the top, middle and bottom line of the window. Nothing scrolls, and your column is kept
+            (Neovim's default).
           </p>
           <p>
             They get you near anything you can see in one key. Look at the line, pick the closest of the three, then finish
