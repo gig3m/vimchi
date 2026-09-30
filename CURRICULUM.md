@@ -263,7 +263,7 @@ Edit at scale: the command line, substitute, global commands, project replace.
 ### Command Line
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 116 | Jump to Line | `:42` `:$` | transform |
+| 116 | Jump to Line | `:42` | transform |
 | 117 | Ranges | `%` `.` `$` | transform |
 | 118 | Visual Ranges | `'<,'>` `gv` | transform |
 | 119 | Delete & Yank Lines | `:d` `:y` | transform |

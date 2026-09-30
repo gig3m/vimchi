@@ -95,9 +95,9 @@ export const search: Section = {
         showGoal: false,
         base: { ...retry, cursor: { line: 0, col: 0 } },
         rounds: [
-          { goal: { cursor: { line: 10, col: 6 } }, solution: '/catch<CR>' },
+          { goal: { cursor: { line: 6, col: 10 } }, solution: '/Err<CR>' },
           { setup: { cursor: { line: 6, col: 2 } }, goal: { cursor: { line: 12, col: 12 } }, solution: '/sleep(<CR>' },
-          { setup: { cursor: { line: 9, col: 6 } }, goal: { cursor: { line: 15, col: 2 } }, solution: '/throw<CR>' },
+          { setup: { cursor: { line: 9, col: 6 } }, goal: { cursor: { line: 4, col: 4 } }, solution: '/tri<CR>' },
           { goal: { cursor: { line: 15, col: 8 } }, solution: '/lastError<CR>2n' },
           {
             prompt: 'The last search was "retries".',
@@ -112,13 +112,13 @@ export const search: Section = {
             solution: 'N',
           },
           {
-            prompt: 'Delete both "await "s: search, dw, then n and . for the other.',
+            prompt: 'Both "await "s are gone.',
             setup: { cursor: { line: 0, col: 0 } },
             goal: { text: retryWith(l => l.replace('await ', '')) },
             solution: '/await<CR>dwn.',
           },
           {
-            prompt: 'Rename both "fn"s to "task".',
+            prompt: 'Both "fn"s are "task".',
             setup: { cursor: { line: 0, col: 0 } },
             goal: { text: retryWith(l => l.replace(/\bfn\b/, 'task')) },
             solution: '/fn<CR>cwtask<Esc>n.',
@@ -233,13 +233,13 @@ export const search: Section = {
           { setup: { cursor: { line: 2, col: 32 } }, goal: { cursor: { line: 3, col: 20 } }, solution: '*' },
           { setup: { cursor: { line: 7, col: 11 } }, goal: { cursor: { line: 7, col: 44 } }, solution: '2*' },
           {
-            prompt: 'Rename both "retries" to "max": * to the other one, change it, then n and .',
+            prompt: 'Both "retries" are "max".',
             setup: { cursor: { line: 4, col: 2 } },
             goal: { text: retryWith(l => l.replace(/retries/g, 'max')) },
             solution: '*cwmax<Esc>n.',
           },
           {
-            prompt: 'Rename every "lastError" to "last", working up with #.',
+            prompt: 'Every "lastError" is "last".',
             setup: { cursor: { line: 15, col: 8 } },
             goal: { text: retryWith(l => l.replace(/lastError/g, 'last')) },
             solution: '#cwlast<Esc>n.n.',
@@ -504,13 +504,13 @@ export const search: Section = {
           { goal: { cursor: { line: 8, col: 0 } }, solution: '/keymap/+1<CR>' },
           { goal: { cursor: { line: 3, col: 0 } }, solution: '/tabstop/-1<CR>' },
           {
-            prompt: 'The last search was "keymap". Land on its end.',
-            setup: { search: 'keymap' },
-            goal: { cursor: { line: 7, col: 9 } },
+            prompt: 'The last search was "relative". Land on its end.',
+            setup: { search: 'relative' },
+            goal: { cursor: { line: 3, col: 11 } },
             solution: '//e<CR>',
           },
           {
-            prompt: 'Rename every "opts" to "opt": land on the s with /e, x it, then n and .',
+            prompt: 'Every "opts" is "opt".',
             setup: {
               text: ['local opts = { noremap = true }', "map('n', 'j', 'gj', opts)", "map('n', 'k', 'gk', opts)"],
             },
@@ -518,7 +518,7 @@ export const search: Section = {
             solution: '/opts/e<CR>xn.n.',
           },
           {
-            prompt: 'Set the three options to nil: land after "= " with /e+1, then n and .',
+            prompt: 'The three options are nil.',
             setup: {
               text: ['local opt = vim.opt', 'opt.number = true', 'opt.wrap = false', 'opt.tabstop = 2'],
               cursor: { line: 1, col: 0 },

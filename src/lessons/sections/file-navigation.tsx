@@ -120,25 +120,25 @@ export const fileNavigation: Section = {
         base: { files: SHOP, open: 'README.md', plugins: ['oil'] },
         rounds: [
           {
-            prompt: 'Rename dates.ts to time.ts.',
+            prompt: 'dates.ts is called time.ts.',
             setup: { init: inOil('src/lib', 'dates.ts') },
             goal: { check: vim => exists(vim, 'src/lib/time.ts') && !exists(vim, 'src/lib/dates.ts') },
             solution: 'cwtime<Esc>:w<CR>y',
           },
           {
-            prompt: 'Delete logger.ts.',
+            prompt: 'logger.ts is gone.',
             setup: { init: inOil('src/lib', 'logger.ts') },
             goal: { check: vim => !exists(vim, 'src/lib/logger.ts') && exists(vim, 'src/lib/money.ts') },
             solution: 'dd:w<CR>y',
           },
           {
-            prompt: 'Create format.ts in src/lib.',
+            prompt: 'src/lib has a new fmt.ts.',
             setup: { init: inOil('src/lib', 'money.ts') },
-            goal: { check: vim => exists(vim, 'src/lib/format.ts') },
-            solution: 'oformat.ts<Esc>:w<CR>y',
+            goal: { check: vim => exists(vim, 'src/lib/fmt.ts') },
+            solution: 'ofmt.ts<Esc>:w<CR>y',
           },
           {
-            prompt: 'Delete both test files; keep setup.ts.',
+            prompt: 'Only setup.ts is left in test/.',
             setup: {
               init: vim => {
                 vim.fs.write('test/setup.ts', "process.env.TZ = 'UTC';\n");
@@ -149,16 +149,16 @@ export const fileNavigation: Section = {
             solution: 'dj:w<CR>y',
           },
           {
-            prompt: 'Rename the routes directory to handlers.',
+            prompt: 'The routes directory is called api.',
             setup: { init: inOil('src', 'routes') },
-            goal: { check: vim => exists(vim, 'src/handlers/invoices.ts') && !vim.fs.isDir('src/routes') },
-            solution: 'cwhandlers<Esc>:w<CR>y',
+            goal: { check: vim => exists(vim, 'src/api/invoices.ts') && !vim.fs.isDir('src/routes') },
+            solution: 'cwapi<Esc>:w<CR>y',
           },
           {
-            prompt: 'In one save: rename money.ts to currency.ts and delete dates.ts.',
+            prompt: 'In one save: money.ts is price.ts and dates.ts is gone.',
             setup: { init: inOil('src/lib', 'money.ts') },
-            goal: { check: vim => exists(vim, 'src/lib/currency.ts') && !exists(vim, 'src/lib/money.ts') && !exists(vim, 'src/lib/dates.ts') },
-            solution: 'cwcurrency<Esc>ggdd:w<CR>y',
+            goal: { check: vim => exists(vim, 'src/lib/price.ts') && !exists(vim, 'src/lib/money.ts') && !exists(vim, 'src/lib/dates.ts') },
+            solution: 'cwprice<Esc>ggdd:w<CR>y',
           },
         ],
       },

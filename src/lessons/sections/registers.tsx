@@ -856,37 +856,20 @@ export const registers: Section = {
         base: { name: 'Button.tsx' },
         rounds: [
           {
-            prompt: 'You just typed the aria attribute on the first icon. Add it to the second one too.',
+            prompt: 'You just renamed sum to subtotal where it is declared. The return and log() use subtotal too.',
             setup: {
-              text: [
-                'export function Toolbar() {',
-                '  return (',
-                '    <nav>',
-                '      <IconClose className="h-4 w-4" />',
-                '      <IconMenu className="h-4 w-4" />',
-                '    </nav>',
-                '  );',
-                '}',
-              ],
-              cursor: { line: 3, col: 0 },
+              name: 'total.ts',
+              text: ['function total(items: Item[]) {', '  const sum = items.reduce(add, 0);', '  log();', '  return sum;', '}'],
+              cursor: { line: 1, col: 8 },
               init: vim => {
-                vim.feedKeys('f/iaria-hidden="true" <Esc>');
+                vim.feedKeys('cwsubtotal<Esc>');
                 vim.typedKeys = 0;
               },
             },
             goal: {
-              text: [
-                'export function Toolbar() {',
-                '  return (',
-                '    <nav>',
-                '      <IconClose className="h-4 w-4" aria-hidden="true" />',
-                '      <IconMenu className="h-4 w-4" aria-hidden="true" />',
-                '    </nav>',
-                '  );',
-                '}',
-              ],
+              text: ['function total(items: Item[]) {', '  const subtotal = items.reduce(add, 0);', '  log(subtotal);', '  return subtotal;', '}'],
             },
-            solution: 'jF/".P',
+            solution: 'jjb.kF(".p',
           },
           {
             prompt: 'Finish the header comment with the file name.',
@@ -941,6 +924,7 @@ export const registers: Section = {
     {
       id: 'paste-while-typing',
       title: 'Paste While Typing',
+      typing: true,
       chips: ['C-r'],
       keyCards: [
         { key: 'C-r', glyph: '⎘', label: 'insert a register', sub: 'then its name' },
@@ -978,15 +962,16 @@ export const registers: Section = {
         base: { name: 'checkout.ts' },
         rounds: [
           {
-            prompt: 'Log the value with a label.',
+            prompt: 'The log prints orderTotal, labelled with its name.',
             setup: {
               text: [
                 'export function checkout(items: Item[]) {',
                 '  const orderTotal = items.reduce(sum, 0);',
+                '  console.log();',
                 '  return charge(orderTotal);',
                 '}',
               ],
-              cursor: { line: 2, col: 16 },
+              cursor: { line: 3, col: 16 },
             },
             goal: {
               text: [
@@ -997,33 +982,32 @@ export const registers: Section = {
                 '}',
               ],
             },
-            solution: "yiwOconsole.log('<C-r>0', <C-r>0);<Esc>",
+            solution: "yiwkF(a'<C-r>0', <C-r>0<Esc>",
           },
           {
-            prompt: 'Wrap the id in String().',
+            prompt: 'The cache key is str(order_id).',
             setup: {
+              name: 'receipts.py',
               text: [
-                'async function saveReceipt(orderId: number) {',
-                '  const receipt = await createReceipt(orderId);',
-                '  cache.set(orderId, receipt);',
-                '  return receipt;',
-                '}',
+                'def save_receipt(order_id: int):',
+                '    receipt = create_receipt(order_id)',
+                '    cache.set(order_id, receipt)',
+                '    return receipt',
               ],
-              cursor: { line: 3, col: 2 },
+              cursor: { line: 3, col: 4 },
             },
             goal: {
               text: [
-                'async function saveReceipt(orderId: number) {',
-                '  const receipt = await createReceipt(orderId);',
-                '  cache.set(String(orderId), receipt);',
-                '  return receipt;',
-                '}',
+                'def save_receipt(order_id: int):',
+                '    receipt = create_receipt(order_id)',
+                '    cache.set(str(order_id), receipt)',
+                '    return receipt',
               ],
             },
-            solution: 'kf(wciwString(<C-r>")<Esc>',
+            solution: 'kf(wciwstr(<C-r>")<Esc>',
           },
           {
-            prompt: 'Register u holds the endpoint. Fill in the empty string.',
+            prompt: 'Register u holds the endpoint. url is set to it.',
             setup: {
               text: [
                 "const url = '';",
@@ -1047,7 +1031,7 @@ export const registers: Section = {
             solution: "ggf'a<C-r>u<Esc>",
           },
           {
-            prompt: 'Rename every "amt" to "amount" with :s and C-r.',
+            prompt: 'Every "amt" is "amount".',
             setup: {
               text: ['function charge(amt: number) {', '  if (amt <= 0) throw new Error(`bad amt`);', '  return gateway.charge(amt);', '}'],
               cursor: { line: 0, col: 16 },
@@ -1063,15 +1047,15 @@ export const registers: Section = {
             solution: 'yiw:%s/<C-r>0/amount/g<CR>',
           },
           {
-            prompt: 'Turn the key into a getter call.',
+            prompt: "The getter reads the 'theme' key.",
             setup: {
-              text: ['const settings = loadSettings();', 'const theme = settings.theme;', 'const saved = ;', 'applyTheme(saved);'],
+              text: ['const settings = loadSettings();', 'const theme = settings.theme;', 'const saved = settings.get();', 'applyTheme(saved);'],
               cursor: { line: 1, col: 0 },
             },
             goal: {
               text: ['const settings = loadSettings();', 'const theme = settings.theme;', "const saved = settings.get('theme');", 'applyTheme(saved);'],
             },
-            solution: "$byiwjf;isettings.get('<C-r>0')<Esc>",
+            solution: "$byiwjf(a'<C-r>0'<Esc>",
           },
         ],
       },

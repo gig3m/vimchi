@@ -60,7 +60,7 @@ export const basicOperators: Section = {
         base: { name: 'main.ts' },
         rounds: [
           {
-            prompt: 'Delete "default " with dw.',
+            prompt: '"default " is gone.',
             setup: {
               text: [
                 "import { serve } from './server';",
@@ -83,7 +83,7 @@ export const basicOperators: Section = {
             solution: 'jjwdw',
           },
           {
-            prompt: 'Change "noremap" to "silent" with cw.',
+            prompt: '"noremap" is "silent".',
             setup: {
               name: 'keymaps.lua',
               text: [
@@ -103,7 +103,7 @@ export const basicOperators: Section = {
             solution: 'kfncwsilent<Esc>',
           },
           {
-            prompt: 'Delete the comment with d$.',
+            prompt: 'The comment is gone.',
             setup: {
               text: [
                 "const host = 'localhost';",
@@ -122,7 +122,7 @@ export const basicOperators: Section = {
             solution: 'jf;ld$',
           },
           {
-            prompt: 'Rewrite everything after "=" as name; with c$.',
+            prompt: 'Everything after "=" is name;',
             setup: {
               text: [
                 'function greet(name: string) {',
@@ -143,7 +143,7 @@ export const basicOperators: Section = {
             solution: "jf'c$name;<Esc>",
           },
           {
-            prompt: 'Copy "await " with yw. (Putting it back comes in Copy/Paste Lines.)',
+            prompt: 'Copy "await ". (Putting it back comes in Copy/Paste Lines.)',
             setup: {
               text: [
                 'async function load(id: string) {',
@@ -611,10 +611,10 @@ export const basicOperators: Section = {
         base: { name: 'config.ts' },
         rounds: [
           {
-            prompt: 'Turn every "yes" into "no".',
+            prompt: 'verbose is "no".',
             setup: { name: 'flags.yml', text: ['debug: yes', 'verbose: yes', 'color: yes'], cursor: { line: 0, col: 0 } },
-            goal: { text: ['debug: no', 'verbose: no', 'color: no'] },
-            solution: 'fyCno<Esc>j0fyCno<Esc>j0fyCno<Esc>',
+            goal: { text: ['debug: yes', 'verbose: no', 'color: yes'] },
+            solution: 'jfyCno<Esc>',
           },
           {
             prompt: 'The debug line should close the function.',
@@ -627,7 +627,7 @@ export const basicOperators: Section = {
             solution: 'jjcc}<Esc>',
           },
           {
-            prompt: 'Set the port to 8080 and drop the comment.',
+            prompt: 'The port is 8080, with no comment.',
             setup: {
               text: ["import { serve } from './server';", 'const port = 3000; // TODO', 'serve(port);'],
               cursor: { line: 0, col: 0 },
@@ -636,7 +636,7 @@ export const basicOperators: Section = {
             solution: 'jf3C8080;<Esc>',
           },
           {
-            prompt: 'Replace the throw with break; (cc keeps the indent).',
+            prompt: 'The throw becomes break;.',
             setup: {
               name: 'rows.ts',
               text: ['for (const row of rows) {', '  if (!row) {', "    throw new Error('bad row');", '  }', '}'],
@@ -646,7 +646,7 @@ export const basicOperators: Section = {
             solution: 'jjccbreak;<Esc>',
           },
           {
-            prompt: 'Simplify the condition to "ok".',
+            prompt: 'Only the age check is left.',
             setup: {
               text: [
                 'function checkVoter(user: User) {',
@@ -657,8 +657,8 @@ export const basicOperators: Section = {
               ],
               cursor: { line: 0, col: 0 },
             },
-            goal: { text: ['function checkVoter(user: User) {', '  if (ok) {', '    allow(user);', '  }', '}'] },
-            solution: 'jfuCok) {<Esc>',
+            goal: { text: ['function checkVoter(user: User) {', '  if (user.age > 17) {', '    allow(user);', '  }', '}'] },
+            solution: 'jt&C) {<Esc>',
           },
         ],
       },
@@ -1308,7 +1308,7 @@ export const basicOperators: Section = {
             solution: 'jdd4j.',
           },
           {
-            prompt: 'Use item.total instead of the price maths.',
+            prompt: 'The loop adds item.total, not the price maths.',
             setup: {
               text: [
                 'function gross(items, taxRate) {',

@@ -95,28 +95,30 @@ export const macros: Section = {
             solution: 'qaI"<Esc>f:i"<Esc>jq@a@a',
           },
           {
-            prompt: 'Swap print for log.info on each line.',
+            prompt: 'Every print is a debug() call.',
             setup: {
               name: 'sync.py',
               text: [
+                'from logging import debug',
                 'def sync(rows):',
                 "    print('fetching accounts')",
                 "    print('found %d', len(rows))",
                 "    print('writing cache')",
                 '    return rows',
               ],
-              cursor: { line: 0, col: 4 },
+              cursor: { line: 1, col: 4 },
             },
             goal: {
               text: [
+                'from logging import debug',
                 'def sync(rows):',
-                "    log.info('fetching accounts')",
-                "    log.info('found %d', len(rows))",
-                "    log.info('writing cache')",
+                "    debug('fetching accounts')",
+                "    debug('found %d', len(rows))",
+                "    debug('writing cache')",
                 '    return rows',
               ],
             },
-            solution: 'jqa^cwlog.info<Esc>jq@a@a',
+            solution: 'jqa^cwdebug<Esc>jq@a@a',
           },
         ],
       },
@@ -225,7 +227,7 @@ export const macros: Section = {
             solution: 'qayyp<C-a>q4@a',
           },
           {
-            prompt: 'Uppercase each constant name. Replay with @@.',
+            prompt: 'Every constant name is uppercase.',
             setup: {
               name: 'status.ts',
               text: [
@@ -286,14 +288,14 @@ export const macros: Section = {
         base: { name: '.envrc' },
         rounds: [
           {
-            prompt: 'Export each variable with its value quoted.',
+            prompt: 'Every value is quoted.',
             setup: {
               text: [
                 '# local dev',
-                'DATABASE_URL=postgres://localhost/app',
-                'PORT=8080',
-                'LOG_LEVEL=debug',
-                'SENTRY_DSN=https://key@o1.ingest.sentry.io/42',
+                'export DATABASE_URL=postgres://localhost/app',
+                'export PORT=8080',
+                'export LOG_LEVEL=debug',
+                'export SENTRY_DSN=https://key@o1.ingest.sentry.io/42',
               ],
               cursor: { line: 1, col: 5 },
             },
@@ -306,7 +308,7 @@ export const macros: Section = {
                 'export SENTRY_DSN="https://key@o1.ingest.sentry.io/42"',
               ],
             },
-            solution: 'qaIexport <Esc>f=a"<Esc>A"<Esc>jq3@a',
+            solution: 'qa0f=a"<Esc>A"<Esc>jq3@a',
           },
           {
             prompt: 'Turn each "name url" line into a Markdown link.',
@@ -687,12 +689,12 @@ export const macros: Section = {
       intro: (
         <>
           <p>
-            A CSV export needs to become a TypeScript array of objects. Five rows, a few fields each: exactly the kind of
-            repetition a macro is for.
+            A CSV export pasted into a TypeScript file needs to become code. Five rows, a few fields each: exactly the
+            kind of repetition a macro is for.
           </p>
           <p>
-            Set up the first and last lines, record one row with <Code>f,</Code> and <Code>s</Code>, and replay it on
-            the rest. Three exports, three shapes.
+            The wrapper lines are already there. Record one row with <Code>f,</Code> and a short insert, and replay it
+            on the rest. Three exports, three shapes.
           </p>
         </>
       ),
@@ -718,65 +720,65 @@ export const macros: Section = {
           {
             setup: {
               text: [
-                'id,name,role',
-                '1,Ada Lovelace,admin',
-                '2,Grace Hopper,editor',
-                '3,Alan Turing,viewer',
-                '4,Katherine Johnson,editor',
-                '5,Margaret Hamilton,viewer',
+                'const users = new Map([',
+                '  1,Ada Lovelace',
+                '  2,Grace Hopper',
+                '  3,Alan Turing',
+                '  4,Katherine Johnson',
+                '  5,Margaret Hamilton',
+                ']);',
               ],
-              cursor: { line: 0, col: 0 },
+              cursor: { line: 1, col: 0 },
             },
             goal: {
               text: [
-                'const users = [',
-                "  { id: 1, name: 'Ada Lovelace', role: 'admin' },",
-                "  { id: 2, name: 'Grace Hopper', role: 'editor' },",
-                "  { id: 3, name: 'Alan Turing', role: 'viewer' },",
-                "  { id: 4, name: 'Katherine Johnson', role: 'editor' },",
-                "  { id: 5, name: 'Margaret Hamilton', role: 'viewer' },",
-                '];',
-              ],
-            },
-            solution: "Go];<Esc>ggccconst users = [<Esc>jqaI  { id: <Esc>f,s, name: '<Esc>f,s', role: '<Esc>A' },<Esc>jq4@a",
-          },
-          {
-            setup: {
-              name: 'products.ts',
-              text: ['sku,title,price', 'MUG-01,Enamel mug,12.5', 'TEE-BLK-M,Black tee (M),24', 'PIN-03,Enamel pin,6.75', 'TOTE-02,Canvas tote,18'],
-              cursor: { line: 0, col: 0 },
-            },
-            goal: {
-              text: [
-                'export const products = [',
-                "  { sku: 'MUG-01', title: 'Enamel mug', price: 12.5 },",
-                "  { sku: 'TEE-BLK-M', title: 'Black tee (M)', price: 24 },",
-                "  { sku: 'PIN-03', title: 'Enamel pin', price: 6.75 },",
-                "  { sku: 'TOTE-02', title: 'Canvas tote', price: 18 },",
-                '];',
-              ],
-            },
-            solution: "Go];<Esc>ggccexport const products = [<Esc>jqaI  { sku: '<Esc>f,s', title: '<Esc>f,s', price: <Esc>A },<Esc>jq3@a",
-          },
-          {
-            setup: {
-              name: 'status.ts',
-              text: ['code,text', '200,OK', '201,Created', '301,Moved Permanently', '404,Not Found', '429,Too Many Requests', '503,Service Unavailable'],
-              cursor: { line: 0, col: 0 },
-            },
-            goal: {
-              text: [
-                'const statusText = new Map([',
-                "  [200, 'OK'],",
-                "  [201, 'Created'],",
-                "  [301, 'Moved Permanently'],",
-                "  [404, 'Not Found'],",
-                "  [429, 'Too Many Requests'],",
-                "  [503, 'Service Unavailable'],",
+                'const users = new Map([',
+                "  [1, 'Ada Lovelace'],",
+                "  [2, 'Grace Hopper'],",
+                "  [3, 'Alan Turing'],",
+                "  [4, 'Katherine Johnson'],",
+                "  [5, 'Margaret Hamilton'],",
                 ']);',
               ],
             },
-            solution: "Go]);<Esc>ggccconst statusText = new Map([<Esc>jqaI  [<Esc>f,s, '<Esc>A'],<Esc>jq5@a",
+            solution: "qaI[<Esc>f,a '<Esc>A'],<Esc>jq4@a",
+          },
+          {
+            setup: {
+              name: 'prices.ts',
+              text: ['export const prices = new Map([', '  MUG-01,12.5', '  TEE-BLK-M,24', '  PIN-03,6.75', '  TOTE-02,18', ']);'],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: {
+              text: [
+                'export const prices = new Map([',
+                "  ['MUG-01', 12.5],",
+                "  ['TEE-BLK-M', 24],",
+                "  ['PIN-03', 6.75],",
+                "  ['TOTE-02', 18],",
+                ']);',
+              ],
+            },
+            solution: "qaI['<Esc>f,i'<Esc>la <Esc>A],<Esc>jq3@a",
+          },
+          {
+            setup: {
+              name: 'limits.ts',
+              text: ['export const limits = {', '  maxUsers,500', '  maxOrgs,20', '  maxSeats,50', '  maxRepos,100', '  maxHooks,10', '};'],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: {
+              text: [
+                'export const limits = {',
+                '  maxUsers: 500,',
+                '  maxOrgs: 20,',
+                '  maxSeats: 50,',
+                '  maxRepos: 100,',
+                '  maxHooks: 10,',
+                '};',
+              ],
+            },
+            solution: 'qa0f,s: <Esc>A,<Esc>jq4@a',
           },
         ],
       },

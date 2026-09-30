@@ -310,10 +310,10 @@ export const insertLikeAPro: Section = {
             solution: 'jjf&sand<Esc>',
           },
           {
-            prompt: 'Make every bullet a dash.',
+            prompt: 'Number the list: 1., 2., 3.',
             setup: { name: 'TODO.md', text: ['* Write', '* Test', '* Ship'], cursor: { line: 0, col: 0 } },
-            goal: { text: ['- Write', '- Test', '- Ship'] },
-            solution: 's-<Esc>js-<Esc>js-<Esc>',
+            goal: { text: ['1. Write', '2. Test', '3. Ship'] },
+            solution: 's1.<Esc>j0s2.<Esc>j0s3.<Esc>',
           },
           {
             prompt: 'Change "14px" to "1rem".',

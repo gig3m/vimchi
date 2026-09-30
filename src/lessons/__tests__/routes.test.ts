@@ -10,7 +10,14 @@ import type { Pos } from '../../vim/types';
 import { commandTokens, taughtBy } from '../../coach/vocab';
 
 /** Rounds whose shortcut is accepted on purpose (`lesson r<n>`), with the reason beside them. */
-const ALLOW = new Set<string>([]);
+const ALLOW = new Set<string>([
+  // Joining a three-line paragraph from its middle: kJJ is a fine answer too. The round is about
+  // vip handing : a range, and a paragraph long enough to beat kJJ would not fit on one goal line.
+  'visual-ranges r4',
+  // n then a find reaches the end of any match in as many keys or fewer (every pattern in the
+  // options file was tried). The round is about reusing the last pattern with a new offset.
+  'search-offsets r5',
+]);
 
 const chipKey = (c: string) => c.replace(/^C-(.)$/, '<C-$1>').replace(/^A-(.)$/, '<A-$1>');
 const BASE_MOTIONS = ['h', 'j', 'k', 'l', 'w', 'b', 'e', 'ge', 'W', 'B', 'E', '0', '^', '$', 'gg', 'G', '{', '}', '(', ')', '%', 'H', 'M', 'L', 'n', 'N', '*', '#', ';', ',', '+', '-', '<C-d>', '<C-u>'];

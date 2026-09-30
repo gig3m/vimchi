@@ -691,10 +691,10 @@ export const substitute: Section = {
             prompt: 'Turn the Python 2 prints into print() calls.',
             setup: {
               name: 'report.py',
-              text: ['# report', 'print total', 'print "done"'],
+              text: ['#!/usr/bin/python2', 'print total', 'print "done"'],
             },
-            goal: { text: ['# report', 'print(total)', 'print("done")'] },
-            solution: ':%s/\\v(\\w+) (.*)/\\1(\\2)/<CR>',
+            goal: { text: ['#!/usr/bin/python2', 'print(total)', 'print("done")'] },
+            solution: ':%s/\\v (.*)/(\\1)/<CR>',
           },
         ],
       },

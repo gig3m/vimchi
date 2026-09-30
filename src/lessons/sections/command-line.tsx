@@ -109,11 +109,8 @@ export const commandLine: Section = {
     {
       id: 'jump-to-line',
       title: 'Jump to Line',
-      chips: [':42', ':$'],
-      keyCards: [
-        { key: ':42', glyph: '→42', label: 'go to line 42' },
-        { key: ':$', glyph: '→$', label: 'go to last line' },
-      ],
+      chips: [':42'],
+      keyCards: [{ key: ':42', glyph: '→42', label: 'go to line 42' }],
       intro: (
         <>
           <p>
@@ -421,7 +418,7 @@ export const commandLine: Section = {
             solution: 'Vjj:w march.csv<CR>',
           },
           {
-            prompt: 'You just selected the sleep helper. Reselect it and write it to sleep.ts.',
+            prompt: 'You just selected the sleep helper. sleep.ts holds it.',
             setup: {
               name: 'utils.ts',
               text: RETRY_TS,
@@ -440,8 +437,7 @@ export const commandLine: Section = {
                 '',
                 'Deploys run from main',
                 'once CI is green.',
-                'Tag it',
-                'to ship.',
+                'Tag it to ship.',
                 '',
                 '## Rollback',
                 'Revert the tag.',
@@ -806,16 +802,16 @@ export const commandLine: Section = {
             solution: ':2,4norm @q<CR>',
           },
           {
-            prompt: 'Make host readonly with I, then repeat it on lines 3 and 4 with :norm .',
+            prompt: 'Every field of Config is pub.',
             setup: {
-              name: 'config.ts',
-              text: ['interface Config {', '  host: string;', '  port: number;', '  tls: boolean;', '}'],
-              cursor: { line: 1, col: 2 },
+              name: 'config.rs',
+              text: ['struct Config {', '    host: String,', '    port: u16,', '    tls: bool,', '}'],
+              cursor: { line: 1, col: 4 },
             },
             goal: {
-              text: ['interface Config {', '  readonly host: string;', '  readonly port: number;', '  readonly tls: boolean;', '}'],
+              text: ['struct Config {', '    pub host: String,', '    pub port: u16,', '    pub tls: bool,', '}'],
             },
-            solution: 'Ireadonly <Esc>:3,4norm .<CR>',
+            solution: 'Ipub <Esc>:3,4norm .<CR>',
           },
         ],
       },
@@ -871,7 +867,7 @@ export const commandLine: Section = {
             solution: '@:j@@',
           },
           {
-            prompt: 'Delete the next console.log line with :/console/d, then the one after it.',
+            prompt: 'Both console.log lines are gone.',
             setup: {
               name: 'checkout.ts',
               text: [
@@ -895,7 +891,7 @@ export const commandLine: Section = {
             solution: ':/console/d<CR>@:',
           },
           {
-            prompt: 'Duplicate the fixture row with :t., then make three more copies.',
+            prompt: 'The fixture row appears five times.',
             setup: {
               name: 'fixtures.csv',
               text: ['id,email,plan', '1,test@example.com,free', '2,ops@example.com,team'],
