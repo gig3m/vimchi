@@ -134,6 +134,74 @@ export const nextSteps: Section = {
       },
     },
     {
+      id: 'save-quit',
+      title: 'Save & Quit',
+      chips: [':w', ':q', ':wq', ':q!'],
+      keyCards: [
+        { key: ':w', glyph: '💾', label: 'write the file' },
+        { key: ':q', glyph: '⏏', label: 'quit', sub: 'refuses unsaved changes' },
+        { key: ':wq', glyph: '💾⏏', label: 'write and quit' },
+        { key: ':q!', glyph: '⏏!', label: 'quit, discard changes' },
+      ],
+      intro: (
+        <>
+          <p>
+            Every command that starts with <Code>:</Code> is typed on the line at the bottom and run with{' '}
+            <Code>Enter</Code>. <Code>:w</Code> writes the buffer to its file. <Code>:q</Code> quits, but only
+            if there is nothing unsaved; it tells you so otherwise. <Code>:wq</Code> does both, and{' '}
+            <Code>:q!</Code> quits throwing your changes away.
+          </p>
+          <p>
+            Here quitting only prints a note and the tutor stays open, but the habit is the real one: write
+            often, and reach for <Code>:q!</Code> only when you mean to lose the edits.
+          </p>
+        </>
+      ),
+      practice: total => <p>Each round has a file open with a change already made. Do what the prompt says. {total} rounds.</p>,
+      aside: {
+        title: 'ZZ and friends',
+        body: (
+          <p>
+            <Code>ZZ</Code> in normal mode is <Code>:wq</Code> (it skips the write when nothing changed), and{' '}
+            <Code>ZQ</Code> is <Code>:q!</Code>. With several files open, <Code>:wa</Code> writes them all and{' '}
+            <Code>:qa</Code> quits them all.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: {
+          files: { 'notes.md': '# Notes\n\n- buy milk\n- call Sam\n' },
+          open: 'notes.md',
+        },
+        rounds: [
+          {
+            prompt: 'You added a line. Save the file.',
+            setup: { init: vim => vim.buf.setLine(3, '- call Sam and Ana') },
+            goal: { check: vim => vim.fs.read('notes.md') === '# Notes\n\n- buy milk\n- call Sam and Ana\n' && !vim.buf.modified },
+            solution: ':w<CR>',
+          },
+          {
+            prompt: 'Nothing changed. Quit.',
+            goal: { check: vim => vim.events.includes('quit') },
+            solution: ':q<CR>',
+          },
+          {
+            prompt: 'You fixed the typo. Write the file and quit in one command.',
+            setup: { init: vim => vim.buf.setLine(2, '- buy oat milk') },
+            goal: { check: vim => vim.events.includes('quit') && vim.fs.read('notes.md') === '# Notes\n\n- buy oat milk\n- call Sam\n' },
+            solution: ':wq<CR>',
+          },
+          {
+            prompt: 'That edit was a mistake. Quit without saving it.',
+            setup: { init: vim => vim.buf.setLine(0, '# Ntoes') },
+            goal: { check: vim => vim.events.includes('quit') && vim.fs.read('notes.md') === '# Notes\n\n- buy milk\n- call Sam\n' },
+            solution: ':q!<CR>',
+          },
+        ],
+      },
+    },
+    {
       id: 'line-ends',
       title: 'Line Ends',
       chips: ['0', '$'],
