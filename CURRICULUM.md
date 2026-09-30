@@ -179,7 +179,7 @@ Make one edit do the work of many: registers and macros (the dot command lives i
 | 70 | The Yank Register | `"0` | transform |
 | 71 | Named Registers | `"a` `"b` | transform |
 | 72 | Appending to Registers | `"A` | transform |
-| 73 | Delete History | `"1` `"-` | transform |
+| 73 | Delete History | `"2` `"-` | transform |
 | 74 | The Black Hole | `"_` | transform |
 | 75 | Read-Only Registers | `".` `"%` `":` | transform |
 | 76 | Paste While Typing | `C-r` | transform |
@@ -190,7 +190,7 @@ Make one edit do the work of many: registers and macros (the dot command lives i
 |---|---|---|---|
 | 78 | Recording a Macro | `q` `@` | transform |
 | 79 | Replaying | `@@` `5@a` | transform |
-| 80 | Robust Macros | `macros` | transform |
+| 80 | Robust Macros | `0` `f` `A` | transform |
 | 81 | Recursive Macros | `qaq` `@a` | transform |
 | 82 | Editing a Macro | `"ap` `"ay$` | transform |
 | ★ | Boss: CSV to Object Literal | `q` `@a` | transform |
@@ -348,7 +348,7 @@ What a starter config adds: LSP edits, richer text objects, flash, surround, com
 | 165 | Delete Surroundings | `sd` | transform |
 | 166 | Find a Surrounding | `sf` `sF` | transform |
 | 167 | Surround a Selection | `v` `sa` | transform |
-| 168 | Surround with Tags | `srtt` `sat` | transform |
+| 168 | Surround with Tags | `srtt` `saiwt` | transform |
 
 ### Insert Mode Power
 | # | Lesson | Keys | Challenge |
