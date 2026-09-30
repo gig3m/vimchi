@@ -1,5 +1,6 @@
 // What the curriculum has taught by a given lesson, and which lessons the coach runs on.
 import { LESSONS, ORDER, SECTIONS, sectionOf } from '../lessons';
+import type { Challenge } from '../lessons/types';
 
 /** Counts on motions are explained in prose here ("3w jumps three words ahead"). */
 export const COUNTS_TAUGHT_FROM = 'words';
@@ -82,10 +83,10 @@ export function taughtBy(lessonId: string): Set<string> {
   const lesson = LESSONS[lessonId];
   const set = new Set<string>();
   const OPERATOR_OF: Record<string, string> = { '>>': '>', '<<': '<', '==': '=' };
-  // Warm-up mixes lessons the learner has already finished: the whole curriculum is fair game.
-  const whole = lessonId === WARM_UP;
   const add = (id: string) => { const l = LESSONS[id]; for (const c of [...l.chips, ...l.keyCards.map(k => k.key)]) for (const t of tokenize(c)) { set.add(t); if (OPERATOR_OF[t]) set.add(OPERATOR_OF[t]); } };
-  if (lesson?.challenge.kind === 'generated') {
+  // Not a lesson (the Warm-up included): nothing is known to be taught. See warmUpTaught.
+  if (!lesson) { cache.set(lessonId, set); return set; }
+  if (lesson.challenge.kind === 'generated') {
     for (const sid of lesson.challenge.sections) for (const l of SECTIONS.find(s => s.id === sid)?.lessons ?? []) add(l.id);
     set.add('COUNT');
   } else {
@@ -95,7 +96,7 @@ export function taughtBy(lessonId: string): Set<string> {
       add(l.id);
       if (l.id === COUNTS_TAUGHT_FROM) past = true;
       if (past) set.add('COUNT');
-      if (!whole && l.id === lessonId) break;
+      if (l.id === lessonId) break;
     }
   }
   cache.set(lessonId, set);
@@ -107,7 +108,7 @@ export function usesAllowed(uses: string[], taught: Set<string>): boolean {
 }
 
 /** The coach runs on rounds lessons and generated challenges, outside the Macros section and the Plugins band. */
-/** The spaced-review session (src/warmup) is coached like a generated challenge over every lesson. */
+/** The spaced-review session (src/warmup) is coached like a generated challenge over the lessons it drew from (warmUpTaught). */
 export const WARM_UP = 'warm-up';
 
 export function coachable(lessonId: string): boolean {
@@ -122,3 +123,25 @@ export function coachable(lessonId: string): boolean {
 /** Macros (deliberately safe motions while recording) and the plugin-driven sections whose
  * rounds run through pickers, modals or plugin operators the motion critic does not model. */
 export const UNCOACHED_SECTIONS = new Set(['macros', 'surround', 'more-text-objects', 'jumping', 'finding-things', 'file-navigation', 'git']);
+
+const warmCache = new Map<string, Set<string>>();
+
+/**
+ * What a Warm-up may coach: the union of what its picked lessons taught (`picks`, lesson ids).
+ * Without picks, the lower bound its challenge proves: for each mutation kind in the run, the
+ * earliest lesson whose Reps drill it (every pick is at or after that lesson, and taughtBy is
+ * cumulative, so nothing suggested is a key the learner has not met).
+ */
+export function warmUpTaught(picks?: readonly string[], challenge?: Challenge): Set<string> {
+  let ids = (picks ?? []).filter(id => LESSONS[id]);
+  if (!ids.length && challenge?.kind === 'generated') {
+    ids = challenge.mutations.map(m => ORDER.find(l => l.reps?.mutations.includes(m))?.id).filter((id): id is string => !!id);
+  }
+  const key = [...new Set(ids)].sort().join(',');
+  const hit = warmCache.get(key);
+  if (hit) return hit;
+  const set = new Set<string>();
+  for (const id of ids) for (const t of taughtBy(id)) set.add(t);
+  warmCache.set(key, set);
+  return set;
+}

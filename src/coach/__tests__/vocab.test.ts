@@ -70,9 +70,8 @@ describe('coachable', () => {
 });
 
 describe('warm-up', () => {
-  it('is coachable with everything the curriculum teaches', () => {
+  it('is coachable; taughtBy knows nothing for it (warmUpTaught unions its picks)', () => {
     expect(coachable('warm-up')).toBe(true);
-    const t = taughtBy('warm-up');
-    for (const k of ['w', 'f', 'd', 'c', 'iw', '.', 'COUNT', '/', '*', '"']) expect(t.has(k), k).toBe(true);
+    expect(taughtBy('warm-up').size).toBe(0);
   });
 });

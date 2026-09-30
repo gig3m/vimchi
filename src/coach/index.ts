@@ -11,7 +11,7 @@ import { type SessionLike, sameOutcome, stateBefore, stateNeeds } from './replay
 import { type Idiom, searchIdioms } from './idiom';
 import { PATTERNS, motionPattern } from './patterns';
 import { type Segment, segment } from './segment';
-import { TEXT_MODES, coachable, commandTokens, taughtBy, tokenize, usesAllowed } from './vocab';
+import { TEXT_MODES, WARM_UP, coachable, commandTokens, taughtBy, tokenize, usesAllowed, warmUpTaught } from './vocab';
 
 /** One better way: `pattern` names the idea (see PATTERNS) and `why` is its principle. */
 export type Suggestion = { keys: string; saves: number; why: string; rule: string; uses: string[]; pattern: string };
@@ -30,6 +30,9 @@ export type CoachSession = SessionLike & {
   roundSolution(unit: number): string | null;
   carried(unit: number): boolean;
   generated?: Generated | null;
+  /** Warm-up only: the lesson ids the run drew from (its picks). The coach suggests only keys those
+   * lessons taught; without them it falls back to the earliest lesson drilling each of the run's kinds. */
+  picks?: readonly string[];
 };
 
 /** Key count of a notation string: <Esc>, <CR>, <lt> etc. are one key each. */
@@ -172,6 +175,7 @@ function idiomCritique(session: CoachSession, ctx: Ctx, segs: Segment[], i: numb
         const k = c.keys.join('');
         if (k === keys.join('') || k === lastEdit) return false; // the same keys, or only the motion dropped (the motion critic's call)
         if (dotUsed && saves < 2) return false; // `.` is the idiom; a count that saves one key is a nitpick
+        if (saves < MIN_SAVES && countOnly(c.keys, keys)) return false; // xxx → 3x: the same key, counted, saving one is noise
         // Equal keys are worth it only for a command that carries its own motion (^C → cc, bdw → daw).
         if (saves < 0 || (saves === 0 && !(c.commands < commands && CARRIES.has(c.pattern)))) return false;
         // Type what the learner typed: an idiom never "saves" by retyping only the part of a word
@@ -213,9 +217,26 @@ function idiomCritique(session: CoachSession, ctx: Ctx, segs: Segment[], i: numb
 
 /** Commands that carry their own motion: worth suggesting even at the same key count. */
 const CARRIES = new Set(['text-object', 'quote-object', 'bracket-object', 'block-object', 'tag-object', 'change-line', 'line-end-insert', 'open-line', 'join', 'indent', 'to-line-end', 'delete-line']);
-/** Typed text without line breaks and edits-in-typing (<CR>, <BS>): what ends up as characters. */
 const isObject = (t: string) => /^[ia].$/.test(t);
-const flat = (s: string) => s.replace(/\n|<CR>|<BS>|<Del>/g, '');
+/** Is `cand` only a count on the learner's own repeated keys (xxx → 3x, >>>> → 2>>)? */
+function countOnly(cand: readonly Key[], keys: readonly Key[]): boolean {
+  let d = 0;
+  while (d < cand.length && /^[0-9]$/.test(cand[d]) && !(d === 0 && cand[d] === '0')) d++;
+  const body = cand.slice(d);
+  if (!d || !body.length || keys.length % body.length) return false;
+  return keys.every((k, i) => k === body[i % body.length]);
+}
+/** Typed text net of edits-in-typing, without line breaks: what ends up as characters. A <BS>
+ * takes back the character before it (`use<BS>er` is `user`); <Del> reaches past what was typed. */
+function flat(s: string): string {
+  let out = '';
+  for (const t of s.match(/<BS>|<CR>|<Del>|[^]/g) ?? []) {
+    if (t === '<BS>') out = out.slice(0, -1);
+    else if (t === '\n' || t === '<CR>' || t === '<Del>') continue;
+    else out += t;
+  }
+  return out;
+}
 
 /** Commands in a log span: an edit (with its insert text) is one; a motion run counts each motion. */
 function commandCount(segs: Segment[], log: LogEntry[], start: number, end: number): number {
@@ -312,8 +333,11 @@ function motionCritique(session: CoachSession, ctx: Ctx, seg: Segment & { kind: 
 }
 
 const ctxCache = new Map<string, Ctx>();
-function context(lessonId: string): Ctx {
-  let c = ctxCache.get(lessonId);
+function context(lessonId: string, session: CoachSession): Ctx {
+  const warm = lessonId === WARM_UP;
+  const ch = session.challenge;
+  const key = !warm ? lessonId : `${lessonId}|${(session.picks ?? []).join(',')}|${ch.kind === 'generated' ? ch.mutations.join(',') : ''}`;
+  let c = ctxCache.get(key);
   if (!c) {
     // Warm-up has no lesson of its own: nothing is "drilled", so any better way may be named.
     const lesson = LESSONS[lessonId];
@@ -322,8 +346,9 @@ function context(lessonId: string): Ctx {
     const ls = lesson ? sectionOf(lessonId).lessons : [];
     const upTo = !lesson ? [] : lesson.challenge.kind === 'generated' ? [lesson] : ls.slice(0, ls.findIndex(l => l.id === lessonId) + 1);
     const drilled = new Set(upTo.flatMap(l => l.chips.flatMap(ch => tokenize(ch))));
-    c = { lessonId, taught: taughtBy(lessonId), own, drilled, reinforces: reinforcer(lessonId) };
-    ctxCache.set(lessonId, c);
+    const taught = warm ? warmUpTaught(session.picks, ch) : taughtBy(lessonId);
+    c = { lessonId, taught, own, drilled, reinforces: reinforcer(lessonId) };
+    ctxCache.set(key, c);
   }
   return c;
 }
@@ -332,7 +357,7 @@ export function coachSegment(session: CoachSession, lessonId: string, seg: Segme
   if (!coachable(lessonId)) return null;
   const log = session.log();
   if (recordingSpans(segs, log).has(i)) return null;
-  const ctx = context(lessonId);
+  const ctx = context(lessonId, session);
   const idiom = seg.kind === 'edit' || seg.kind === 'motion' ? idiomCritique(session, ctx, segs, i) : null;
   if (seg.kind !== 'motion') return idiom;
   // A motion run leading into an edit: the idiom may absorb only its last commands (`b` of `jfLb`).
@@ -361,12 +386,13 @@ function summarize(session: CoachSession, segs: Segment[]): Summary {
 
 /** The reference fix's basic moves (mirrors the generator's par, `challenges/generate.ts`). */
 const PATH_KEYS = 'hjklwbeWBE0$';
-/** Par per checklist item, as the generator counts it: the motion from the previous item plus the fix. */
-function itemPars(g: Generated): number[] {
+/** Par per checklist item, as the generator counts it: the motion from the previous item plus the
+ * fix. An Ex fix (`anywhere`) needs no motion and leaves the cursor where it was. Sums to parKeys. */
+export function itemPars(g: Generated): number[] {
   let prev = { line: 0, col: 0 };
   return g.items.map(item => {
-    const motion = Math.min(shortestPath(g.start, prev, item.fixAt, PATH_KEYS, MAX_MOTION_KEYS + 1), MAX_MOTION_KEYS);
-    prev = item.fixAt;
+    const motion = item.anywhere ? 0 : Math.min(shortestPath(g.start, prev, item.fixAt, PATH_KEYS, MAX_MOTION_KEYS + 1), MAX_MOTION_KEYS);
+    if (!item.anywhere) prev = item.fixAt;
     return motion + parseNotation(item.fixKeys).length;
   });
 }
@@ -390,7 +416,7 @@ export function coach(session: CoachSession, lessonId: string): Report {
   critiques.sort((a, b) => bestSaves(b) - bestSaves(a) || a.unit - b.unit || a.logStart - b.logStart);
 
   const reference: RefLine[] = [];
-  const taught = taughtBy(lessonId);
+  const taught = context(lessonId, session).taught;
   const log = session.log();
   if (session.challenge.kind === 'rounds') {
     for (let u = 0; u < session.challenge.rounds.length; u++) {
