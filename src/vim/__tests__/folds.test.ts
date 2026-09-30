@@ -58,7 +58,21 @@ describe('fold commands', () => {
     expect(closed(vim)).toEqual([false, true]);
     vim.feedKeys('jza');
     expect(closed(vim)).toEqual([true, true]);
-    expect(vim.cursor.line).toBe(1);
+    expect(vim.cursor.line).toBe(2); // za, zc and zM leave the line alone (Neovim)
+  });
+  it('the cursor keeps its line inside a closed fold (a..g, 5,7fold)', () => {
+    const vim = new Vim({ text: 'a\nb\nc\nd\ne\nf\ng', name: 'x.txt' });
+    vim.feedKeys(':5,7fold<CR>G');
+    expect(vim.cursor.line).toBe(6); // G: 7
+    vim.feedKeys('za');
+    expect(vim.cursor.line).toBe(6); // Gza: 7
+    vim.feedKeys('zMgg4j');
+    expect(vim.cursor.line).toBe(4); // j onto a fold lands on its first line: 5
+    vim.feedKeys('zR6Gzck');
+    expect(vim.cursor.line).toBe(3); // k from inside leaves the fold: 4
+    vim.feedKeys('ggyy6Gp');
+    expect(vim.lines).toEqual(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'a']); // p goes below the fold
+    expect(vim.cursor.line).toBe(7);
   });
   it('zR opens every fold, zM closes every fold', () => {
     const vim = make();
@@ -68,10 +82,10 @@ describe('fold commands', () => {
     expect(closed(vim)).toEqual([true, true]);
     expect(vim.cursor.line).toBe(4);
   });
-  it('zM moves a cursor inside a fold to its first line', () => {
+  it('zM keeps the cursor on its line inside the fold', () => {
     const vim = make();
     vim.feedKeys('zR2jzM');
-    expect(vim.cursor.line).toBe(1);
+    expect(vim.cursor.line).toBe(2);
   });
   it('za on nested folds opens the outer one first', () => {
     const vim = make();

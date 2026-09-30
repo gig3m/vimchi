@@ -39,7 +39,7 @@ export function installCommands(vim: Vim) {
     for (let i = 0; i < c.count; i++) {
       // Closed folds count as one line.
       const f = V.closedFoldAt(line);
-      let next = dir === 1 ? (f ? f.end + 1 : line + 1) : line - 1;
+      let next = dir === 1 ? (f ? f.end + 1 : line + 1) : (f ? f.start : line) - 1;
       if (dir === -1) {
         const g = V.closedFoldAt(next);
         if (g) next = g.start;
@@ -82,17 +82,22 @@ export function installCommands(vim: Vim) {
   /** A jump to line l: first non-blank with 'startofline', the remembered column without it (Neovim's default). */
   /** Where a linewise change leaves the cursor on line l: first non-blank with 'startofline', else the wanted column. */
   const landOn = (l: number) => (V.options.startofline ? firstNonBlankPos(L(), l) : pos(l, Math.min(V.win.want, lastCol(ln(l)))));
+  // G and gg are 'jump' in 'foldopen', which Neovim leaves out by default: they don't open folds.
   const lineJump = (l: number): MotionResult =>
     V.options.startofline
-      ? { pos: firstNonBlankPos(L(), l), linewise: true, jump: true }
-      : { pos: pos(l, Math.min(V.win.want, Math.max(0, L()[l].length - (V.visual ? 0 : 1)))), linewise: true, jump: true, keepWant: true };
+      ? { pos: firstNonBlankPos(L(), l), linewise: true, jump: true, openFold: false }
+      : { pos: pos(l, Math.min(V.win.want, Math.max(0, L()[l].length - (V.visual ? 0 : 1)))), linewise: true, jump: true, keepWant: true, openFold: false };
   M('gg', c => lineJump(c.hasCount ? Math.min(c.count, V.buf.lineCount) - 1 : 0));
   M('G', c => lineJump(c.hasCount ? Math.min(c.count, V.buf.lineCount) - 1 : V.buf.lineCount - 1));
 
   // ---- words -------------------------------------------------------------------------
-  const repeatMotion = (f: (p: Pos) => Pos | null) => (c: MotionCtx): MotionResult | null => {
+  // fold: word motions treat a closed fold as one (fwd_word / end_word start from its last
+  // character, bck_word from its first).
+  const repeatMotion = (f: (p: Pos) => Pos | null, fold?: 'end' | 'start') => (c: MotionCtx): MotionResult | null => {
     let p: Pos | null = cur();
     for (let i = 0; i < c.count; i++) {
+      const cf = fold && V.closedFoldAt(p!.line);
+      if (cf) p = fold === 'end' ? pos(cf.end, Math.max(0, ln(cf.end).length - 1)) : pos(cf.start, 0);
       const n: Pos | null = f(p!);
       if (!n) {
         if (i === 0) return null;
@@ -103,21 +108,21 @@ export function installCommands(vim: Vim) {
     return { pos: p! };
   };
   M('w', c => {
-    const r = repeatMotion(p => wordForward(L(), p, false))(c);
+    const r = repeatMotion(p => wordForward(L(), p, false), 'end')(c);
     if (!r && c.op) return { pos: pos(cur().line, ln().length) };
     // Going past the last word on the last line moves to its end.
     return r;
   });
-  M('W', c => repeatMotion(p => wordForward(L(), p, true))(c) ?? (c.op ? { pos: pos(cur().line, ln().length) } : null));
+  M('W', c => repeatMotion(p => wordForward(L(), p, true), 'end')(c) ?? (c.op ? { pos: pos(cur().line, ln().length) } : null));
   M('<S-Right>', repeatMotion(p => wordForward(L(), p, false)));
   const incl = (f: (c: MotionCtx) => MotionResult | null) => (c: MotionCtx) => {
     const r = f(c);
     return r ? { ...r, inclusive: true } : null;
   };
-  M('e', incl(repeatMotion(p => wordEnd(L(), p, false))));
-  M('E', incl(repeatMotion(p => wordEnd(L(), p, true))));
-  M('b', repeatMotion(p => wordBackward(L(), p, false)));
-  M('B', repeatMotion(p => wordBackward(L(), p, true)));
+  M('e', incl(repeatMotion(p => wordEnd(L(), p, false), 'end')));
+  M('E', incl(repeatMotion(p => wordEnd(L(), p, true), 'end')));
+  M('b', repeatMotion(p => wordBackward(L(), p, false), 'start'));
+  M('B', repeatMotion(p => wordBackward(L(), p, true), 'start'));
   M('<S-Left>', repeatMotion(p => wordBackward(L(), p, false)));
   M('ge', incl(repeatMotion(p => wordEndBackward(L(), p, false))));
   M('gE', incl(repeatMotion(p => wordEndBackward(L(), p, true))));
@@ -689,7 +694,9 @@ export function installCommands(vim: Vim) {
       }
       const all: string[] = [];
       for (let i = 0; i < count; i++) all.push(...lines);
-      const at = after ? p.line + 1 : p.line;
+      // A closed fold counts as one line: p puts below its last line, P above its first.
+      const fold = V.closedFoldAt(p.line);
+      const at = after ? (fold ? fold.end : p.line) + 1 : fold ? fold.start : p.line;
       V.insertLines(at, all);
       V.buf.marks.set('[', pos(at, 0));
       V.buf.marks.set(']', pos(at + all.length - 1, Math.max(0, all[all.length - 1].length - 1)));
@@ -915,7 +922,7 @@ export function installCommands(vim: Vim) {
   const foldsHere = () => V.win.folds.filter(f => f.start <= cur().line && cur().line <= f.end).sort((a, b) => (b.start - a.start) || (a.end - b.end));
   A('zo', () => { const f = foldsHere().filter(f => f.closed).pop() ?? null; if (!f) { if (!foldsHere().length) fail('E490: No fold found'); return; } f.closed = false; });
   A('zO', () => { const fs = foldsHere(); if (!fs.length) fail('E490: No fold found'); fs.forEach(f => (f.closed = false)); });
-  A('zc', () => { const f = foldsHere().find(f => !f.closed); if (!f) { if (!foldsHere().length) fail('E490: No fold found'); return; } f.closed = true; V.win.cursor = pos(f.start, cur().col); });
+  A('zc', () => { const f = foldsHere().find(f => !f.closed); if (!f) { if (!foldsHere().length) fail('E490: No fold found'); return; } f.closed = true; });
   A('zC', () => { const fs = foldsHere(); if (!fs.length) fail('E490: No fold found'); fs.forEach(f => (f.closed = true)); });
   A('za', () => {
     const fs = foldsHere();
