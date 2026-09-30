@@ -152,36 +152,39 @@ export const essentialMotions: Section = {
     {
       id: 'first-char',
       title: 'First Character',
-      chips: ['^', '_'],
+      chips: ['^', '_', 'g_', '+'],
       keyCards: [
         { key: '^', glyph: '|→x', label: 'first non-blank' },
         { key: '_', glyph: '↓x', label: 'first non-blank', sub: 'count goes down' },
+        { key: 'g_', glyph: 'x←|', label: 'last non-blank', sub: 'count goes down' },
+        { key: '+', glyph: '↓x', label: 'next line start', sub: '-: line above' },
       ],
       intro: (
         <>
           <p>
             <Code>^</Code> jumps to the first non-blank character of the line, past the indentation. That's usually where
-            you want to be, not column 0.
+            you want to be, not column 0. <Code>_</Code> does the same, but takes a count as lines: <Code>3_</Code>{' '}
+            goes to the first non-blank two lines down.
           </p>
-          <Motions text="        response.raise_for_status()" cursor={20} keys={['0', '^']} />
+          <Motions text="        response.raise_for_status()  " cursor={20} keys={['0', '^', '$', 'g_']} />
           <p>
-            <Code>_</Code> does the same, but takes a count as lines: <Code>3_</Code> goes to the first non-blank two
-            lines down.
+            <Code>g_</Code> is the other end: the last non-blank character, where <Code>$</Code> would stop on trailing
+            spaces. <Code>+</Code> goes to the first non-blank of the next line, which is <Code>j^</Code> in one key.
           </p>
         </>
       ),
       practice: total => (
         <p>
-          Reach the <span className="hl-green">green box</span> at the start of the code on a line. Some are on
-          other lines: <Code>j</Code> then <Code>^</Code> works, and a count on <Code>_</Code> is shorter. {total} rounds.
+          Reach the <span className="hl-green">green box</span> at the start or end of the code on a line. Some lines
+          end in spaces you can't see, so <Code>$</Code> overshoots there. {total} rounds.
         </p>
       ),
       aside: {
-        title: 'Plus and minus',
+        title: 'Minus and enter',
         body: (
           <p>
-            <Code>+</Code> and <Code>enter</Code> go to the first non-blank of the next line, <Code>-</Code> to the one
-            above. <Code>_</Code> exists mostly for operators (First Operators): <Code>d_</Code> deletes the
+            <Code>-</Code> goes to the first non-blank of the line above, and <Code>enter</Code> works like{' '}
+            <Code>+</Code>. <Code>_</Code> exists mostly for operators (First Operators): <Code>d_</Code> deletes the
             whole line, like <Code>dd</Code>.
           </p>
         ),
@@ -197,18 +200,20 @@ export const essentialMotions: Section = {
             '        try:',
             '            response = session.get(url, timeout=5)',
             '            response.raise_for_status()',
-            '            return response.json()',
+            '            return response.json()  ',
             '        except RequestException as err:',
             '            log.warning("attempt %d: %s", attempt, err)',
-            '            time.sleep(2 ** attempt)',
+            '            time.sleep(2 ** attempt)   ',
             '    raise FetchError(url)',
           ],
         },
         rounds: [
           { setup: { cursor: { line: 3, col: 30 } }, goal: { cursor: { line: 3, col: 12 } }, solution: '^' },
+          { setup: { cursor: { line: 5, col: 12 } }, goal: { cursor: { line: 5, col: 33 } }, solution: 'g_' },
           { setup: { cursor: { line: 7, col: 0 } }, goal: { cursor: { line: 7, col: 12 } }, solution: '^' },
           { setup: { cursor: { line: 2, col: 11 } }, goal: { cursor: { line: 5, col: 12 } }, solution: '4_' },
-          { setup: { cursor: { line: 6, col: 36 } }, goal: { cursor: { line: 6, col: 8 } }, solution: '^' },
+          { setup: { cursor: { line: 1, col: 30 } }, goal: { cursor: { line: 2, col: 8 } }, solution: '+' },
+          { setup: { cursor: { line: 7, col: 12 } }, goal: { cursor: { line: 8, col: 35 } }, solution: '2g_' },
           { setup: { cursor: { line: 0, col: 20 } }, goal: { cursor: { line: 1, col: 4 } }, solution: '2_' },
           { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: { line: 8, col: 12 } }, solution: '6_' },
         ],
