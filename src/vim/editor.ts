@@ -1058,6 +1058,10 @@ export class Vim {
     if (te.type === 'object') {
       const r = te.obj({ lines: this.lines, cur, count, visual: null }, te.inner);
       if (!r) return null;
+      // Word objects report Vim's inclusive flag; apply the charwise operator rules.
+      if ('inclusive' in r && typeof r.inclusive === 'boolean') {
+        return this.vimCharwiseRange(r.start, r.end, r.inclusive, keysToString(p.cmdKeys) === 'd', t.force, true);
+      }
       return this.forceKind(r, t.force);
     }
     if (te.type === 'map') {
@@ -1171,6 +1175,18 @@ export class Vim {
       p = pos(p.line, p.col - 1);
       inclusive = true;
     }
+    return this.vimCharwiseRange(start, p, inclusive, isDelete, force, false);
+  }
+
+  /**
+   * Turn a charwise operator region in Vim's terms (end position plus an
+   * inclusive flag) into a Range: o_v / o_V / o_CTRL-V, the exclusive-linewise
+   * rule, d's linewise rule (:help d), and an end on a line's NUL. An empty
+   * region is null, or (allowEmpty) a zero-width range the operator can run on.
+   */
+  private vimCharwiseRange(start: Pos, end: Pos, inclusive: boolean, isDelete: boolean, force: VisualKind | null, allowEmpty: boolean): Range | null {
+    const L = this.lines;
+    let p = end;
     if (force === 'V' || force === '<C-v>') return this.forceKind({ start, end: p, kind: 'char' }, force);
     if (force === 'v') inclusive = !inclusive;
     const inIndent = /^[ \t]*$/.test(L[start.line].slice(0, start.col));
@@ -1185,8 +1201,10 @@ export class Vim {
     if (isDelete && !force && p.line > start.line && inIndent && /^[ \t]*$/.test(L[p.line].slice(p.col + (inclusive ? 1 : 0)))) {
       return { start: pos(start.line, 0), end: pos(p.line, 0), kind: 'line' };
     }
+    // Inclusive of a line's NUL covers nothing more than exclusive of it.
+    if (inclusive && p.col >= L[p.line].length) { inclusive = false; p = pos(p.line, L[p.line].length); }
     if (!inclusive) {
-      if (cmpPos(start, p) === 0) return null;
+      if (cmpPos(start, p) >= 0) return allowEmpty ? { start, end: pos(start.line, start.col - 1), kind: 'char' } : null;
       p = p.col > 0 ? pos(p.line, p.col - 1) : pos(p.line - 1, L[p.line - 1].length);
     }
     return { start, end: p, kind: 'char' };
