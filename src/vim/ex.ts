@@ -242,6 +242,16 @@ function parseSub(s: string): { pattern: string; replacement: string; flags: str
   return { pattern: parts[0], replacement: parts[1], flags: m[1], count: m[2] ? +m[2] : null };
 }
 
+/** Cursor on `line` at curswant, which stays as it is (beginline(BL_SOL | BL_FIX) under nostartofline). */
+function atWant(v: Vim, line: number) {
+  const l = Math.max(0, Math.min(line, v.buf.lineCount - 1));
+  v.win.cursor = pos(l, Math.max(0, Math.min(v.win.want, v.line(l).length - 1)));
+}
+
+/** Set while :g runs its command: :s then fails silently, and asks for a first non-blank at the end. */
+let globalBusy = 0;
+let globalNeedBeginline = false;
+
 function substitute(vim: Vim, a: ExArgs, mode: 's' | '&' | '~' = 's') {
   let pattern: string, replacement: string, flags: string, count: number | null = null;
   const parsed = mode === 's' ? parseSub(a.arg) : null;
@@ -364,13 +374,15 @@ function substitute(vim: Vim, a: ExArgs, mode: 's' | '&' | '~' = 's') {
     }
   }
   if (!subs) {
-    if (!noErr) fail(`E486: Pattern not found: ${pattern}`);
+    if (!noErr && !globalBusy) fail(`E486: Pattern not found: ${pattern}`);
     return;
   }
+  if (globalBusy) globalNeedBeginline = true;
   if (onlyCount) {
     vim.msg(`${subs} match${subs === 1 ? '' : 'es'} on ${changedLines.size} line${changedLines.size === 1 ? '' : 's'}`);
     return;
   }
+  vim.buf.setUndoCursor(pos(Math.min(...changedLines), 0), true); // undo returns to the first substituted line
   vim.buf.recordChange(pos(lastLine, 0));
   vim.setCursor(pos(lastLine, firstNonBlank(vim.line(lastLine))));
   if (subs > 2 || changedLines.size > 2) vim.msg(`${subs} substitution${subs === 1 ? '' : 's'} on ${changedLines.size} line${changedLines.size === 1 ? '' : 's'}`);
@@ -393,11 +405,18 @@ function confirmSubstitute(vim: Vim, re: RegExp, rep: (m: RegExpExecArray) => st
     return null;
   };
   let cur = next();
-  if (!cur) fail(`E486: Pattern not found: ${vim.lastSub?.pattern}`);
+  if (!cur) {
+    if (globalBusy) return;
+    fail(`E486: Pattern not found: ${vim.lastSub?.pattern}`);
+  }
+  // Where the cursor ends: column 0 of the last match's line when that match was substituted,
+  // otherwise on the match itself (where the prompt left it).
+  let endAt: Pos | null = null;
   const show = () => {
     const c = cur!;
     vim.incsearchPos = { start: pos(c.line, c.m.index), end: pos(c.line, c.m.index + Math.max(0, c.m[0].length - 1)) };
     vim.setCursor(pos(c.line, c.m.index));
+    endAt = null;
     vim.confirm!.prompt = `replace with ${vim.lastSub?.replacement} (y/n/a/q/l/^E/^Y)?`;
   };
   const doReplace = () => {
@@ -409,6 +428,7 @@ function confirmSubstitute(vim: Vim, re: RegExp, rep: (m: RegExpExecArray) => st
     vim.buf.splice(c.line, 1, parts);
     end += parts.length - 1;
     subs++;
+    endAt = pos(c.line, 0);
     if (global) {
       line = c.line + parts.length - 1;
       col = (parts.length > 1 ? parts[parts.length - 1].length - (t.length - c.m.index - c.m[0].length) : c.m.index + r.length) + (c.m[0].length ? 0 : 1);
@@ -431,6 +451,7 @@ function confirmSubstitute(vim: Vim, re: RegExp, rep: (m: RegExpExecArray) => st
     vim.confirm = null;
     vim.incsearchPos = null;
     vim.mode = 'normal';
+    if (endAt) vim.setCursor(endAt);
     if (subs) vim.msg(`${subs} substitution${subs === 1 ? '' : 's'}`);
     vim.emit('substitute');
   };
@@ -498,14 +519,22 @@ function globalCmd(vim: Vim, a: ExArgs, invert: boolean) {
       continue;
     }
     try {
+      globalBusy++;
       runEx(vim, cmd);
     } catch (e) {
       if (!(e instanceof VimError)) throw e;
       for (const t of tokens) B.marks.delete(t);
+      globalNeedBeginline = false;
       throw e;
+    } finally {
+      globalBusy--;
     }
   }
   for (const t of tokens) B.marks.delete(t);
+  if (globalNeedBeginline && !globalBusy) {
+    globalNeedBeginline = false;
+    vim.setCursor(pos(vim.cursor.line, firstNonBlank(vim.line(vim.cursor.line))));
+  }
   if (printed.length) vim.msg(printed.join('\n'), 'more');
   vim.emit('global');
 }
@@ -901,7 +930,7 @@ const COMMANDS: Record<string, Cmd> = {
     run: (v, a) => {
       const { reg, count } = regAndCount(a);
       const r = withCount(v, a, count);
-      v.beginChange();
+      v.beginChange(pos(r.start, v.cursor.col));
       const val = v.deleteRange({ start: pos(r.start, 0), end: pos(r.end, 0), kind: 'line' });
       v.registers.delete(reg, val);
       const l = Math.min(r.start, v.buf.lineCount - 1);
@@ -938,7 +967,8 @@ const COMMANDS: Record<string, Cmd> = {
       const r = lineRange(v, a);
       const dest = parseAddrArg(v, a.arg);
       if (dest >= r.start && dest < r.end) fail('E134: Cannot move a range of lines into itself');
-      if (dest === r.end || (dest === r.start - 1 && false)) return;
+      // Nothing moves, but the cursor goes where the moved lines would end (do_move()).
+      if (dest === r.end || dest === r.start - 1) return atWant(v, dest >= r.start ? dest : dest + r.end - r.start + 1);
       v.beginChange();
       const B = v.buf;
       const moved = B.lines.slice(r.start, r.end + 1);
@@ -947,7 +977,7 @@ const COMMANDS: Record<string, Cmd> = {
       const insertAt = dest < r.start ? dest + 1 : dest - moved.length + 1;
       B.splice(insertAt, 0, moved);
       B.recordChange(pos(insertAt + moved.length - 1, 0));
-      v.setCursor(pos(insertAt + moved.length - 1, firstNonBlank(v.line(insertAt + moved.length - 1))));
+      atWant(v, insertAt + moved.length - 1);
       report(v, moved.length, 'lines moved');
     },
   },
@@ -959,7 +989,7 @@ const COMMANDS: Record<string, Cmd> = {
       v.beginChange();
       const lines = v.buf.lines.slice(r.start, r.end + 1);
       v.insertLines(dest + 1, lines);
-      v.setCursor(pos(dest + lines.length, firstNonBlank(v.line(dest + lines.length))));
+      atWant(v, dest + lines.length);
     },
   },
   t: { min: 1, run: (v, a) => COMMANDS.copy.run(v, a) },
@@ -975,6 +1005,7 @@ const COMMANDS: Record<string, Cmd> = {
       v.beginChange();
       v.setCursor(pos(r.start, 0));
       v.getAction(a.bang ? 'gJ' : 'J')!.run({ count: r.end - r.start + 1, hasCount: true, reg: null, arg: '', keys: 'J' });
+      v.setCursor(pos(r.start, firstNonBlank(v.line(r.start)))); // ex_join(): beginline(BL_WHITE)
     },
   },
   '>': {
@@ -984,7 +1015,9 @@ const COMMANDS: Record<string, Cmd> = {
       const cnt = /\d+/.exec(a.arg)?.[0];
       const r = cnt ? { start: lineRange(v, a).end, end: lineRange(v, a).end + +cnt - 1 } : lineRange(v, a);
       v.beginChange();
-      v.getOperator('>')!.run({ start: pos(r.start, 0), end: pos(Math.min(r.end, v.buf.lineCount - 1), 0), kind: 'line' }, { reg: null, count: times, hasCount: true, visual: 'V', keys: '>' });
+      const end = Math.min(r.end, v.buf.lineCount - 1);
+      v.getOperator('>')!.run({ start: pos(r.start, 0), end: pos(end, 0), kind: 'line' }, { reg: null, count: times, hasCount: true, visual: 'V', keys: '>' });
+      v.setCursor(pos(end, firstNonBlank(v.line(end)))); // :> ends on the range's last line
     },
   },
   '<': {
@@ -994,6 +1027,7 @@ const COMMANDS: Record<string, Cmd> = {
       const r = lineRange(v, a);
       v.beginChange();
       v.getOperator('<')!.run({ start: pos(r.start, 0), end: pos(r.end, 0), kind: 'line' }, { reg: null, count: times, hasCount: true, visual: 'V', keys: '<' });
+      v.setCursor(pos(r.end, firstNonBlank(v.line(r.end)))); // :< ends on the range's last line
     },
   },
   mark: { min: 2, run: (v, a) => { const l = a.range ? a.range.end : v.cursor.line; v.buf.marks.set(a.arg.trim(), pos(l, 0)); } },
@@ -1033,7 +1067,7 @@ const COMMANDS: Record<string, Cmd> = {
       v.beginChange();
       v.buf.splice(range.start, lines.length, sorted);
       v.buf.recordChange(pos(range.start, 0));
-      v.setCursor(pos(range.start, 0));
+      v.setCursor(pos(range.start, firstNonBlank(v.line(range.start)))); // ex_sort(): beginline(BL_WHITE)
       void r;
       if (lines.length - sorted.length > 0) report(v, lines.length - sorted.length, 'fewer lines');
       v.emit('sort');

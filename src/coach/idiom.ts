@@ -16,7 +16,8 @@ export type IdiomOpts = {
   maxKeys: number;
 };
 
-type Cand = { cmd: Key[]; insert: boolean; uses: string[]; pattern: string; penalty: number; commands?: number; longCount?: boolean };
+/** `charwise`: a character motion (word, find, line position) whose delete must stay characterwise. */
+type Cand = { cmd: Key[]; insert: boolean; uses: string[]; pattern: string; penalty: number; commands?: number; longCount?: boolean; charwise?: boolean };
 
 const WORDS = ['w', 'b', 'e', 'W', 'B', 'E', 'ge', 'gE'];
 const OBJECTS = ['iw', 'aw', 'iW', 'aW', 'i"', 'a"', "i'", "a'", 'i`', 'a`', 'i(', 'a(', 'ib', 'ab', 'i{', 'a{', 'iB', 'aB', 'i[', 'a[', 'i<', 'a<', 'it', 'at', 'is', 'as', 'ip', 'ap'];
@@ -89,12 +90,12 @@ export function searchIdioms(scratch: Vim, start: Vim, target: string, opts: Idi
   };
 
   const cands: Cand[] = [];
-  const add = (cmd: Key[], insert: boolean, uses: string[], pattern: string, penalty = 0, commands = 1, longCount = false) => {
+  const add = (cmd: Key[], insert: boolean, uses: string[], pattern: string, penalty = 0, commands = 1, longCount = false, charwise = false) => {
     if (!allow(uses)) return;
     // The shortest this can be: the command, plus (for an insert) the net growth and <Esc>.
     const min = cmd.length + (insert ? Math.max(0, grow) + 1 : 0);
     if (min > opts.maxKeys) return;
-    cands.push({ cmd, insert, uses, pattern, penalty, commands, longCount });
+    cands.push({ cmd, insert, uses, pattern, penalty, commands, longCount, ...(charwise && { charwise }) });
   };
   const counted = (n: number) => (n > 1 ? String(n).split('') : []);
   const countUse = (n: number) => (n > 1 ? ['COUNT'] : []);
@@ -109,6 +110,10 @@ export function searchIdioms(scratch: Vim, start: Vim, target: string, opts: Idi
   for (const ch of chars) for (const f of ['t', 'f', 'T', 'F']) motions.push({ keys: [f, ch], uses: [f], pattern: 'op-to-char', penalty: P.find + (/[fF]/.test(f) ? 0.1 : 0), linewise: false, count: 1 });
   for (const m of ['j', 'k']) for (let n = 1; n <= 3; n++) motions.push({ keys: [...counted(n), m], uses: [m, ...countUse(n)], pattern: 'delete-line', penalty: P.linewise + (n > 1 ? P.count : 0), linewise: true, count: n });
   for (const m of ['}', '{']) motions.push({ keys: [m], uses: [m], pattern: 'block-object', penalty: P.line, linewise: false, count: 1 });
+  // A word, find or line-position motion that Neovim turns linewise (:help d, :help
+  // exclusive-linewise: d3w over three one-word lines is 3dd) makes the right edit for the wrong
+  // reason; the line command is what to teach, so such a candidate is dropped on replay.
+  const charMotion = (pattern: string) => pattern === 'op-word' || pattern === 'op-to-char' || pattern === 'to-line-end';
   for (const m of motions) {
     const ops = OPS.filter(o => allow([o.op, ...m.uses]) && m.keys.length + o.op.length <= opts.maxKeys);
     if (!ops.length) continue;
@@ -116,7 +121,7 @@ export function searchIdioms(scratch: Vim, start: Vim, target: string, opts: Idi
     if (!sp || !covers(sp[0], sp[1])) continue;
     for (const o of ops) {
       const pat = o.op === 'c' && m.pattern === 'op-word' ? 'change-word' : m.count > 1 ? 'count-op' : m.keys[m.keys.length - 1] === '$' ? 'to-line-end' : m.pattern;
-      add([...o.op.split(''), ...m.keys], o.insert, [o.op, ...m.uses], opPattern(o.op, pat), m.penalty);
+      add([...o.op.split(''), ...m.keys], o.insert, [o.op, ...m.uses], opPattern(o.op, pat), m.penalty, 1, false, charMotion(m.pattern));
     }
   }
   // operator + text object
@@ -179,7 +184,12 @@ export function searchIdioms(scratch: Vim, start: Vim, target: string, opts: Idi
   const out: Idiom[] = [];
   for (const k of cands) {
     reset();
+    const reg = scratch.registers.get('"');
     if (!feed(k.cmd)) continue;
+    if (k.charwise) {
+      const now = scratch.registers.get('"');
+      if (now !== reg && now.kind === 'line') continue;
+    }
     let keys = k.cmd;
     let typed = '';
     if (k.insert) {

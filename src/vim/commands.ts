@@ -50,7 +50,7 @@ export function installCommands(vim: Vim) {
       }
       line = next;
     }
-    return { pos: pos(line, Math.min(V.win.want, lastCol(ln(line)))), linewise: true, keepWant: true };
+    return { pos: pos(line, Math.min(V.win.want, c.visual ? ln(line).length : lastCol(ln(line)))), linewise: true, keepWant: true };
   };
   M('h', left); M('<Left>', left); M('<BS>', left); M('<C-h>', left);
   M('l', right); M('<Right>', right); M(' ', right);
@@ -85,7 +85,7 @@ export function installCommands(vim: Vim) {
   const lineJump = (l: number): MotionResult =>
     V.options.startofline
       ? { pos: firstNonBlankPos(L(), l), linewise: true, jump: true }
-      : { pos: pos(l, Math.min(V.win.want, Math.max(0, L()[l].length - 1))), linewise: true, jump: true, keepWant: true };
+      : { pos: pos(l, Math.min(V.win.want, Math.max(0, L()[l].length - (V.visual ? 0 : 1)))), linewise: true, jump: true, keepWant: true };
   M('gg', c => lineJump(c.hasCount ? Math.min(c.count, V.buf.lineCount) - 1 : 0));
   M('G', c => lineJump(c.hasCount ? Math.min(c.count, V.buf.lineCount) - 1 : V.buf.lineCount - 1));
 
@@ -166,8 +166,8 @@ export function installCommands(vim: Vim) {
   M('(', c => { const p = sentenceBackward(L(), cur(), c.count); return p ? { pos: p, jump: true } : null; });
   M('[(', () => { const p = unmatchedOpen(L(), cur(), '(', ')'); return p ? { pos: p, jump: true } : null; });
   M('[{', () => { const p = unmatchedOpen(L(), cur(), '{', '}'); return p ? { pos: p, jump: true } : null; });
-  M('])', () => { const p = unmatchedClose(L(), cur(), '(', ')'); return p ? { pos: p, inclusive: true, jump: true } : null; });
-  M(']}', () => { const p = unmatchedClose(L(), cur(), '{', '}'); return p ? { pos: p, inclusive: true, jump: true } : null; });
+  M('])', () => { const p = unmatchedClose(L(), cur(), '(', ')'); return p ? { pos: p, jump: true } : null; });
+  M(']}', () => { const p = unmatchedClose(L(), cur(), '{', '}'); return p ? { pos: p, jump: true } : null; });
   const funcJump = (dir: 1 | -1) => (c: MotionCtx): MotionResult | null => {
     const starts = functionStarts(L());
     let line = cur().line;
@@ -349,6 +349,13 @@ export function installCommands(vim: Vim) {
   V.defineOperator('d', {
     change: true,
     run: (r, c) => {
+      // op_delete(): a charwise delete on an empty line saves undo and does nothing else (the
+      // registers are left alone; diw on a blank line).
+      if (r.kind === 'char' && !c.visual && r.start.line === r.end.line && ln(r.start.line) === '') {
+        V.buf.markEdited();
+        V.setCursor(pos(r.start.line, 0));
+        return;
+      }
       const v = V.deleteRange(r);
       put(c.reg, v, true);
       if (r.kind === 'line') { const l = Math.min(r.start.line, V.buf.lineCount - 1); V.setCursor(landOn(l), V.win.want); }
@@ -393,6 +400,7 @@ export function installCommands(vim: Vim) {
   });
 
   const shift = (dir: 1 | -1) => (r: Range, c: OpCtx) => {
+    V.buf.markUndoEntry(); // an undo step even when no line moves (>> on a blank line)
     const sw = Number(V.opt('shiftwidth')) || 8;
     const times = c.visual ? c.count : 1;
     for (let l = r.start.line; l <= r.end.line; l++) {
@@ -412,6 +420,7 @@ export function installCommands(vim: Vim) {
   V.defineOperator('=', {
     change: true,
     run: r => {
+      V.buf.markUndoEntry(); // an undo step even when the indent was already right
       const out = reindentLines(L(), r.start.line, r.end.line, V.buf.filetype, Number(V.opt('shiftwidth')) || 2);
       V.buf.splice(r.start.line, r.end.line - r.start.line + 1, out);
       V.setCursor(landOn(r.start.line), V.win.want);
@@ -421,6 +430,7 @@ export function installCommands(vim: Vim) {
   });
 
   const caseOp = (f: (s: string) => string) => (r: Range) => {
+    V.buf.markUndoEntry(); // an undo step even when no letter changes case (g~ on a digit)
     if (r.kind === 'line') {
       for (let l = r.start.line; l <= r.end.line; l++) V.buf.setLine(l, f(ln(l)));
       V.setCursor(pos(r.start.line, cur().line === r.start.line ? cur().col : 0));
@@ -488,7 +498,8 @@ export function installCommands(vim: Vim) {
       const out = toggleComment(L().slice(r.start.line, r.end.line + 1), V.buf.filetype);
       V.buf.splice(r.start.line, r.end.line - r.start.line + 1, out);
       V.buf.recordChange(pos(r.start.line, 0));
-      V.setCursor(pos(r.start.line, Math.min(cur().col, lastCol(ln(r.start.line)))));
+      // g@ leaves the cursor on the operator's start (column kept; 0 for an object or linewise Visual).
+      V.setCursor(V.opStart);
     },
   });
   V.defineObject('gc', ({ lines, cur: c }) => {
@@ -506,6 +517,8 @@ export function installCommands(vim: Vim) {
   const A = (keys: string, run: (c: ActionCtx) => void, opts: { change?: boolean; arg?: 'char' | 'char2'; modes?: ('n' | 'v' | 'o')[] } = {}) =>
     V.defineAction(keys, { run, change: opts.change, arg: opts.arg }, opts.modes ?? ['n']);
   const runOp = (keys: string, r: Range, c: ActionCtx) => {
+    // Undo returns to the start of the operated text (column 0 for whole lines), as in Vim.
+    V.buf.setUndoCursor(r.kind === 'line' ? pos(r.start.line, 0) : pos(r.start.line, r.kind === 'block' ? Math.min(r.start.col, r.end.col) : r.start.col));
     V.getOperator(keys)!.run(r, { reg: c.reg, count: c.count, hasCount: c.hasCount, visual: null, keys });
   };
   const charRange = (count: number, back = false): Range | null => {
@@ -518,7 +531,14 @@ export function installCommands(vim: Vim) {
     return { start: { ...p }, end: pos(p.line, Math.min(t.length - 1, p.col + count - 1)), kind: 'char' };
   };
 
-  A('x', c => { const r = charRange(c.count); if (!r) fail(); runOp('d', r, c); }, { change: true });
+  A('x', c => {
+    const r = charRange(c.count);
+    if (!r) {
+      if (!ln()) V.buf.markEdited(); // Vim saves undo for x on an empty line: the redo branch goes
+      fail();
+    }
+    runOp('d', r, c);
+  }, { change: true });
   A('<Del>', c => { const r = charRange(c.count); if (!r) fail(); runOp('d', r, c); }, { change: true });
   A('X', c => { const r = charRange(c.count, true); if (!r) fail(); runOp('d', r, c); }, { change: true });
   A('D', c => {
@@ -545,21 +565,54 @@ export function installCommands(vim: Vim) {
     runOp('y', { start: p, end: pos(endLine, Math.max(0, ln(endLine).length - 1)), kind: 'char' }, c);
     V.setCursor(p);
   });
+  /**
+   * The text [count] <Tab>s typed from column col of t insert (Neovim's r<Tab> is {count}R<Tab><Esc>):
+   * with 'smarttab' (Neovim's default) a tab in the indent is 'shiftwidth' wide, elsewhere it reaches
+   * the next 'tabstop'; 'expandtab' spells it with spaces, otherwise tabs fill whole tabstops.
+   */
+  const tabText = (t: string, col: number, count: number) => {
+    const ts = Number(V.opt('tabstop')) || 8, sw = Number(V.opt('shiftwidth')) || ts;
+    const inIndent = /^[ \t]*$/.test(t.slice(0, col));
+    let vc = 0;
+    for (const ch of t.slice(0, col)) vc = ch === '\t' ? vc + ts - (vc % ts) : vc + 1;
+    let out = '';
+    for (let i = 0; i < count; i++) {
+      const target = vc + (inIndent ? sw - (vc % sw) : ts - (vc % ts));
+      if (V.opt('expandtab')) out += ' '.repeat(target - vc);
+      else {
+        while ((Math.floor(vc / ts) + 1) * ts <= target) { out += '\t'; vc = (Math.floor(vc / ts) + 1) * ts; }
+        out += ' '.repeat(target - vc);
+      }
+      vc = target;
+    }
+    return out;
+  };
   A('r', c => {
     const p = cur(), t = ln();
     if (p.col + c.count > t.length) fail();
-    if (c.arg === '<CR>' || c.arg === '\r') {
-      V.buf.splice(p.line, 1, [t.slice(0, p.col), t.slice(p.col + c.count)]);
-      V.setCursor(pos(p.line + 1, 0));
+    const ch = keysToRegister([c.arg]);
+    // A typed <CR> splits the line; a literal one (r<C-v><CR>) is just a ^M.
+    if (c.arg.length > 1 && (ch === '\r' || ch === '\n')) {
+      // [count] characters become ONE line break; 'autoindent' indents the new line like the first
+      // part and drops the rest's leading blanks, leaving the cursor just before the indent's end.
+      const ai = !!V.opt('autoindent');
+      const left = t.slice(0, p.col), right = t.slice(p.col + c.count);
+      const indent = ai ? indentOf(left) : '';
+      V.buf.splice(p.line, 1, [left, indent + (ai ? right.replace(/^[ \t]+/, '') : right)]);
+      V.buf.recordChange(pos(p.line + 1, indent.length));
+      V.setCursor(pos(p.line + 1, Math.max(0, indent.length - 1)));
       return;
     }
-    V.buf.setLine(p.line, t.slice(0, p.col) + c.arg.repeat(c.count) + t.slice(p.col + c.count));
+    const text = c.arg === '<Tab>' ? tabText(t, p.col, c.count) : ch.repeat(c.count);
+    V.buf.markUndoEntry(); // even when nothing changes (ra on an a)
+    V.buf.setLine(p.line, t.slice(0, p.col) + text + t.slice(p.col + c.count));
     V.buf.recordChange(p);
-    V.setCursor(pos(p.line, p.col + c.count - 1));
+    V.setCursor(pos(p.line, p.col + Math.max(1, text.length) - 1));
   }, { change: true, arg: 'char' });
   A('~', c => {
     const p = cur(), t = ln();
     if (!t.length) fail();
+    V.buf.markUndoEntry(); // an undo step even over non-letters
     const e = Math.min(t.length, p.col + c.count);
     V.buf.setLine(p.line, t.slice(0, p.col) + swapCase(t.slice(p.col, e)) + t.slice(e));
     V.buf.recordChange(p);
@@ -575,10 +628,11 @@ export function installCommands(vim: Vim) {
     for (let l = start + 1; l <= last; l++) {
       const next = ln(l);
       if (spaces) {
-        const trimmed = next.replace(/^\s+/, '');
-        text = text.replace(/\s+$/, '');
+        // :help J: the joined line loses its leading blanks; one space goes in unless the line
+        // already ends in a blank (kept as is), either side is empty, or the next starts with ')'.
+        const trimmed = next.replace(/^[ \t]+/, '');
         col = text.length;
-        const sep = !trimmed || !text ? '' : trimmed.startsWith(')') ? '' : /[.!?]$/.test(text) ? ' ' : ' ';
+        const sep = !trimmed || !text || /[ \t]$/.test(text) || trimmed.startsWith(')') ? '' : ' ';
         text = text + sep + trimmed;
       } else {
         col = text.length;
@@ -617,6 +671,7 @@ export function installCommands(vim: Vim) {
   // ---- put ---------------------------------------------------------------------------------------------
   const doPut = (after: boolean, gp: boolean, indentAdjust = false) => (c: ActionCtx) => {
     const v = V.getRegister(c.reg);
+    if (!v.text) V.buf.markUndoEntry(); // Vim saves undo before it finds the register empty
     if (!v.text && c.reg !== '_') fail(c.reg ? `E353: Nothing in register ${c.reg}` : 'E353: Nothing in register "');
     putValue(v, after, gp, c.count, indentAdjust);
   };
@@ -641,14 +696,19 @@ export function installCommands(vim: Vim) {
     }
     if (v.kind === 'block') {
       const parts = v.text.split('\n');
-      const w = Math.max(...parts.map(x => x.length));
+      const w = v.width ?? Math.max(...parts.map(x => x.length));
       const col = after && ln().length ? p.col + 1 : p.col;
       for (let i = 0; i < parts.length; i++) {
         const l = p.line + i;
         if (l >= V.buf.lineCount) V.insertLines(V.buf.lineCount, ['']);
+        // do_put(): a short line is padded out to the block, and each copy gets the block's
+        // trailing blanks only when text follows it.
+        const short = ln(l).length <= col;
         const t = ln(l).padEnd(col);
-        const piece = (parts[i].padEnd(w)).repeat(count);
-        V.buf.setLine(l, (t.slice(0, col) + piece + t.slice(col)).replace(/\s+$/, m => (t.slice(col).length ? m : '')));
+        const fill = ' '.repeat(Math.max(0, w - parts[i].length));
+        let piece = '';
+        for (let j = 0; j < count; j++) piece += parts[i] + (j < count - 1 || !short ? fill : '');
+        V.buf.setLine(l, t.slice(0, col) + piece + t.slice(col));
       }
       V.buf.recordChange(pos(p.line, col));
       V.setCursor(pos(p.line, col));
@@ -673,7 +733,7 @@ export function installCommands(vim: Vim) {
   // ---- undo ---------------------------------------------------------------------------------------------
   A('u', c => {
     for (let i = 0; i < c.count; i++) {
-      const p = V.buf.undo(cur());
+      const p = V.buf.undo(cur(), V.win.want);
       if (!p) {
         if (i === 0) V.msg('Already at oldest change');
         break;
@@ -685,7 +745,7 @@ export function installCommands(vim: Vim) {
   });
   A('<C-r>', c => {
     for (let i = 0; i < c.count; i++) {
-      const p = V.buf.redo(cur());
+      const p = V.buf.redo(cur(), V.win.want);
       if (!p) {
         if (i === 0) V.msg('Already at newest change');
         break;
@@ -695,6 +755,19 @@ export function installCommands(vim: Vim) {
     }
     V.emit('redo');
   });
+  // g- / g+: step through every text state in time order, across undo branches.
+  const undoTime = (dir: -1 | 1) => (c: ActionCtx) => {
+    const p = V.buf.undoTime(dir * c.count, cur(), V.win.want);
+    if (!p) {
+      V.msg(dir < 0 ? 'Already at oldest change' : 'Already at newest change');
+      return;
+    }
+    V.setCursor(p);
+    V.clampCursor(false);
+    V.emit(dir < 0 ? 'undo' : 'redo');
+  };
+  A('g-', undoTime(-1));
+  A('g+', undoTime(1));
   A('U', () => {
     const lu = V.buf.lineUndo;
     if (!lu || lu.line >= V.buf.lineCount) return;
@@ -1105,7 +1178,7 @@ function installVisual(V: Vim, h: {
   }, true);
   A('r', c => {
     const { r } = take();
-    const ch = c.arg;
+    const ch = keysToRegister([c.arg]); // the literal character: <CR> is a ^M, <Tab> a real tab
     for (let l = r.start.line; l <= r.end.line; l++) {
       const t = ln(l);
       let s = 0, e = t.length - 1;
@@ -1113,6 +1186,7 @@ function installVisual(V: Vim, h: {
       if (r.kind === 'block') { s = Math.min(r.start.col, r.end.col); e = r.toEol ? t.length - 1 : Math.max(r.start.col, r.end.col); }
       e = Math.min(e, t.length - 1);
       if (e < s) continue;
+      V.buf.markUndoEntry(); // even when nothing changes (vra on an a)
       V.buf.setLine(l, t.slice(0, s) + ch.repeat(e - s + 1) + t.slice(e + 1));
     }
     V.buf.recordChange(r.start);
@@ -1120,35 +1194,60 @@ function installVisual(V: Vim, h: {
   }, true);
   V.defineAction('r', { ...V.getAction('r', 'v')!, arg: 'char', change: true }, ['v']);
 
+  // Visual p/P (Neovim's nv_put in Visual mode): delete the selection (into the unnamed register for p;
+  // P keeps it), then put the register in its place. Every selection kind takes a count.
   const putOver = (keepReg: boolean) => (c: ActionCtx) => {
     const v = V.getRegister(c.reg);
+    const vcur = { ...V.cursor };
     const { r } = take();
+    const n = c.count;
+    const whole = r.kind === 'line' && r.start.line === 0 && r.end.line === V.buf.lineCount - 1;
     const removed = V.deleteRange(r);
     if (!keepReg) V.registers.delete(null, removed);
-    if (r.kind === 'line') {
-      V.setCursor(pos(Math.min(r.start.line, V.buf.lineCount - 1), 0));
-      if (v.kind === 'line') {
-        const lines = v.text.replace(/\n$/, '').split('\n');
-        if (V.buf.lineCount === 1 && V.line(0) === '' && r.start.line === 0) V.buf.splice(0, 1, lines);
-        else V.insertLines(r.start.line, lines);
-        V.setCursor(pos(r.start.line, firstNonBlank(ln(r.start.line))));
-      } else {
-        V.insertLines(r.start.line, [v.text]);
-        V.setCursor(pos(r.start.line, 0));
+    const times = (xs: string[]) => Array.from({ length: n }, () => xs).flat();
+    const asLines = () => (v.kind === 'line' ? v.text.replace(/\n$/, '') : v.text).split('\n');
+    const putLines = (at: number) => {
+      const lines = times(asLines());
+      if (whole) V.buf.splice(0, V.buf.lineCount, lines);
+      else V.insertLines(at, lines);
+      V.setCursor(firstNonBlankPos(V.lines, at));
+    };
+    const c1 = r.kind === 'block' ? Math.min(r.start.col, r.end.col) : r.start.col;
+    /** Put at the deletion point, which may sit on the end-of-line. */
+    const putAt = (p: Pos) => {
+      if (v.kind === 'block') {
+        V.win.cursor = { ...p };
+        h.putValue(v, false, false, n);
+        return;
       }
-      return;
-    }
-    V.setCursor(r.start);
-    if (v.kind === 'line') {
-      // Char selection replaced by lines: split the line.
+      const text = v.text.repeat(n);
+      const end = V.insertText(p, text);
+      V.setCursor(text.includes('\n') ? p : pos(end.line, Math.max(0, end.col - 1)));
+    };
+    if (r.kind === 'line') return putLines(r.start.line);
+    if (r.kind === 'char') {
+      if (v.kind !== 'line') return putAt(r.start);
+      // Lines into a charwise selection: split the line around them.
       const t = ln(r.start.line);
-      const lines = v.text.replace(/\n$/, '').split('\n');
-      V.buf.splice(r.start.line, 1, [t.slice(0, r.start.col), ...lines, t.slice(r.start.col)]);
-      V.setCursor(pos(r.start.line + 1, 0));
+      V.buf.splice(r.start.line, 1, [t.slice(0, c1), ...times(asLines()), t.slice(c1)]);
+      V.setCursor(firstNonBlankPos(V.lines, r.start.line + 1));
       return;
     }
-    const end = V.insertText(r.start, v.text.repeat(c.count));
-    V.setCursor(pos(end.line, Math.max(0, end.col - 1)));
+    // Block selection. Lines go below the line the Visual cursor was on (p) or above the block (P).
+    if (v.kind === 'line') return putLines(keepReg ? r.start.line : vcur.line + 1);
+    if (v.kind === 'char' && !v.text.includes('\n')) {
+      // One line of text goes into every line of the block; lines ending before the block are skipped.
+      const text = v.text.repeat(n);
+      for (let l = r.start.line; l <= r.end.line; l++) {
+        const t = ln(l);
+        if (t.length < c1) continue;
+        V.buf.setLine(l, t.slice(0, c1) + text + t.slice(c1));
+      }
+      V.buf.recordChange(pos(r.start.line, c1));
+      V.setCursor(pos(r.start.line, c1 + Math.max(0, text.length - 1)));
+      return;
+    }
+    putAt(pos(r.start.line, c1));
   };
   A('p', putOver(false), true);
   A('P', putOver(true), true);
@@ -1160,7 +1259,7 @@ function installVisual(V: Vim, h: {
       const toEol = v.toEol;
       V.exitVisual();
       const col = append ? (toEol ? ln(r.start.line).length : Math.max(r.start.col, r.end.col) + 1) : Math.min(r.start.col, r.end.col);
-      V.startInsert(append ? 'A' : 'I', pos(r.start.line, col), 1, { block: { first: r.start.line, last: r.end.line, col, append, toEol } });
+      V.startInsert(append ? 'A' : 'I', pos(r.start.line, col), 1, { block: { first: r.start.line, last: r.end.line, col, append, toEol, left: Math.min(r.start.col, r.end.col) } });
       return;
     }
     V.exitVisual();
@@ -1197,11 +1296,6 @@ function installVisual(V: Vim, h: {
   A('g<C-a>', incr(1, true), true);
   A('g<C-x>', incr(-1, true), true);
 
-  A('$', () => {
-    V.win.cursor = pos(V.cursor.line, Math.max(0, ln().length - 1));
-    V.win.want = Infinity;
-    if (V.visual!.kind === '<C-v>') V.visual!.toEol = true;
-  });
   A('gq', c => asOp('gq')(c), true);
   void h.swapCase; void h.rot13; void h.putValue; void keysToRegister; void registerToKeys;
 }
