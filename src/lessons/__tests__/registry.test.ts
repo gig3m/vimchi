@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { CHALLENGES } from '../../challenges';
 import { LESSONS, ORDER, SECTIONS } from '..';
+import { mergeSetup } from '../runtime';
+import { solutionCommands } from '../../coach';
+import { taughtBy } from '../../coach/vocab';
 import { lessonIdFromHash } from '../../state/seed';
 
 const BAND_ORDER = ['core', 'repeat', 'project', 'patterns', 'code', 'challenges'];
@@ -49,5 +52,21 @@ describe('registry', () => {
     const runs = [{ lesson: 'exchange', score: 90 }, { lesson: 'move', score: 80 }];
     const counted = ORDER.filter(l => !l.boss && runs.some(r => r.lesson === l.id)).length;
     expect(counted).toBe(1);
+  });
+});
+
+describe('references use only what has been taught', () => {
+  it('no round solution runs a command whose first lesson comes later (par must be reachable)', () => {
+    const offenders: string[] = [];
+    for (const l of ORDER) {
+      const c = l.challenge;
+      if (c.kind !== 'rounds') continue;
+      const taught = taughtBy(l.id);
+      c.rounds.forEach((r, i) => {
+        const missing = solutionCommands(mergeSetup(c.base, r.setup), r.solution).filter(t => !taught.has(t));
+        if (missing.length) offenders.push(`${l.id} r${i + 1} ${r.solution}: ${[...new Set(missing)].join(' ')}`);
+      });
+    }
+    expect(offenders).toEqual([]);
   });
 });

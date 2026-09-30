@@ -302,14 +302,14 @@ export const visualMode: Section = {
             solution: 'gvd',
           },
           {
-            prompt: 'Indent the two lines, then reselect and indent again.',
+            prompt: 'Yank the two calls for later, then reselect them and delete them.',
             setup: {
               name: 'nested.ts',
-              text: ['if (a) {', '  if (b) {', 'run();', 'done();', '  }', '}'],
-              cursor: { line: 2, col: 0 },
+              text: ['function setup() {', '  run();', '  done();', '  return ok;', '}'],
+              cursor: { line: 1, col: 0 },
             },
-            goal: { text: ['if (a) {', '  if (b) {', '    run();', '    done();', '  }', '}'] },
-            solution: 'Vj>gv>',
+            goal: { text: ['function setup() {', '  return ok;', '}'], registers: { '"': '  run();\n  done();\n' } },
+            solution: 'Vjygvd',
           },
           {
             prompt: 'You selected "timeout" a moment ago. Change it to "timeoutMs".',
@@ -643,11 +643,12 @@ export const visualMode: Section = {
     {
       id: 'growing-selections',
       title: 'Growing Selections',
-      chips: ['v', 'a(', 'i('],
+      chips: ['v', 'a(', 'i(', 'a{'],
       keyCards: [
         { key: 'v', glyph: '[ab]', label: 'start selecting' },
         { key: 'a(', glyph: '(…)', label: 'around parens' },
         { key: 'i(', glyph: '…', label: 'inside parens' },
+        { key: 'a{', glyph: '{…}', label: 'around braces' },
       ],
       intro: (
         <>

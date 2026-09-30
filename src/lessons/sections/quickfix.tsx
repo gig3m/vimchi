@@ -253,6 +253,8 @@ export const quickfix: Section = {
       keyCards: [
         { key: '[q', glyph: '↑', label: 'previous match' },
         { key: ']q', glyph: '↓', label: 'next match' },
+        { key: '[Q', glyph: '⇈', label: 'first match' },
+        { key: ']Q', glyph: '⇊', label: 'last match' },
       ],
       intro: (
         <>

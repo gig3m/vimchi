@@ -68,7 +68,7 @@ export const nextSteps: Section = {
                 '}',
               ],
             },
-            solution: 'jfHflal<Esc>',
+            solution: 'j5wlal<Esc>',
           },
           {
             prompt: 'Add "const " before "name".',
@@ -98,7 +98,7 @@ export const nextSteps: Section = {
               cursor: { line: 0, col: 0 },
             },
             goal: { text: ["const name = prompt('Your name?');", 'greet(name);', "console.log('done');"] },
-            solution: 'jf;i)<Esc>',
+            solution: 'j3ea)<Esc>',
           },
           {
             prompt: 'Insert "!" after "Hi".',
@@ -119,7 +119,7 @@ export const nextSteps: Section = {
                 '}',
               ],
             },
-            solution: '2jfia!<Esc>',
+            solution: '2j3ea!<Esc>',
           },
           {
             prompt: 'Add the space after the comma.',
@@ -128,7 +128,7 @@ export const nextSteps: Section = {
               cursor: { line: 2, col: 5 },
             },
             goal: { text: ['const origin = [0, 0];', 'const point = [3, 4];', 'const dist = distance(origin, point);'] },
-            solution: 'kf,a <Esc>',
+            solution: 'k5wa <Esc>',
           },
         ],
       },
