@@ -381,10 +381,10 @@ export const screenMovement: Section = {
             solution: '<C-f><C-f><C-f>',
           },
           {
-            prompt: 'Page back to the 2.4.0 release.',
-            setup: { cursor: { line: 70, col: 0 }, init: top(58) },
-            goal: { cursor: { line: 60, col: 0 } },
-            solution: '<C-b>j',
+            prompt: 'Page back to the 2.4.1 release.',
+            setup: { cursor: { line: 70, col: 0 }, init: top(66) },
+            goal: { cursor: { line: 55, col: 0 } },
+            solution: '<C-b><C-b>k',
           },
           {
             prompt: 'Page back to the 3.0.0 release.',
