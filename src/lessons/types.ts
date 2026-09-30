@@ -96,6 +96,12 @@ export type RoundsChallenge = {
   rounds: Round[];
   /** Show the goal text under the editor for text goals (default true). */
   showGoal?: boolean | 'inline' | 'pane';
+  /**
+   * `false`: start every round at its setup cursor instead of carrying the learner's cursor over.
+   * For lessons whose keys depend on the cursor (flash labels), so what the learner sees matches the
+   * reference solutions on Results.
+   */
+  carryCursor?: false;
 };
 
 export type CorpusLicense = 'MIT' | 'BSD-2-Clause' | 'BSD-3-Clause' | 'Apache-2.0' | 'ISC';
