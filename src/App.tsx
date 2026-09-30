@@ -7,27 +7,28 @@ import { WarmUp } from './components/WarmUp';
 import type { Who } from './components/Avatar';
 import { COUNTED, LESSONS, ORDER } from './lessons';
 import { repsRunId } from './challenges/reps';
-import { isWarmUpHash, lessonIdFromHash, newSeed, repsFromHash, repsHref, seedFromHash, warmUpHref } from './state/seed';
+import { PROFILE_HREF, type Route, newSeed, repsFromHash, repsHref, routeFromHash, seedFromHash, warmUpHref } from './state/seed';
 import { useSettings } from './state/settings';
 import { useProgress } from './state/store';
 import { WARMUP_ID, todaysWarmUp, warmUpSub } from './warmup';
 
-function lessonFromHash() {
-  const id = lessonIdFromHash(location.hash);
-  return LESSONS[id] ? id : '';
-}
+const route = () => routeFromHash(location.hash, id => !!LESSONS[id]);
 
 export function App() {
   const prog = useProgress();
   const settings = useSettings();
-  const [lessonId, setLessonId] = useState(() => lessonFromHash() || (LESSONS[prog.lesson] ? prog.lesson : ORDER[0].id));
-  const [view, setView] = useState<'lesson' | 'profile' | 'warm-up'>(() => (isWarmUpHash(location.hash) ? 'warm-up' : 'lesson'));
+  const [lessonId, setLessonId] = useState(() => route().id || (LESSONS[prog.lesson] ? prog.lesson : ORDER[0].id));
+  const [view, setView] = useState<Route['view']>(() => route().view);
   // A generated challenge's seed from the URL (`#id?seed=N`); null means a fresh random one.
   const [seed, setSeed] = useState<number | null>(() => seedFromHash(location.hash));
   // Reps mode (`#id?reps=N`): the lesson's generated Reps on seed N.
   const [reps, setReps] = useState<number | null>(() => repsFromHash(location.hash));
   const [signInOpen, setSignInOpen] = useState(false);
   const main = useRef<HTMLElement>(null);
+  const lessonRef = useRef(lessonId);
+  lessonRef.current = lessonId;
+  const setLastLesson = useRef(prog.setLesson);
+  setLastLesson.current = prog.setLesson;
 
   const go = (id: string) => {
     setLessonId(id);
@@ -38,26 +39,29 @@ export function App() {
     if (location.hash !== '#' + id) history.pushState(null, '', '#' + id);
     main.current?.scrollTo(0, 0);
   };
-  // Back/forward and typed URLs.
+  // Back/forward and typed URLs. An empty or unknown hash (`#no-such-lesson`) shows a lesson and
+  // is replaced by that lesson's id, so a reload or a shared link names the page on screen.
   useEffect(() => {
     const onHash = () => {
-      const id = lessonFromHash();
+      const r = route();
       setSeed(seedFromHash(location.hash));
       setReps(repsFromHash(location.hash));
-      if (isWarmUpHash(location.hash)) {
-        setView('warm-up');
-        main.current?.scrollTo(0, 0);
-      } else if (id) {
-        setLessonId(id);
-        setView('lesson');
-        main.current?.scrollTo(0, 0);
+      setView(r.view);
+      if (r.id) {
+        setLessonId(r.id);
+        setLastLesson.current(r.id); // a sign-in or a reload without a hash comes back here
       }
+      if (!r.canonical) history.replaceState(null, '', '#' + lessonRef.current);
+      main.current?.scrollTo(0, 0);
     };
+    if (!route().canonical) history.replaceState(null, '', '#' + lessonRef.current);
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
+  /** Profile has a URL (`#profile`), so Back from it returns to the page before. */
   const openProfile = () => {
     setView('profile');
+    if (location.hash !== PROFILE_HREF) history.pushState(null, '', PROFILE_HREF);
     main.current?.scrollTo(0, 0);
   };
   const closeSignIn = useCallback(() => setSignInOpen(false), []);
@@ -100,6 +104,7 @@ export function App() {
         profileOn={view === 'profile'}
         who={who}
         userSub={userSub}
+        homeHref={'#' + ORDER[0].id}
         onLesson={go}
         onProfile={openProfile}
         onSignIn={() => setSignInOpen(true)}
