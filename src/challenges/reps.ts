@@ -3,7 +3,7 @@
 // challenge, picks the corpus files that can hold the run, and says whether `.` may chain.
 import { ORDER } from '../lessons';
 import type { CorpusFile, GeneratedChallenge, Lesson, RepsSpec } from '../lessons/types';
-import { CORPUS } from './corpus';
+import { CORPUS, JOINED } from './corpus';
 import { generate } from './generate';
 import { KINDS } from './mutations';
 
@@ -12,14 +12,7 @@ export const repsRunId = (lessonId: string) => `${lessonId}-reps`;
 /** The lesson a saved Reps run belongs to, or null for any other run id. */
 export const lessonOfRepsRun = (runId: string): string | null => (runId.endsWith('-reps') ? runId.slice(0, -'-reps'.length) : null);
 
-/**
- * Same-language corpus files joined into one buffer, blank line between. Object kinds (strings,
- * calls, functions) have only a handful of sites per file; joined, a language has enough.
- */
-export const JOINED: CorpusFile[] = ['ts', 'go', 'lua'].map(ext => {
-  const files = CORPUS.filter(f => f.name.endsWith('.' + ext));
-  return { name: `reps.${ext}`, lines: files.flatMap((f, i) => (i ? ['', ...f.lines] : f.lines)), source: files[0].source };
-});
+export { JOINED };
 
 /** Seeds a file must fill the run's minimum on to be offered (deterministic). */
 const PROBE_SEEDS = [1, 2, 3, 4, 5, 6, 7, 8];

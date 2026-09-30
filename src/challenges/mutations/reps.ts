@@ -181,7 +181,11 @@ const BLOCKS: Record<string, string[][]> = {
 const blank = (l: string | undefined) => l !== undefined && l.trim() === '';
 const filled = (l: string | undefined) => l !== undefined && l.trim() !== '';
 
-/** A leftover paragraph after a blank line → `dap` from inside it (takes the blank line after it too). */
+/**
+ * A leftover paragraph after a blank line → `dap` from inside it (takes the blank line after it too).
+ * The item owns the line above and the blank line, so the new blank line never pairs with the old
+ * one and makes the item look done (or the block look like damage outside it).
+ */
 export const extraBlock: MutationKind = {
   id: 'extra-block',
   sites: lines => lines.flatMap((l, line) => (filled(l) && blank(lines[line + 1]) && filled(lines[line + 2]) ? [{ line, col: 0, len: l.length }] : [])),
@@ -189,7 +193,7 @@ export const extraBlock: MutationKind = {
     const ind = indentOf(lines[site.line + 2]);
     const block = pick(rng, BLOCKS[langOf(lines)]).map(b => ind + b);
     return {
-      kind: 'extra-block', site, lines: [lines[site.line], '', ...block],
+      kind: 'extra-block', site, span: 2, lines: [lines[site.line], '', ...block, ''],
       fixAt: { dline: 2, col: ind.length }, fixKeys: 'dap', parMs: 900,
       checklist: `delete the leftover "${block[0].trim()}" block`,
     };
