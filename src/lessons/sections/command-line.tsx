@@ -114,8 +114,8 @@ export const commandLine: Section = {
       intro: (
         <>
           <p>
-            <Code>:</Code> opens the command line, <Code>Esc</Code> leaves it and <Code>Tab</Code> completes. A bare
-            line number jumps there: <Code>:42</Code> then <Code>Enter</Code> lands on line 42, in the same column where
+            <Code>:</Code> opens the command line, <Code>esc</Code> leaves it and <Code>Tab</Code> completes. A bare
+            line number jumps there: <Code>:42</Code> then <Code>enter</Code> lands on line 42, in the same column where
             it can. <Code>:$</Code> goes to the last line, though <Code>G</Code> gets there in one key.
           </p>
           <p>
@@ -737,7 +737,7 @@ export const commandLine: Section = {
         title: 'Insert mode ends itself',
         body: (
           <p>
-            <Code>:norm</Code> presses <Code>Esc</Code> for you after each line, so <Code>:%norm I- </Code> needs no
+            <Code>:norm</Code> presses <Code>esc</Code> for you after each line, so <Code>:%norm I- </Code> needs no
             escape at the end. Trailing spaces count, so type exactly what you want inserted.
           </p>
         ),
@@ -1019,13 +1019,13 @@ export const commandLine: Section = {
       chips: ['q:'],
       keyCards: [
         { key: 'q:', glyph: '▤:', label: 'command history window' },
-        { key: 'enter', glyph: '⏎', label: 'run this line' },
+        { key: 'CR', glyph: '⏎', label: 'run this line' },
       ],
       intro: (
         <>
           <p>
             <Code>q:</Code> opens your command history in a small window, one command per line, newest at the bottom.
-            Move and edit with normal Vim keys, then press <Code>Enter</Code> to run the line under the cursor.
+            Move and edit with normal Vim keys, then press <Code>enter</Code> to run the line under the cursor.
           </p>
           <p>
             Long commands are painful to fix on the command line. Here you get <Code>cw</Code>, <Code>f</Code>,{' '}

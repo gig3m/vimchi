@@ -1072,13 +1072,13 @@ export const registers: Section = {
       chips: ['C-r', '='],
       keyCards: [
         { key: 'C-r', glyph: '⎘', label: 'insert a register' },
-        { key: '=', glyph: '1+1', label: 'expression', sub: 'type it, then Enter' },
+        { key: '=', glyph: '1+1', label: 'expression', sub: 'type it, then CR' },
       ],
       intro: (
         <>
           <p>
-            <Code>C-r =</Code> opens a prompt at the bottom of the screen. Type an expression, press Enter, and its
-            result is inserted at the cursor: <Code>C-r =</Code> <Mono>24*60*60</Mono> Enter types <Mono>86400</Mono>.
+            <Code>C-r =</Code> opens a prompt at the bottom of the screen. Type an expression, press <Code>enter</Code>, and its
+            result is inserted at the cursor: <Code>C-r =</Code> <Mono>24*60*60</Mono> <Code>enter</Code> types <Mono>86400</Mono>.
           </p>
           <p>
             It's a calculator that writes straight into the buffer, and it knows Vim's string functions too.

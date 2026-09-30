@@ -194,7 +194,7 @@ export const quickfix: Section = {
         <>
           <p>
             <Code>:copen</Code> shows the quickfix list in a window along the bottom, one match per line with its file
-            and line number. Move with <Code>j</Code> and <Code>k</Code>, and press <Code>Enter</Code> to jump to an
+            and line number. Move with <Code>j</Code> and <Code>k</Code>, and press <Code>enter</Code> to jump to an
             entry in the window above.
           </p>
           <p>
