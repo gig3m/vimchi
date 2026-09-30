@@ -64,6 +64,24 @@ describe('outbox', () => {
       expect(loadOutbox('carol').length).toBe(1);
     } finally { (globalThis as { localStorage: Storage }).localStorage = real; }
   });
+  it('a 400 (coach data the server rejects) resends the run without it, instead of retrying forever', async () => {
+    const withCoach = { ...run(1), coach: [{ pattern: 'BAD', lesson: 'hjkl', unit: 0, you: 1, better: 0, used: 'motions' as const, at: 1 }], mix: { moving: 1, typing: 0, editing: 0 } };
+    pushOutbox(A, withCoach);
+    const sent: object[] = [];
+    const r = await flushOutbox(A, async x => { sent.push(x); if ('coach' in x && x.coach) throw new ApiError(400, 'HTTP 400'); });
+    expect(sent.length).toBe(2);
+    expect(sent[1]).toEqual(run(1)); // the run itself, coach and mix stripped
+    expect(r).toEqual({ status: 'ok', retryAfter: 0 });
+    expect(loadOutbox(A)).toEqual([]);
+  });
+  it('a run the server rejects even without coach data is dropped, not retried forever', async () => {
+    pushOutbox(A, run(1)); pushOutbox(A, run(2));
+    let calls = 0;
+    const r = await flushOutbox(A, async x => { calls++; if (x.at === 1) throw new ApiError(400, 'HTTP 400'); });
+    expect(calls).toBe(2);
+    expect(r).toEqual({ status: 'ok', retryAfter: 0 });
+    expect(loadOutbox(A)).toEqual([]);
+  });
   it('flush of an empty outbox is ok', async () => {
     expect(await flushOutbox(A, async () => {})).toEqual({ status: 'ok', retryAfter: 0 });
   });

@@ -8,7 +8,7 @@
 // `stepProfile` mirrors the server's fold (server/internal/store/coach.go); keep them in step.
 import { useSyncExternalStore } from 'react';
 import type { Critique, Report, Summary } from '../coach';
-import { api } from './api';
+import { ApiError, api } from './api';
 
 /** What the learner did, bucketed: a run of one key (xxxx, llll), retyped text, a motion run, other commands. */
 export type Used = 'key-run' | 'retype' | 'motions' | 'commands';
@@ -95,7 +95,9 @@ export function recurrence(p: CoachProfile, pattern: string): { inRow: number; i
 export function calloutPrefix(p: CoachProfile, pattern: string): string | null {
   const { inRow, inLast } = recurrence(p, pattern);
   if (inLast < CALLOUT_MIN) return null;
-  return inRow >= CALLOUT_MIN ? `${ordinal(inRow)} run in a row:` : `${inLast} of your last ${RECENT_RUNS} runs:`;
+  // With fewer than RECENT_RUNS runs so far, "of your last 5" would count runs that never happened.
+  const window = Math.min(RECENT_RUNS, p.recent.length + 1);
+  return inRow >= CALLOUT_MIN ? `${ordinal(inRow)} run in a row:` : `${inLast} of your last ${window} runs:`;
 }
 
 /** Callouts for the patterns a report names, from the profile as it was before this run. */
@@ -162,7 +164,6 @@ function saveGuestProfile(p: CoachProfile) {
 
 type State = { mode: 'loading' | 'guest' | 'account'; profile: CoachProfile };
 let state: State = { mode: 'loading', profile: emptyProfile() };
-let started = false;
 /** Runs finished before we knew guest vs account: a guest's are folded in once known (an account's are on the server). */
 let pending: CoachRun[] = [];
 const subs = new Set<() => void>();
@@ -176,19 +177,39 @@ function asGuest() {
   set({ mode: 'guest', profile: p });
 }
 
-/** Fetch the account's profile once; anything but a profile (401, offline, no server) means guest. */
-export function loadCoach() {
-  if (started) return;
-  started = true;
-  api.coachProfile().then(
-    p => { pending = []; set({ mode: 'account', profile: normalizeProfile(p) }); },
-    () => asGuest(),
-  );
-  if (typeof window !== 'undefined') window.addEventListener('vimchi:signed-out', () => asGuest());
+// Guest or account is the progress store's call (it owns /api/me and the guest import), so the
+// coach never asks the server on its own: a guest gets no /api/coach/profile 401, and a new
+// account's profile is read only after its guest runs (and their coach events) have moved over.
+
+/** No session (a guest, a signed-out learner, or an expired session): the browser's guest profile. */
+export function coachGuest() { asGuest(); }
+
+/**
+ * Signed in, and the guest import (if any) is done: read the account's profile. A 401 means the
+ * session went meanwhile (guest). Any other failure (a 5xx, offline) keeps account mode with this
+ * session's runs held in memory: an account's runs never land in the guest profile.
+ */
+export async function coachSignedIn(): Promise<void> {
+  try {
+    const p = await api.coachProfile();
+    pending = [];
+    set({ mode: 'account', profile: normalizeProfile(p) });
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 401) return asGuest();
+    let p = emptyProfile();
+    for (const r of pending) p = stepProfile(p, r);
+    pending = [];
+    set({ mode: 'account', profile: p });
+  }
+}
+
+/** The guest's runs moved to an account: their profile went with them, so the browser's copy goes. */
+export function forgetGuestCoach() {
+  try { localStorage.removeItem(GUEST_KEY); } catch { /* storage unavailable */ }
 }
 
 /** Tests only: back to the state before the first load. */
-export function resetCoach() { state = { mode: 'loading', profile: emptyProfile() }; started = false; pending = []; }
+export function resetCoach() { state = { mode: 'loading', profile: emptyProfile() }; pending = []; }
 
 export const getCoachProfile = () => state.profile;
 export const coachMode = () => state.mode;
@@ -201,7 +222,7 @@ export function recordCoachRun(run: CoachRun) {
   set({ ...state, profile });
 }
 
-const subscribe = (f: () => void) => { loadCoach(); subs.add(f); return () => { subs.delete(f); }; };
+const subscribe = (f: () => void) => { subs.add(f); return () => { subs.delete(f); }; };
 export function useCoachProfile(): CoachProfile {
   return useSyncExternalStore(subscribe, getCoachProfile, getCoachProfile);
 }

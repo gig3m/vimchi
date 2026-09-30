@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Critique, Report } from '../../coach';
 import {
-  type CoachEvent, type CoachProfile, type CoachRun, GUEST_KEY, calloutPrefix, callouts, coachEvents, emptyProfile, getCoachProfile,
-  loadCoach, loadGuestProfile, mixShare, normalizeProfile, recordCoachRun, recurrence, resetCoach, retired, stepProfile, topRecurring, usedBucket,
+  type CoachEvent, type CoachProfile, type CoachRun, GUEST_KEY, calloutPrefix, callouts, coachEvents, coachGuest, coachMode, coachSignedIn,
+  emptyProfile, forgetGuestCoach, getCoachProfile, loadGuestProfile, mixShare, normalizeProfile, recordCoachRun, recurrence, resetCoach, retired, stepProfile, topRecurring, usedBucket,
 } from '../coach';
-import { api } from '../api';
+import { ApiError, api } from '../api';
 
 const mem = new Map<string, string>();
 (globalThis as { localStorage?: Storage }).localStorage = {
@@ -63,6 +63,11 @@ describe('recurrence callouts', () => {
     expect(calloutPrefix(p, 'x')).toBeNull(); // run 1 is outside the last five with this one
     const q = fold(run(1), run(2, 'x'), run(3), run(4, 'x'), run(5));
     expect(calloutPrefix(q, 'x')).toBe('3 of your last 5 runs:');
+  });
+  it('never claims more runs than there are ("3 of your last 4", not "of your last 5")', () => {
+    const p = fold(run(1, 'x'), run(2, 'x'), run(3)); // this run is the 4th
+    expect(recurrence(p, 'x')).toEqual({ inRow: 1, inLast: 3 });
+    expect(calloutPrefix(p, 'x')).toBe('3 of your last 4 runs:');
   });
   it('stays quiet below three', () => {
     expect(calloutPrefix(fold(run(1, 'x')), 'x')).toBeNull();
@@ -138,10 +143,10 @@ describe('guest storage and the live profile', () => {
   const flush = () => new Promise(r => setTimeout(r, 0));
 
   it('guests keep the profile in localStorage, in the server shape', async () => {
-    vi.spyOn(api, 'coachProfile').mockRejectedValue(new Error('401'));
-    loadCoach();
+    const get = vi.spyOn(api, 'coachProfile');
     recordCoachRun(run(1, 'dot')); // finished before the load answered: kept, folded in once known
-    await flush();
+    coachGuest(); // the store found no session
+    expect(get).not.toHaveBeenCalled(); // a guest never asks the server (no 401 in the console)
     recordCoachRun(run(2, 'dot'));
     const stored = JSON.parse(mem.get(GUEST_KEY)!) as CoachProfile;
     expect(Object.keys(stored).sort()).toEqual(['keyMix', 'patterns', 'recent']);
@@ -150,11 +155,43 @@ describe('guest storage and the live profile', () => {
   });
   it('accounts read the server profile and never write the guest mirror', async () => {
     vi.spyOn(api, 'coachProfile').mockResolvedValue(fold(run(1, 'dot'), run(2, 'dot')));
-    loadCoach();
-    await flush();
+    await coachSignedIn();
     recordCoachRun(run(3, 'dot'));
     expect(getCoachProfile().patterns.dot.seen).toBe(3);
     expect(mem.has(GUEST_KEY)).toBe(false);
+  });
+  it('the account profile is fetched only when the store says so (after the guest import), never on its own', async () => {
+    const get = vi.spyOn(api, 'coachProfile').mockResolvedValue(emptyProfile());
+    await flush();
+    expect(get).not.toHaveBeenCalled();
+    expect(coachMode()).toBe('loading');
+    await coachSignedIn();
+    expect(get).toHaveBeenCalledTimes(1);
+    expect(coachMode()).toBe('account');
+  });
+  it('a 5xx on the profile keeps a signed-in learner in account mode and out of the guest profile', async () => {
+    vi.spyOn(api, 'coachProfile').mockRejectedValue(new ApiError(503, 'HTTP 503'));
+    recordCoachRun(run(1, 'dot'));
+    await coachSignedIn();
+    expect(coachMode()).toBe('account');
+    recordCoachRun(run(2, 'dot'));
+    expect(getCoachProfile().patterns.dot.runs).toBe(2); // this session's runs still count for the live hints
+    expect(mem.has(GUEST_KEY)).toBe(false);
+  });
+  it('a 401 on the profile (session gone) means guest', async () => {
+    vi.spyOn(api, 'coachProfile').mockRejectedValue(new ApiError(401, 'unauthorized'));
+    await coachSignedIn();
+    expect(coachMode()).toBe('guest');
+  });
+  it('once guest runs move to the account the guest profile goes too, so signing out starts clean', async () => {
+    mem.set(GUEST_KEY, JSON.stringify(fold(run(1, 'dot'), run(2, 'dot'))));
+    vi.spyOn(api, 'coachProfile').mockResolvedValue(fold(run(1, 'dot'), run(2, 'dot')));
+    forgetGuestCoach();
+    await coachSignedIn();
+    expect(mem.has(GUEST_KEY)).toBe(false);
+    coachGuest(); // signed out
+    expect(coachMode()).toBe('guest');
+    expect(getCoachProfile()).toEqual(emptyProfile());
   });
   it('drops malformed stored data', () => {
     expect(normalizeProfile({ patterns: { 'BAD ID': {}, ok: { seen: -1, runs: 'x' } }, keyMix: 'no', recent: [null, { at: 1, patterns: [2, 'dot'] }] }))

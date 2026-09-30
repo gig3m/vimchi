@@ -3,6 +3,7 @@
 // restart, a rate limit or an expired session never loses a run. Server dedup on
 // (user, lesson, at) makes resends safe. An in-memory mirror keeps working when storage throws.
 import { ApiError } from './api';
+import type { CoachFields } from './coach';
 import type { Run } from './store';
 
 const KEY = 'vimchi.outbox.v1';
@@ -36,17 +37,31 @@ export function takeOutbox(owner: string): Run[] { const o = read(owner).slice()
 
 export type FlushResult = { status: 'ok' | 'retry' | 'unauthorized'; retryAfter: number };
 
-/** Send every pending run of the account in order. Stops at a 401 (session gone) or a 429 (wait, then retry). */
+/**
+ * Send every pending run of the account in order. Stops at a 401 (session gone) or a 429 (wait,
+ * then retry). A 400 is the server refusing the run as sent, which no retry changes: like the
+ * guest import, the run goes again without its coach data, and one refused even then is dropped.
+ */
 export async function flushOutbox(owner: string, send: (run: Run) => Promise<void>): Promise<FlushResult> {
   let failed = false;
   for (const run of loadOutbox(owner)) {
-    try {
-      await send(run);
-      removeOutbox(owner, run);
-    } catch (e) {
-      if (e instanceof ApiError && e.status === 401) return { status: 'unauthorized', retryAfter: 0 };
-      if (e instanceof ApiError && e.status === 429) return { status: 'retry', retryAfter: e.retryAfter };
-      failed = true; // keep it, try the next one, and come back later
+    const { coach, mix, ...bare } = run as Run & CoachFields;
+    const tries = coach || mix ? [run, bare] : [run];
+    for (let i = 0; i < tries.length; i++) {
+      try {
+        await send(tries[i]);
+        removeOutbox(owner, run);
+        break;
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 401) return { status: 'unauthorized', retryAfter: 0 };
+        if (e instanceof ApiError && e.status === 429) return { status: 'retry', retryAfter: e.retryAfter };
+        if (e instanceof ApiError && e.status === 400) {
+          if (i === tries.length - 1) removeOutbox(owner, run); // refused as bare as it gets
+          continue;
+        }
+        failed = true; // keep it, try the next one, and come back later
+        break;
+      }
     }
   }
   return { status: failed ? 'retry' : 'ok', retryAfter: 0 };

@@ -1,4 +1,5 @@
 // "Better ways": what a better Vim user would have typed, from the learner's own keys.
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { Chip, Report, Summary } from '../coach';
 import { PATTERNS } from '../coach/patterns';
 import { LESSONS } from '../lessons';
@@ -16,10 +17,23 @@ export function summaryText(s: Summary): string {
 
 export function BetterWays({ report, unitLabel }: { report: Report; unitLabel: (u: number) => string }) {
   const { summary } = report;
+  // The list scrolls inside a capped box: say so while there is more below, and let Tab reach it
+  // (arrow keys then scroll it; from the editor, j / k do).
+  const box = useRef<HTMLElement>(null);
+  const [more, setMore] = useState(false);
+  const [scrolls, setScrolls] = useState(false);
+  const measure = () => {
+    const el = box.current;
+    if (!el) return;
+    setScrolls(el.scrollHeight > el.clientHeight + 1);
+    setMore(el.scrollTop + el.clientHeight < el.scrollHeight - 4);
+  };
+  useLayoutEffect(measure, [report]);
   if (!report.critiques.length && !report.reference.length && !summary.keys) return null;
   const items = report.reference.some(r => r.kind === 'item');
   return (
-    <section className="better-ways" aria-label="better ways">
+    <div className={'bw-wrap' + (more ? ' more' : '')}>
+    <section ref={box} className="better-ways" aria-label="better ways" tabIndex={scrolls ? 0 : undefined} onScroll={measure}>
       <h3 className="bw-title">Better ways</h3>
       {summary.keys > 0 && <p className="bw-summary">{summaryText(summary)}</p>}
       {report.critiques.length > 0 && (
@@ -61,5 +75,7 @@ export function BetterWays({ report, unitLabel }: { report: Report; unitLabel: (
         </ul>
       )}
     </section>
+    {more && <div className="bw-more" aria-hidden="true">more below · j / k to scroll</div>}
+    </div>
   );
 }
