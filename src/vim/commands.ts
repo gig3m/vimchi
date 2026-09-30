@@ -349,6 +349,13 @@ export function installCommands(vim: Vim) {
   V.defineOperator('d', {
     change: true,
     run: (r, c) => {
+      // op_delete(): a charwise delete on an empty line saves undo and does nothing else (the
+      // registers are left alone; diw on a blank line).
+      if (r.kind === 'char' && !c.visual && r.start.line === r.end.line && ln(r.start.line) === '') {
+        V.buf.markEdited();
+        V.setCursor(pos(r.start.line, 0));
+        return;
+      }
       const v = V.deleteRange(r);
       put(c.reg, v, true);
       if (r.kind === 'line') { const l = Math.min(r.start.line, V.buf.lineCount - 1); V.setCursor(landOn(l), V.win.want); }
@@ -581,7 +588,8 @@ export function installCommands(vim: Vim) {
     const p = cur(), t = ln();
     if (p.col + c.count > t.length) fail();
     const ch = keysToRegister([c.arg]);
-    if (ch === '\r' || ch === '\n') {
+    // A typed <CR> splits the line; a literal one (r<C-v><CR>) is just a ^M.
+    if (c.arg.length > 1 && (ch === '\r' || ch === '\n')) {
       // [count] characters become ONE line break; 'autoindent' indents the new line like the first
       // part and drops the rest's leading blanks, leaving the cursor just before the indent's end.
       const ai = !!V.opt('autoindent');
@@ -592,7 +600,8 @@ export function installCommands(vim: Vim) {
       V.setCursor(pos(p.line + 1, Math.max(0, indent.length - 1)));
       return;
     }
-    const text = ch === '\t' ? tabText(t, p.col, c.count) : ch.repeat(c.count);
+    const text = c.arg === '<Tab>' ? tabText(t, p.col, c.count) : ch.repeat(c.count);
+    V.buf.markUndoEntry(); // even when nothing changes (ra on an a)
     V.buf.setLine(p.line, t.slice(0, p.col) + text + t.slice(p.col + c.count));
     V.buf.recordChange(p);
     V.setCursor(pos(p.line, p.col + Math.max(1, text.length) - 1));
@@ -682,14 +691,19 @@ export function installCommands(vim: Vim) {
     }
     if (v.kind === 'block') {
       const parts = v.text.split('\n');
-      const w = Math.max(...parts.map(x => x.length));
+      const w = v.width ?? Math.max(...parts.map(x => x.length));
       const col = after && ln().length ? p.col + 1 : p.col;
       for (let i = 0; i < parts.length; i++) {
         const l = p.line + i;
         if (l >= V.buf.lineCount) V.insertLines(V.buf.lineCount, ['']);
+        // do_put(): a short line is padded out to the block, and each copy gets the block's
+        // trailing blanks only when text follows it.
+        const short = ln(l).length <= col;
         const t = ln(l).padEnd(col);
-        const piece = (parts[i].padEnd(w)).repeat(count);
-        V.buf.setLine(l, (t.slice(0, col) + piece + t.slice(col)).replace(/\s+$/, m => (t.slice(col).length ? m : '')));
+        const fill = ' '.repeat(Math.max(0, w - parts[i].length));
+        let piece = '';
+        for (let j = 0; j < count; j++) piece += parts[i] + (j < count - 1 || !short ? fill : '');
+        V.buf.setLine(l, t.slice(0, col) + piece + t.slice(col));
       }
       V.buf.recordChange(pos(p.line, col));
       V.setCursor(pos(p.line, col));
@@ -1167,6 +1181,7 @@ function installVisual(V: Vim, h: {
       if (r.kind === 'block') { s = Math.min(r.start.col, r.end.col); e = r.toEol ? t.length - 1 : Math.max(r.start.col, r.end.col); }
       e = Math.min(e, t.length - 1);
       if (e < s) continue;
+      V.buf.markUndoEntry(); // even when nothing changes (vra on an a)
       V.buf.setLine(l, t.slice(0, s) + ch.repeat(e - s + 1) + t.slice(e + 1));
     }
     V.buf.recordChange(r.start);

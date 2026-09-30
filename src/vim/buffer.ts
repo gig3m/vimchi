@@ -11,7 +11,7 @@ type UndoNode = {
   cursor: Pos;
 };
 /** The change being recorded, between snapshot() and its commit. */
-type Pending = { before: string[]; cursor: Pos; hinted: boolean; edited: boolean; live?: () => Pos };
+type Pending = { before: string[]; cursor: Pos; hinted: boolean; edited: boolean; live?: () => Pos; entry?: boolean };
 
 let nextId = 1;
 
@@ -146,10 +146,19 @@ export class Buffer {
    * that still edited the text (typed then erased) loses the redo branch, as in Vim; one that
    * never touched the text (an empty insert, a failed command) keeps it.
    */
+  /**
+   * The open change is an undo step even if the text comes out the same (r onto the same
+   * character: Vim saved the line, so undo has a step to take and redo is gone).
+   */
+  markUndoEntry() {
+    this.markEdited();
+    if (this.pending) this.pending.entry = true;
+  }
+
   dropSnapshotIfUnchanged() {
     const pd = this.pending;
     if (!pd) return false;
-    if (sameLines(pd.before, this.lines)) {
+    if (sameLines(pd.before, this.lines) && !pd.entry) {
       this.pending = null;
       if (pd.edited) this.undoCur.next = null;
       return true;
@@ -162,7 +171,7 @@ export class Buffer {
     const pd = this.pending;
     if (!pd) return;
     this.pending = null;
-    if (sameLines(pd.before, this.lines)) {
+    if (sameLines(pd.before, this.lines) && !pd.entry) {
       if (pd.edited) this.undoCur.next = null;
       return;
     }

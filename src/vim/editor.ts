@@ -137,6 +137,8 @@ type InsertState = {
   /** Came from <C-o>: return here after one command. */
 };
 
+/** Commands the coach counts as undo: u, <C-r>, the time-travel g- / g+, and U. */
+const UNDO_KEYS = new Set(['u', '<C-r>', 'g-', 'g+', 'U']);
 export type CommandKind = 'motion' | 'operator' | 'action' | 'insert' | 'visual' | 'cmdline' | 'modal' | 'undo' | 'other';
 export type LastCommand = { keys: Key[]; kind: CommandKind; error: boolean };
 
@@ -517,8 +519,16 @@ export class Vim {
     if (r.kind === 'block') {
       const [c1, c2] = [Math.min(r.start.col, r.end.col), Math.max(r.start.col, r.end.col)];
       const parts: string[] = [];
-      for (let l = r.start.line; l <= r.end.line; l++) parts.push(L[l].slice(c1, r.toEol ? undefined : c2 + 1));
-      return { text: parts.join('\n'), kind: 'block' };
+      // block_prep(): a line that ends before the block starts yields blanks as wide as the block
+      // ($: up to the longest line's end, plus one).
+      let right = r.toEol ? 0 : c2;
+      if (r.toEol) for (let l = r.start.line; l <= r.end.line; l++) right = Math.max(right, L[l].length);
+      for (let l = r.start.line; l <= r.end.line; l++) {
+        parts.push(L[l].length < c1 ? ' '.repeat(right - c1 + 1) : L[l].slice(c1, r.toEol ? undefined : c2 + 1));
+      }
+      // op_yank(): y_width = end_vcol - start_vcol, one less for a $ block.
+      const width = r.toEol ? Math.max(1, right - c1 > 0 ? right - c1 : right - c1 + 1) : c2 - c1 + 1;
+      return { text: parts.join('\n'), kind: 'block', width };
     }
     const { start, end } = r;
     if (start.line === end.line) return { text: L[start.line].slice(start.col, end.col + 1) + (end.col >= L[end.line].length && end.line < L.length - 1 ? '\n' : ''), kind: 'char' };
@@ -736,7 +746,9 @@ export class Vim {
     // <Esc> cancels a pending command, unless the keys before it already were one (`s` with a
     // plugin's `sa` mapped): then it runs and the <Esc> is handled after it, as after 'timeoutlen'.
     const completesBefore = res !== 'incomplete' && res !== 'invalid' && res.rest?.length === 1 && res.rest[0] === '<Esc>';
-    if (key === '<Esc>' && this.pending.length > 1 && !completesBefore) {
+    // A command that takes the <Esc> as its own argument (r<C-v><Esc>) is not cancelled by it.
+    const takesEsc = res !== 'incomplete' && res !== 'invalid' && !res.rest?.length;
+    if (key === '<Esc>' && this.pending.length > 1 && !completesBefore && !takesEsc) {
       this.pending = [];
       if (this.depth === 0) this.finishCommand('other'); // a cancelled command is not part of the next one
       return;
@@ -761,8 +773,21 @@ export class Vim {
     for (const k of rest) this.handleKey(k); // same depth and bookkeeping as the key that arrived
     if (this.oneShot && this.mode === 'normal' && this.insert) {
       this.oneShot = false;
+      if (!this.dotReplaying) {
+        // Vim restarts the insert (restart_edit): typing resumes as a new undo step, a count is
+        // dropped, and . repeats only what is typed from here on, as an `i`.
+        this.endChange();
+        this.beginChange();
+        Object.assign(this.insert, { count: 1, typed: '', kind: 'i', block: undefined });
+        this.pendingDot = { reg: null, count: null, body: ['i'], insert: [] };
+        this.dotCapture = { keys: [], replaying: false };
+      }
       this.mode = 'insert';
-      if (this.win.want === Infinity) this.win.cursor.col = this.line().length;
+      // edit(): back past the end of the line when the <C-o> started there (same line) or
+      // curswant lies beyond the cursor (<C-o>$), and the cursor is on the last character.
+      const c = this.win.cursor;
+      if ((this.oneShotEolLine === c.line || this.win.want > c.col) && c.col === this.line().length - 1) c.col++;
+      this.oneShotEolLine = -1;
       this.clampCursor(true);
     }
   }
@@ -822,6 +847,14 @@ export class Vim {
 
     const takeArg = (kind: 'char' | 'char2' | undefined): string | 'incomplete' | null => {
       if (!kind) return '';
+      // r<C-v>{char}: the character literally (a real tab, a ^M that does not split the line),
+      // or a code: <C-v>065, <C-v>x41, <C-v>o101, <C-v>u00e9.
+      if (kind === 'char' && (keys[j] === '<C-v>' || keys[j] === '<C-q>') && keysToString(cmdKeys) === 'r') {
+        const lit = literalChar(keys, j + 1);
+        if (lit === 'incomplete') return 'incomplete';
+        j = lit.end;
+        return lit.ch;
+      }
       const need = kind === 'char2' ? 2 : 1;
       if (keys.length < j + need) return 'incomplete';
       const a = keys.slice(j, j + need);
@@ -1000,7 +1033,7 @@ export class Vim {
       else if (this.mode !== 'insert') this.dotCapture = null;
       if (this.depth === 0) {
         if (this.mode === 'cmdline') this.lastCommand = null; // completes on <CR>
-        else this.finishCommand(cmdStr === 'u' || cmdStr === '<C-r>' ? 'undo' : this.mode === 'insert' || this.mode === 'replace' ? 'insert' : this.visual ? 'visual' : change ? 'action' : 'other');
+        else this.finishCommand(UNDO_KEYS.has(cmdStr) ? 'undo' : this.mode === 'insert' || this.mode === 'replace' ? 'insert' : this.visual ? 'visual' : change ? 'action' : 'other');
       }
       return;
     }
@@ -1076,10 +1109,9 @@ export class Vim {
       const fnb = pos(Math.min(end, this.buf.lineCount - 1), firstNonBlank(this.line(Math.min(end, this.buf.lineCount - 1))));
       this.opStart = cmpPos(fnb, this.cursor) < 0 ? fnb : { ...this.cursor };
       if (end >= this.buf.lineCount) {
-        if (start === this.buf.lineCount - 1 || count > 1) {
-          return { start: pos(start, 0), end: pos(this.buf.lineCount - 1, 0), kind: 'line' };
-        }
-        return null;
+        // Vim's cursor_down(): a count past the end stops at the last line, but fails on it.
+        if (start === this.buf.lineCount - 1) return null;
+        return { start: pos(start, 0), end: pos(this.buf.lineCount - 1, 0), kind: 'line' };
       }
       return { start: pos(start, 0), end: pos(end, 0), kind: 'line' };
     }
@@ -1290,6 +1322,8 @@ export class Vim {
   private pendingDot: LastChange | null = null;
   /** <C-o> in insert mode: run one normal command, then return to insert. */
   private oneShot = false;
+  /** The line <C-o> was typed on when the cursor was past its end, else -1. */
+  private oneShotEolLine = -1;
 
   /** Repeat the last change (.). */
   repeatChange(count: number | null) {
@@ -1544,6 +1578,10 @@ export class Vim {
         ins.keys.push(key);
         this.oneShot = true;
         this.mode = 'normal';
+        this.win.want = c.col; // curswant follows the typing (it may sit past the end of the line)
+        this.oneShotEolLine = c.col >= this.line().length ? c.line : -1;
+        // Like leaving insert: what was typed so far is its own undo step.
+        if (!this.dotReplaying) this.endChange();
         return;
       case '<Left>': if (c.col > 0) c.col--; ins.start = { ...c }; return;
       case '<Right>': if (c.col < this.line().length) c.col++; ins.start = { ...c }; return;
@@ -2146,6 +2184,35 @@ function parseOffset(off: string): { type: 'none' | 'line' | 'e' | 's'; n: numbe
 }
 
 /** Store keys in a register the way Vim does: control keys become control characters. */
+/**
+ * The character a <C-v> prefix produces from keys[i...], after Vim's get_literal(): x / o / u / U
+ * switch to hex, octal or Unicode (at any point), digits accumulate up to their limit, and the
+ * first other key ends the code. With no digit that key itself is the character; after digits it
+ * is consumed with them (what the headless nvim oracle shows).
+ */
+export function literalChar(keys: Key[], i: number): { ch: string; end: number } | 'incomplete' {
+  let hex = false, octal = false, unicode = '', cc = 0, n = 0, j = i;
+  let last: Key | null = null;
+  while (last === null) {
+    const k = keys[j];
+    if (k === undefined) return 'incomplete';
+    j++;
+    if (k === 'x' || k === 'X') hex = true;
+    else if (k === 'o' || k === 'O') octal = true;
+    else if (k === 'u' || k === 'U') unicode = k;
+    else {
+      const d = hex || unicode ? /^[0-9a-fA-F]$/ : octal ? /^[0-7]$/ : /^[0-9]$/;
+      if (!d.test(k)) { last = k; break; }
+      cc = cc * (hex || unicode ? 16 : octal ? 8 : 10) + parseInt(k, 16);
+      n++;
+      if (cc > 255 && !unicode) cc = 255;
+      if (n >= (hex ? 2 : unicode === 'u' ? 4 : unicode === 'U' ? 8 : 3)) break;
+    }
+  }
+  if (n === 0) return { ch: keysToRegister([last!]), end: j };
+  return { ch: String.fromCodePoint(Math.min(cc || 10, 0x10ffff)), end: j };
+}
+
 export function keysToRegister(keys: Key[]): string {
   return keys.map(k => {
     if (k.length === 1) return k;
