@@ -1,6 +1,10 @@
 import { Code } from '../../components/Code';
 import { BeforeAfter } from '../../components/diagrams';
 import type { Section } from '../types';
+import type { Vim } from '../../vim/editor';
+
+/** The grug-far report float has been dismissed (the round ends on reading and closing it). */
+const closed = (vim: Vim) => !vim.floats.some(f => f.id === 'grug-far');
 
 export const substitute: Section = {
   id: 'substitute',
@@ -1409,6 +1413,66 @@ export const substitute: Section = {
             },
             goal: { text: ['track-01-intro.mp3', 'track-02-theme.mp3', 'track-10-outro.mp3'] },
             solution: ":%s/\\d\\+/\\=printf('%02d', submatch(0))/<CR>",
+          },
+        ],
+      },
+    },
+    {
+      id: 'project-replace',
+      title: 'Project Replace',
+      chips: ['␣sr'],
+      keyCards: [
+        { key: '␣sr', glyph: '⇄', label: 'search & replace', sub: 'across files' },
+        { key: 'CR', glyph: '⏎', label: 'apply' },
+      ],
+      intro: (
+        <>
+          <p>
+            <Code>:%s</Code> changes one file. <Code>Space sr</Code> opens grug-far, which takes a search and a
+            replacement and applies them to every file in the project, listing what changed. The word under
+            the cursor is the default search, so renaming a symbol is: cursor on it, <Code>Space sr</Code>,
+            type the new name, <Code>CR</Code>.
+          </p>
+          <p>
+            It matches whole words, so <Code>id</Code> leaves <Code>identity</Code> alone. For a rename the
+            language server understands, <Code>grn</Code> is safer still; for strings, comments and config,
+            this is the tool.
+          </p>
+        </>
+      ),
+      practice: total => <p>Rename the word the prompt names everywhere in the project. {total} rounds.</p>,
+      aside: {
+        title: 'Before grug-far',
+        body: <p><Code>:grep</Code>, then <Code>:cdo s/old/new/g | update</Code>, does the same by hand — the Quickfix lessons show it.</p>,
+      },
+      challenge: {
+        kind: 'rounds',
+        base: {
+          files: {
+            'src/cart.ts': 'export function total(items) {\n  let sum = 0;\n  return sum;\n}\n',
+            'src/app.ts': "import { total } from './cart';\nconsole.log(total([]));\n",
+            'README.md': '# shop\n\ntotal() adds up the cart.\n',
+          },
+          open: 'src/cart.ts', plugins: ['grugfar'],
+        },
+        rounds: [
+          {
+            prompt: 'Rename total to cartTotal everywhere.',
+            setup: { cursor: { line: 0, col: 16 } },
+            goal: { check: vim => closed(vim) && ['src/cart.ts', 'src/app.ts', 'README.md'].every(f => !/\btotal\b/.test(vim.fs.read(f) ?? 'total') && (vim.fs.read(f) ?? '').includes('cartTotal')) },
+            solution: '<Space>srcartTotal<CR>q',
+          },
+          {
+            prompt: 'Rename sum to subtotal (it appears only in cart.ts).',
+            setup: { cursor: { line: 1, col: 6 } },
+            goal: { check: vim => closed(vim) && (vim.fs.read('src/cart.ts') ?? '').includes('let subtotal = 0') && !(vim.fs.read('src/cart.ts') ?? '').includes(' sum') },
+            solution: '<Space>srsubtotal<CR>q',
+          },
+          {
+            prompt: 'From the README, rename shop to store everywhere.',
+            setup: { open: 'README.md', cursor: { line: 0, col: 2 } },
+            goal: { check: vim => closed(vim) && (vim.fs.read('README.md') ?? '').startsWith('# store') },
+            solution: '<Space>srstore<CR>q',
           },
         ],
       },
