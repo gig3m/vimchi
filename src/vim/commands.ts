@@ -545,17 +545,47 @@ export function installCommands(vim: Vim) {
     runOp('y', { start: p, end: pos(endLine, Math.max(0, ln(endLine).length - 1)), kind: 'char' }, c);
     V.setCursor(p);
   });
+  /**
+   * The text [count] <Tab>s typed from column col of t insert (Neovim's r<Tab> is {count}R<Tab><Esc>):
+   * with 'smarttab' (Neovim's default) a tab in the indent is 'shiftwidth' wide, elsewhere it reaches
+   * the next 'tabstop'; 'expandtab' spells it with spaces, otherwise tabs fill whole tabstops.
+   */
+  const tabText = (t: string, col: number, count: number) => {
+    const ts = Number(V.opt('tabstop')) || 8, sw = Number(V.opt('shiftwidth')) || ts;
+    const inIndent = /^[ \t]*$/.test(t.slice(0, col));
+    let vc = 0;
+    for (const ch of t.slice(0, col)) vc = ch === '\t' ? vc + ts - (vc % ts) : vc + 1;
+    let out = '';
+    for (let i = 0; i < count; i++) {
+      const target = vc + (inIndent ? sw - (vc % sw) : ts - (vc % ts));
+      if (V.opt('expandtab')) out += ' '.repeat(target - vc);
+      else {
+        while ((Math.floor(vc / ts) + 1) * ts <= target) { out += '\t'; vc = (Math.floor(vc / ts) + 1) * ts; }
+        out += ' '.repeat(target - vc);
+      }
+      vc = target;
+    }
+    return out;
+  };
   A('r', c => {
     const p = cur(), t = ln();
     if (p.col + c.count > t.length) fail();
-    if (c.arg === '<CR>' || c.arg === '\r') {
-      V.buf.splice(p.line, 1, [t.slice(0, p.col), t.slice(p.col + c.count)]);
-      V.setCursor(pos(p.line + 1, 0));
+    const ch = keysToRegister([c.arg]);
+    if (ch === '\r' || ch === '\n') {
+      // [count] characters become ONE line break; 'autoindent' indents the new line like the first
+      // part and drops the rest's leading blanks, leaving the cursor just before the indent's end.
+      const ai = !!V.opt('autoindent');
+      const left = t.slice(0, p.col), right = t.slice(p.col + c.count);
+      const indent = ai ? indentOf(left) : '';
+      V.buf.splice(p.line, 1, [left, indent + (ai ? right.replace(/^[ \t]+/, '') : right)]);
+      V.buf.recordChange(pos(p.line + 1, indent.length));
+      V.setCursor(pos(p.line + 1, Math.max(0, indent.length - 1)));
       return;
     }
-    V.buf.setLine(p.line, t.slice(0, p.col) + c.arg.repeat(c.count) + t.slice(p.col + c.count));
+    const text = ch === '\t' ? tabText(t, p.col, c.count) : ch.repeat(c.count);
+    V.buf.setLine(p.line, t.slice(0, p.col) + text + t.slice(p.col + c.count));
     V.buf.recordChange(p);
-    V.setCursor(pos(p.line, p.col + c.count - 1));
+    V.setCursor(pos(p.line, p.col + Math.max(1, text.length) - 1));
   }, { change: true, arg: 'char' });
   A('~', c => {
     const p = cur(), t = ln();
@@ -1105,7 +1135,7 @@ function installVisual(V: Vim, h: {
   }, true);
   A('r', c => {
     const { r } = take();
-    const ch = c.arg;
+    const ch = keysToRegister([c.arg]); // the literal character: <CR> is a ^M, <Tab> a real tab
     for (let l = r.start.line; l <= r.end.line; l++) {
       const t = ln(l);
       let s = 0, e = t.length - 1;
