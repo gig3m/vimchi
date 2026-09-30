@@ -3,7 +3,7 @@
 # sync compose + Caddyfile, restart, smoke-test. Usage: deploy/do/deploy.sh [host]
 set -euo pipefail
 cd "$(dirname "$0")"
-host=${1:-kyle@vimchi.dev}
+host=${1:-vimchi-do}
 docker build -q -t vimchi:latest ../.. > /dev/null
 echo "built; shipping image to $host"
 docker save vimchi:latest | gzip | ssh "$host" 'gunzip | docker load' > /dev/null
