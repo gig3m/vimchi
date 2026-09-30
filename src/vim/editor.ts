@@ -319,6 +319,10 @@ export class Vim {
     const e = this.tables.o.get(keyOf(parseKeys(keys)));
     return e && e.type === 'motion' ? e.spec : undefined;
   }
+  /** Every key sequence defined or mapped in a mode (which-key and the keymaps picker read it). */
+  definedKeys(mode: 'n' | 'v' | 'o' = 'n'): Key[][] {
+    return [...this.tables[mode].keys()].map(k => k.split(SEP));
+  }
   /** Open the / or ? prompt (the action registered in commands.ts). */
   openSearchFor(dir: 1 | -1) {
     this.getAction(dir === 1 ? '/' : '?', 'o')!.run({ count: 1, hasCount: false, reg: null, arg: '', keys: dir === 1 ? '/' : '?' });
