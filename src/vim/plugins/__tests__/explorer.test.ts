@@ -24,6 +24,7 @@ describe('explorer', () => {
     expect(wins[0].buf.name).toBe(EXPLORER_BUF);
     const rects = vim.tab.rects(20, 120);
     expect(rects.get(wins[0])!.width).toBeLessThan(rects.get(wins[1])!.width / 2);
+    expect(wins[0].opts).toMatchObject({ number: false, relativenumber: false });
     expect(treeLines(vim)).toEqual([
       '▾ ~/project',
       '▾ src',
