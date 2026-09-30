@@ -24,6 +24,20 @@ npm run build      # typecheck + production bundle in dist/
   Authoring guide: `docs/LESSONS.md`; plugin API: `docs/PLUGINS.md`.
 - `src/components/` — the UI.
 
+### Checking against real Neovim
+
+`npm run check:nvim` (needs `nvim` on PATH) replays lessons and ad-hoc cases in `nvim --clean --headless`:
+
+- `ok N bad M` — every plain-text round's reference solution must leave the goal text in Neovim. This is the
+  gate: the script fails when `bad` is not 0.
+- `extended: ok N bad M` — the engine's own result for each round against Neovim's: cursor (Neovim defaults,
+  `nostartofline`), the unnamed register's text and type, any register the goal names, and the text/cursor
+  after follow-up probes (`x`, plus `p` when the register is non-empty) fed after the solution.
+- `cases: ok N bad M` — the same engine-vs-Neovim comparison for `scripts/nvimcheck/cases.json`, a list of
+  `{id, text, keys, cursor?, name?, options?}` repros that are not lesson rounds. Append to it freely.
+
+The extended and cases sections are report-only; `NVIMCHECK_STRICT=1 npm run check:nvim` fails on them too.
+
 Browsers reserve Ctrl-W/N/T/Q. The practice editor maps Alt-W/N/T/Q to them, and its
 "full screen" button uses the Keyboard Lock API to capture the real keys (Chromium).
 
