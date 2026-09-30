@@ -717,7 +717,7 @@ export const registers: Section = {
         body: (
           <p>
             In visual mode, <Code>P</Code> replaces the selection and keeps the register as it was, so{' '}
-            <Code>viwP</Code> can replace word after word. Vim before 9.0 doesn't have it.
+            <Code>viwP</Code> can replace word after word. Vim before 8.2.4242 doesn't have it.
           </p>
         ),
       },
