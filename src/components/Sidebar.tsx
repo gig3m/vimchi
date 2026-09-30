@@ -21,8 +21,10 @@ type Props = {
 
 const BANDS = [
   { id: 'core', title: 'Core' },
-  { id: 'deep', title: 'Deep Water' },
-  { id: 'plugins', title: 'Plugins' },
+  { id: 'repeat', title: 'Repeat' },
+  { id: 'project', title: 'Project' },
+  { id: 'patterns', title: 'Patterns' },
+  { id: 'code', title: 'Code' },
   { id: 'challenges', title: 'Challenges' },
 ] as const;
 

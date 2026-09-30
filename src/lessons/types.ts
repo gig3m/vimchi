@@ -34,7 +34,7 @@ export type Lesson = {
   boss?: boolean;
 };
 
-export type Section = { id: string; title: string; band: 'core' | 'deep' | 'plugins' | 'challenges'; lessons: Lesson[] };
+export type Section = { id: string; title: string; band: 'core' | 'repeat' | 'project' | 'patterns' | 'code' | 'challenges'; lessons: Lesson[] };
 
 // ---------------------------------------------------------------------------------------------
 // Challenges

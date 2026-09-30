@@ -90,7 +90,7 @@ const SHOP = [
 export const marksJumps: Section = {
   id: 'marks-jumps',
   title: 'Marks & Jumps',
-  band: 'deep',
+  band: 'project',
   lessons: [
     {
       id: 'setting-marks',

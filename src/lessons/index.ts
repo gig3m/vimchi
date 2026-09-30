@@ -20,54 +20,24 @@ import { substitute } from './sections/substitute';
 import { buffersFiles } from './sections/buffers-files';
 import { windowsTabs } from './sections/windows-tabs';
 import { quickfix } from './sections/quickfix';
-import { folds } from './sections/folds';
 import { insertPower } from './sections/insert-power';
 import { neovimBuiltins } from './sections/neovim-builtins';
-import { configLiteracy } from './sections/config-literacy';
 import { surround } from './sections/surround';
 import { moreTextObjects } from './sections/more-text-objects';
-import { operatorPlugins } from './sections/operator-plugins';
 import { jumping } from './sections/jumping';
 import { findingThings } from './sections/finding-things';
 import { fileNavigation } from './sections/file-navigation';
 import { git } from './sections/git';
-import { diffs } from './sections/diffs';
 import { challenges } from './sections/challenges';
 import type { Lesson, Section } from './types';
 
 export const SECTIONS: Section[] = [
-  gettingAround,
-  smallEdits,
-  nextSteps,
-  insertLikeAPro,
-  essentialMotions,
-  screenMovement,
-  basicOperators,
-  textObjects,
-  visualMode,
-  search,
-  indentCase,
-  registers,
-  marksJumps,
-  macros,
-  commandLine,
-  globalCommands,
-  substitute,
-  buffersFiles,
-  windowsTabs,
-  quickfix,
-  folds,
-  insertPower,
-  neovimBuiltins,
-  configLiteracy,
-  surround,
-  moreTextObjects,
-  operatorPlugins,
-  jumping,
-  findingThings,
-  fileNavigation,
-  git,
-  diffs,
+  gettingAround, smallEdits, nextSteps, insertLikeAPro, essentialMotions, screenMovement,
+  basicOperators, textObjects, visualMode, search, indentCase,
+  registers, macros,
+  buffersFiles, windowsTabs, marksJumps, quickfix, findingThings, fileNavigation,
+  commandLine, substitute, globalCommands,
+  neovimBuiltins, moreTextObjects, jumping, surround, insertPower, git,
   challenges,
 ];
 

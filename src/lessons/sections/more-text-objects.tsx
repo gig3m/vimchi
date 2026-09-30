@@ -30,7 +30,7 @@ const users = [
 export const moreTextObjects: Section = {
   id: 'more-text-objects',
   title: 'More Text Objects',
-  band: 'plugins',
+  band: 'code',
   lessons: [
     {
       id: 'next-last-objects',

@@ -134,7 +134,7 @@ const opened = (...names: string[]) => (vim: Vim) => {
 export const findingThings: Section = {
   id: 'finding-things',
   title: 'Finding Things',
-  band: 'plugins',
+  band: 'project',
   lessons: [
     {
       id: 'telescope-find-files',

@@ -75,5 +75,9 @@ export function coachable(lessonId: string): boolean {
   if (!l) return false;
   if (l.challenge.kind !== 'rounds' && l.challenge.kind !== 'generated') return false;
   const sec = sectionOf(lessonId);
-  return sec.id !== 'macros' && sec.band !== 'plugins';
+  return !UNCOACHED_SECTIONS.has(sec.id);
 }
+
+/** Macros (deliberately safe motions while recording) and the plugin-driven sections whose
+ * rounds run through pickers, modals or plugin operators the motion critic does not model. */
+export const UNCOACHED_SECTIONS = new Set(['macros', 'surround', 'more-text-objects', 'jumping', 'finding-things', 'file-navigation', 'git']);

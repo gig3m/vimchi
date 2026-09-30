@@ -51,8 +51,9 @@ describe('coachable', () => {
     expect(coachable('challenge-operators')).toBe(true);
     expect(coachable('move')).toBe(false);
     expect(coachable('robust-macros')).toBe(false);
-    const plugin = SECTIONS.find(s => s.band === 'plugins')!.lessons[0].id;
+    const plugin = SECTIONS.find(s => s.id === 'finding-things')!.lessons[0].id;
     expect(coachable(plugin)).toBe(false);
+    expect(coachable(SECTIONS.find(s => s.id === 'surround')!.lessons[0].id)).toBe(false);
     expect(Object.keys(LESSONS).length).toBeGreaterThan(0);
   });
 });

@@ -5,7 +5,7 @@ import type { Section } from '../types';
 export const globalCommands: Section = {
   id: 'global-commands',
   title: 'Global Commands',
-  band: 'deep',
+  band: 'patterns',
   lessons: [
     {
       id: 'global-delete',

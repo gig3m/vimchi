@@ -5,7 +5,7 @@ import type { Section } from '../types';
 export const registers: Section = {
   id: 'registers',
   title: 'Registers',
-  band: 'deep',
+  band: 'repeat',
   lessons: [
     {
       id: 'unnamed-register',

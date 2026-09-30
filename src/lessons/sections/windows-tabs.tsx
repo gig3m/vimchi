@@ -123,7 +123,7 @@ const ALT_NOTE = (
 export const windowsTabs: Section = {
   id: 'windows-tabs',
   title: 'Windows & Tabs',
-  band: 'deep',
+  band: 'project',
   lessons: [
     {
       id: 'splitting',

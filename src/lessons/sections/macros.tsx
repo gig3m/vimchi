@@ -5,7 +5,7 @@ import type { Section } from '../types';
 export const macros: Section = {
   id: 'macros',
   title: 'Macros',
-  band: 'deep',
+  band: 'repeat',
   lessons: [
     {
       id: 'recording-macro',

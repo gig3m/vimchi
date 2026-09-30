@@ -18,7 +18,7 @@ const withMarks = (list: string[], ...open: string[]) => (vim: Vim) => {
 export const fileNavigation: Section = {
   id: 'file-navigation',
   title: 'File Navigation',
-  band: 'plugins',
+  band: 'project',
   lessons: [
     {
       id: 'oil-open-directory',

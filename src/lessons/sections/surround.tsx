@@ -5,7 +5,7 @@ import type { Section } from '../types';
 export const surround: Section = {
   id: 'surround',
   title: 'Surround',
-  band: 'plugins',
+  band: 'code',
   lessons: [
     {
       id: 'add-surroundings',
