@@ -99,7 +99,7 @@ export const nudgeText = (c: Critique) => {
 
 /** Does a route use one of this lesson's chips? A chip with a count (`d3w`) needs a count too. */
 function reinforcer(lessonId: string): (uses: readonly string[]) => boolean {
-  const chips = LESSONS[lessonId].chips.map(c => [...tokenize(c), ...(/\d/.test(c) ? ['COUNT'] : [])]).filter(t => t.length);
+  const chips = (LESSONS[lessonId]?.chips ?? []).map(c => [...tokenize(c), ...(/\d/.test(c) ? ['COUNT'] : [])]).filter(t => t.length);
   return uses => chips.some(need => need.every(t => uses.includes(t)));
 }
 
@@ -315,11 +315,12 @@ const ctxCache = new Map<string, Ctx>();
 function context(lessonId: string): Ctx {
   let c = ctxCache.get(lessonId);
   if (!c) {
+    // Warm-up has no lesson of its own: nothing is "drilled", so any better way may be named.
     const lesson = LESSONS[lessonId];
-    const own = new Set(lesson.chips.flatMap(ch => tokenize(ch)));
+    const own = new Set(lesson ? lesson.chips.flatMap(ch => tokenize(ch)) : []);
     // A Search lesson must not be told not to search: the section's lessons so far are drilled too.
-    const ls = sectionOf(lessonId).lessons;
-    const upTo = lesson.challenge.kind === 'generated' ? [lesson] : ls.slice(0, ls.findIndex(l => l.id === lessonId) + 1);
+    const ls = lesson ? sectionOf(lessonId).lessons : [];
+    const upTo = !lesson ? [] : lesson.challenge.kind === 'generated' ? [lesson] : ls.slice(0, ls.findIndex(l => l.id === lessonId) + 1);
     const drilled = new Set(upTo.flatMap(l => l.chips.flatMap(ch => tokenize(ch))));
     c = { lessonId, taught: taughtBy(lessonId), own, drilled, reinforces: reinforcer(lessonId) };
     ctxCache.set(lessonId, c);

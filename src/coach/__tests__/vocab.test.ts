@@ -68,3 +68,11 @@ describe('coachable', () => {
     expect(Object.keys(LESSONS).length).toBeGreaterThan(0);
   });
 });
+
+describe('warm-up', () => {
+  it('is coachable with everything the curriculum teaches', () => {
+    expect(coachable('warm-up')).toBe(true);
+    const t = taughtBy('warm-up');
+    for (const k of ['w', 'f', 'd', 'c', 'iw', '.', 'COUNT', '/', '*', '"']) expect(t.has(k), k).toBe(true);
+  });
+});

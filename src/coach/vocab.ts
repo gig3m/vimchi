@@ -82,6 +82,8 @@ export function taughtBy(lessonId: string): Set<string> {
   const lesson = LESSONS[lessonId];
   const set = new Set<string>();
   const OPERATOR_OF: Record<string, string> = { '>>': '>', '<<': '<', '==': '=' };
+  // Warm-up mixes lessons the learner has already finished: the whole curriculum is fair game.
+  const whole = lessonId === WARM_UP;
   const add = (id: string) => { const l = LESSONS[id]; for (const c of [...l.chips, ...l.keyCards.map(k => k.key)]) for (const t of tokenize(c)) { set.add(t); if (OPERATOR_OF[t]) set.add(OPERATOR_OF[t]); } };
   if (lesson?.challenge.kind === 'generated') {
     for (const sid of lesson.challenge.sections) for (const l of SECTIONS.find(s => s.id === sid)?.lessons ?? []) add(l.id);
@@ -93,7 +95,7 @@ export function taughtBy(lessonId: string): Set<string> {
       add(l.id);
       if (l.id === COUNTS_TAUGHT_FROM) past = true;
       if (past) set.add('COUNT');
-      if (l.id === lessonId) break;
+      if (!whole && l.id === lessonId) break;
     }
   }
   cache.set(lessonId, set);
@@ -105,7 +107,11 @@ export function usesAllowed(uses: string[], taught: Set<string>): boolean {
 }
 
 /** The coach runs on rounds lessons and generated challenges, outside the Macros section and the Plugins band. */
+/** The spaced-review session (src/warmup) is coached like a generated challenge over every lesson. */
+export const WARM_UP = 'warm-up';
+
 export function coachable(lessonId: string): boolean {
+  if (lessonId === WARM_UP) return true;
   const l = LESSONS[lessonId];
   if (!l) return false;
   if (l.challenge.kind !== 'rounds' && l.challenge.kind !== 'generated') return false;

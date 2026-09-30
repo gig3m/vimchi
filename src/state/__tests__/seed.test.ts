@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { lessonIdFromHash, repsFromHash, repsHref, seedFromHash } from '../seed';
+import { isWarmUpHash, lessonIdFromHash, repsFromHash, repsHref, seedFromHash, warmUpHref } from '../seed';
 
 describe('seed in hash', () => {
   it('parses a valid seed', () => {
@@ -36,5 +36,17 @@ describe('reps in hash', () => {
   it('round-trips through repsHref', () => {
     expect(repsHref('word-objects', 99)).toBe('#word-objects?reps=99');
     expect(repsFromHash(repsHref('word-objects', 99))).toBe(99);
+  });
+});
+
+describe('warm-up in hash', () => {
+  it('routes #warm-up with and without a seed', () => {
+    expect(isWarmUpHash('#warm-up')).toBe(true);
+    expect(isWarmUpHash('#/warm-up?seed=9')).toBe(true);
+    expect(isWarmUpHash('#warm-up-reps')).toBe(false);
+    expect(isWarmUpHash('#delete-words')).toBe(false);
+    expect(warmUpHref()).toBe('#warm-up');
+    expect(warmUpHref(9)).toBe('#warm-up?seed=9');
+    expect(seedFromHash(warmUpHref(4294967295))).toBe(4294967295);
   });
 });
