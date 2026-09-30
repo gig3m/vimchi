@@ -564,7 +564,7 @@ export const registers: Section = {
     {
       id: 'delete-history',
       title: 'Delete History',
-      chips: ['"1', '"-'],
+      chips: ['"2', '"-'],
       keyCards: [
         { key: '"1', glyph: '1–9', label: 'recent line deletes', sub: '"1 newest, "9 oldest' },
         { key: '"-', glyph: 'del', label: 'small delete', sub: 'within one line' },

@@ -250,7 +250,7 @@ export const macros: Section = {
     {
       id: 'robust-macros',
       title: 'Robust Macros',
-      chips: ['macros'],
+      chips: ['0', 'f', 'A'],
       keyCards: [
         { key: '0', glyph: '|←', label: 'start from a known spot' },
         { key: 'f', glyph: '→x', label: 'move by content', sub: 'not by counting' },
