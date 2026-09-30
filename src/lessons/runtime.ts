@@ -156,6 +156,8 @@ const ROUND_BASE_MS = 1500;
 const PER_KEY_MS = 450;
 
 export class Session {
+  /** Warm-up only: the lesson ids the run drew from, so the coach uses only their vocabulary. */
+  picks?: readonly string[];
   readonly challenge: Challenge;
   readonly targetCount: number;
   vim: Vim | null = null;

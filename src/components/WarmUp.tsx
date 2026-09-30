@@ -90,6 +90,7 @@ export function WarmUp({ plan, seed: urlSeed, coachLive, runs, isGuest, onRun, o
             onNext={() => {}}
             onStats={onStats}
             onNewWarmUp={again}
+            picks={plan.picks.map(p => p.lesson.id)}
           />
           <div className="practice-foot wu-foot">
             <span className="practice-foot-note">
