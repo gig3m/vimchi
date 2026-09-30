@@ -332,6 +332,17 @@ func TestOAuthCallback(t *testing.T) {
 		}
 	})
 
+	t.Run("return keeps the SPA hash route", func(t *testing.T) {
+		// The app routes by #id?seed=N; the learner comes back to the same lesson and file.
+		for _, ret := range []string{"/#change-words?seed=42", "/#warm-up", "/#profile"} {
+			sc, state := startLogin(t, h, ret)
+			w := do(t, h, "GET", "/auth/github/callback?code=good-code&state="+state, "", withCookie(sc))
+			if w.Header().Get("Location") != ret {
+				t.Errorf("return %q: Location = %q", ret, w.Header().Get("Location"))
+			}
+		}
+	})
+
 	t.Run("unsafe return path", func(t *testing.T) {
 		sc, state := startLogin(t, h, "//evil.test/x")
 		w := do(t, h, "GET", "/auth/github/callback?code=good-code&state="+state, "", withCookie(sc))
