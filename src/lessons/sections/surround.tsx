@@ -295,8 +295,8 @@ export const surround: Section = {
           <p>
             <Code>gsf</Code> and <Code>gsF</Code> move the cursor to the pair itself: <Code>gsf)</Code> jumps to the
             closing parenthesis around the cursor, <Code>gsF)</Code> to the opening one. They use the same search as{' '}
-            <Code>gsd</Code> and <Code>gsr</Code>, so when the cursor is not inside a pair they find the next one on the
-            line.
+            <Code>gsd</Code> and <Code>gsr</Code>, so the cursor has to be inside the pair: outside one they report
+            that none was found.
           </p>
           <p>
             That makes them a way to move by structure: <Code>gsf"</Code> lands on the end of a string,{' '}
