@@ -451,10 +451,23 @@ function Completion({ vim, rowPx }: { vim: Vim; rowPx: number }) {
  * were in the buffer.
  */
 function InsertHint({ text }: { text: string }) {
+  const tag = useRef<HTMLSpanElement>(null);
+  // The tag is centred on the insertion point; near either edge of the buffer it would hang
+  // outside the editor (a column-0 insert put half of it over the gutter), so nudge it back in.
+  useLayoutEffect(() => {
+    const el = tag.current;
+    const box = el?.closest('.ev-panes');
+    if (!el || !box) return;
+    el.style.setProperty('--ann-shift', '0px');
+    const r = el.getBoundingClientRect(), b = box.getBoundingClientRect();
+    const pad = 6;
+    const shift = r.left < b.left + pad ? b.left + pad - r.left : r.right > b.right - pad ? b.right - pad - r.right : 0;
+    if (shift) el.style.setProperty('--ann-shift', `${shift}px`);
+  });
   return (
     <span className="ann-ins" aria-label={`insert ${JSON.stringify(text)} here`}>
       <span className="ann-ins-line" />
-      <span className="ann-tag">{text.replace(/ /g, '·')}</span>
+      <span ref={tag} className="ann-tag">{text.replace(/ /g, '·')}</span>
     </span>
   );
 }

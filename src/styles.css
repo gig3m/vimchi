@@ -469,7 +469,7 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
    and the text to type floating above it (below on the first row, which the pane would clip). */
 .ann-ins { position: relative; display: inline; pointer-events: none; --ann-lead: 9px; }
 .ann-ins-line { position: absolute; z-index: 1; left: -1px; top: calc(-1 * var(--ann-lead)); bottom: -3px; border-left: 2px dotted var(--green); }
-.ann-ins .ann-tag { position: absolute; z-index: 2; bottom: calc(100% + var(--ann-lead)); left: 0; transform: translateX(-50%); }
+.ann-ins .ann-tag { position: absolute; z-index: 2; bottom: calc(100% + var(--ann-lead)); left: 0; --ann-shift: 0px; transform: translateX(calc(-50% + var(--ann-shift))); }
 
 
 /* ---------- cursor stays visible over marks ---------- */
