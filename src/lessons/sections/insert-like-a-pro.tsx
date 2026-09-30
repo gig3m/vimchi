@@ -383,6 +383,7 @@ export const insertLikeAPro: Section = {
       aside: {
         title: 'S and cc',
         body: (
+          <>
           <p>
             <Code>S</Code> and <Code>cc</Code> do the same thing. You'll meet <Code>cc</Code> again in Change Lines,
             alongside <Code>C</Code>.
@@ -392,6 +393,7 @@ export const insertLikeAPro: Section = {
             (label jumps), kickstart gives <Code>s</Code> to mini.surround. <Code>cl</Code> and <Code>cc</Code> are the
             spellings that survive, so they are worth knowing too.
           </p>
+          </>
         ),
       },
       challenge: {
