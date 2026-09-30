@@ -759,5 +759,334 @@ export const codeNavigation: Section = {
         ],
       },
     },
+    {
+      id: 'document-symbols',
+      title: 'Document Symbols',
+      chips: ['gO'],
+      keyCards: [
+        { key: 'gO', glyph: '☰', label: 'list symbols', sub: 'in the location list' },
+        { key: 'CR', glyph: '⏎', label: 'jump to one' },
+      ],
+      intro: (
+        <>
+          <p>
+            <Code>gO</Code> asks the language server for the symbols in this file (functions, classes, methods,
+            fields) and opens them in the location list, the window's own quickfix list, one per line:{' '}
+            <Mono>invoices.ts|26 col 9| [Method] refund</Mono>.
+          </p>
+          <p>
+            Move to the symbol you want (<Code>/refund</Code> finds it) and press <Code>CR</Code>: the cursor lands on
+            its name in the file. It is the file's table of contents, and quicker than scrolling for a name you
+            already know.
+          </p>
+        </>
+      ),
+      practice: total => <p>Open the symbol list with <Code>gO</Code> and jump to the symbol the prompt names. {total} rounds.</p>,
+      aside: {
+        title: 'In a picker',
+        body: (
+          <p>
+            LazyVim maps <Code>Space ss</Code> to a symbols picker and kickstart points <Code>gO</Code> at Telescope's,
+            so you type part of a name instead of searching the list. <Code>gO</Code> is built in since Neovim 0.11,
+            and in help files it shows the outline of headings.
+          </p>
+        ),
+      },
+      challenge: (() => {
+        const inv = [
+          "import { db } from './db';",
+          "import { mailer } from './mailer';",
+          '',
+          'export const LATE_FEE = 1500;',
+          '',
+          'export interface Invoice {',
+          '  id: string;',
+          '  total: number;',
+          '  paidAt?: Date;',
+          '}',
+          '',
+          'export class InvoiceService {',
+          '  constructor(private clock: Clock) {}',
+          '',
+          '  async issue(customer: string, total: number) {',
+          '    const inv = await db.invoices.add({ customer, total });',
+          "    await mailer.send(customer, 'invoice', inv);",
+          '    return inv;',
+          '  }',
+          '',
+          '  async markPaid(id: string) {',
+          '    const now = this.clock.now();',
+          '    return db.invoices.update(id, { paidAt: now });',
+          '  }',
+          '',
+          '  async refund(id: string) {',
+          '    const inv = await db.invoices.get(id);',
+          '    return db.refunds.add({ invoice: inv.id });',
+          '  }',
+          '}',
+          '',
+          'export function isOverdue(inv: Invoice, now: Date) {',
+          '  return !inv.paidAt && now > dueDate(inv);',
+          '}',
+          '',
+          'function dueDate(inv: Invoice) {',
+          '  return new Date(inv.issuedAt + 30 * DAY);',
+          '}',
+        ];
+        const keys = [
+          'local M = {}',
+          '',
+          'local function map(lhs, rhs, desc)',
+          "  vim.keymap.set('n', lhs, rhs, { desc = desc })",
+          'end',
+          '',
+          'function M.setup(opts)',
+          '  opts = opts or {}',
+          "  map('<leader>w', '<cmd>write<CR>', 'Write')",
+          "  map('<leader>q', '<cmd>quit<CR>', 'Quit')",
+          'end',
+          '',
+          'function M.reload()',
+          "  package.loaded['keys'] = nil",
+          "  return require('keys').setup()",
+          'end',
+          '',
+          'return M',
+        ];
+        return {
+          kind: 'rounds',
+          base: { name: 'invoices.ts', text: inv, plugins: ['lsp'], height: 14 },
+          rounds: [
+            {
+              prompt: 'Jump to the refund method.',
+              setup: { cursor: { line: 0, col: 0 } },
+              goal: { buffer: 'invoices.ts', cursor: at(inv, 25, 'refund') },
+              solution: 'gO/refund<CR><CR>',
+            },
+            {
+              prompt: 'Jump to the paidAt field of Invoice.',
+              setup: { cursor: { line: 36, col: 2 } },
+              goal: { buffer: 'invoices.ts', cursor: at(inv, 8, 'paidAt') },
+              solution: 'gO/paid<CR><CR>',
+            },
+            {
+              prompt: 'Jump to dueDate, the last symbol in the file.',
+              setup: { cursor: { line: 15, col: 4 } },
+              goal: { buffer: 'invoices.ts', cursor: at(inv, 35, 'dueDate') },
+              solution: 'gOG<CR>',
+            },
+            {
+              prompt: 'Jump to the issue method.',
+              setup: { cursor: { line: 31, col: 0 } },
+              goal: { buffer: 'invoices.ts', cursor: at(inv, 14, 'issue') },
+              solution: 'gO/issue<CR><CR>',
+            },
+            {
+              prompt: 'Jump to the InvoiceService class.',
+              setup: { cursor: { line: 27, col: 4 } },
+              goal: { buffer: 'invoices.ts', cursor: at(inv, 11, 'InvoiceService') },
+              solution: 'gO/Serv<CR><CR>',
+            },
+            {
+              prompt: 'In this Lua module, jump to M.reload.',
+              setup: { name: 'keys.lua', text: keys, cursor: { line: 3, col: 2 } },
+              goal: { buffer: 'keys.lua', cursor: at(keys, 12, 'M.reload') },
+              solution: 'gO/reload<CR><CR>',
+            },
+          ],
+        };
+      })(),
+    },
+    {
+      id: 'format-file',
+      title: 'Format the File',
+      chips: ['␣f'],
+      keyCards: [
+        { key: '␣f', glyph: '⇶', label: 'format the file', sub: 'kickstart; LazyVim: ␣cf' },
+        { key: 'V ␣f', glyph: '⇶▭', label: 'format the selection' },
+      ],
+      intro: (
+        <>
+          <p>
+            <Code>Space f</Code> runs the file type's formatter (prettier, stylua, gofmt… through conform.nvim) over
+            the buffer: indentation, spacing and blank lines, fixed in one undo step. From Visual mode it formats only
+            the selected lines.
+          </p>
+          <p>
+            Format the whole file when it's yours. Select a range when the rest should stay as it is: a table aligned
+            by hand, generated code, or a diff you want to keep small.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Format the file, or just the part the prompt names. The tutor's formatter indents by brackets, puts one
+          space around <Code>=</Code>, and drops trailing spaces and extra blank lines. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'On save, and how it differs from =',
+        body: (
+          <p>
+            Both starters format on save, so mostly you meet it through <Code>:w</Code>; LazyVim puts the key on{' '}
+            <Code>Space cf</Code>. The <Code>=</Code> operator only re-indents, with Vim's own rules, and never touches
+            the spacing inside a line.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { plugins: ['conform'] },
+        rounds: [
+          {
+            prompt: 'Format the file.',
+            setup: {
+              name: 'cart.ts',
+              text: [
+                'export function cartTotal(items: Item[]) {',
+                '      let total = 0;',
+                '  for (const item of items) {',
+                ' total += item.price * item.qty;',
+                '      }',
+                '    return total;',
+                '}',
+              ],
+              cursor: { line: 3, col: 1 },
+            },
+            goal: {
+              text: [
+                'export function cartTotal(items: Item[]) {',
+                '  let total = 0;',
+                '  for (const item of items) {',
+                '    total += item.price * item.qty;',
+                '  }',
+                '  return total;',
+                '}',
+              ],
+            },
+            solution: '<Space>f',
+          },
+          {
+            prompt: 'Tidy the spacing around = and the trailing spaces.',
+            setup: {
+              name: 'config.ts',
+              text: [
+                'const port=Number(process.env.PORT ?? 3000);   ',
+                "const host ='localhost';",
+                'export const url=`http://${host}:${port}`;  ',
+              ],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: {
+              text: [
+                'const port = Number(process.env.PORT ?? 3000);',
+                "const host = 'localhost';",
+                'export const url = `http://${host}:${port}`;',
+              ],
+            },
+            solution: '<Space>f',
+          },
+          {
+            prompt: 'Squeeze the runs of blank lines down to one.',
+            setup: {
+              name: 'routes.ts',
+              text: [
+                "import { Router } from 'express';",
+                '',
+                '',
+                '',
+                'export const router = Router();',
+                '',
+                '',
+                "router.get('/health', (_req, res)=>res.send('ok'));",
+              ],
+              cursor: { line: 4, col: 0 },
+            },
+            goal: {
+              text: [
+                "import { Router } from 'express';",
+                '',
+                'export const router = Router();',
+                '',
+                "router.get('/health', (_req, res) => res.send('ok'));",
+              ],
+            },
+            solution: '<Space>f',
+          },
+          {
+            prompt: 'The constants are aligned by hand. Format only the function below them.',
+            setup: {
+              name: 'money.ts',
+              text: [
+                'export const CENTS    = 100;',
+                'export const TAX_RATE = 0.2;',
+                "export const CURRENCY = 'GBP';",
+                '',
+                'export function addTax(cents: number) {',
+                '    const taxed=cents * (1 + TAX_RATE);',
+                '      return Math.round(taxed);',
+                '}',
+              ],
+              cursor: { line: 5, col: 4 },
+            },
+            goal: {
+              text: [
+                'export const CENTS    = 100;',
+                'export const TAX_RATE = 0.2;',
+                "export const CURRENCY = 'GBP';",
+                '',
+                'export function addTax(cents: number) {',
+                '  const taxed = cents * (1 + TAX_RATE);',
+                '  return Math.round(taxed);',
+                '}',
+              ],
+            },
+            solution: 'Vip<Space>f',
+          },
+          {
+            prompt: 'Format the JSON.',
+            setup: {
+              name: 'package.json',
+              text: ['{', '"name": "shop",', '  "private": true,', '    "scripts": {', '  "dev": "vite",', '      "test": "vitest"', '},', '"dependencies": {}', '}'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: ['{', '  "name": "shop",', '  "private": true,', '  "scripts": {', '    "dev": "vite",', '    "test": "vitest"', '  },', '  "dependencies": {}', '}'],
+            },
+            solution: '<Space>f',
+          },
+          {
+            prompt: 'Format the settings object.',
+            setup: {
+              name: 'settings.ts',
+              text: [
+                'export const settings = {',
+                "theme: 'dark',",
+                '    editor: {',
+                '  tabSize: 2,',
+                '        wrap: false,',
+                '  },',
+                "    plugins: ['lsp', 'git'],",
+                '};',
+              ],
+              cursor: { line: 6, col: 4 },
+            },
+            goal: {
+              text: [
+                'export const settings = {',
+                "  theme: 'dark',",
+                '  editor: {',
+                '    tabSize: 2,',
+                '    wrap: false,',
+                '  },',
+                "  plugins: ['lsp', 'git'],",
+                '};',
+              ],
+            },
+            solution: '<Space>f',
+          },
+        ],
+      },
+    },
   ],
 };

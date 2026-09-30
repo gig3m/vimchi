@@ -9,7 +9,13 @@ let nextWinId = 1000;
 
 export class Window {
   readonly id = nextWinId++;
-  buf: Buffer;
+  private shown!: Buffer;
+  get buf(): Buffer { return this.shown; }
+  /** Showing a buffer registers the window so its folds follow the buffer's edits. */
+  set buf(b: Buffer) {
+    this.shown = b;
+    b.foldHolders.add(this);
+  }
   cursor: Pos = { line: 0, col: 0 };
   /** Column j/k aim for; Infinity after $. */
   want = 0;
