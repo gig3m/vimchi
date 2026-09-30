@@ -175,3 +175,34 @@ describe('Visual put: selection kind x register kind, p and P, counts', () => {
     expect(reg(v).text).toBe(unnamed);
   });
 });
+
+describe('the unnamed register follows yanks and deletes, not raw writes', () => {
+  const D = '|one\ntwo\nthree';
+  it.each([
+    // :let @r and macro recording leave "" alone
+    ['yy:let @a = "X"<CR>p', 'one\n|one\ntwo\nthree', 'one\n'],
+    ['yy:let @A = "X"<CR>p', 'one\n|one\ntwo\nthree', 'one\n'],
+    ['yy:let @- = "X"<CR>p', 'one\n|one\ntwo\nthree', 'one\n'],
+    ['yy:let @1 = "X"<CR>p', 'one\n|one\ntwo\nthree', 'one\n'],
+    ['x:let @a = "X"<CR>p', 'n|oe\ntwo\nthree', 'o'],
+    ['yyjqaxqp', 'one\nw|to\nthree', 't'],
+    ['yyjqaxqqAxqp', 'one\no|w\nthree', 'w'],
+    // :let @" writes "0 and "" with it
+    ['yy:let @" = "X"<CR>p', 'o|Xne\ntwo\nthree', 'X'],
+    ['yy:let @0 = "X"<CR>p', 'o|Xne\ntwo\nthree', 'X'],
+    // yanks and deletes into a named register do set ""
+    ['"ayyjp', 'one\ntwo\n|one\nthree', 'one\n'],
+    ['"ayyj"Ayyp', 'one\ntwo\n|one\ntwo\nthree', 'one\ntwo\n'],
+    ['"addp', 'two\n|one\nthree', 'one\n'],
+    ['yy"_ddp', 'two\n|one\nthree', 'one\n'],
+  ])('%s', (keys, want, unnamed) => {
+    const v = run(D, keys);
+    expect(C(D, keys)).toBe(want);
+    expect(reg(v).text).toBe(unnamed);
+  });
+  it('recording keeps the macro in its register', () => {
+    const v = run(D, 'qaxq:let @b = "Y"<CR>');
+    expect(reg(v, 'a').text).toBe('x');
+    expect(reg(v, 'b').text).toBe('Y');
+  });
+});
