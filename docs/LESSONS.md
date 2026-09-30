@@ -35,8 +35,8 @@ Put classic-Vim differences in the aside.
 One rule for the Enter key. **Chips and key cards use `CR`** (`key: 'CR'`, `:w CR`), matching the
 `<CR>` notation the engine and every `solution` use. **Prose** (intro, practice, aside, prompts)
 **says `enter`**, lowercase in `<Code>`, like the `esc` chip: "type `:w` then `enter`". Never
-`Enter`, `Return` or `<CR>` in prose. The same shape holds for the other named keys: chips `esc`,
-`BS`, `C-w`; prose `<Code>esc</Code>`, `<Code>C-w</Code>` (not `Esc`, `Ctrl-w`).
+`Enter`, `Return` or `<CR>` in prose. Other named keys in prose use their chip spelling in
+`<Code>`: `esc`, `C-w`, `C-[` (not `Esc`, `Ctrl-w`). Plain-string aside titles are exempt.
 
 ## Rules from review
 

@@ -163,7 +163,7 @@ export const insertLikeAPro: Section = {
             The new line gets the same indentation as the current one.
           </p>
           <p>
-            You never need to reach for the end of a line and press Enter. Pick the neighbouring line, then <Code>o</Code>{' '}
+            You never need to reach for the end of a line and press <Code>enter</Code>. Pick the neighbouring line, then <Code>o</Code>{' '}
             or <Code>O</Code>.
           </p>
           <BeforeAfter lines={['const user = {', "  name: 'Ada',", '};']} cursor={[1, 3]} keys="orole: 'admin',<Esc>" />
