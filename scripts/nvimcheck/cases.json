@@ -29,6 +29,8 @@
   {"id": "fold-e", "src": "p4-folds", "text": "function a() {\n  one();\n  two();\n}\nfunction b() {\n  three();\n  four();\n}\nend();", "keys": ":2,3fold<CR>:6,7fold<CR>jex"},
   {"id": "fold-b", "src": "p4-folds", "text": "function a() {\n  one();\n  two();\n}\nfunction b() {\n  three();\n  four();\n}\nend();", "keys": ":2,3fold<CR>:6,7fold<CR>jbx"},
   {"id": "fold-3w", "src": "p4-folds", "text": "function a() {\n  one();\n  two();\n}\nfunction b() {\n  three();\n  four();\n}\nend();", "keys": ":2,3fold<CR>:6,7fold<CR>3wx"},
+  {"id": "fold-yy-G-p", "src": "p4-folds", "text": "function a() {\n  one();\n  two();\n}\nfunction b() {\n  three();\n  four();\n}\nend();", "keys": ":2,3fold<CR>:6,7fold<CR>jyyGp"},
+  {"id": "fold-yy-jp", "src": "p4-folds", "text": "function a() {\n  one();\n  two();\n}\nfunction b() {\n  three();\n  four();\n}\nend();", "keys": ":7,9fold<CR>jyyGp"},
   { "id": "undo-col", "src": "codex-bugs #1", "text": "abc", "keys": "lxu" },
   { "id": "undo-col-followup", "src": "codex-bugs #1", "text": "one two three four\nfive six", "keys": "lxux" },
   { "id": "redo-col", "src": "codex-bugs #1", "text": "abc", "keys": "lxu<C-r>" },
