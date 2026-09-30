@@ -10,45 +10,46 @@ export const surround: Section = {
     {
       id: 'add-surroundings',
       title: 'Add Surroundings',
-      chips: ['sa'],
-      keyCards: [{ key: 'sa', glyph: 'x→(x)', label: 'add a pair', sub: 'sa{motion}{char}' }],
+      chips: ['gsa'],
+      keyCards: [{ key: 'gsa', glyph: 'x→(x)', label: 'add a pair', sub: 'gsa{motion}{char}' }],
       intro: (
         <>
           <p>
-            mini.surround (kickstart ships it) adds <Code>sa</Code>, an operator that wraps text in a pair. Give
-            it a motion or text object, then the character to wrap with: <Code>saiw"</Code> puts quotes around
-            the word under the cursor, <Code>sa$)</Code> wraps everything to the end of the line in parentheses.
+            mini.surround adds <Code>gsa</Code> (LazyVim's key), an operator that wraps text in a pair. Give
+            it a motion or text object, then the character to wrap with: <Code>gsaiw"</Code> puts quotes around
+            the word under the cursor, <Code>gsa$)</Code> wraps everything to the end of the line in parentheses.
           </p>
           <p>
-            Opening brackets add a space inside, closing brackets don't: <Code>saiw(</Code> gives{' '}
-            <Mono>( word )</Mono>, <Code>saiw)</Code> gives <Mono>(word)</Mono>. Any other character is used on both
+            Opening brackets add a space inside, closing brackets don't: <Code>gsaiw(</Code> gives{' '}
+            <Mono>( word )</Mono>, <Code>gsaiw)</Code> gives <Mono>(word)</Mono>. Any other character is used on both
             sides.
           </p>
           <Edits
             plugins={['surround']}
             rows={[
-              { keys: 'saiw"', text: 'mode = prod', cursor: 8 },
-              { keys: 'saiw(', text: 'return total', cursor: 9 },
-              { keys: 'saiw)', text: 'return total', cursor: 9 },
-              { keys: 'sa$]', text: 'ports = 80, 443', cursor: 8 },
+              { keys: 'gsaiw"', text: 'mode = prod', cursor: 8 },
+              { keys: 'gsaiw(', text: 'return total', cursor: 9 },
+              { keys: 'gsaiw)', text: 'return total', cursor: 9 },
+              { keys: 'gsa$]', text: 'ports = 80, 443', cursor: 8 },
             ]}
           />
         </>
       ),
       practice: total => (
         <p>
-          Wrap the text with <Code>sa</Code>, a motion and the character. {total} rounds.
+          Wrap the text with <Code>gsa</Code>, a motion and the character. {total} rounds.
         </p>
       ),
       aside: {
         title: 'Two starters, one plugin',
         body: (
           <p>
-            kickstart enables mini.surround as it comes: <Code>sa</Code>, <Code>sr</Code>, <Code>sd</Code>. LazyVim's
-            mini.surround extra maps the same actions to <Code>gsa</Code>, <Code>gsr</Code>, <Code>gsd</Code> so that{' '}
-            <Code>s</Code> stays free for flash. The older lineage, tpope's vim-surround and nvim-surround, spells
-            them <Code>ys</Code>, <Code>cs</Code>, <Code>ds</Code>. Shortcuts here: <Code>b</Code> is <Mono>)</Mono>,{' '}
-            <Code>B</Code> is <Mono>{'}'}</Mono>, <Code>r</Code> is <Mono>]</Mono>.
+            LazyVim's mini.surround extra maps <Code>gsa</Code>, <Code>gsd</Code>, <Code>gsr</Code>,{' '}
+            <Code>gsf</Code> so that <Code>s</Code> stays free for flash, which is on in every lesson here.
+            kickstart enables mini.surround as it comes, so there you drop the <Code>g</Code>: <Code>sa</Code>,{' '}
+            <Code>sd</Code>, <Code>sr</Code>, <Code>sf</Code>. The older lineage, tpope's vim-surround and
+            nvim-surround, spells them <Code>ys</Code>, <Code>cs</Code>, <Code>ds</Code>. Shortcuts here:{' '}
+            <Code>b</Code> is <Mono>)</Mono>, <Code>B</Code> is <Mono>{'}'}</Mono>, <Code>r</Code> is <Mono>]</Mono>.
           </p>
         ),
       },
@@ -60,7 +61,7 @@ export const surround: Section = {
             prompt: 'Quote "production".',
             setup: { text: ['export const config = {', '  mode: production,', '  port: 8080,', '};'], cursor: { line: 1, col: 10 } },
             goal: { text: ['export const config = {', '  mode: "production",', '  port: 8080,', '};'] },
-            solution: 'saiw"',
+            solution: 'gsaiw"',
           },
           {
             prompt: 'Put "width * height" in parentheses.',
@@ -69,13 +70,13 @@ export const surround: Section = {
               cursor: { line: 1, col: 15 },
             },
             goal: { text: ['function area(width: number, height: number) {', '  const half = (width * height) / 2;', '  return Math.round(half);', '}'] },
-            solution: 'sa3e)',
+            solution: 'gsa3e)',
           },
           {
             prompt: 'Make the list of ports an array.',
             setup: { text: ["const host = 'localhost';", 'const ports = 3000, 3001, 3002;', 'server.listen(host, ports);'], cursor: { line: 1, col: 14 } },
             goal: { text: ["const host = 'localhost';", 'const ports = [3000, 3001, 3002];', 'server.listen(host, ports);'] },
-            solution: 'sat;]',
+            solution: 'gsat;]',
           },
           {
             prompt: 'Wrap "silent = true" in a table, with spaces inside.',
@@ -85,7 +86,7 @@ export const surround: Section = {
               cursor: { line: 1, col: 32 },
             },
             goal: { text: ['local map = vim.keymap.set', "map('n', '<leader>w', ':w<CR>', { silent = true })", "map('n', '<leader>q', ':q<CR>')"] },
-            solution: 'sat){',
+            solution: 'gsat){',
           },
           {
             prompt: 'Mark "npm install" as code.',
@@ -95,7 +96,7 @@ export const surround: Section = {
               cursor: { line: 2, col: 0 },
             },
             goal: { text: ['## Setup', '', 'Run `npm install` before the first build.', 'Then copy .env.example to .env.'] },
-            solution: 'wsa2e`',
+            solution: 'wgsa2e`',
           },
         ],
       },
@@ -103,38 +104,38 @@ export const surround: Section = {
     {
       id: 'change-surroundings',
       title: 'Change Surroundings',
-      chips: ['sr'],
-      keyCards: [{ key: 'sr', glyph: "'→\"", label: 'replace a pair', sub: 'sr{old}{new}' }],
+      chips: ['gsr'],
+      keyCards: [{ key: 'gsr', glyph: "'→\"", label: 'replace a pair', sub: 'gsr{old}{new}' }],
       intro: (
         <>
           <p>
-            <Code>sr</Code> swaps one pair for another. Name the pair around the cursor, then the new one:{' '}
-            <Code>sr'"</Code> turns <Mono>'text'</Mono> into <Mono>"text"</Mono>.
+            <Code>gsr</Code> swaps one pair for another. Name the pair around the cursor, then the new one:{' '}
+            <Code>gsr'"</Code> turns <Mono>'text'</Mono> into <Mono>"text"</Mono>.
           </p>
           <p>
             The cursor only has to be inside the pair. If it isn't inside one, nvim-surround uses the next pair on the
-            line. The same spacing rule applies: <Code>sr)(</Code> adds spaces inside, <Code>sr()</Code> removes them.
+            line. The same spacing rule applies: <Code>gsr)(</Code> adds spaces inside, <Code>gsr()</Code> removes them.
           </p>
           <Edits
             plugins={['surround']}
             rows={[
-              { keys: `sr'"`, text: "from 'express'", cursor: 8 },
-              { keys: 'sr)]', text: 'point = (x, y)', cursor: 9 },
-              { keys: 'sr)(', text: 'if (ready)', cursor: 5 },
+              { keys: `gsr'"`, text: "from 'express'", cursor: 8 },
+              { keys: 'gsr)]', text: 'point = (x, y)', cursor: 9 },
+              { keys: 'gsr)(', text: 'if (ready)', cursor: 5 },
             ]}
           />
         </>
       ),
       practice: total => (
         <p>
-          Change each pair with <Code>sr</Code>. {total} rounds.
+          Change each pair with <Code>gsr</Code>. {total} rounds.
         </p>
       ),
       aside: {
         title: 'Any quote',
         body: (
           <p>
-            <Code>q</Code> stands for whichever quote is closest, so <Code>srq"</Code> works on single quotes and
+            <Code>q</Code> stands for whichever quote is closest, so <Code>gsrq"</Code> works on single quotes and
             backticks alike.
           </p>
         ),
@@ -150,7 +151,7 @@ export const surround: Section = {
               cursor: { line: 0, col: 22 },
             },
             goal: { text: ['import express from "express";', "import cors from 'cors';", '', 'const app = express();'] },
-            solution: `sr'"`,
+            solution: `gsr'"`,
           },
           {
             prompt: 'Make the URL a template string.',
@@ -159,19 +160,19 @@ export const surround: Section = {
               cursor: { line: 1, col: 16 },
             },
             goal: { text: ['async function load(id: string) {', '  const url = `/api/users/${id}`;', '  return fetch(url);', '}'] },
-            solution: 'sr"`',
+            solution: 'gsr"`',
           },
           {
             prompt: 'Turn the tuple into an array.',
             setup: { text: ['const x = 4, y = 2;', 'const point = (x, y);', 'draw(...point);'], cursor: { line: 1, col: 15 } },
             goal: { text: ['const x = 4, y = 2;', 'const point = [x, y];', 'draw(...point);'] },
-            solution: 'sr)]',
+            solution: 'gsr)]',
           },
           {
             prompt: 'Drop the spaces inside the parentheses.',
             setup: { text: ['function start() {', '  if ( ready ) run();', '  else queue.push(run);', '}'], cursor: { line: 1, col: 9 } },
             goal: { text: ['function start() {', '  if (ready) run();', '  else queue.push(run);', '}'] },
-            solution: 'sr()',
+            solution: 'gsr()',
           },
           {
             prompt: 'Swap the brackets for braces, spaced.',
@@ -181,7 +182,7 @@ export const surround: Section = {
               cursor: { line: 1, col: 25 },
             },
             goal: { text: ["require('nvim-treesitter.configs').setup({", "  ensure_installed = { 'lua', 'rust' },", '  highlight = { enable = true },', '})'] },
-            solution: 'sr[{',
+            solution: 'gsr[{',
           },
         ],
       },
@@ -189,41 +190,41 @@ export const surround: Section = {
     {
       id: 'delete-surroundings',
       title: 'Delete Surroundings',
-      chips: ['sd'],
-      keyCards: [{ key: 'sd', glyph: '(x)→x', label: 'delete a pair', sub: 'sd{char}' }],
+      chips: ['gsd'],
+      keyCards: [{ key: 'gsd', glyph: '(x)→x', label: 'delete a pair', sub: 'gsd{char}' }],
       intro: (
         <>
           <p>
-            <Code>sd</Code> removes the pair around the cursor and keeps what's inside: <Code>sd"</Code> strips the
-            quotes, <Code>sd)</Code> the parentheses.
+            <Code>gsd</Code> removes the pair around the cursor and keeps what's inside: <Code>gsd"</Code> strips the
+            quotes, <Code>gsd)</Code> the parentheses.
           </p>
           <p>
-            <Code>sd(</Code> also removes the spaces just inside the brackets, so <Mono>( a )</Mono> becomes{' '}
-            <Mono>a</Mono>. <Code>sdt</Code> deletes the nearest HTML tag pair and <Code>sdf</Code> unwraps a function
+            <Code>gsd(</Code> also removes the spaces just inside the brackets, so <Mono>( a )</Mono> becomes{' '}
+            <Mono>a</Mono>. <Code>gsdt</Code> deletes the nearest HTML tag pair and <Code>gsdf</Code> unwraps a function
             call.
           </p>
           <Edits
             plugins={['surround']}
             rows={[
-              { keys: 'sd"', text: 'port = "8080"', cursor: 9 },
-              { keys: 'sd(', text: 'return ( a + b )', cursor: 11 },
-              { keys: 'sdt', text: '<b>Note:</b> hi', cursor: 4 },
-              { keys: 'sdf', text: 'id = String(n)', cursor: 12 },
+              { keys: 'gsd"', text: 'port = "8080"', cursor: 9 },
+              { keys: 'gsd(', text: 'return ( a + b )', cursor: 11 },
+              { keys: 'gsdt', text: '<b>Note:</b> hi', cursor: 4 },
+              { keys: 'gsdf', text: 'id = String(n)', cursor: 12 },
             ]}
           />
         </>
       ),
       practice: total => (
         <p>
-          Remove the pair with <Code>sd</Code>. {total} rounds.
+          Remove the pair with <Code>gsd</Code>. {total} rounds.
         </p>
       ),
       aside: {
         title: 'Nested pairs',
         body: (
           <p>
-            <Code>sd</Code> works on the innermost pair of that kind around the cursor. In{' '}
-            <Mono>log((total))</Mono> with the cursor on <Mono>total</Mono>, <Code>sd)</Code> removes the inner
+            <Code>gsd</Code> works on the innermost pair of that kind around the cursor. In{' '}
+            <Mono>log((total))</Mono> with the cursor on <Mono>total</Mono>, <Code>gsd)</Code> removes the inner
             parentheses and leaves the call alone.
           </p>
         ),
@@ -236,7 +237,7 @@ export const surround: Section = {
             prompt: 'Remove the extra parentheses.',
             setup: { text: ['const total = items.reduce(sum, 0);', 'console.log((total));', 'process.exit(0);'], cursor: { line: 1, col: 14 } },
             goal: { text: ['const total = items.reduce(sum, 0);', 'console.log(total);', 'process.exit(0);'] },
-            solution: 'sd)',
+            solution: 'gsd)',
           },
           {
             prompt: 'Make the port a number.',
@@ -245,13 +246,13 @@ export const surround: Section = {
               cursor: { line: 2, col: 15 },
             },
             goal: { text: ["import { createServer } from 'node:http';", '', 'const port = 8080;', 'createServer(handler).listen(port);'] },
-            solution: 'sd"',
+            solution: 'gsd"',
           },
           {
             prompt: 'Unwrap the expression, spaces too.',
             setup: { text: ['function add(a: number, b: number) {', '  return ( a + b );', '}'], cursor: { line: 1, col: 11 } },
             goal: { text: ['function add(a: number, b: number) {', '  return a + b;', '}'] },
-            solution: 'sd(',
+            solution: 'gsd(',
           },
           {
             prompt: 'Drop the emphasis.',
@@ -261,7 +262,7 @@ export const surround: Section = {
               cursor: { line: 2, col: 16 },
             },
             goal: { text: ['## CI', '', 'This step is really slow on CI.', 'Caching the install speeds it up.'] },
-            solution: 'sd_',
+            solution: 'gsd_',
           },
           {
             prompt: 'Remove the <strong> tag.',
@@ -271,13 +272,13 @@ export const surround: Section = {
               cursor: { line: 2, col: 16 },
             },
             goal: { text: ['export function Hint() {', '  return (', '    <p>Note: the cache is per user.</p>', '  );', '}'] },
-            solution: 'sdt',
+            solution: 'gsdt',
           },
           {
             prompt: 'Unwrap the call to String().',
             setup: { text: ['function key(user: User) {', '  const id = String(user.id);', '  return `user:${id}`;', '}'], cursor: { line: 1, col: 20 } },
             goal: { text: ['function key(user: User) {', '  const id = user.id;', '  return `user:${id}`;', '}'] },
-            solution: 'sdf',
+            solution: 'gsdf',
           },
         ],
       },
@@ -285,22 +286,22 @@ export const surround: Section = {
     {
       id: 'find-surroundings',
       title: 'Find a Surrounding',
-      chips: ['sf', 'sF'],
+      chips: ['gsf', 'gsF'],
       keyCards: [
-        { key: 'sf', glyph: '→)', label: 'jump to the closing side', sub: 'sf{char}' },
-        { key: 'sF', glyph: '(←', label: 'jump to the opening side', sub: 'sF{char}' },
+        { key: 'gsf', glyph: '→)', label: 'jump to the closing side', sub: 'gsf{char}' },
+        { key: 'gsF', glyph: '(←', label: 'jump to the opening side', sub: 'gsF{char}' },
       ],
       intro: (
         <>
           <p>
-            <Code>sf</Code> and <Code>sF</Code> move the cursor to the pair itself: <Code>sf)</Code> jumps to the
-            closing parenthesis around the cursor, <Code>sF)</Code> to the opening one. They use the same search as{' '}
-            <Code>sd</Code> and <Code>sr</Code>, so when the cursor is not inside a pair they find the next one on the
+            <Code>gsf</Code> and <Code>gsF</Code> move the cursor to the pair itself: <Code>gsf)</Code> jumps to the
+            closing parenthesis around the cursor, <Code>gsF)</Code> to the opening one. They use the same search as{' '}
+            <Code>gsd</Code> and <Code>gsr</Code>, so when the cursor is not inside a pair they find the next one on the
             line.
           </p>
           <p>
-            That makes them a way to move by structure: <Code>sf"</Code> lands on the end of a string,{' '}
-            <Code>sFt</Code> on the opening tag, from anywhere inside.
+            That makes them a way to move by structure: <Code>gsf"</Code> lands on the end of a string,{' '}
+            <Code>gsFt</Code> on the opening tag, from anywhere inside.
           </p>
         </>
       ),
@@ -313,8 +314,9 @@ export const surround: Section = {
         title: 'The whole family',
         body: (
           <p>
-            mini.surround also has <Code>sh</Code>, which highlights a pair for a moment, and <Code>sn</Code>, which
-            sets how many lines it searches. LazyVim's extra prefixes them all with <Code>g</Code>.
+            mini.surround also has <Code>gsh</Code>, which highlights a pair for a moment, and <Code>gsn</Code>, which
+            sets how many lines it searches. On kickstart the whole family drops the <Code>g</Code>:{' '}
+            <Code>sf</Code>, <Code>sF</Code>, <Code>sh</Code>, <Code>sn</Code>.
           </p>
         ),
       },
@@ -329,7 +331,7 @@ export const surround: Section = {
               cursor: { line: 1, col: 24 },
             },
             goal: { cursor: { line: 2, col: 13 } },
-            solution: 'sf)',
+            solution: 'gsf)',
           },
           {
             prompt: 'Jump to the opening parenthesis of the inner call.',
@@ -338,7 +340,7 @@ export const surround: Section = {
               cursor: { line: 1, col: 8 },
             },
             goal: { cursor: { line: 0, col: 32 } },
-            solution: 'sF)',
+            solution: 'gsF)',
           },
           {
             prompt: 'Jump to the closing tag of the paragraph.',
@@ -348,7 +350,7 @@ export const surround: Section = {
               cursor: { line: 0, col: 26 },
             },
             goal: { cursor: { line: 2, col: 15 } },
-            solution: 'sft',
+            solution: 'gsft',
           },
           {
             prompt: 'Jump to the opening brace of the object.',
@@ -357,7 +359,7 @@ export const surround: Section = {
               cursor: { line: 1, col: 24 },
             },
             goal: { cursor: { line: 0, col: 13 } },
-            solution: 'sF{',
+            solution: 'gsF{',
           },
           {
             prompt: 'Jump to the closing bracket.',
@@ -366,7 +368,7 @@ export const surround: Section = {
               cursor: { line: 0, col: 27 },
             },
             goal: { cursor: { line: 1, col: 12 } },
-            solution: 'sf]',
+            solution: 'gsf]',
           },
         ],
       },
@@ -374,15 +376,15 @@ export const surround: Section = {
     {
       id: 'surround-a-selection',
       title: 'Surround a Selection',
-      chips: ['v', 'sa'],
+      chips: ['v', 'gsa'],
       keyCards: [
         { key: 'v', glyph: '▮▮', label: 'select' },
-        { key: 'sa', glyph: '(▮▮)', label: 'wrap selection', sub: 'sa{char}' },
+        { key: 'gsa', glyph: '(▮▮)', label: 'wrap selection', sub: 'gsa{char}' },
       ],
       intro: (
         <>
           <p>
-            In visual mode, <Code>sa</Code> followed by a character wraps the selection. Use it when the text is easier
+            In visual mode, <Code>gsa</Code> followed by a character wraps the selection. Use it when the text is easier
             to select than to describe with one motion.
           </p>
           <p>
@@ -393,24 +395,24 @@ export const surround: Section = {
             plugins={['surround']}
             name="diagram.json"
             rows={[
-              { keys: 'veesa]', label: 'vee sa]', text: 'Read the docs now', cursor: 5 },
-              { keys: 'Vjsa}', label: 'Vj sa}', text: ['"semi": false,', '"tabs": true'], cursor: [0, 0] },
+              { keys: 'veegsa]', label: 'vee gsa]', text: 'Read the docs now', cursor: 5 },
+              { keys: 'Vjgsa}', label: 'Vj gsa}', text: ['"semi": false,', '"tabs": true'], cursor: [0, 0] },
             ]}
           />
         </>
       ),
       practice: total => (
         <p>
-          Select the text, then press <Code>sa</Code> and the character. {total} rounds.
+          Select the text, then press <Code>gsa</Code> and the character. {total} rounds.
         </p>
       ),
       aside: {
-        title: 'Why sa and not S',
+        title: 'Why gsa and not S',
         body: (
           <p>
-            nvim-surround uses <Code>S</Code> here, but in a LazyVim setup <Code>S</Code> is flash's treesitter
-            jump. mini.surround keeps its own prefix in every mode, so the key you press in normal mode is the key
-            you press on a selection.
+            nvim-surround uses <Code>S</Code> here, but in a LazyVim setup, and in every lesson here,{' '}
+            <Code>S</Code> is flash's treesitter select. mini.surround keeps its own prefix in every mode, so the key
+            you press in normal mode is the key you press on a selection.
           </p>
         ),
       },
@@ -422,31 +424,31 @@ export const surround: Section = {
             prompt: 'Group the sum before dividing.',
             setup: { text: ['function bisect(lo: number, hi: number) {', '  const mid = lo + hi / 2;', '  return Math.floor(mid);', '}'], cursor: { line: 1, col: 14 } },
             goal: { text: ['function bisect(lo: number, hi: number) {', '  const mid = (lo + hi) / 2;', '  return Math.floor(mid);', '}'] },
-            solution: 'v3esa)',
+            solution: 'v3egsa)',
           },
           {
             prompt: 'An array of string or null: wrap the union.',
             setup: { text: ['type Row = { id: number };', 'let names: string | null[];', 'let rows: Row[] = [];'], cursor: { line: 1, col: 11 } },
             goal: { text: ['type Row = { id: number };', 'let names: (string | null)[];', 'let rows: Row[] = [];'] },
-            solution: 'vt[sa)',
+            solution: 'vt[gsa)',
           },
           {
             prompt: 'Turn "migration guide" into link text.',
             setup: { name: 'README.md', text: ['# Upgrading', '', 'Read the migration guide first.', 'Then bump the version.'], cursor: { line: 2, col: 9 } },
             goal: { text: ['# Upgrading', '', 'Read the [migration guide] first.', 'Then bump the version.'] },
-            solution: 'veesa]',
+            solution: 'veegsa]',
           },
           {
             prompt: 'Wrap all three settings in braces.',
             setup: { name: '.prettierrc.json', text: ['"semi": false,', '"singleQuote": true,', '"printWidth": 60'], cursor: { line: 0, col: 0 } },
             goal: { text: ['{"semi": false,', '"singleQuote": true,', '"printWidth": 60}'] },
-            solution: 'VGsa}',
+            solution: 'VGgsa}',
           },
           {
             prompt: 'Quote the whole path.',
             setup: { name: 'deploy.sh', text: ['#!/bin/sh', 'npm run build', 'cp dist/app.js $HOME/My Apps/', 'echo done'], cursor: { line: 2, col: 15 } },
             goal: { text: ['#!/bin/sh', 'npm run build', 'cp dist/app.js "$HOME/My Apps/"', 'echo done'] },
-            solution: 'vg_sa"',
+            solution: 'vg_gsa"',
           },
         ],
       },
@@ -454,28 +456,28 @@ export const surround: Section = {
     {
       id: 'surround-with-tags',
       title: 'Surround with Tags',
-      chips: ['srtt', 'saiwt'],
+      chips: ['gsrtt', 'gsaiwt'],
       keyCards: [
-        { key: 'srtt', glyph: '<b>→<i>', label: 'tag → tag', sub: 'type the name, then Enter' },
-        { key: 'sa…t', glyph: 'x→<b>x', label: 'add a tag' },
+        { key: 'gsrtt', glyph: '<b>→<i>', label: 'tag → tag', sub: 'type the name, then Enter' },
+        { key: 'gsa…t', glyph: 'x→<b>x', label: 'add a tag' },
       ],
       intro: (
         <>
           <p>
-            <Code>t</Code> means an HTML or JSX tag. <Code>sr</Code> takes the old pair and then the new one, so a
-            tag swap is <Code>srtt</Code>: replace a tag with a tag. It asks for the new name: type it and press{' '}
+            <Code>t</Code> means an HTML or JSX tag. <Code>gsr</Code> takes the old pair and then the new one, so a
+            tag swap is <Code>gsrtt</Code>: replace a tag with a tag. It asks for the new name: type it and press{' '}
             <Code>Enter</Code>. The whole opening tag is replaced, attributes included, so type them again if you want
             them kept.
           </p>
           <p>
-            To add a tag, use <Code>t</Code> as the character after <Code>sa</Code>, in normal or visual mode. You can type attributes too: <Mono>a href="/"</Mono>.
+            To add a tag, use <Code>t</Code> as the character after <Code>gsa</Code>, in normal or visual mode. You can type attributes too: <Mono>a href="/"</Mono>.
           </p>
           <Edits
             plugins={['surround']}
             name="diagram.tsx"
             rows={[
-              { keys: 'srtth3<CR>', label: 'srtt‹h3›⏎', text: '<h2>Settings</h2>', cursor: 6 },
-              { keys: 'saiwtem<CR>', label: 'saiwt‹em›⏎', text: 'never expire', cursor: 2 },
+              { keys: 'gsrtth3<CR>', label: 'gsrtt‹h3›⏎', text: '<h2>Settings</h2>', cursor: 6 },
+              { keys: 'gsaiwtem<CR>', label: 'gsaiwt‹em›⏎', text: 'never expire', cursor: 2 },
             ]}
           />
         </>
@@ -489,7 +491,7 @@ export const surround: Section = {
         title: 'Attributes',
         body: (
           <p>
-            <Code>sa…t</Code> and <Code>srtt</Code> both accept attributes in the name: <Mono>a href="/"</Mono> gives{' '}
+            <Code>gsa…t</Code> and <Code>gsrtt</Code> both accept attributes in the name: <Mono>a href="/"</Mono> gives{' '}
             <Mono>{'<a href="/">…</a>'}</Mono>. nvim-surround differs here: its <Code>cst</Code> keeps the old
             attributes and you type the tag itself, <Code>{'cst<em>'}</Code>.
           </p>
@@ -503,37 +505,37 @@ export const surround: Section = {
             prompt: 'Use <strong> instead of <b>.',
             setup: { text: ['<div className="alert">', '  <b>Warning:</b> this cannot be undone.', '</div>'], cursor: { line: 1, col: 6 } },
             goal: { text: ['<div className="alert">', '  <strong>Warning:</strong> this cannot be undone.', '</div>'] },
-            solution: 'srttstrong<CR>',
+            solution: 'gsrttstrong<CR>',
           },
           {
             prompt: 'Make the card a <section> with the same className.',
             setup: { text: ['<div className="card">', '  <h2>{title}</h2>', '</div>'], cursor: { line: 1, col: 6 } },
             goal: { text: ['<section className="card">', '  <h2>{title}</h2>', '</section>'] },
-            solution: 'jsrttsection className="card"<CR>',
+            solution: 'jgsrttsection className="card"<CR>',
           },
           {
             prompt: 'Demote the heading to <h3>.',
             setup: { text: ['<section>', '  <h2>Settings</h2>', '  <Toggle label="Dark mode" />', '</section>'], cursor: { line: 1, col: 8 } },
             goal: { text: ['<section>', '  <h3>Settings</h3>', '  <Toggle label="Dark mode" />', '</section>'] },
-            solution: 'srtth3<CR>',
+            solution: 'gsrtth3<CR>',
           },
           {
             prompt: 'Make the item a list entry.',
             setup: { text: ['<ul>', '  <li>Eggs</li>', '  Buy milk', '</ul>'], cursor: { line: 0, col: 0 } },
             goal: { text: ['<ul>', '  <li>Eggs</li>', '  <li>Buy milk</li>', '</ul>'] },
-            solution: '2j^sa$tli<CR>',
+            solution: '2j^gsa$tli<CR>',
           },
           {
             prompt: 'Emphasise "never".',
             setup: { text: ['<Card title="Tokens">', '  <p>Tokens never expire.</p>', '</Card>'], cursor: { line: 1, col: 13 } },
             goal: { text: ['<Card title="Tokens">', '  <p>Tokens <em>never</em> expire.</p>', '</Card>'] },
-            solution: 'saiwtem<CR>',
+            solution: 'gsaiwtem<CR>',
           },
           {
             prompt: 'Replace the whole <span> with a link to /docs.',
             setup: { text: ['<footer>', '  <span class="muted">Read the docs</span>', '</footer>'], cursor: { line: 1, col: 24 } },
             goal: { text: ['<footer>', '  <a href="/docs">Read the docs</a>', '</footer>'] },
-            solution: 'srtta href="/docs"<CR>',
+            solution: 'gsrtta href="/docs"<CR>',
           },
         ],
       },

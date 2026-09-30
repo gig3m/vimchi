@@ -214,7 +214,27 @@ export class Vim {
   /** Keys since the current normal/visual command began, including any insert or cmdline text typed for it. */
   private cmdKeys: Key[] = [];
 
+  /** A command that continues through a plugin's modal (flash's s): it completes when the modal closes. */
+  private modalCmd: { keys: Key[]; kind: CommandKind | null; open: boolean } | null = null;
+  /** For a plugin action that opens a modal: the keys typed into it belong to this command, which
+   * completes (lastCommand) when the modal closes, as the kind passed to completeModal. */
+  continueInModal() { this.modalCmd = { keys: [], kind: null, open: false }; }
+  /** The modal's success path: the command it completes counts as `kind` (a jump is a motion). */
+  completeModal(kind: CommandKind) { if (this.modalCmd) this.modalCmd.kind = kind; }
+
   private finishCommand(kind: CommandKind) {
+    const mc = this.modalCmd;
+    if (mc && !mc.open) {
+      if (this.modal) {
+        // The command goes on in the modal: nothing completes yet.
+        mc.keys = this.cmdKeys.slice();
+        mc.open = true;
+        this.lastCommand = null;
+        if (this.mode === 'normal' && !this.visual) this.cmdKeys = [];
+        return;
+      }
+      this.modalCmd = null; // the modal closed at once (nothing to label)
+    }
     this.lastCommand = { keys: this.cmdKeys.slice(), kind, error: false };
     if (this.mode === 'normal' && !this.visual) this.cmdKeys = [];
   }
@@ -715,7 +735,15 @@ export class Vim {
 
   private handleKey(key: Key) {
     if (this.confirm) return this.confirm.onKey(key);
-    if (this.modal && this.modal(key)) { this.lastCommand = { keys: [key], kind: 'modal', error: false }; return; }
+    if (this.modal && this.modal(key)) {
+      const mc = this.modalCmd?.open ? this.modalCmd : null;
+      if (!mc) { this.lastCommand = { keys: [key], kind: 'modal', error: false }; return; }
+      mc.keys.push(key);
+      if (this.modal != null) { this.lastCommand = null; return; } // the handler may have closed it
+      this.modalCmd = null;
+      this.lastCommand = { keys: mc.keys, kind: mc.kind ?? 'other', error: false };
+      return;
+    }
     switch (this.mode) {
       case 'insert':
       case 'replace':

@@ -7,6 +7,7 @@ describe('tokenize', () => {
     ['dt', ['d', 't']], ['ci"', ['c', 'i"']], ['$A', ['$', 'A']], ['"ap', ['"', 'p']], ['C-w h', ['<C-w>', 'h']],
     ['␣ff', ['<Space>', 'f', 'f']], [':noh', [':']], ['/e', ['/']], ['3dw', ['d', 'w']], ['esc', ['<Esc>']], ['CR', ['<CR>']],
     ['C-r C-w', ['<C-r>', '<C-w>']], ['gcc', ['gc', 'c']], ['<leader>', ['<Space>']], ['ddp', ['dd', 'p']], ['xp', ['x', 'p']], ['g-', ['g-']], ['3g+', ['g+']], ['C-]', ['<C-]>']],
+    ['gsa', ['gsa']], ['gsaiwt', ['gsa', 'iw', 't']], ['gsrtt', ['gsr', 't', 't']], ['gsF', ['gsF']], ['gsd', ['gsd']],
   ] as [string, string[]][])('%s → %j', (chip, want) => expect(tokenize(chip)).toEqual(want));
   it('prose chips tokenize to nothing', () => {
     for (const chip of ['macros', 'init.lua', 'vim.opt', 'vim.keymap.set', 'tab', 'norm']) expect(tokenize(chip), chip).toEqual([]);
@@ -25,7 +26,9 @@ describe('commandTokens: the command a learner ran, arguments and text stripped'
     [['r', 'z'], ['r']], [['m', 'a'], ['m']], [['`', 'a'], ['`']], [['@', 'q'], ['@']], [['3', 'd', 'w'], ['d', 'w']],
     [['A'], ['A']], [['c', 'w'], ['c', 'w']], [['g', 'g'], ['gg']], [['<C-v>', 'j', 'j'], ['<C-v>', 'j', 'j']],
     [['g', '<C-a>'], ['g', '<C-a>']], [['c', 'i', 'w'], ['c', 'iw']], [['<C-w>', 'l'], ['<C-w>', 'l']],
-    [['s', 'a', 'i', 'w', '"'], ['sa', 'iw']], [['s', 'd', ')'], ['sd']], [['s', 'r', "'", '"'], ['sr']], [['s', 'f', ')'], ['sf']], [['s', 'a', ')'], ['sa']],
+    [['g', 's', 'a', 'i', 'w', '"'], ['gsa', 'iw']], [['g', 's', 'd', ')'], ['gsd']], [['g', 's', 'r', "'", '"'], ['gsr']],
+    [['g', 's', 'f', ')'], ['gsf']], [['g', 's', 'F', ')'], ['gsF']], [['g', 's', 'a', ')'], ['gsa']],
+    [['s'], ['s']], [['S'], ['S']],
   ] as [string[], string[]][])('%j → %j', (keys, want) => expect(commandTokens(keys)).toEqual(want));
 });
 
