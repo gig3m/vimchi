@@ -258,14 +258,15 @@ export const screenMovement: Section = {
           </p>
           <p>
             Half a page is small enough that you can follow the text as it moves. It's the usual way to read through a
-            file.
+            file: when you know the line number, <Code>39G</Code> is faster; when you're looking for something you
+            can't see yet, you scroll.
           </p>
         </>
       ),
       practice: total => (
         <p>
-          Scroll to the line each round names with <Code>C-d</Code> and <Code>C-u</Code>. The window shows {ROWS} lines,
-          so each press moves six. {total} rounds.
+          Line numbers are off: scroll with <Code>C-d</Code> and <Code>C-u</Code> until the thing the prompt names is
+          under the cursor. The window shows {ROWS} lines, so each press moves six. {total} rounds.
         </p>
       ),
       aside: {
@@ -280,40 +281,40 @@ export const screenMovement: Section = {
       challenge: {
         kind: 'rounds',
         showGoal: false,
-        base: { name: 'queue.ts', text: QUEUE, height: ROWS },
+        base: { name: 'queue.ts', text: QUEUE, height: ROWS, options: { number: false } },
         rounds: [
           {
-            prompt: 'Go to the DEFAULTS object on line 19.',
+            prompt: 'Scroll down to the DEFAULTS object.',
             setup: { cursor: { line: 0, col: 0 } },
             goal: { cursor: { line: 18, col: 0 } },
             solution: '<C-d><C-d><C-d>',
           },
           {
-            prompt: 'Go to the class on line 25.',
+            prompt: 'Scroll down to the class declaration.',
             setup: { cursor: { line: 12, col: 0 } },
             goal: { cursor: { line: 24, col: 0 } },
             solution: '<C-d><C-d>',
           },
           {
-            prompt: 'Go to the constructor on line 31.',
+            prompt: 'Scroll down to the constructor.',
             setup: { cursor: { line: 24, col: 2 } },
             goal: { cursor: { line: 30, col: 2 } },
             solution: '<C-d>',
           },
           {
-            prompt: 'Go to run() on line 69.',
+            prompt: 'Scroll down to run().',
             setup: { cursor: { line: 50, col: 4 } },
             goal: { cursor: { line: 68, col: 4 } },
             solution: '<C-d><C-d><C-d>',
           },
           {
-            prompt: 'Go back up to tick() on line 56.',
+            prompt: 'Scroll back up to tick().',
             setup: { cursor: { line: 73, col: 6 } },
             goal: { cursor: { line: 55, col: 6 } },
             solution: '<C-u><C-u><C-u>',
           },
           {
-            prompt: 'Go up to push() on line 39.',
+            prompt: 'Scroll up to push().',
             setup: { cursor: { line: 50, col: 2 }, init: top(45) },
             goal: { cursor: { line: 38, col: 2 } },
             solution: '<C-u><C-u>',
@@ -343,7 +344,8 @@ export const screenMovement: Section = {
       ),
       practice: total => (
         <p>
-          Page to the line each round names with <Code>C-f</Code> and <Code>C-b</Code>, then step onto it. {total} rounds.
+          Line numbers are off: page with <Code>C-f</Code> and <Code>C-b</Code> until the release or step the prompt
+          names is on screen, then step onto it. {total} rounds.
         </p>
       ),
       aside: {
@@ -358,40 +360,40 @@ export const screenMovement: Section = {
       challenge: {
         kind: 'rounds',
         showGoal: false,
-        base: { name: 'CHANGELOG.md', text: CHANGELOG, height: ROWS },
+        base: { name: 'CHANGELOG.md', text: CHANGELOG, height: ROWS, options: { number: false } },
         rounds: [
           {
-            prompt: 'Page down to the 3.1.0 release on line 23.',
+            prompt: 'Page down to the 3.1.0 release.',
             setup: { cursor: { line: 0, col: 0 } },
             goal: { cursor: { line: 22, col: 0 } },
             solution: '<C-f><C-f>',
           },
           {
-            prompt: 'Page down to the migration steps on line 45.',
+            prompt: 'Page down to the migration steps.',
             setup: { cursor: { line: 0, col: 0 } },
             goal: { cursor: { line: 44, col: 0 } },
             solution: '<C-f><C-f><C-f><C-f>',
           },
           {
-            prompt: 'Page down to the 2.4.1 release on line 56.',
+            prompt: 'Page down to the 2.4.1 release.',
             setup: { cursor: { line: 22, col: 0 }, init: top(22) },
             goal: { cursor: { line: 55, col: 0 } },
             solution: '<C-f><C-f><C-f>',
           },
           {
-            prompt: 'Page back to the 2.4.0 release on line 61.',
+            prompt: 'Page back to the 2.4.0 release.',
             setup: { cursor: { line: 70, col: 0 }, init: top(58) },
             goal: { cursor: { line: 60, col: 0 } },
             solution: '<C-b>j',
           },
           {
-            prompt: 'Page back to the 3.0.0 release on line 34.',
+            prompt: 'Page back to the 3.0.0 release.',
             setup: { cursor: { line: 43, col: 0 }, init: top(43) },
             goal: { cursor: { line: 33, col: 0 } },
             solution: '<C-b><C-b>',
           },
           {
-            prompt: 'Page back to the first migration step on line 46.',
+            prompt: 'Page back to the first migration step.',
             setup: { cursor: { line: 66, col: 0 }, init: top(66) },
             goal: { cursor: { line: 45, col: 0 } },
             solution: '<C-b><C-b><C-b>',
@@ -411,8 +413,9 @@ export const screenMovement: Section = {
       intro: (
         <>
           <p>
-            <Code>H</Code>, <Code>M</Code> and <Code>L</Code> move the cursor to the top, middle and bottom line of the
-            window, landing on the first non-blank character. Nothing scrolls.
+            <Code>H</Code>, <Code>M</Code> and <Code>L</Code> stand for <b>High</b>, <b>Middle</b> and <b>Low</b>: they
+            move the cursor to the top, middle and bottom line of the window. Nothing scrolls, and your column is kept
+            (Neovim's default).
           </p>
           <p>
             They get you near anything you can see in one key. Look at the line, pick the closest of the three, then finish

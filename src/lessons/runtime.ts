@@ -156,6 +156,8 @@ const ROUND_BASE_MS = 1500;
 const PER_KEY_MS = 450;
 
 export class Session {
+  /** Warm-up only: the lesson ids the run drew from, so the coach uses only their vocabulary. */
+  picks?: readonly string[];
   readonly challenge: Challenge;
   readonly targetCount: number;
   vim: Vim | null = null;
@@ -207,7 +209,7 @@ export class Session {
   setupFor(unit: number): Setup {
     const c = this.challenge;
     if (c.kind === 'rounds') return mergeSetup(c.base, c.rounds[unit]?.setup);
-    if (c.kind === 'generated') return { text: this.generated!.start, name: this.generated!.file };
+    if (c.kind === 'generated') return { text: this.generated!.start, name: this.generated!.file, plugins: c.plugins };
     return { text: '' };
   }
   /** Checklist item nearest the cursor (generated challenges), for attributing keys. */
@@ -250,7 +252,7 @@ export class Session {
       this.loadRound();
     } else if (c.kind === 'generated') {
       const g = this.generated!;
-      this.vim = createVim({ text: g.start, name: g.file, height: Math.min(g.start.length + 1, 40) });
+      this.vim = createVim({ text: g.start, name: g.file, height: Math.min(g.start.length + 1, 40), plugins: c.plugins });
       this.installReset();
     }
   }
@@ -538,7 +540,8 @@ export class Session {
         // until it exists).
         const anchor = curLineOf(it.goal[0], it.fixAt.line);
         let line = anchor;
-        if (it.kind === 'stray-line' || it.kind === 'line-to-remove') line = anchor + (done ? 0 : 1);
+        if (it.below) line = anchor + (done ? 0 : it.below);
+        else if (it.kind === 'stray-line' || it.kind === 'line-to-remove') line = anchor + (done ? 0 : 1);
         else if (it.kind === 'missing-duplicate-line' && !done) line = curLineOf(it.goal[0] - 1, it.fixAt.line);
         return { text: it.text, kind: it.kind, done, line: line + 1 };
       });

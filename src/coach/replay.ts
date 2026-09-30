@@ -49,10 +49,10 @@ export function stateNeeds(log: LogEntry[], afterIndex: number, _unit: number): 
   return needs;
 }
 
-/** Text, cursor and mode always; plus whichever state a later command needs. */
-export function sameOutcome(a: Vim, b: Vim, needs: StateNeeds): boolean {
+/** Text, cursor and mode always (the cursor unless `cursor: false`); plus whichever state a later command needs. */
+export function sameOutcome(a: Vim, b: Vim, needs: StateNeeds, opts: { cursor?: boolean } = {}): boolean {
   if (a.buf.text() !== b.buf.text()) return false;
-  if (a.cursor.line !== b.cursor.line || a.cursor.col !== b.cursor.col) return false;
+  if (opts.cursor !== false && (a.cursor.line !== b.cursor.line || a.cursor.col !== b.cursor.col)) return false;
   if (a.mode !== b.mode) return false;
   if (needs.register && a.getRegister('"').text !== b.getRegister('"').text) return false;
   if (needs.lastFind && JSON.stringify(a.lastFind) !== JSON.stringify(b.lastFind)) return false;

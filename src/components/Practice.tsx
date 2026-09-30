@@ -7,18 +7,23 @@ import type { Run } from '../state/store';
 import { C, colorize } from '../ui/syntax';
 import { keyFromEvent } from '../vim/keys';
 import { EditorView } from './EditorView';
+import { resultsShortcut } from './shortcuts';
 import { Checklist } from './Checklist';
 import { Results } from './Results';
-import { seedHref } from '../state/seed';
+import { newSeed, repsHref, seedHref } from '../state/seed';
+import { repsChallenge, repsRunId } from '../challenges/reps';
 import { type Critique, type Report, coach, coachSegment, nudgeText } from '../coach';
 import { closedSegments } from '../coach/live';
 import { segment } from '../coach/segment';
 import { coachable } from '../coach/vocab';
+import { type CoachFields, callouts as calloutsFor, coachEvents, calloutPrefix, getCoachProfile, keyMixOf, recordCoachRun, retired, useCoachProfile } from '../state/coach';
 
 type Props = {
   lesson: Lesson;
   /** Generated challenges: replay this seed (from the URL); null = fresh. */
   seed: number | null;
+  /** Reps mode: the seed of the lesson's Reps (from `#id?reps=N`); null = the authored practice. */
+  reps: number | null;
   /** Show a coach hint under the editor as segments close. */
   coachLive: boolean;
   /** Earlier runs of this lesson, for personal-best comparisons. */
@@ -28,9 +33,13 @@ type Props = {
   onRun: (run: Run) => void;
   onNext: () => void;
   onStats: () => void;
+  /** Warm-up: "New file" is a whole new Warm-up (its file is pinned to the seed it was checked on). */
+  onNewWarmUp?: () => void;
+  /** Warm-up only: the lesson ids the run drew from (coach vocabulary). */
+  picks?: readonly string[];
 };
 
-type Finished = { result: ReturnType<Session['result']>; prevBestTime: number | null; prevBestScore: number | null; report?: Report };
+type Finished = { result: ReturnType<Session['result']>; prevBestTime: number | null; prevBestScore: number | null; report?: Report; callouts?: Record<string, string> };
 
 /** Browser-reserved Ctrl keys get an Alt stand-in outside fullscreen. */
 const STAND_INS: Record<string, string> = { '<A-w>': '<C-w>', '<A-n>': '<C-n>', '<A-t>': '<C-t>', '<A-q>': '<C-q>' };
@@ -41,17 +50,25 @@ export function Practice(p: Props) {
   const seedRef = useRef<number | null>(p.seed);
   const [, rerender] = useReducer((n: number) => n + 1, 0);
   const [finished, setFinished] = useState<Finished | null>(null);
+  // Coach memory: recurring patterns get a callout, mastered ones lose their live hint.
+  const coachProfile = useCoachProfile();
   // The component stays mounted across lessons (a remount would drop full screen), so a
   // lesson change resets the per-lesson state here instead of via a React key.
-  const lessonRef = useRef(lesson.id);
-  if (lessonRef.current !== lesson.id) {
-    lessonRef.current = lesson.id;
-    seedRef.current = p.seed;
+  // Reps swap the lesson's authored challenge for its generated Reps (same lesson, same page).
+  const inReps = p.reps != null && !!lesson.reps;
+  const challenge = inReps ? repsChallenge(lesson) : lesson.challenge;
+  const runId = inReps ? repsRunId(lesson.id) : lesson.id;
+  const wanted = inReps ? p.reps : p.seed;
+  const lessonRef = useRef(runId);
+  if (lessonRef.current !== runId) {
+    lessonRef.current = runId;
+    seedRef.current = wanted;
     session.current = null as unknown as Session;
     if (finished) setFinished(null);
   }
-  if (!session.current || session.current.challenge !== lesson.challenge) session.current = new Session(lesson.challenge, { seed: seedRef.current ?? undefined });
+  if (!session.current || session.current.challenge !== challenge) session.current = new Session(challenge, { seed: seedRef.current ?? undefined });
   const s = session.current;
+  s.picks = p.picks;
   const [focused, setFocused] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -71,7 +88,7 @@ export function Practice(p: Props) {
     clearNudge(); nudgedEnd.current = -1; nudgedUnit.current = -1;
     ref.current?.focus({ preventScroll: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lesson.id]);
+  }, [runId]);
   useEffect(() => {
     const onFs = () => setFullscreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', onFs);
@@ -81,17 +98,16 @@ export function Practice(p: Props) {
     };
   }, []);
 
-  const unitLabel = (u: number) => (lesson.challenge.kind === 'generated' ? `Edit ${u + 1}` : `Round ${u + 1}`);
+  const unitLabel = (u: number) => (challenge.kind === 'generated' ? `Edit ${u + 1}` : `Round ${u + 1}`);
 
   // Live nudge: one line under the editor when a just-closed segment has a better way.
   const [nudge, setNudge] = useState<string | null>(null);
   const nudgeT = useRef<number>(undefined);
   const clearNudge = () => { clearTimeout(nudgeT.current); setNudge(null); };
   const showNudge = (c: Critique) => {
-    const b = c.better[0];
-    void b;
+    const prefix = calloutPrefix(coachProfile, c.better[0].pattern);
     clearTimeout(nudgeT.current);
-    setNudge(nudgeText(c));
+    setNudge((prefix ? prefix + ' ' : '') + nudgeText(c));
     nudgeT.current = window.setTimeout(() => setNudge(null), 4000);
   };
   /** After a key (or a round/run end), critique a segment that has closed: at most one hint per round. */
@@ -109,7 +125,7 @@ export function Practice(p: Props) {
     for (const i of closedSegments(segs, log, closing).reverse()) {
       if (segs[i].logStart < unitStart || segs[i].logEnd <= nudgedEnd.current) continue;
       const c = coachSegment(s, lesson.id, segs[i], segs, i);
-      if (!c) continue;
+      if (!c || retired(coachProfile, c.better[0].pattern)) continue; // mastered: the report still lists it
       nudgedEnd.current = c.logEnd;
       nudgedUnit.current = unit;
       showNudge(c);
@@ -119,7 +135,7 @@ export function Practice(p: Props) {
 
   /** Repeat: the same seed for a generated challenge, so a replay races the same file. */
   const restart = () => {
-    session.current = new Session(lesson.challenge, { seed: s.view().seed ?? undefined });
+    session.current = new Session(challenge, { seed: s.view().seed ?? undefined });
     setFinished(null);
     clearNudge(); nudgedEnd.current = -1; nudgedUnit.current = -1;
     rerender();
@@ -127,47 +143,67 @@ export function Practice(p: Props) {
   };
   /** New file: a fresh seed; the URL drops the old one so a reload does not bring it back. */
   const newFile = () => {
+    if (inReps) return goReps();
     seedRef.current = null;
-    session.current = new Session(lesson.challenge);
+    session.current = new Session(challenge);
     setFinished(null);
     clearNudge(); nudgedEnd.current = -1; nudgedUnit.current = -1;
     if (location.hash.includes('?')) history.replaceState(null, '', '#' + lesson.id);
     rerender();
     ref.current?.focus({ preventScroll: true });
   };
+  /** Reps on a fresh seed; the URL carries it, so the run is shareable and survives a reload. */
+  const goReps = () => { location.hash = repsHref(lesson.id, newSeed()); };
+  const backToLesson = () => { location.hash = '#' + lesson.id; };
   // A seed arriving by URL while this lesson is open (pasted link, back/forward, the results
-  // screen's own "link to this file") loads that file.
+  // screen's own "link to this file", Reps "Again") loads that file.
   useEffect(() => {
-    if (p.seed == null || p.seed === session.current.view().seed) return;
-    seedRef.current = p.seed;
-    session.current = new Session(lesson.challenge, { seed: p.seed });
+    if (wanted == null || wanted === session.current.view().seed) return;
+    seedRef.current = wanted;
+    session.current = new Session(challenge, { seed: wanted });
     setFinished(null);
+    clearNudge(); nudgedEnd.current = -1; nudgedUnit.current = -1;
     rerender();
     ref.current?.focus({ preventScroll: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [p.seed]);
+  }, [wanted, runId]);
 
   const complete = (now: number) => {
     const result = s.result();
     const times = p.history.map(r => r.time), scores = p.history.map(r => r.score);
+    const report = coachable(lesson.id) ? coach(s, lesson.id) : undefined;
+    // Coach memory: one event per critique (patterns and counts only) and the key mix ride on
+    // the run; callouts compare against the profile as it was before this run.
+    const events = report ? coachEvents(report, runId, now) : [];
+    const mix = report ? keyMixOf(report.summary) : undefined;
     setFinished({
       result,
       prevBestTime: times.length ? Math.min(...times) : null,
       prevBestScore: scores.length ? Math.max(...scores) : null,
-      report: coachable(lesson.id) ? coach(s, lesson.id) : undefined,
+      report,
+      callouts: calloutsFor(getCoachProfile(), events),
     });
-    p.onRun({
-      lesson: lesson.id, at: now, time: result.elapsed, keys: result.keys,
+    const run: Run & CoachFields = {
+      lesson: runId, at: now, time: result.elapsed, keys: result.keys,
       speed: result.speed, acc: result.acc, correct: result.correct, score: result.score,
-    });
+      ...(report ? { coach: events, mix } : {}),
+    };
+    p.onRun(run);
+    if (report) recordCoachRun({ lesson: runId, at: now, mix, events });
   };
 
   const handle = (key: string) => {
     if (s.done) {
-      if (key === '<CR>' || key === 'r') restart();
-      else if (key === 'f' && s.view().seed != null) newFile();
-      else if (key === 'n' && p.nextTitle) p.onNext();
-      else if (key === 's') p.onStats();
+      const action = resultsShortcut(key, {
+        inReps, inWarmUp: !!p.onNewWarmUp, hasReps: !!lesson.reps, hasSeed: s.view().seed != null, hasNext: !!p.nextTitle,
+      });
+      if (action === 'reps-again' || action === 'reps') goReps();
+      else if (action === 'back-to-lesson') backToLesson();
+      else if (action === 'restart') restart();
+      else if (action === 'new-file') newFile();
+      else if (action === 'warm-up-again') p.onNewWarmUp?.();
+      else if (action === 'next') p.onNext();
+      else if (action === 'stats') p.onStats();
       return;
     }
     const now = Date.now();
@@ -275,10 +311,12 @@ export function Practice(p: Props) {
         {v.done && finished && (
           <Results
             {...finished}
-            nextTitle={p.nextTitle}
+            nextTitle={inReps ? null : p.nextTitle}
             seed={v.seed}
-            replayHref={v.seed != null ? seedHref(lesson.id, v.seed) : undefined}
-            onNewSeed={v.seed != null ? newFile : undefined}
+            replayHref={v.seed != null ? (inReps ? repsHref : seedHref)(lesson.id, v.seed) : undefined}
+            onNewSeed={v.seed != null && !inReps ? (p.onNewWarmUp ?? newFile) : undefined}
+            reps={inReps ? { onAgain: goReps, onBack: backToLesson } : undefined}
+            onReps={!inReps && lesson.reps ? goReps : undefined}
             unitLabel={unitLabel}
             onRepeat={restart}
             onNext={p.onNext}
@@ -289,7 +327,7 @@ export function Practice(p: Props) {
         {(v.done || isQuiz) && (
           <div className="status">
             <span className="mode">{v.done ? 'DONE' : 'QUIZ'}</span>
-            <span className="seg">{lesson.title}</span>
+            <span className="seg">{lesson.title}{inReps ? ' reps' : ''}</span>
             <span className="grow" />
             <span>{v.keys} keys</span>
             <span>{fmtClock(elapsed)}</span>
@@ -303,6 +341,16 @@ export function Practice(p: Props) {
           </div>
         )}
       </div>
+      {inReps ? (
+        <div className="practice-foot">
+          <span className="practice-foot-note">Reps: {lesson.title}, {v.total} edits on a real file</span>
+          <button className="link-btn" onClick={backToLesson} tabIndex={-1}>← Back to lesson</button>
+        </div>
+      ) : lesson.reps && !v.done ? (
+        <div className="practice-foot">
+          <button className="link-btn" onClick={goReps} tabIndex={-1} title="10–15 generated edits of this lesson's keys on a real file">Reps →</button>
+        </div>
+      ) : null}
     </div>
   );
 }

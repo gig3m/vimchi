@@ -22,6 +22,9 @@ type Run struct {
 	Acc     float64 `json:"acc"`
 	Correct float64 `json:"correct"`
 	Score   int64   `json:"score"`
+	// Coach memory (optional): the run's critiques and where its keys went.
+	Coach []CoachEvent `json:"coach,omitempty"`
+	Mix   *KeyMix      `json:"mix,omitempty"`
 }
 
 var lessonRE = regexp.MustCompile(`^[a-z0-9-]{1,64}$`)
@@ -58,6 +61,9 @@ func (r Run) Validate(now int64) error {
 	}
 	if r.Score < 0 || r.Score > 100 {
 		errs = append(errs, errors.New("score must be within 0..100"))
+	}
+	if err := r.validateCoach(now); err != nil {
+		errs = append(errs, err)
 	}
 	return errors.Join(errs...)
 }

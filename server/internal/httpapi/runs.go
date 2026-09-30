@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	maxRunBody    = 4 << 10 // one run is ~150 bytes
+	maxRunBody    = 6 << 10 // one run is ~150 bytes, plus up to 10 coach events of ~130
 	maxImportBody = 4 << 20
 	maxImportRuns = 5000
 )
@@ -75,8 +75,15 @@ func (s *Server) handleImportRuns(w http.ResponseWriter, r *http.Request, u stor
 	runs := make([]store.Run, 0, len(raw))
 	for _, m := range raw {
 		var run store.Run
-		if json.Unmarshal(m, &run) != nil || run.Validate(now) != nil {
+		if json.Unmarshal(m, &run) != nil {
 			continue
+		}
+		if run.Validate(now) != nil {
+			// Older or damaged coach data must not cost the learner the run itself.
+			run.Coach, run.Mix = nil, nil
+			if run.Validate(now) != nil {
+				continue
+			}
 		}
 		runs = append(runs, run)
 	}
@@ -88,4 +95,15 @@ func (s *Server) handleImportRuns(w http.ResponseWriter, r *http.Request, u stor
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// handleCoachProfile answers the coach's memory of this learner, derived from
+// their stored critiques (patterns and counts only).
+func (s *Server) handleCoachProfile(w http.ResponseWriter, r *http.Request, u store.User) {
+	p, err := s.Store.CoachProfile(r.Context(), u.ID)
+	if err != nil {
+		s.serverError(w, r, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, p)
 }
