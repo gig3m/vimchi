@@ -1444,7 +1444,8 @@ export const substitute: Section = {
         title: 'The real grug-far',
         body: (
           <p>
-            LazyVim ships it on <Code>Space sr</Code>; kickstart does not. The real panel starts empty (or with a
+            LazyVim ships it on <Code>Space sr</Code>; kickstart does not, and its <Code>Space sr</Code> resumes the
+            last Telescope search instead. The real panel starts empty (or with a
             visual selection), the search is a ripgrep regex rather than a whole word, and <Code>&lt;localleader&gt;r</Code>{' '}
             applies. Before it, <Code>:grep</Code> then <Code>:cdo s/old/new/g | update</Code> did the same by hand —
             the Quickfix lessons show it.

@@ -1272,6 +1272,16 @@ export const textObjects: Section = {
             },
             solution: 'yapP',
           },
+          {
+            prompt: 'The draft rambles. Replace the whole paragraph with "TBD."',
+            setup: {
+              name: 'NOTES.md',
+              text: ['## Summary', '', 'The first draft said too much.', 'It went on for three lines', 'and never got to the point.', '', '## Next'],
+              cursor: { line: 3, col: 7 },
+            },
+            goal: { text: ['## Summary', '', 'TBD.', '', '## Next'] },
+            solution: 'cipTBD.<Esc>',
+          },
         ],
       },
     },

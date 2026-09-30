@@ -53,7 +53,8 @@ export const jumping: Section = {
         body: (
           <p>
             leap.nvim (<Code>s</Code> plus two characters, then a label) and hop.nvim do the same job. flash replaces
-            the built-in <Code>s</Code>; <Code>cl</Code> does what <Code>s</Code> did.
+            the built-in <Code>s</Code>; <Code>cl</Code> does what <Code>s</Code> did. kickstart has no flash: there{' '}
+            <Code>s</Code> starts mini.surround's <Code>sa</Code> / <Code>sd</Code> / <Code>sr</Code> instead.
           </p>
         ),
       },
@@ -178,7 +179,8 @@ export const jumping: Section = {
           <p>
             nvim-treesitter's incremental selection grows a selection one node at a time; flash's labels skip the
             stepping. The labels start at the innermost node and go outward: <Mono>a</Mono>, <Mono>s</Mono>,{' '}
-            <Mono>d</Mono>…
+            <Mono>d</Mono>… This <Code>S</Code> is LazyVim's; in kickstart, with no flash, <Code>S</Code> is still
+            Vim's <Code>cc</Code>.
           </p>
         ),
       },
