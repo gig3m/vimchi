@@ -205,7 +205,7 @@ export function Practice(p: Props) {
       else if (action === 'next') p.onNext();
       else if (action === 'stats') p.onStats();
       else if (action === 'scroll-down' || action === 'scroll-up') {
-        frame.current?.querySelector('.better-ways')?.scrollBy({ top: action === 'scroll-down' ? 60 : -60, behavior: 'smooth' });
+        frame.current?.querySelector('.better-ways')?.scrollBy({ top: action === 'scroll-down' ? 60 : -60 });
       }
       return;
     }
@@ -275,6 +275,8 @@ export function Practice(p: Props) {
 
   return (
     <div ref={frame} className={'practice' + (fullscreen ? ' fullscreen' : '')}>
+      {/* Touch screens only (CSS): the editor is a focusable div, so no on-screen keyboard comes up. */}
+      <p className="touch-note">Practice needs a hardware keyboard: the on-screen keyboard of a phone or tablet does not open here.</p>
       <div
         ref={ref}
         tabIndex={0}
@@ -342,10 +344,7 @@ export function Practice(p: Props) {
 
         {!focused && !v.done && (
           <div className="focus-hint" onMouseDown={e => { e.preventDefault(); ref.current?.focus({ preventScroll: true }); }}>
-            <span>
-              Click to focus the editor
-              <small className="touch-note">vimchi needs a hardware keyboard: a phone or tablet's on-screen keyboard will not open here.</small>
-            </span>
+            <span>Click to focus the editor</span>
           </div>
         )}
       </div>
