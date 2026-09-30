@@ -40,6 +40,9 @@ export const jumping: Section = {
             Two letters are usually enough. The nearest matches get the easiest labels, and no label is ever a letter
             that could continue what you're typing, so you can keep typing until the label appears.
           </p>
+          <p>
+            flash is on in every lesson here, as it is in LazyVim, so <Code>s</Code> jumps wherever you practise.
+          </p>
         </>
       ),
       practice: total => (
@@ -54,7 +57,8 @@ export const jumping: Section = {
           <p>
             leap.nvim (<Code>s</Code> plus two characters, then a label) and hop.nvim do the same job. flash replaces
             the built-in <Code>s</Code>; <Code>cl</Code> does what <Code>s</Code> did. kickstart has no flash: there{' '}
-            <Code>s</Code> starts mini.surround's <Code>sa</Code> / <Code>sd</Code> / <Code>sr</Code> instead.
+            <Code>s</Code> starts mini.surround's <Code>sa</Code> / <Code>sd</Code> / <Code>sr</Code> instead, which
+            LazyVim moves to <Code>gsa</Code> / <Code>gsd</Code> / <Code>gsr</Code>.
           </p>
         ),
       },
