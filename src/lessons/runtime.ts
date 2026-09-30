@@ -268,10 +268,13 @@ export class Session {
     this.target = r.goal.cursor ?? null;
     this.roundKeys = 0;
     this.carryExtra = 0;
-    // Leave the cursor where the learner is, rather than making them find it again.
-    if (carry && this.carryCursor && prev && !setup.init && prev.buf.name === this.vim.buf.name && prev.buf.text() === this.vim.buf.text() && this.vim.mode === 'normal') {
+    // Leave the cursor where the learner is, rather than making them find it again. Not when the
+    // round sets up folds: its cursor was placed against them, and a carried one can land hidden
+    // inside a closed fold, where the reference keys no longer work.
+    const carryLine = prev ? Math.min(prev.cursor.line, this.vim.buf.lineCount - 1) : 0;
+    if (carry && this.carryCursor && prev && !setup.init && !setup.folds?.length && this.vim.closedFoldAt(carryLine) === null && prev.buf.name === this.vim.buf.name && prev.buf.text() === this.vim.buf.text() && this.vim.mode === 'normal') {
       const start = { ...this.vim.cursor };
-      const line = Math.min(prev.cursor.line, this.vim.buf.lineCount - 1);
+      const line = carryLine;
       const col = Math.min(prev.cursor.col, Math.max(0, this.vim.line(line).length - 1));
       this.vim.win.cursor = { line, col };
       this.vim.win.want = col;

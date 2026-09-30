@@ -548,8 +548,7 @@ export const screenMovement: Section = {
             <Code>C-y</Code> scrolls up one line. A count scrolls that many: <Code>5C-e</Code>.
           </p>
           <p>
-            The cursor stays put, on its line and, because Neovim's default is <Code>nostartofline</Code>, in its
-            column. Only when its line would leave the screen does it move, to the nearest edge. Use them to see a
+            The cursor stays put, on its line and in its column. Only when its line would leave the screen does it move, to the nearest edge. Use them to see a
             few more lines above or below without losing your place.
           </p>
         </>
@@ -564,7 +563,7 @@ export const screenMovement: Section = {
         title: 'With scrolloff',
         body: (
           <p>
-            If your config sets <Code>scrolloff</Code> (8 is popular), the cursor is pushed along once it comes within
+            If your config sets <Code>scrolloff</Code> (kickstart sets 10, LazyVim 4), the cursor is pushed along once it comes within
             that many lines of the edge, not only at the edge.
           </p>
         ),

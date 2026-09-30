@@ -4,6 +4,7 @@ import { flushOutbox, loadOutbox, pushOutbox, removeOutbox, resetOutboxMirror, t
 
 const A = 'alice', B = 'bob';
 import type { Run } from '../store';
+import { MAX_RUN_TIME } from '../store';
 
 /** vitest runs in node: a minimal localStorage stand-in. */
 const mem = new Map<string, string>();
@@ -21,6 +22,14 @@ describe('outbox', () => {
     expect(loadOutbox(A).map(r => r.at)).toEqual([1, 2]);
     removeOutbox(A, run(1));
     expect(loadOutbox(A).map(r => r.at)).toEqual([2]);
+  });
+  it('flush clamps a stored run over the server limit instead of sending it as is', async () => {
+    pushOutbox(A, { ...run(1), time: 30 * 60 * 60 * 1000 });
+    const sent: number[] = [];
+    const r = await flushOutbox(A, async run => { sent.push(run.time); });
+    expect(sent).toEqual([MAX_RUN_TIME]);
+    expect(r.status).toBe('ok');
+    expect(loadOutbox(A)).toEqual([]);
   });
   it('flush removes what the server accepted and keeps what it did not', async () => {
     pushOutbox(A, run(1)); pushOutbox(A, run(2)); pushOutbox(A, run(3));

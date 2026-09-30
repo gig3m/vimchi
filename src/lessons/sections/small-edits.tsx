@@ -330,8 +330,8 @@ export const smallEdits: Section = {
           <BeforeAfter
             lines={['const port = 3000;']}
             cursor={[0, 13]}
-            keys="ciw8080<Esc>uciw3001<Esc>g-"
-            caption={<>Here <Code>u</Code> would give back 3000; <Code>g-</Code> goes to the state before 3001, which was 8080.</>}
+            keys="r8ur4g-"
+            caption={<>Here <Code>u</Code> would give back 3000; <Code>g-</Code> goes to the state before 4000, which was 8000.</>}
           />
           <p>
             Use it when you undid something, typed on, and then wanted the undone version after all.

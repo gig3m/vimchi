@@ -196,9 +196,9 @@ export const git: Section = {
         title: 'Look before you stage',
         body: (
           <p>
-            <Code>Space ghp</Code> previews the hunk in a float. kickstart keeps gitsigns' README keys,{' '}
-            <Code>Space hp</Code>, <Code>Space hs</Code> and <Code>Space hr</Code>; in visual mode staging takes just the
-            selected lines.
+            LazyVim's <Code>Space ghp</Code> previews the hunk inline, in the buffer. kickstart keeps gitsigns' README
+            keys: <Code>Space hp</Code> previews it in a float, <Code>Space hs</Code> stages and <Code>Space hr</Code>{' '}
+            resets; in visual mode staging takes just the selected lines.
           </p>
         ),
       },
