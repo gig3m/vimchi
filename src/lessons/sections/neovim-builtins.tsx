@@ -201,7 +201,7 @@ export const neovimBuiltins: Section = {
         base: { name: 'checkout.ts' },
         rounds: [
           {
-            prompt: 'Comment out the debug log.',
+            prompt: 'Comment out the console.log line.',
             setup: {
               text: ['export function checkout(order: Order) {', '  console.log(order);', '  return submit(order);', '}'],
               cursor: { line: 1, col: 2 },
@@ -210,7 +210,7 @@ export const neovimBuiltins: Section = {
             solution: 'gcc',
           },
           {
-            prompt: 'Turn off the whole block of options.',
+            prompt: 'Comment out the three lines below the blank one.',
             setup: {
               name: 'options.lua',
               text: ['vim.opt.number = true', '', 'vim.opt.wrap = false', 'vim.opt.list = true', 'vim.opt.colorcolumn = "100"'],
@@ -222,7 +222,7 @@ export const neovimBuiltins: Section = {
             solution: 'gcip',
           },
           {
-            prompt: 'Bring the commented-out retry loop back.',
+            prompt: 'Uncomment the three commented-out lines.',
             setup: {
               text: [
                 'async function send(req: Request) {',
@@ -259,7 +259,7 @@ export const neovimBuiltins: Section = {
             solution: 'Vjgc',
           },
           {
-            prompt: 'Comment out the three export lines.',
+            prompt: 'Comment out the cursor line and the two below it.',
             setup: {
               name: '.zshrc',
               text: ['export EDITOR=nvim', 'export GOPATH="$HOME/go"', 'export PATH="$GOPATH/bin:$PATH"', 'export NODE_ENV=development', 'alias vim=nvim'],
@@ -291,7 +291,8 @@ export const neovimBuiltins: Section = {
       intro: (
         <>
           <p>
-            <Code>grn</Code> renames the symbol under the cursor everywhere it's used. Neovim prompts{' '}
+            <Code>grn</Code> renames the symbol under the cursor (a variable, function or type name) everywhere it's
+            used. Neovim prompts{' '}
             <Mono>New Name:</Mono> with the old name filled in; edit it and press <Code>enter</Code>.
           </p>
           <p>
@@ -476,7 +477,7 @@ export const neovimBuiltins: Section = {
               solution: ']dgra<CR>',
             },
             {
-              prompt: 'Convert the concatenation to a template string.',
+              prompt: 'Open the code actions and pick "Convert to template string".',
               setup: {
                 name: 'greet.ts',
                 text: greet,
@@ -494,7 +495,7 @@ export const neovimBuiltins: Section = {
               solution: 'gra<CR>',
             },
             {
-              prompt: 'req is unused. Keep the parameter but prefix it with an underscore (the second action).',
+              prompt: 'Jump back to the hint on req, then pick the second action, which adds an underscore.',
               setup: {
                 name: 'server.ts',
                 text: handler,
@@ -511,7 +512,7 @@ export const neovimBuiltins: Section = {
               solution: '[dgraj<CR>',
             },
             {
-              prompt: 'res is a Promise. Let the server add the missing await.',
+              prompt: 'Jump to the error on json and apply the fix that adds await.',
               setup: {
                 name: 'users.ts',
                 text: load,
@@ -580,9 +581,9 @@ export const neovimBuiltins: Section = {
         title: 'On save, and how it differs from =',
         body: (
           <p>
-            LazyVim formats on save; kickstart only for the filetypes you list in <Code>format_on_save</Code>. So
-            mostly you meet it through <Code>:w</Code>; LazyVim puts the key on <Code>Space cf</Code>. The <Code>=</Code> operator only re-indents, with Vim's own rules, and never touches
-            the spacing inside a line.
+            LazyVim formats on save, so there you mostly meet it through <Code>:w</Code>. kickstart formats on save
+            only the filetypes you enable in its <Code>format_on_save</Code> list. The <Code>=</Code> operator only
+            re-indents, with Vim's own rules, and never touches the spacing inside a line.
           </p>
         ),
       },

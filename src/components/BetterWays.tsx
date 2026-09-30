@@ -67,7 +67,7 @@ export function BetterWays({ report, unitLabel }: { report: Report; unitLabel: (
           {report.reference.map((r, i) => (
             <li key={i}>
               {r.kind === 'item'
-                ? <>{unitLabel(r.unit)}: <span className="bw-saves">par {r.par}, you {r.you}</span></>
+                ? <>{unitLabel(r.unit)}: <span className="bw-saves">par {r.par}, you used {r.you}</span></>
                 : <>{unitLabel(r.unit)}: {r.chips ? <Keys chips={r.chips} /> : <span className="bw-text">(uses a key from a later lesson)</span>}{' '}
                   <span className="bw-saves">par {r.par}, you used {r.you}</span></>}
             </li>
