@@ -1,0 +1,10 @@
+delete-words r1	sol="wdw" (3)	alt=dw	chips=d w
+word-objects r3	sol="k$daw" (5)	alt=bXD	chips=iw aw
+visual-lines r2	sol="VjjjJ" (5)	alt=JJJ	chips=V
+search-as-motion r1	sol="d/return<CR>" (9)	alt=Jdd	chips=d/ c/
+search-as-motion r4	sol="d/\"version<CR>" (11)	alt=Jdd	chips=d/ c/
+opening-files r5	sol=":e!<CR>" (4)	alt=P	chips=:e
+visual-ranges r4	sol="vip:j<CR>" (6)	alt=JkJ	chips='<,'> gv
+cmdline-word r4	sol=":s/<C-r><C-w>/username/<CR>" (16)	alt=ll~	chips=C-r C-w C-r C-a
+commenting r6	sol="gcc" (3)	alt=dw	chips=gcc gc
+flash-motions r2	sol="ds.fa" (5)	alt=kdd	chips=d s

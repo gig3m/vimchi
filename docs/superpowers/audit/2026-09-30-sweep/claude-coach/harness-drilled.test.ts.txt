@@ -1,0 +1,24 @@
+// SWEEP SCRATCH (audit 2026-09-30, coach front). Delete after use.
+import { it } from 'vitest';
+import { writeFileSync } from 'node:fs';
+import { LESSONS, SECTIONS, sectionOf } from '../index';
+import { coachable, tokenize } from '../../coach/vocab';
+
+const OUT = '/tmp/claude-1000/-home-kyle-projects-vimchi/638a614d-62ff-4893-9d1b-f4608b9fcb46/scratchpad/';
+const MOTION_KEYS = ['h', 'j', 'k', 'l', 'w', 'b', 'e', 'W', 'B', 'E', 'f', 't', 'F', 'T', ';', ',', '0', '^', '$', 'G', 'gg', '/', 'n', 'N', '*', '%', '{', '}'];
+// Characters commonly typed as f/t targets or search text that collide with drilled tokens.
+const ARG_CHARS = ['a', 'i', 'o', 's', 'e', 'd', 'c', 'p', 'y', ',', ';', '(', ')', '"', "'", '.'];
+
+it('drilled sets', () => {
+  const rows: string[] = [];
+  for (const sec of SECTIONS) {
+    const first = sec.lessons[0];
+    if (!first || !coachable(first.id) || first.challenge.kind !== 'rounds') continue;
+    const drilled = new Set(sectionOf(first.id).lessons.flatMap(l => l.chips.flatMap(tokenize)));
+    const m = MOTION_KEYS.filter(k => drilled.has(k));
+    const a = ARG_CHARS.filter(k => drilled.has(k));
+    rows.push(`${sec.id}\tmotion keys that silence a run: ${m.join(' ') || '-'}\targ chars that silence: ${a.join(' ') || '-'}`);
+  }
+  writeFileSync(OUT + 'drilled.txt', rows.join('\n'));
+  void LESSONS;
+});

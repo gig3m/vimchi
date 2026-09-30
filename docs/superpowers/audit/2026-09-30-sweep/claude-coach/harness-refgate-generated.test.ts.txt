@@ -1,0 +1,69 @@
+// SWEEP SCRATCH (audit 2026-09-30, coach front). Delete after use.
+import { it } from 'vitest';
+import { writeFileSync } from 'node:fs';
+import { CHALLENGES } from '../../challenges';
+import { generate } from '../../challenges/generate';
+import { SECTIONS } from '../index';
+import { Session, solutionKeys } from '../runtime';
+import { parseKeys } from '../../vim/keys';
+import { coach, coachSegment, nudgeText } from '../../coach';
+import { segment } from '../../coach/segment';
+import { coachable, taughtBy, tokenize, usesAllowed } from '../../coach/vocab';
+
+const OUT = '/tmp/claude-1000/-home-kyle-projects-vimchi/638a614d-62ff-4893-9d1b-f4608b9fcb46/scratchpad/';
+
+it('reference gate', () => {
+  let total = 0, hidden = 0;
+  const rows: string[] = [];
+  for (const sec of SECTIONS) for (const l of sec.lessons) {
+    if (!coachable(l.id) || l.challenge.kind !== 'rounds') continue;
+    const taught = taughtBy(l.id);
+    l.challenge.rounds.forEach((r, i) => {
+      total++;
+      const toks = solutionKeys(r.solution).flatMap(k => tokenize(k));
+      if (!usesAllowed(toks, taught)) { hidden++; rows.push(`${l.id} r${i}\t${r.solution}\tmissing=${[...new Set(toks.filter(t => !taught.has(t)))].join(' ')}`); }
+    });
+  }
+  writeFileSync(OUT + 'refgate.txt', `total ${total} hidden ${hidden}\n` + rows.join('\n'));
+});
+
+it('generated novice', () => {
+  const out: string[] = [];
+  for (const ch of CHALLENGES) for (const seed of [1, 2, 3]) {
+    const s = new Session(ch.challenge, { seed });
+    const g = generate(ch.challenge, seed);
+    let t = 0; const typed: string[] = []; let hints = 0; const hintTexts: string[] = [];
+    const st = { segCount: 0, nudgedEnd: -1 };
+    const feed = (k: string) => {
+      if (s.done) return; s.key(k, (t += 50)); typed.push(k);
+      // live
+      const log = s.log(); const segs = segment(log); const last = segs.length - 1;
+      const settled = log[log.length - 1].after.mode === 'normal' && log[log.length - 1].after.pending === 0;
+      const cands: number[] = [];
+      if (segs.length > st.segCount && segs.length >= 2) cands.push(segs.length - 2);
+      if (settled || s.done) for (let i = Math.max(0, last - 2); i <= last; i++) cands.push(i);
+      st.segCount = segs.length;
+      for (const i of [...new Set(cands)]) {
+        if (log[segs[i].logEnd]?.after.pending) continue;
+        const c = coachSegment(s, ch.id, segs[i], segs, i);
+        if (!c || c.logEnd <= st.nudgedEnd) continue;
+        st.nudgedEnd = c.logEnd; hints++; if (hintTexts.length < 12) hintTexts.push(nudgeText(c)); break;
+      }
+    };
+    for (const item of g.items) {
+      // novice: j/k to the line, then 0 and l to the column
+      const cur = s.vim!.cursor;
+      const dl = item.fixAt.line - cur.line;
+      for (let n = 0; n < Math.abs(dl); n++) feed(dl > 0 ? 'j' : 'k');
+      feed('0');
+      for (let n = 0; n < item.fixAt.col; n++) feed('l');
+      for (const k of solutionKeys(item.fixKeys)) feed(k);
+    }
+    const rep = coach(s, ch.id);
+    out.push(`### ${ch.id} seed ${seed}: items ${g.items.length}, keys ${typed.length}, done=${s.done}, critiques ${rep.critiques.length} (shown 5), live hints ${hints}`);
+    out.push('  fixes: ' + g.items.map(i => `${i.kind}:${i.fixKeys}`).join(' | '));
+    for (const c of rep.critiques.slice(0, 8)) out.push(`  CRIT ${c.unit}: you ${c.you} -> ${c.better.map(b => `${b.keys} [${b.rule} ${b.saves}]`).join(' | ')}`);
+    out.push('  first live: ' + hintTexts.join(' // '));
+  }
+  writeFileSync(OUT + 'generated.txt', out.join('\n'));
+});

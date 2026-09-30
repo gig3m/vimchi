@@ -1,0 +1,95 @@
+line-ends r4	sol=j0 (2)	alt=w (1)	SHORTER	verified=true	init=false	prompt=
+line-ends r5	sol=jj$ (3)	alt=6E (2)	SHORTER	verified=true	init=false	prompt=
+line-ends r6	sol=kk0 (3)	alt=h2k (3)	equal	verified=true	init=false	prompt=
+find-char r1	sol=f( (2)	alt=4w (2)	equal	verified=true	init=false	prompt=
+find-char r2	sol=jf( (3)	alt=j8w (3)	equal	verified=true	init=false	prompt=
+find-char r3	sol=t{ (2)	alt=Wh (2)	equal	verified=true	init=false	prompt=
+find-char r4	sol=jf' (3)	alt=j6e (3)	equal	verified=true	init=false	prompt=
+find-char r5	sol=2kf] (4)	alt=k2b (3)	SHORTER	verified=true	init=false	prompt=
+find-char r6	sol=t) (2)	alt=4W (2)	equal	verified=true	init=false	prompt=
+words-big r1	sol=E (1)	alt=$ (1)	equal	verified=true	init=false	prompt=
+words-big r3	sol=W (1)	alt=w (1)	equal	verified=true	init=false	prompt=
+words-big r4	sol=4B (2)	alt=4B (2)	equal	verified=true	init=false	prompt=
+words-big r5	sol=4W (2)	alt=4W (2)	equal	verified=true	init=false	prompt=
+words-big r6	sol=3E (2)	alt=3w (2)	equal	verified=true	init=false	prompt=
+word-ends-backward r1	sol=ge (2)	alt=b (1)	SHORTER	verified=true	init=false	prompt=
+word-ends-backward r2	sol=2gE (3)	alt=kE (2)	SHORTER	verified=true	init=false	prompt=
+word-ends-backward r3	sol=gE (2)	alt=2b (2)	equal	verified=true	init=false	prompt=
+word-ends-backward r4	sol=2ge (3)	alt=2h (2)	SHORTER	verified=true	init=false	prompt=
+word-ends-backward r5	sol=2gE (3)	alt=9h (2)	SHORTER	verified=true	init=false	prompt=
+word-ends-backward r6	sol=ge (2)	alt=k$ (2)	equal	verified=true	init=false	prompt=
+first-char r2	sol=^ (1)	alt=w (1)	equal	verified=true	init=false	prompt=
+first-char r3	sol=4_ (2)	alt=6W (2)	equal	verified=true	init=false	prompt=
+first-char r5	sol=2_ (2)	alt=2W (2)	equal	verified=true	init=false	prompt=
+find-backward r1	sol=F( (2)	alt=h% (2)	equal	verified=true	init=false	prompt=
+find-backward r2	sol=T( (2)	alt=5b (2)	equal	verified=true	init=false	prompt=
+find-backward r4	sol=kFf (3)	alt=7B (2)	SHORTER	verified=true	init=false	prompt=
+find-backward r5	sol=T' (2)	alt=3b (2)	equal	verified=true	init=false	prompt=
+find-backward r6	sol=2F, (3)	alt=8b (2)	SHORTER	verified=true	init=false	prompt=
+find-backward r7	sol=jF. (3)	alt=6w (2)	SHORTER	verified=true	init=false	prompt=
+repeat-find r1	sol=f,;;; (5)	alt=j8b (3)	SHORTER	verified=true	init=false	prompt=
+repeat-find r2	sol=;;; (3)	alt=4w (2)	SHORTER	verified=false	init=true	prompt=You just typed f, — continue to the fourth comma.
+repeat-find r4	sol=; (1)	alt=% (1)	equal	verified=false	init=true	prompt=You just typed F- — keep going left.
+repeat-find r6	sol=,, (2)	alt=6w (2)	equal	verified=false	init=true	prompt=You typed F,;;; and went two commas too far. Go back.
+top-bottom r4	sol=15G (3)	alt={9k (3)	equal	verified=true	init=false	prompt=Go to line 15.
+top-bottom r6	sol=10G (3)	alt=7kH (3)	equal	verified=false	init=false	prompt=Go to line 10.
+paragraphs r2	sol=2} (2)	alt=8j (2)	equal	verified=true	init=false	prompt=
+paragraphs r5	sol=2} (2)	alt=7j (2)	equal	verified=true	init=false	prompt=
+matching-pairs r1	sol=% (1)	alt=G (1)	equal	verified=true	init=false	prompt=
+matching-pairs r4	sol=$% (2)	alt=8j (2)	equal	verified=true	init=false	prompt=
+matching-pairs r6	sol=f(;% (4)	alt=6E (2)	SHORTER	verified=true	init=false	prompt=
+half-pages r1	sol=<C-d><C-d> (2)	alt=L (1)	SHORTER	verified=true	init=false	prompt=Go to the QueueOptions type on line 13.
+half-pages r5	sol=<C-u><C-u><C-u> (3)	alt=H6k (3)	equal	verified=true	init=false	prompt=Go back up to tick() on line 56.
+half-pages r6	sol=<C-u><C-u> (2)	alt=H (1)	SHORTER	verified=true	init=false	prompt=Go up to push() on line 39.
+full-pages r4	sol=<C-b>k (2)	alt=H (1)	SHORTER	verified=true	init=false	prompt=Page back to the 2.4.0 release on line 61.
+screen-lines r7	sol=3H (2)	alt=%w (2)	equal	verified=true	init=true	prompt=
+search-backward r1	sol=?fn<CR> (4)	alt=M4w (3)	SHORTER	verified=true	init=false	prompt=
+search-backward r2	sol=?try<CR> (5)	alt=M (1)	SHORTER	verified=true	init=false	prompt=
+search-backward r3	sol=?let<CR> (5)	alt=l5k (3)	SHORTER	verified=true	init=false	prompt=
+word-under-cursor r6	sol=2* (2)	alt=6W (2)	equal	verified=true	init=false	prompt=
+search-offsets r5	sol=//e<CR> (4)	alt=5j8e (4)	equal	verified=true	init=false	prompt=The last search was "keymap". Land on its end.
+setting-marks r2	sol=`a (2)	alt=7B (2)	equal	verified=true	init=false	prompt=Jump to the exact spot of mark a.
+change-edges r1	sol=`] (2)	alt=% (1)	SHORTER	verified=true	init=true	prompt=You yanked the return object. Jump to the end of it.
+change-edges r3	sol=`[ (2)	alt=5b (2)	equal	verified=false	init=true	prompt=You replaced 5000 with a constant. Jump to its first character.
+change-edges r5	sol=`] (2)	alt=G (1)	SHORTER	verified=true	init=true	prompt=You yanked the whole function. Jump to its last character.
+previous-position r3	sol=`` (2)	alt=l (1)	SHORTER	verified=false	init=true	prompt=You jumped to the closing brace with %. Go back.
+previous-position r5	sol=`` (2)	alt=2k (2)	equal	verified=true	init=true	prompt=You searched twice. Go back to where the last search started.
+change-list r3	sol=g, (2)	alt=6E (2)	equal	verified=true	init=true	prompt=You stepped back too far. Go one change newer.
+location-list r1	sol=]l (2)	alt=4W (2)	equal	verified=true	init=true	prompt=Go to the next entry.
+jump-to-line r1	sol=:35<CR> (4)	alt=G{7B (4)	equal	verified=true	init=false	prompt=The yank highlight is on line 35. Go there.
+jump-to-line r2	sol=:14<CR> (4)	alt=jHH (3)	SHORTER	verified=false	init=false	prompt=Go to line 14.
+jump-to-line r3	sol=:$<CR> (3)	alt=G (1)	SHORTER	verified=true	init=false	prompt=Go to the last line.
+jump-to-line r4	sol=:43<CR> (4)	alt=G6B (3)	SHORTER	verified=true	init=false	prompt=The format call is on line 43.
+jump-to-line r5	sol=:22<CR> (4)	alt=kHH (3)	SHORTER	verified=false	init=false	prompt=Go to line 22.
+jump-to-line r6	sol=:8<CR> (3)	alt={H (2)	SHORTER	verified=false	init=false	prompt=Go to line 8.
+diagnostics r1	sol=]d (2)	alt=9W (2)	equal	verified=true	init=true	prompt=
+diagnostics r2	sol=]d (2)	alt=%j (2)	equal	verified=true	init=true	prompt=
+diagnostics r3	sol=[d (2)	alt=2B (2)	equal	verified=true	init=true	prompt=
+diagnostics r4	sol=2]d (3)	alt=9w (2)	SHORTER	verified=true	init=true	prompt=
+diagnostics r6	sol=3[d (3)	alt=M7w (3)	equal	verified=true	init=true	prompt=
+function-motions r1	sol=]m (2)	alt=2j (2)	equal	verified=true	init=false	prompt=
+function-motions r2	sol=]m (2)	alt=}j (2)	equal	verified=true	init=false	prompt=
+function-motions r3	sol=[m (2)	alt=9B (2)	equal	verified=true	init=false	prompt=
+function-motions r4	sol=]m (2)	alt=6W (2)	equal	verified=true	init=false	prompt=
+function-motions r5	sol=2[m (3)	alt=k8B (3)	equal	verified=true	init=false	prompt=
+function-motions r6	sol=3]m (3)	alt=G6B (3)	equal	verified=true	init=false	prompt=
+flash-jump r1	sol=scrs (4)	alt=M7W (3)	SHORTER	verified=true	init=false	prompt=
+flash-jump r2	sol=sths (4)	alt=}7B (3)	SHORTER	verified=true	init=false	prompt=
+flash-jump r3	sol=sloa (4)	alt=5B8k (4)	equal	verified=true	init=false	prompt=
+flash-jump r4	sol=sinj (4)	alt=G6b (3)	SHORTER	verified=true	init=false	prompt=
+flash-jump r5	sol=sErs (4)	alt=2B (2)	SHORTER	verified=true	init=false	prompt=
+flash-jump r6	sol=sdbd (4)	alt=H9W (3)	SHORTER	verified=true	init=false	prompt=
+gitsigns-hunks r1	sol=]h (2)	alt=5j (2)	equal	verified=true	init=true	prompt=
+gitsigns-hunks r2	sol=2]h (3)	alt=j9j (3)	equal	verified=true	init=true	prompt=
+gitsigns-hunks r4	sol=]h (2)	alt=H (1)	SHORTER	verified=true	init=true	prompt=
+gitsigns-hunks r5	sol=[c[c (4)	alt=H (1)	SHORTER	verified=true	init=true	prompt=
+delete-words r1	sol="wdw" (3)	alt=dw	chips=d w	verified=true	init=false	prompt=Delete the second "await".
+word-objects r3	sol="k$daw" (5)	alt=bXD	chips=iw aw	verified=true	init=false	prompt=Delete "again" at the end of the line.
+visual-lines r2	sol="VjjjJ" (5)	alt=JJJ	chips=V	verified=true	init=false	prompt=Join the import list onto one line.
+search-as-motion r1	sol="d/return<CR>" (9)	alt=Jdd	chips=d/ c/	verified=true	init=false	prompt=Delete the debug lines, up to "return".
+search-as-motion r4	sol="d/\"version<CR>" (11)	alt=Jdd	chips=d/ c/	verified=true	init=false	prompt=Delete the fields before "version".
+opening-files r5	sol=":e!<CR>" (4)	alt=P	chips=:e	verified=true	init=true	prompt=You deleted the wrong lines. Reload the file from disk.
+visual-ranges r4	sol="vip:j<CR>" (6)	alt=JkJ	chips='<,'> gv	verified=true	init=false	prompt=Join the paragraph into one line.
+cmdline-word r4	sol=":s/<C-r><C-w>/username/<CR>" (16)	alt=ll~	chips=C-r C-w C-r C-a	verified=true	init=false	prompt=Rename the userName key to username.
+commenting r6	sol="gcc" (3)	alt=dw	chips=gcc gc	verified=true	init=false	prompt=Uncomment the colorscheme line.
+flash-motions r2	sol="ds.fa" (5)	alt=kdd	chips=d s	verified=true	init=false	prompt=Delete the filter step, backwards from .map.

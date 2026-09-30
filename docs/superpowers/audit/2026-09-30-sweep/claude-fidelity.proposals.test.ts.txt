@@ -1,0 +1,78 @@
+import { it } from 'vitest';
+import { writeFileSync } from 'node:fs';
+import { createVim, goalMet, solutionKeys } from '../runtime';
+type P = { l: string; p: string; name: string; text: string[]; cursor: { line: number; col: number }; goal: string[]; sol: string };
+const R: P[] = [
+  // open-lines
+  { l: 'open-lines', p: 'Put a blank line between the two functions.', name: 'math.ts', text: ['function one() {', '  return 1;', '}', 'function two() {', '  return 2;', '}'], cursor: { line: 1, col: 4 }, goal: ['function one() {', '  return 1;', '}', '', 'function two() {', '  return 2;', '}'], sol: 'jo<Esc>' },
+  { l: 'open-lines', p: 'Give the heading a blank line above and below.', name: 'README.md', text: ['# vimchi', 'A browser Vim tutor.', '## Usage', 'Run npm run dev.'], cursor: { line: 2, col: 4 }, goal: ['# vimchi', 'A browser Vim tutor.', '', '## Usage', '', 'Run npm run dev.'], sol: 'O<Esc>jo<Esc>' },
+  { l: 'open-lines', p: 'Close the table.', name: 'init.lua', text: ['local M = {', '  x = 1,', '  y = 2,', 'return M'], cursor: { line: 1, col: 3 }, goal: ['local M = {', '  x = 1,', '  y = 2,', '}', 'return M'], sol: 'kO}<Esc>' },
+  { l: 'open-lines', p: 'Add an empty task under "Tag".', name: 'TODO.md', text: ['## This week', '- [ ] Write the migration', '- [ ] Tag the release', ''], cursor: { line: 2, col: 8 }, goal: ['## This week', '- [ ] Write the migration', '- [ ] Tag the release', '- [ ] ', ''], sol: 'o- [ ] <Esc>' },
+  { l: 'open-lines', p: 'Mark the query with a TODO above it (keep the indent).', name: 'user.ts', text: ['async function getUser(id: string) {', '  const row = await db.user.find(id);', '  return row;', '}'], cursor: { line: 1, col: 20 }, goal: ['async function getUser(id: string) {', '  // TODO', '  const row = await db.user.find(id);', '  return row;', '}'], sol: 'O// TODO<Esc>' },
+  // substitute
+  { l: 'substitute', p: 'Make every bullet a dash.', name: 'notes.md', text: ['* Write', '* Test', '* Ship'], cursor: { line: 0, col: 0 }, goal: ['- Write', '- Test', '- Ship'], sol: 's-<Esc>js-<Esc>js-<Esc>' },
+  { l: 'substitute', p: 'Change "14px" to "1rem".', name: 'theme.ts', text: ['export const body = {', "  fontSize: '14px',", '  lineHeight: 1.5,', '};'], cursor: { line: 1, col: 13 }, goal: ['export const body = {', "  fontSize: '1rem',", '  lineHeight: 1.5,', '};'], sol: '4s1rem<Esc>' },
+  { l: 'substitute', p: 'The stray print should be the end of the if.', name: 'run.lua', text: ['if ok then', '  run()', "print('x')", 'return ok'], cursor: { line: 0, col: 3 }, goal: ['if ok then', '  run()', 'end', 'return ok'], sol: 'jjSend<Esc>' },
+  // change-lines
+  { l: 'change-lines', p: 'Turn every "yes" into "no".', name: 'config.yml', text: ['debug: yes', 'verbose: yes', 'color: yes'], cursor: { line: 0, col: 0 }, goal: ['debug: no', 'verbose: no', 'color: no'], sol: 'fyCno<Esc>j0fyCno<Esc>j0fyCno<Esc>' },
+  { l: 'change-lines', p: 'The debug line should close the function.', name: 'sum.ts', text: ['function one() {', '  return 1;', "console.log('here');", ''], cursor: { line: 0, col: 0 }, goal: ['function one() {', '  return 1;', '}', ''], sol: 'jjcc}<Esc>' },
+  { l: 'change-lines', p: 'Set the port to 8080 and drop the comment.', name: 'server.ts', text: ['const host = "localhost";', 'const port = 3000; // TODO', 'serve(host, port);'], cursor: { line: 0, col: 0 }, goal: ['const host = "localhost";', 'const port = 8080;', 'serve(host, port);'], sol: 'jf3C8080;<Esc>' },
+  { l: 'change-lines', p: 'Replace the call with a bare return (keep the indent).', name: 'guard.ts', text: ['if (!user) {', '  redirect("/login", { replace: true });', '}'], cursor: { line: 0, col: 0 }, goal: ['if (!user) {', '  return;', '}'], sol: 'jf,ccreturn;<Esc>' },
+  // reaching
+  { l: 'reaching-objects', p: 'Simplify the condition to ok.', name: 'guard.ts', text: ['function guard(ok: boolean) {', "  if (user.role === 'admin') {", '    next();', '  }', '}'], cursor: { line: 1, col: 0 }, goal: ['function guard(ok: boolean) {', '  if (ok) {', '    next();', '  }', '}'], sol: 'ci(ok<Esc>' },
+  { l: 'reaching-objects', p: 'Empty all three test names.', name: 'cart.test.ts', text: ["it('TODO one', () => {});", "it('TODO two', () => {});", "it('TODO three', () => {});"], cursor: { line: 0, col: 0 }, goal: ["it('', () => {});", "it('', () => {});", "it('', () => {});"], sol: "di'jdi'jdi'" },
+  // text-objects-quotes
+  { l: 'text-objects-quotes', p: 'Name it "vimchi" and point main at "src".', name: 'package.json', text: ['{', '  "name": "vim-tutor-draft",', '  "main": "dist/index.js"', '}'], cursor: { line: 0, col: 0 }, goal: ['{', '  "name": "vimchi",', '  "main": "src"', '}'], sol: 'jci"vimchi<Esc>jci"src<Esc>' },
+  // function-class-objects
+  { l: 'function-class-objects', p: 'Empty the body of isAdmin.', name: 'cart.ts', text: ['export function isAdmin(user: User): boolean {', '  const roles = user.roles ?? [];', "  return roles.includes('admin');", '}'], cursor: { line: 1, col: 10 }, goal: ['export function isAdmin(user: User): boolean {', '}'], sol: 'dif' },
+  { l: 'function-class-objects', p: 'Duplicate the add() method above itself.', name: 'cart.ts', text: ['class Cart {', '  add(item: Item) {', '    this.items.push(item);', '  }', '}'], cursor: { line: 2, col: 8 }, goal: ['class Cart {', '  add(item: Item) {', '    this.items.push(item);', '  }', '  add(item: Item) {', '    this.items.push(item);', '  }', '}'], sol: 'yafP' },
+  { l: 'function-class-objects', p: 'Indent the body one more level.', name: 'cart.ts', text: ['function total(xs) {', '  let t = 0;', '  for (const x of xs) t += x;', '  return t;', '}'], cursor: { line: 2, col: 6 }, goal: ['function total(xs) {', '    let t = 0;', '    for (const x of xs) t += x;', '    return t;', '}'], sol: '>if' },
+  // back-to-edit
+  { l: 'back-to-edit', p: 'Finish the call you left: close it with ");".', name: 'http.ts', text: ['const res = await fetch(url);', 'if (!res.ok) throw new HttpError(res.status', 'return res.json();'], cursor: { line: 0, col: 0 }, goal: ['const res = await fetch(url);', 'if (!res.ok) throw new HttpError(res.status);', 'return res.json();'], sol: 'A<Esc>' },
+  // csv macro
+  { l: 'boss-csv-to-object', p: 'Turn each row into [id, name],', name: 'users.ts', text: ['const users = [', '1,ada', '2,bob', '3,cy', '];'], cursor: { line: 1, col: 0 }, goal: ['const users = [', "[1, 'ada'],", "[2, 'bob'],", "[3, 'cy'],", '];'], sol: "qaI[<Esc>f,a '<Esc>A'],<Esc>jq2@a" },
+  { l: 'boss-csv-to-object', p: 'Three columns: [id, name, role],', name: 'users.ts', text: ['const users = [', '1,ada,admin', '2,bob,dev', '3,cy,ops', '];'], cursor: { line: 1, col: 0 }, goal: ['const users = [', "[1, 'ada', 'admin'],", "[2, 'bob', 'dev'],", "[3, 'cy', 'ops'],", '];'], sol: "qaI[<Esc>f,a '<Esc>f,i'<Esc>la '<Esc>A'],<Esc>jq2@a" },
+  // paste-while-typing
+  { l: 'paste-while-typing', p: 'Fill both blanks in the log with the word under the cursor.', name: 'cart.ts', text: ['const subtotal = sum(lines);', "console.log('', );"], cursor: { line: 0, col: 8 }, goal: ['const subtotal = sum(lines);', "console.log('subtotal', subtotal);"], sol: "yiwjf'a<C-r>0<Esc>f a<C-r>0<Esc>" },
+  { l: 'paste-while-typing', p: 'Put the key name inside get().', name: 'cfg.ts', text: ['const key = timeoutMs;', "const t = settings.get('');", 'start(t);'], cursor: { line: 0, col: 12 }, goal: ['const key = timeoutMs;', "const t = settings.get('timeoutMs');", 'start(t);'], sol: "yiwjf'a<C-r>0<Esc>" },
+  // insert-delete-word
+  { l: 'insert-delete-word', p: 'You typed "totl" after formatPrice(. Erase it and type sum.', name: 'cart.ts', text: ['const sum = total(lines);', 'return formatPrice(totl', '}'], cursor: { line: 1, col: 23 }, goal: ['const sum = total(lines);', 'return formatPrice(sum);', '}'], sol: 'A<C-w>sum);<Esc>' },
+];
+it('proposals', () => {
+  const rows: string[] = [];
+  for (const r of R) {
+    const vim = createVim({ text: r.text, name: r.name, cursor: r.cursor });
+    const pre = goalMet(vim, { text: r.goal });
+    let ins = 0, n = 0;
+    for (const k of solutionKeys(r.sol)) { n++; if ((vim.mode === 'insert' || vim.mode === 'replace') && /^(.|<Space>)$/.test(k)) ins++; vim.feed(k); }
+    const ok = goalMet(vim, { text: r.goal });
+    rows.push(`${ok && !pre ? 'OK  ' : 'FAIL'} ${r.l} | ${r.sol} | keys ${n} typed ${ins}${ok ? '' : ' GOT ' + JSON.stringify(vim.buf.lines) + ' mode ' + vim.mode}`);
+  }
+  writeFileSync(process.env.OUT!, rows.join('\n'));
+});
+import { it } from 'vitest';
+import { writeFileSync } from 'node:fs';
+import { createVim, goalMet, solutionKeys } from '../runtime';
+type P = { l: string; name: string; text: string[]; cursor: { line: number; col: number }; goal: string[]; sol: string; plugins?: string[]; init?: string };
+const R: P[] = [
+  { l: 'open-lines', name: 'init.lua', text: ['local M = {', '  x = 1,', '  y = 2,', 'return M'], cursor: { line: 1, col: 3 }, goal: ['local M = {', '  x = 1,', '  y = 2,', '}', 'return M'], sol: 'jjO}<Esc>' },
+  { l: 'change-lines', name: 'sum.ts', text: ['function one() {', '  return 1;', "console.log('here');", 'one();'], cursor: { line: 0, col: 0 }, goal: ['function one() {', '  return 1;', '}', 'one();'], sol: 'jjcc}<Esc>' },
+  { l: 'text-objects-quotes', name: 'package.json', text: ['{', '  "name": "vim-tutor-draft",', '  "main": "dist/index.js"', '}'], cursor: { line: 0, col: 0 }, goal: ['{', '  "name": "vimchi",', '  "main": "src"', '}'], sol: 'jfvci"vimchi<Esc>jfdci"src<Esc>' },
+  { l: 'function-class-objects', plugins: ['mini-ai'], name: 'cart.ts', text: ['export function isAdmin(user: User): boolean {', '  const roles = user.roles ?? [];', "  return roles.includes('admin');", '}'], cursor: { line: 1, col: 10 }, goal: ['export function isAdmin(user: User): boolean {', '}'], sol: 'dif' },
+  { l: 'function-class-objects', plugins: ['mini-ai'], name: 'cart.ts', text: ['class Cart {', '  add(item: Item) {', '    this.items.push(item);', '  }', '}'], cursor: { line: 2, col: 8 }, goal: ['class Cart {', '  add(item: Item) {', '    this.items.push(item);', '  }', '  add(item: Item) {', '    this.items.push(item);', '  }', '}'], sol: 'yafP' },
+  { l: 'function-class-objects', plugins: ['mini-ai'], name: 'cart.ts', text: ['class Cart {', '  add(item: Item) {', '    this.items.push(item);', '  }', '}'], cursor: { line: 2, col: 8 }, goal: ['class Cart {', '  add(item: Item) {', '    this.items.push(item);', '  }', '', '  add(item: Item) {', '    this.items.push(item);', '  }', '}'], sol: 'yafP' },
+  { l: 'function-class-objects', plugins: ['mini-ai'], name: 'cart.ts', text: ['function total(xs) {', '  let t = 0;', '  for (const x of xs) t += x;', '  return t;', '}'], cursor: { line: 2, col: 6 }, goal: ['function total(xs) {', '    let t = 0;', '    for (const x of xs) t += x;', '    return t;', '}'], sol: '>if' },
+  { l: 'back-to-edit', name: 'http.ts', text: ['import { HttpError } from "./errors";', 'const res = await fetch(url);', 'if (!res.ok)', 'return res.json();'], cursor: { line: 2, col: 0 }, init: 'A throw new HttpError(res.status<Esc>gg', goal: ['import { HttpError } from "./errors";', 'const res = await fetch(url);', 'if (!res.ok) throw new HttpError(res.status);', 'return res.json();'], sol: 'gi);<Esc>' },
+];
+it('proposals2', () => {
+  const rows: string[] = [];
+  for (const r of R) {
+    const vim = createVim({ text: r.text, name: r.name, cursor: r.cursor, plugins: r.plugins, init: r.init ? (v => v.feedKeys(r.init!)) : undefined });
+    const pre = goalMet(vim, { text: r.goal });
+    let ins = 0, n = 0;
+    for (const k of solutionKeys(r.sol)) { n++; if ((vim.mode === 'insert' || vim.mode === 'replace') && /^(.|<Space>)$/.test(k)) ins++; vim.feed(k); }
+    const ok = goalMet(vim, { text: r.goal });
+    rows.push(`${ok && !pre ? 'OK  ' : 'FAIL'} ${r.l} | ${r.sol} | keys ${n} typed ${ins}${ok ? '' : ' GOT ' + JSON.stringify(vim.buf.lines) + ' mode ' + vim.mode}`);
+  }
+  writeFileSync(process.env.OUT!, rows.join('\n'));
+});

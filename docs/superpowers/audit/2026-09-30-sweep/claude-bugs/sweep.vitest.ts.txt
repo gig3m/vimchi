@@ -1,0 +1,104 @@
+// Scratch sweep for the audit (not part of the repo suite). Run:
+//   npx vitest run --root . docs/superpowers/audit/2026-09-30-sweep/claude-bugs/sweep.test.ts
+import { it } from 'vitest';
+import { writeFileSync } from 'node:fs';
+import { SECTIONS } from '../../../../../src/lessons';
+import { createVim, mergeSetup, goalMet, solutionKeys } from '../../../../../src/lessons/runtime';
+import type { Round, RoundsChallenge } from '../../../../../src/lessons/types';
+
+const OUT = 'docs/superpowers/audit/2026-09-30-sweep/claude-bugs/';
+const chipKey = (c: string) => c.replace(/^C-(.)$/, '<C-$1>').replace(/^A-(.)$/, '<A-$1>');
+
+it('sweep', () => {
+  const cursorAlt: string[] = [], noChip: string[] = [], quoted: string[] = [], editAlt: string[] = [], filesLong: string[] = [];
+  for (const sec of SECTIONS) for (const l of sec.lessons) {
+    const c = l.challenge;
+    if (c.kind !== 'rounds') continue;
+    const chips = l.chips.map(chipKey);
+    c.rounds.forEach((r: Round, i) => {
+      const tag = `${l.id} r${i + 1}`;
+      const setup = mergeSetup(c.base, r.setup);
+      const solLen = solutionKeys(r.solution).length;
+      // 1. solution uses no chip key at all
+      if (!chips.some(k => r.solution.includes(k))) noChip.push(`${tag}\tsol=${JSON.stringify(r.solution)}\tchips=${l.chips.join(' ')}`);
+      // 2. files (other buffers) with long lines
+      for (const [f, t] of Object.entries(setup.files ?? {})) for (const ln of t.split('\n')) if (ln.length > 60) filesLong.push(`${tag}\t${f}\t${ln.length}\t${ln}`);
+      // 3. quoted text in prompt not present anywhere
+      if (r.prompt) {
+        const hay = [JSON.stringify(setup.text ?? ''), JSON.stringify(setup.files ?? {}), JSON.stringify(r.goal.text ?? ''), JSON.stringify(r.goal.files ?? {}), JSON.stringify(setup.registers ?? {})].join(' ');
+        const frags = [...r.prompt.matchAll(/["“]([^"”]+)["”]|`([^`]+)`|'([^' ][^']*[^' ])'/g)].map(m => m[1] ?? m[2] ?? m[3]);
+        for (const f of frags) if (!hay.includes(f) && !hay.includes(JSON.stringify(f).slice(1, -1))) quoted.push(`${tag}\t${JSON.stringify(f)}\t${r.prompt}`);
+      }
+      const g = r.goal;
+      const vim0 = createVim(setup);
+      const cursorOnly = g.cursor && g.text == null && !g.check && !g.buffer && !g.files && !g.registers;
+      const vocabBase = ['h', 'j', 'k', 'l', 'w', 'b', 'e', 'W', 'B', 'E', '0', '^', '$', 'gg', 'G', '{', '}', '%', 'H', 'M', 'L'];
+      const banned = (k: string) => chips.some(ch => ch === k || (ch.length === 1 && 'fFtT;,'.includes(ch) && /^[fFtT;,]/.test(k)));
+      if (cursorOnly && solLen <= 5 && vim0.buf.text() === (() => { const v = createVim(setup); v.feedKeys(r.solution); return v.buf.text(); })()) {
+        // BFS over cursor positions, costs in keys, excluding taught keys.
+        const lines = vim0.buf.lines;
+        const acts = (p: { line: number; col: number }) => {
+          const a: string[] = [...vocabBase];
+          for (const n of '23456789') for (const m of 'hjklwbeWBE') a.push(n + m);
+          const chars = new Set(lines[p.line]);
+          for (const ch of chars) if (ch !== ' ' && ch !== '<') for (const f of 'fFtT') a.push(f + ch);
+          return a.filter(k => !banned(k));
+        };
+        const key = (p: any) => p.line + ':' + p.col;
+        const dist = new Map<string, number>([[key(vim0.cursor), 0]]);
+        let frontier = [{ p: { ...vim0.cursor }, want: vim0.win.want, d: 0 }];
+        let found = -1, route = '';
+        const routeOf = new Map<string, string>([[key(vim0.cursor), '']]);
+        for (let depth = 0; depth < solLen && found < 0; depth++) {
+          const next: typeof frontier = [];
+          for (const f of frontier) for (const a of acts(f.p)) {
+            const cost = f.d + a.length;
+            if (cost > solLen) continue;
+            const v = createVim({ ...setup, cursor: f.p });
+            v.win.want = f.want;
+            try { v.feedKeys(a); } catch { continue; }
+            if (v.mode !== 'normal') continue;
+            const k = key(v.cursor);
+            const r2 = routeOf.get(key(f.p))! + a;
+            if (k === key(g.cursor!)) { if (found < 0 || cost < found) { found = cost; route = r2; } continue; }
+            if ((dist.get(k) ?? 1e9) <= cost) continue;
+            dist.set(k, cost); routeOf.set(k, r2);
+            next.push({ p: { ...v.cursor }, want: v.win.want, d: cost });
+          }
+          frontier = next;
+        }
+        if (found >= 0) cursorAlt.push(`${tag}\tsol=${r.solution} (${solLen})\talt=${route} (${found})\t${found < solLen ? 'SHORTER' : 'equal'}`);
+      } else if (g.text != null && solLen >= 2) {
+        // Generic edits without the taught keys, depth<=3 and < solution length.
+        const vocab = ['x', 'X', 'dd', 'D', 'J', 'p', 'P', '~', 'u', 'h', 'j', 'k', 'l', 'w', 'b', 'e', '0', '$', 'dw', 'cw'].filter(k => !banned(k));
+        const maxCost = Math.min(solLen - 1, 3);
+        const seen = new Set<string>();
+        let frontier: { path: string; cost: number }[] = [{ path: '', cost: 0 }];
+        let hit = '';
+        outer: for (let depth = 0; depth < 4; depth++) {
+          const next: typeof frontier = [];
+          for (const f of frontier) for (const a of vocab) {
+            const cost = f.cost + a.length;
+            if (cost > maxCost) continue;
+            const v = createVim(setup);
+            try { v.feedKeys(f.path + a); } catch { continue; }
+            if (a === 'cw') continue;
+            if (goalMet(v, g)) { hit = f.path + a; break outer; }
+            const k = v.buf.text() + '|' + v.cursor.line + ':' + v.cursor.col;
+            if (seen.has(k)) continue;
+            seen.add(k);
+            next.push({ path: f.path + a, cost });
+          }
+          frontier = next;
+        }
+        if (hit) editAlt.push(`${tag}\tsol=${JSON.stringify(r.solution)} (${solLen})\talt=${hit}\tchips=${l.chips.join(' ')}`);
+      }
+    });
+  }
+  writeFileSync(OUT + 'cursor-alt.tsv', cursorAlt.join('\n') + '\n');
+  writeFileSync(OUT + 'no-chip.tsv', noChip.join('\n') + '\n');
+  writeFileSync(OUT + 'prompt-quoted.tsv', quoted.join('\n') + '\n');
+  writeFileSync(OUT + 'edit-alt.tsv', editAlt.join('\n') + '\n');
+  writeFileSync(OUT + 'files-long.tsv', filesLong.join('\n') + '\n');
+  console.log({ cursorAlt: cursorAlt.length, shorter: cursorAlt.filter(s => s.endsWith('SHORTER')).length, noChip: noChip.length, quoted: quoted.length, editAlt: editAlt.length, filesLong: filesLong.length });
+}, 3000000);

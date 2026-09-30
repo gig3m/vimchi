@@ -1,0 +1,19 @@
+next-steps	motion keys that silence a run: w f t $	arg chars that silence: a i c
+insert-like-a-pro	motion keys that silence a run: -	arg chars that silence: o s
+essential-motions	motion keys that silence a run: W B E F T ; , ^ G gg % { }	arg chars that silence: , ;
+screen-movement	motion keys that silence a run: -	arg chars that silence: -
+basic-operators	motion keys that silence a run: j k w f t	arg chars that silence: d c p y .
+text-objects	motion keys that silence a run: -	arg chars that silence: a i c
+visual-mode	motion keys that silence a run: $	arg chars that silence: o d c y
+search	motion keys that silence a run: / n N *	arg chars that silence: d c .
+indent-case	motion keys that silence a run: -	arg chars that silence: -
+registers	motion keys that silence a run: -	arg chars that silence: p "
+buffers-files	motion keys that silence a run: -	arg chars that silence: -
+windows-tabs	motion keys that silence a run: h j k l	arg chars that silence: o c
+marks-jumps	motion keys that silence a run: ,	arg chars that silence: a d y , ' .
+quickfix	motion keys that silence a run: -	arg chars that silence: -
+command-line	motion keys that silence a run: , $ %	arg chars that silence: , ' .
+substitute	motion keys that silence a run: / %	arg chars that silence: s ( )
+global-commands	motion keys that silence a run: t $ / n	arg chars that silence: i
+neovim-builtins	motion keys that silence a run: n	arg chars that silence: a i c
+insert-power	motion keys that silence a run: t	arg chars that silence: -

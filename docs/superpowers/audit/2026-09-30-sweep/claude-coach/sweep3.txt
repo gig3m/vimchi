@@ -1,0 +1,64 @@
+### delete-lines r1  w-spam in First Operators (w drilled)
+cursor={"line":2,"col":6} line="const backoff = 2;"
+keys=kwwwwwwhD (9)  goalMet=false  expert=kf/hD  ref=kf/hD
+taught has: f t ; A I o O s S D dd G gg % COUNT d c e $ r x
+  (silent)
+
+### delete-lines r1  l-spam in First Operators
+cursor={"line":2,"col":6} line="const backoff = 2;"
+keys=kllllllllllllllllhD (19)  goalMet=false  expert=kf/hD  ref=kf/hD
+taught has: f t ; A I o O s S D dd G gg % COUNT d c e $ r x
+  (silent)
+
+### delete-lines r1  f-hopping in First Operators (f drilled)
+cursor={"line":2,"col":6} line="const backoff = 2;"
+keys=kfrfefafsfshD (13)  goalMet=false  expert=kf/hD  ref=kf/hD
+taught has: f t ; A I o O s S D dd G gg % COUNT d c e $ r x
+  (silent)
+
+### indenting r0  dump
+cursor={"line":1,"col":0} line="return `Hello, ${name}`;"
+keys= (0)  goalMet=false  expert=  ref=>>
+taught has: f t ; A I o O s S D C cc dd . iw aw i" * / G gg % J >> v COUNT d c e $ r x
+  (silent)
+
+### toggle-case r0  x+i capital instead of ~
+cursor={"line":4,"col":0} line="}"
+keys=kkwxiF<Esc> (7)  goalMet=false  expert=kkw~  ref=kkw~
+taught has: f t ; A I o O s S D C cc dd . iw aw i" * / G gg % ~ J >> v COUNT d c e $ r x
+  CRIT u0: you xiF<Esc> -> rF [x-i-to-r, saves 2] "r replaces the character under the cursor without entering insert mode."
+  LIVE @7/7 after 'kkwxiF<Esc>' mode=normal: rF does that in 2  [for "xiF<Esc>"]
+
+### counts-operators r0  x-spam over two words
+cursor={"line":3,"col":0} line="  res.json(await load(req.query));"
+keys=kwxxxxxxxxxxxxxx (16)  goalMet=true  expert=kwd2w  ref=kwd2w
+taught has: f t ; A I o O s S D C cc dd . G gg % J COUNT d c e $ r x
+  CRIT u0: you xxxxxxxxxxxxxx -> 14x [count-x, saves 11] "A count repeats a command: 3x deletes three characters."
+  REF: you 16 par 5 ref=kwd2w
+  LIVE @5/16 after 'kwxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @6/16 after 'kwxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @7/16 after 'kwxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @8/16 after 'kwxxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @9/16 after 'kwxxxxxxx' mode=normal: de does that in 2  [for "xxx"]
+  LIVE @10/16 after 'kwxxxxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @11/16 after 'kwxxxxxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @12/16 after 'kwxxxxxxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @13/16 after 'kwxxxxxxxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @14/16 after 'kwxxxxxxxxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @15/16 after 'kwxxxxxxxxxxxxx' mode=normal: de does that in 2  [for "xxx"]
+  LIVE @16/16 after 'kwxxxxxxxxxxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+
+### search-forward r0  short search then n-spam
+cursor={"line":0,"col":0} line="import { sleep } from './time';"
+keys=/c<CR>nnnnn (8)  goalMet=true  expert=/catch<CR>  ref=/catch<CR>
+taught has: f t ; A I o O s S D C cc dd . iw aw i" / G gg % J v COUNT d c e $ r x
+  (silent)
+  LIVE !! key 5 n after done
+  LIVE !! key 6 n after done
+  LIVE !! key 7 n after done
+
+### text-objects-parens r0  dump
+cursor={"line":0,"col":0} line="const user = await loadUser(id);"
+keys= (0)  goalMet=false  expert=  ref=jfFci(user<Esc>
+taught has: f t ; A I o O s S D C cc dd . iw aw i" G gg % J COUNT d c e $ r x
+  (silent)

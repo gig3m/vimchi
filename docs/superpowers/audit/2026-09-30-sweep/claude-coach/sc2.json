@@ -1,0 +1,19 @@
+[
+{"id":"change-lines","r":1,"keys":"jj^Creturn sum;<Esc>","expert":"jjccreturn sum;<Esc>","note":"^C instead of cc"},
+{"id":"change-lines","r":1,"keys":"jj^lllllllllllllllllllxxxxxxxxxxxxxxxxxxxxireturn sum;<Esc>","expert":"jjcc…","note":"total novice"},
+{"id":"repeat-find","r":0,"keys":"f,f,f,f,","expert":"f,;;;","note":"f repeated instead of ;"},
+{"id":"find-char","r":4,"keys":"kkllllllllllllllllllllllllllllllllllllllllllllllll","expert":"2kf]","note":"l-spam to end (49 l)"},
+{"id":"counts-operators","r":3,"keys":"jjfvdwdwdw","expert":"jjfvd3w","note":"dw three times"},
+{"id":"word-objects","r":0,"keys":"jfLbdeiorders<Esc>","expert":"jfLciworders<Esc>","note":"b de i instead of ciw"},
+{"id":"word-objects","r":1,"keys":"jjfybdw","expert":"jjfydaw","note":"b dw instead of daw"},
+{"id":"change-next-match","r":1,"keys":"cgnlog<Esc>cgnlog<Esc>cgnlog<Esc>","expert":"cgnlog<Esc>..","note":"retype cgn"},
+{"id":"search-as-motion","r":0,"keys":"","expert":"","note":"dump only"},
+{"id":"delete-words","r":1,"keys":"jjwwwdwu","expert":"","note":"undo test"},
+{"id":"line-ends","r":4,"keys":"jjllllllllllll","expert":"jj$","note":"jj then l spam"},
+{"id":"insert-mode","r":2,"keys":"jllllllllllli)<Esc>","expert":"jf;i)","note":"l-spam then i (f not taught yet)"},
+{"id":"boss-tidy-function","r":2,"keys":"jddjjjjdd","expert":"jdd4j.","note":"dd again rather than ."},
+{"id":"boss-tidy-function","r":0,"keys":"wxxxxiorderTotal<Esc>","expert":"wcworderTotal<Esc>","note":"x x x x i"},
+{"id":"text-objects-quotes","r":3,"keys":"jjf\"lxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","expert":"jjf\"di\"","note":"x-spam inside quotes"},
+{"id":"visual-lines","r":0,"keys":"","expert":"","note":"dump"},
+{"id":"yank-register","r":0,"keys":"","expert":"","note":"dump"}
+]

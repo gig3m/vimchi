@@ -1,0 +1,10 @@
+[
+{"id":"delete-lines","r":1,"keys":"kwwwwwwhD","expert":"kf/hD","note":"w-spam in First Operators (w drilled)"},
+{"id":"delete-lines","r":1,"keys":"kllllllllllllllllhD","expert":"kf/hD","note":"l-spam in First Operators"},
+{"id":"delete-lines","r":1,"keys":"kfrfefafsfshD","expert":"kf/hD","note":"f-hopping in First Operators (f drilled)"},
+{"id":"indenting","r":0,"keys":"","expert":"","note":"dump"},
+{"id":"toggle-case","r":0,"keys":"kkwxiF<Esc>","expert":"kkw~","note":"x+i capital instead of ~"},
+{"id":"counts-operators","r":0,"keys":"kwxxxxxxxxxxxxxx","expert":"kwd2w","note":"x-spam over two words"},
+{"id":"search-forward","r":0,"keys":"/c<CR>nnnnn","expert":"/catch<CR>","note":"short search then n-spam"},
+{"id":"text-objects-parens","r":0,"keys":"","expert":"","note":"dump"}
+]

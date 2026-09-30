@@ -1,0 +1,35 @@
+import { it } from 'vitest';
+import { writeFileSync } from 'node:fs';
+import { SECTIONS } from '..';
+import { createVim, mergeSetup, solutionKeys } from '../runtime';
+
+const PRINT = /^(.|<Space>|<Tab>|<CR>|<lt>|<Bslash>|<Bar>|<BS>)$/;
+function normChip(c: string): string {
+  return c.replace(/␣/g, ' ').replace(/\bC-(\S)/g, '<C-$1>').replace(/\bS-tab\b/, '<S-Tab>').replace(/^CR$/, '<CR>').replace(/^tab$/, '<Tab>').replace(/ (?=\S)/g, (m, off, s) => (s.startsWith('<C-w>') || s.startsWith('<C-r>') ? '' : m));
+}
+it('sweep', () => {
+  const out: any[] = [];
+  for (const s of SECTIONS) for (const l of s.lessons) {
+    const c = l.challenge;
+    if (c.kind !== 'rounds') { out.push({ id: l.id, section: s.id, band: s.band, kind: c.kind }); continue; }
+    const rounds = c.rounds.map((r, i) => {
+      const vim = createVim(mergeSetup(c.base, r.setup));
+      const keys = solutionKeys(r.solution);
+      let ins = 0, cmdTyped = 0, cmdKeys = 0, insCtl = 0;
+      const cmds: string[] = [];
+      const cmdStream: string[] = [];
+      for (const k of keys) {
+        const m = vim.mode;
+        if ((m === 'insert' || m === 'replace') && PRINT.test(k)) ins++;
+        else if (m === 'insert' || m === 'replace') { insCtl++; cmdStream.push(k); }
+        else if (m === 'cmdline' && PRINT.test(k) && k !== '<CR>') cmdTyped++;
+        else { cmdKeys++; cmdStream.push(k); }
+        vim.feed(k);
+        if (vim.lastCommand) cmds.push(vim.lastCommand.keys.join(''));
+      }
+      return { i, solution: r.solution, prompt: r.prompt ?? '', total: keys.length, ins, cmdTyped, cmd: cmdKeys + insCtl, cmds };
+    });
+    out.push({ id: l.id, title: l.title, section: s.id, band: s.band, kind: 'rounds', chips: l.chips, chipsNorm: l.chips.map(normChip), rounds });
+  }
+  writeFileSync('/tmp/claude-1000/-home-kyle-projects-vimchi/638a614d-62ff-4893-9d1b-f4608b9fcb46/scratchpad/sweep.json', JSON.stringify(out, null, 1));
+});

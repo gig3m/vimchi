@@ -1,0 +1,70 @@
+// SWEEP SCRATCH (audit 2026-09-30, coach front). Delete after use.
+import { it } from 'vitest';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { LESSONS } from '../index';
+import { Session, mergeSetup } from '../runtime';
+import type { RoundsChallenge } from '../types';
+import { parseKeys } from '../../vim/keys';
+import { coach, coachSegment, nudgeText } from '../../coach';
+import { segment } from '../../coach/segment';
+import { coachable, taughtBy } from '../../coach/vocab';
+
+const OUT = '/tmp/claude-1000/-home-kyle-projects-vimchi/638a614d-62ff-4893-9d1b-f4608b9fcb46/scratchpad/';
+
+type Sc = { id: string; r: number; keys: string; expert: string; note: string };
+const SC: Sc[] = JSON.parse(readFileSync(OUT + (process.env.SWEEP_IN ?? 'sc.json'), 'utf8'));
+
+function live(s: Session, lessonId: string, st: { segCount: number; nudgedEnd: number }, closing: boolean): string | null {
+  if (!coachable(lessonId)) return null;
+  const log = s.log();
+  const segs = segment(log);
+  const last = segs.length - 1;
+  if (last < 0) return null;
+  const settled = log[log.length - 1].after.mode === 'normal' && log[log.length - 1].after.pending === 0;
+  const candidates: number[] = [];
+  if (segs.length > st.segCount && segs.length >= 2) candidates.push(segs.length - 2);
+  if (settled || closing) for (let i = Math.max(0, last - 2); i <= last; i++) candidates.push(i);
+  st.segCount = segs.length;
+  const unitStart = s.currentUnitStart();
+  for (const i of [...new Set(candidates)]) {
+    if (segs[i].logStart < unitStart || log[segs[i].logEnd]?.after.pending) continue;
+    const c = coachSegment(s, lessonId, segs[i], segs, i);
+    if (!c || c.logEnd <= st.nudgedEnd) continue;
+    st.nudgedEnd = c.logEnd;
+    return nudgeText(c) + `  [for "${c.you}"]`;
+  }
+  return null;
+}
+
+it('sweep', () => {
+  const out: string[] = [];
+  for (const sc of SC) {
+    const l = LESSONS[sc.id];
+    const c = l.challenge as RoundsChallenge;
+    const one: RoundsChallenge = { ...c, rounds: [c.rounds[sc.r]] };
+    const s = new Session(one, { carryCursor: false });
+    const setup = mergeSetup(c.base, c.rounds[sc.r].setup);
+    const st = { segCount: 0, nudgedEnd: -1 };
+    const hints: string[] = [];
+    let t = 0;
+    const keys = parseKeys(sc.keys);
+    keys.forEach((k, idx) => {
+      if (s.done) { hints.push(`!! key ${idx} ${k} after done`); return; }
+      s.key(k, (t += 50));
+      const h = live(s, sc.id, st, s.roundDone || s.done);
+      if (h) hints.push(`@${idx + 1}/${keys.length} after '${keys.slice(0, idx + 1).join('')}' mode=${s.vim?.mode}: ${h}`);
+    });
+    const rep = coach(s, sc.id);
+    const text = Array.isArray(setup.text) ? setup.text : (setup.text ?? '').split('\n');
+    out.push(`### ${sc.id} r${sc.r}  ${sc.note}`);
+    out.push(`cursor=${JSON.stringify(setup.cursor)} line=${JSON.stringify(text[setup.cursor?.line ?? 0])}`);
+    out.push(`keys=${sc.keys} (${keys.length})  goalMet=${s.done}  expert=${sc.expert}  ref=${c.rounds[sc.r].solution}`);
+    out.push(`taught has: ${['f', 't', ';', 'A', 'I', 'o', 'O', 's', 'S', 'D', 'C', 'cc', 'dd', '.', 'iw', 'aw', 'i"', '*', '/', 'G', 'gg', '%', '~', 'gU', 'J', '>>', 'v', 'COUNT', 'd', 'c', 'e', '$', 'r', 'x'].filter(k => taughtBy(sc.id).has(k)).join(' ')}`);
+    for (const cr of rep.critiques) out.push(`  CRIT u${cr.unit}: you ${cr.you} -> ${cr.better.map(b => `${b.keys} [${b.rule}, saves ${b.saves}] "${b.why}"`).join(' | ')}`);
+    for (const rf of rep.reference) out.push(`  REF: you ${rf.you} par ${rf.par} ref=${rf.ref ?? '(hidden)'}`);
+    if (!rep.critiques.length && !rep.reference.length) out.push('  (silent)');
+    for (const h of hints) out.push(`  LIVE ${h}`);
+    out.push('');
+  }
+  writeFileSync(OUT + (process.env.SWEEP_OUT ?? 'sweep.txt'), out.join('\n'));
+});

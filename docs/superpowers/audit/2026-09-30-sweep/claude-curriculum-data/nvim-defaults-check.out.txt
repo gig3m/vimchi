@@ -1,0 +1,30 @@
+ci( same line before: foo bar(Z) x
+ci( next line: foo bar\nbaz(Z) x
+ci{ next line: local x = 1\nsetup({Z})
+ci" same line: x = "Z" + "b"
+scrolloff 0 fo tcqj nf bin,hex path .,, grepprg rg --vimgrep -uu  cpo aABceFs_ hidden true
+matchit loaded 1
+map & :&&<CR> :help &-default
+map <C-L> <Cmd>nohlsearch<Bar>diffupdate<Bar>normal! <C-L><CR> :help CTRL-L-default
+map Y y$ :help Y-default
+map [<Space> lua-callback Add empty line above cursor
+map ]b lua-callback :bnext
+map [q lua-callback :cprevious
+map ]d lua-callback Jump to the next diagnostic in the current buffer
+map grn lua-callback vim.lsp.buf.rename()
+map grr lua-callback vim.lsp.buf.references()
+map gri lua-callback vim.lsp.buf.implementation()
+map gra lua-callback vim.lsp.buf.code_action()
+map gO lua-callback vim.lsp.buf.document_symbol()
+map grt lua-callback vim.lsp.buf.type_definition()
+map K NONE 
+map gcc lua-callback Toggle comment line
+map <C-W>d lua-callback Show diagnostics under the cursor
+map gx lua-callback Opens filepath or URI under cursor with the system handler (file explorer, web browser, …)
+imap <C-U> <C-G>u<C-U> :help i_CTRL-U-default
+imap <C-W> <C-G>u<C-W> :help i_CTRL-W-default
+imap <C-S> cb vim.lsp.buf.signature_help()
+gq tw0: word word word word word word word word word word word word word word word word|word word word word word word word word word word word word word word  1
+columns 80
+cw on word: X bar
+dT( : f(d)
