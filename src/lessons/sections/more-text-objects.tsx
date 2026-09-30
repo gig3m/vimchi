@@ -441,35 +441,35 @@ export const moreTextObjects: Section = {
     {
       id: 'function-motions',
       title: 'Function Motions',
-      chips: [']m', '[m'],
+      chips: [']f', '[f'],
       keyCards: [
-        { key: ']m', glyph: '↓ƒ', label: 'next function' },
-        { key: '[m', glyph: '↑ƒ', label: 'previous function' },
+        { key: ']f', glyph: '↓ƒ', label: 'next function' },
+        { key: '[f', glyph: '↑ƒ', label: 'previous function' },
       ],
       intro: (
         <>
           <p>
-            <Code>]m</Code> jumps to the start of the next function or method, <Code>[m</Code> to the start of the
-            previous one. From inside a body, <Code>[m</Code> takes you to the top of the function you're in.
+            <Code>]f</Code> jumps to the start of the next function or method, <Code>[f</Code> to the start of the
+            previous one. From inside a body, <Code>[f</Code> takes you to the top of the function you're in.
           </p>
           <p>
             They skip everything that isn't a function, so they're the quickest way down a file of methods. A count
-            skips several: <Code>2]m</Code>.
+            skips several: <Code>2]f</Code>.
           </p>
         </>
       ),
       practice: total => (
         <p>
-          Reach the <span className="hl-green">green box</span> with <Code>]m</Code> or <Code>[m</Code>. {total} rounds.
+          Reach the <span className="hl-green">green box</span> with <Code>]f</Code> or <Code>[f</Code>. {total} rounds.
         </p>
       ),
       aside: {
-        title: 'Ends too',
+        title: 'Ends, and kickstart',
         body: (
           <p>
-            Vim's own <Code>]m</Code> only understands Java-style classes; nvim-treesitter-textobjects makes it work
-            in every language. LazyVim puts these moves on <Code>]f</Code> and <Code>[f</Code> (<Code>]F</Code> and{' '}
-            <Code>[F</Code> for function ends); kickstart has only Vim's own.
+            <Code>]F</Code> and <Code>[F</Code> go to function ends. These are LazyVim's treesitter-textobjects moves.
+            kickstart ships nvim-treesitter without them, so there you have only Vim's <Code>]m</Code>, which
+            understands Java-style classes and nothing else, until you add the plugin yourself.
           </p>
         ),
       },
@@ -478,12 +478,12 @@ export const moreTextObjects: Section = {
         showGoal: false,
         base: { name: 'users.ts', text: users, plugins: ['mini-ai'] },
         rounds: [
-          { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 2, col: 0 } }, solution: ']m' },
-          { setup: { cursor: { line: 3, col: 8 } }, goal: { cursor: { line: 8, col: 0 } }, solution: ']m' },
-          { setup: { cursor: { line: 10, col: 20 } }, goal: { cursor: { line: 8, col: 0 } }, solution: '[m' },
-          { setup: { cursor: { line: 14, col: 10 } }, goal: { cursor: { line: 17, col: 2 } }, solution: ']m' },
-          { setup: { cursor: { line: 22, col: 13 } }, goal: { cursor: { line: 17, col: 2 } }, solution: '2[m' },
-          { setup: { cursor: { line: 1, col: 0 } }, goal: { cursor: { line: 17, col: 2 } }, solution: '3]m' },
+          { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 2, col: 0 } }, solution: ']f' },
+          { setup: { cursor: { line: 3, col: 8 } }, goal: { cursor: { line: 8, col: 0 } }, solution: ']f' },
+          { setup: { cursor: { line: 10, col: 20 } }, goal: { cursor: { line: 8, col: 0 } }, solution: '[f' },
+          { setup: { cursor: { line: 14, col: 10 } }, goal: { cursor: { line: 17, col: 2 } }, solution: ']f' },
+          { setup: { cursor: { line: 22, col: 13 } }, goal: { cursor: { line: 17, col: 2 } }, solution: '2[f' },
+          { setup: { cursor: { line: 1, col: 0 } }, goal: { cursor: { line: 17, col: 2 } }, solution: '3]f' },
         ],
       },
     },
