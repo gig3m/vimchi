@@ -36,7 +36,7 @@ npm run build      # typecheck + production bundle in dist/
 - `cases: ok N bad M` — the same engine-vs-Neovim comparison for `scripts/nvimcheck/cases.json`, a list of
   `{id, text, keys, cursor?, name?, options?}` repros that are not lesson rounds. Append to it freely.
 
-The extended and cases sections are report-only; `NVIMCHECK_STRICT=1 npm run check:nvim` fails on them too.
+All three sections gate the run (strict by default); `NVIMCHECK_STRICT=0 npm run check:nvim` relaxes it to the text gate only.
 
 Browsers reserve Ctrl-W/N/T/Q. The practice editor maps Alt-W/N/T/Q to them, and its
 "full screen" button uses the Keyboard Lock API to capture the real keys (Chromium).
