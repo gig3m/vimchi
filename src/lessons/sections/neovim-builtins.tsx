@@ -549,6 +549,197 @@ export const neovimBuiltins: Section = {
         })(),
       },
     },
+    {
+      id: 'format-file',
+      title: 'Format the File',
+      chips: ['␣f'],
+      keyCards: [
+        { key: '␣f', glyph: '⇶', label: 'format the file', sub: 'kickstart; LazyVim: ␣cf' },
+        { key: 'V ␣f', glyph: '⇶▭', label: 'format the selection' },
+      ],
+      intro: (
+        <>
+          <p>
+            <Code>Space f</Code> runs the file type's formatter (prettier, stylua, gofmt… through conform.nvim) over
+            the buffer: indentation, spacing and blank lines, fixed in one undo step. From Visual mode it formats only
+            the selected lines.
+          </p>
+          <p>
+            Format the whole file when it's yours. Select a range when the rest should stay as it is: a table aligned
+            by hand, generated code, or a diff you want to keep small.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Format the file, or just the part the prompt names. The tutor's formatter indents by brackets, puts one
+          space around <Code>=</Code>, and drops trailing spaces and extra blank lines. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'On save, and how it differs from =',
+        body: (
+          <p>
+            Both starters format on save, so mostly you meet it through <Code>:w</Code>; LazyVim puts the key on{' '}
+            <Code>Space cf</Code>. The <Code>=</Code> operator only re-indents, with Vim's own rules, and never touches
+            the spacing inside a line.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { plugins: ['conform'] },
+        rounds: [
+          {
+            prompt: 'Format the file.',
+            setup: {
+              name: 'cart.ts',
+              text: [
+                'export function cartTotal(items: Item[]) {',
+                '      let total = 0;',
+                '  for (const item of items) {',
+                ' total += item.price * item.qty;',
+                '      }',
+                '    return total;',
+                '}',
+              ],
+              cursor: { line: 3, col: 1 },
+            },
+            goal: {
+              text: [
+                'export function cartTotal(items: Item[]) {',
+                '  let total = 0;',
+                '  for (const item of items) {',
+                '    total += item.price * item.qty;',
+                '  }',
+                '  return total;',
+                '}',
+              ],
+            },
+            solution: '<Space>f',
+          },
+          {
+            prompt: 'Tidy the spacing around = and the trailing spaces.',
+            setup: {
+              name: 'config.ts',
+              text: [
+                'const port=Number(process.env.PORT ?? 3000);   ',
+                "const host ='localhost';",
+                'export const url=`http://${host}:${port}`;  ',
+              ],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: {
+              text: [
+                'const port = Number(process.env.PORT ?? 3000);',
+                "const host = 'localhost';",
+                'export const url = `http://${host}:${port}`;',
+              ],
+            },
+            solution: '<Space>f',
+          },
+          {
+            prompt: 'Squeeze the runs of blank lines down to one.',
+            setup: {
+              name: 'routes.ts',
+              text: [
+                "import { Router } from 'express';",
+                '',
+                '',
+                '',
+                'export const router = Router();',
+                '',
+                '',
+                "router.get('/health', (_req, res)=>res.send('ok'));",
+              ],
+              cursor: { line: 4, col: 0 },
+            },
+            goal: {
+              text: [
+                "import { Router } from 'express';",
+                '',
+                'export const router = Router();',
+                '',
+                "router.get('/health', (_req, res) => res.send('ok'));",
+              ],
+            },
+            solution: '<Space>f',
+          },
+          {
+            prompt: 'The constants are aligned by hand. Format only the function below them.',
+            setup: {
+              name: 'money.ts',
+              text: [
+                'export const CENTS    = 100;',
+                'export const TAX_RATE = 0.2;',
+                "export const CURRENCY = 'GBP';",
+                '',
+                'export function addTax(cents: number) {',
+                '    const taxed=cents * (1 + TAX_RATE);',
+                '      return Math.round(taxed);',
+                '}',
+              ],
+              cursor: { line: 5, col: 4 },
+            },
+            goal: {
+              text: [
+                'export const CENTS    = 100;',
+                'export const TAX_RATE = 0.2;',
+                "export const CURRENCY = 'GBP';",
+                '',
+                'export function addTax(cents: number) {',
+                '  const taxed = cents * (1 + TAX_RATE);',
+                '  return Math.round(taxed);',
+                '}',
+              ],
+            },
+            solution: 'Vip<Space>f',
+          },
+          {
+            prompt: 'Format the JSON.',
+            setup: {
+              name: 'package.json',
+              text: ['{', '"name": "shop",', '  "private": true,', '    "scripts": {', '  "dev": "vite",', '      "test": "vitest"', '},', '"dependencies": {}', '}'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: ['{', '  "name": "shop",', '  "private": true,', '  "scripts": {', '    "dev": "vite",', '    "test": "vitest"', '  },', '  "dependencies": {}', '}'],
+            },
+            solution: '<Space>f',
+          },
+          {
+            prompt: 'Format the settings object.',
+            setup: {
+              name: 'settings.ts',
+              text: [
+                'export const settings = {',
+                "theme: 'dark',",
+                '    editor: {',
+                '  tabSize: 2,',
+                '        wrap: false,',
+                '  },',
+                "    plugins: ['lsp', 'git'],",
+                '};',
+              ],
+              cursor: { line: 6, col: 4 },
+            },
+            goal: {
+              text: [
+                'export const settings = {',
+                "  theme: 'dark',",
+                '  editor: {',
+                '    tabSize: 2,',
+                '    wrap: false,',
+                '  },',
+                "  plugins: ['lsp', 'git'],",
+                '};',
+              ],
+            },
+            solution: '<Space>f',
+          },
+        ],
+      },
+    },
   ],
 };
 
@@ -896,197 +1087,6 @@ export const codeNavigation: Section = {
           ],
         };
       })(),
-    },
-    {
-      id: 'format-file',
-      title: 'Format the File',
-      chips: ['␣f'],
-      keyCards: [
-        { key: '␣f', glyph: '⇶', label: 'format the file', sub: 'kickstart; LazyVim: ␣cf' },
-        { key: 'V ␣f', glyph: '⇶▭', label: 'format the selection' },
-      ],
-      intro: (
-        <>
-          <p>
-            <Code>Space f</Code> runs the file type's formatter (prettier, stylua, gofmt… through conform.nvim) over
-            the buffer: indentation, spacing and blank lines, fixed in one undo step. From Visual mode it formats only
-            the selected lines.
-          </p>
-          <p>
-            Format the whole file when it's yours. Select a range when the rest should stay as it is: a table aligned
-            by hand, generated code, or a diff you want to keep small.
-          </p>
-        </>
-      ),
-      practice: total => (
-        <p>
-          Format the file, or just the part the prompt names. The tutor's formatter indents by brackets, puts one
-          space around <Code>=</Code>, and drops trailing spaces and extra blank lines. {total} rounds.
-        </p>
-      ),
-      aside: {
-        title: 'On save, and how it differs from =',
-        body: (
-          <p>
-            Both starters format on save, so mostly you meet it through <Code>:w</Code>; LazyVim puts the key on{' '}
-            <Code>Space cf</Code>. The <Code>=</Code> operator only re-indents, with Vim's own rules, and never touches
-            the spacing inside a line.
-          </p>
-        ),
-      },
-      challenge: {
-        kind: 'rounds',
-        base: { plugins: ['conform'] },
-        rounds: [
-          {
-            prompt: 'Format the file.',
-            setup: {
-              name: 'cart.ts',
-              text: [
-                'export function cartTotal(items: Item[]) {',
-                '      let total = 0;',
-                '  for (const item of items) {',
-                ' total += item.price * item.qty;',
-                '      }',
-                '    return total;',
-                '}',
-              ],
-              cursor: { line: 3, col: 1 },
-            },
-            goal: {
-              text: [
-                'export function cartTotal(items: Item[]) {',
-                '  let total = 0;',
-                '  for (const item of items) {',
-                '    total += item.price * item.qty;',
-                '  }',
-                '  return total;',
-                '}',
-              ],
-            },
-            solution: '<Space>f',
-          },
-          {
-            prompt: 'Tidy the spacing around = and the trailing spaces.',
-            setup: {
-              name: 'config.ts',
-              text: [
-                'const port=Number(process.env.PORT ?? 3000);   ',
-                "const host ='localhost';",
-                'export const url=`http://${host}:${port}`;  ',
-              ],
-              cursor: { line: 1, col: 0 },
-            },
-            goal: {
-              text: [
-                'const port = Number(process.env.PORT ?? 3000);',
-                "const host = 'localhost';",
-                'export const url = `http://${host}:${port}`;',
-              ],
-            },
-            solution: '<Space>f',
-          },
-          {
-            prompt: 'Squeeze the runs of blank lines down to one.',
-            setup: {
-              name: 'routes.ts',
-              text: [
-                "import { Router } from 'express';",
-                '',
-                '',
-                '',
-                'export const router = Router();',
-                '',
-                '',
-                "router.get('/health', (_req, res)=>res.send('ok'));",
-              ],
-              cursor: { line: 4, col: 0 },
-            },
-            goal: {
-              text: [
-                "import { Router } from 'express';",
-                '',
-                'export const router = Router();',
-                '',
-                "router.get('/health', (_req, res) => res.send('ok'));",
-              ],
-            },
-            solution: '<Space>f',
-          },
-          {
-            prompt: 'The constants are aligned by hand. Format only the function below them.',
-            setup: {
-              name: 'money.ts',
-              text: [
-                'export const CENTS    = 100;',
-                'export const TAX_RATE = 0.2;',
-                "export const CURRENCY = 'GBP';",
-                '',
-                'export function addTax(cents: number) {',
-                '    const taxed=cents * (1 + TAX_RATE);',
-                '      return Math.round(taxed);',
-                '}',
-              ],
-              cursor: { line: 5, col: 4 },
-            },
-            goal: {
-              text: [
-                'export const CENTS    = 100;',
-                'export const TAX_RATE = 0.2;',
-                "export const CURRENCY = 'GBP';",
-                '',
-                'export function addTax(cents: number) {',
-                '  const taxed = cents * (1 + TAX_RATE);',
-                '  return Math.round(taxed);',
-                '}',
-              ],
-            },
-            solution: 'Vip<Space>f',
-          },
-          {
-            prompt: 'Format the JSON.',
-            setup: {
-              name: 'package.json',
-              text: ['{', '"name": "shop",', '  "private": true,', '    "scripts": {', '  "dev": "vite",', '      "test": "vitest"', '},', '"dependencies": {}', '}'],
-              cursor: { line: 0, col: 0 },
-            },
-            goal: {
-              text: ['{', '  "name": "shop",', '  "private": true,', '  "scripts": {', '    "dev": "vite",', '    "test": "vitest"', '  },', '  "dependencies": {}', '}'],
-            },
-            solution: '<Space>f',
-          },
-          {
-            prompt: 'Format the settings object.',
-            setup: {
-              name: 'settings.ts',
-              text: [
-                'export const settings = {',
-                "theme: 'dark',",
-                '    editor: {',
-                '  tabSize: 2,',
-                '        wrap: false,',
-                '  },',
-                "    plugins: ['lsp', 'git'],",
-                '};',
-              ],
-              cursor: { line: 6, col: 4 },
-            },
-            goal: {
-              text: [
-                'export const settings = {',
-                "  theme: 'dark',",
-                '  editor: {',
-                '    tabSize: 2,',
-                '    wrap: false,',
-                '  },',
-                "  plugins: ['lsp', 'git'],",
-                '};',
-              ],
-            },
-            solution: '<Space>f',
-          },
-        ],
-      },
     },
   ],
 };
