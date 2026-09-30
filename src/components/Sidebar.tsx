@@ -8,6 +8,8 @@ type Props = {
   activeLesson: string | null;
   runsOf: (id: string) => Run[];
   completedText: string;
+  /** The Warm-up entry above the bands: its subtitle, whether it is open, and how to open it. */
+  warmUp: { sub: string; on: boolean; onOpen: () => void };
   profileOn: boolean;
   who: Who;
   userSub: string;
@@ -70,6 +72,15 @@ export function Sidebar(p: Props) {
         <div className="side-head">
           <a className="brand" href="#" aria-label="vimchi home"><img src="/logo/vimchi-lockup.svg" alt="vimchi" /></a>
           <span className="side-count">{p.completedText}</span>
+        </div>
+        <div className="wu-side">
+          <button className={'nav-item wu-nav' + (p.warmUp.on ? ' on' : '')} onClick={p.warmUp.onOpen} aria-current={p.warmUp.on ? 'page' : undefined}>
+            <span className="wu-nav-mark" aria-hidden="true">↻</span>
+            <span className="wu-nav-text">
+              <span className="nav-title">Warm-up</span>
+              <span className="wu-nav-sub">{p.warmUp.sub}</span>
+            </span>
+          </button>
         </div>
         {BANDS.map(band => {
           const sections = SECTIONS.filter(s => s.band === band.id && s.lessons.length);

@@ -1,3 +1,4 @@
+// `#warm-up` opens the Warm-up (`#warm-up?seed=N` replays one).
 // `#<lesson-id>?seed=N` replays one exact generated challenge; `#<lesson-id>?reps=N` opens the
 // lesson's Reps on seed N.
 export function lessonIdFromHash(hash: string): string {
@@ -21,3 +22,8 @@ export const seedHref = (id: string, seed: number) => `#${id}?seed=${seed}`;
 export const repsHref = (id: string, seed: number) => `#${id}?reps=${seed}`;
 /** A fresh 32-bit seed. */
 export const newSeed = () => Math.floor(Math.random() * 0x100000000);
+
+/** The Warm-up's route id (also the lesson id its runs are saved under). */
+export const WARMUP_ROUTE = 'warm-up';
+export const isWarmUpHash = (hash: string) => lessonIdFromHash(hash) === WARMUP_ROUTE;
+export const warmUpHref = (seed?: number) => (seed == null ? `#${WARMUP_ROUTE}` : seedHref(WARMUP_ROUTE, seed));
