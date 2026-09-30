@@ -44,6 +44,8 @@ export type Options = {
   wrap: boolean;
   list: boolean;
   cursorline: boolean;
+  /** Vim's default is on (line jumps go to the first non-blank); Neovim's is off (keep the column). */
+  startofline: boolean;
   [k: string]: boolean | number | string;
 };
 
@@ -64,10 +66,11 @@ export const DEFAULT_OPTIONS: Options = {
   wrap: false,
   list: false,
   cursorline: true,
+  startofline: false,
 };
 
 export const OPTION_ALIASES: Record<string, string> = {
   ic: 'ignorecase', scs: 'smartcase', hls: 'hlsearch', is: 'incsearch', ws: 'wrapscan', tw: 'textwidth',
   sw: 'shiftwidth', ts: 'tabstop', et: 'expandtab', nu: 'number', rnu: 'relativenumber', so: 'scrolloff',
-  ai: 'autoindent', cul: 'cursorline',
+  ai: 'autoindent', cul: 'cursorline', sol: 'startofline',
 };

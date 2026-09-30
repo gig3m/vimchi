@@ -109,7 +109,9 @@ export function runEx(vim: Vim, input: string) {
       // :42 jumps to a line.
       vim.pushJump();
       const l = Math.max(0, Math.min(range.end, vim.buf.lineCount - 1));
-      vim.setCursor(pos(l, firstNonBlank(vim.line(l))));
+      // 'startofline' off (Neovim's default) keeps the column, like G.
+      if (vim.options.startofline) vim.setCursor(pos(l, firstNonBlank(vim.line(l))));
+      else { vim.setCursor(pos(l, Math.min(vim.win.want, Math.max(0, vim.line(l).length - 1)))); vim.win.want = Math.max(vim.win.want, vim.cursor.col); }
       vim.openFoldsAt(l);
       return;
     }

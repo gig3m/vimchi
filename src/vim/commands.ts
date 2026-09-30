@@ -79,8 +79,13 @@ export function installCommands(vim: Vim) {
   M('gm', () => ({ pos: pos(cur().line, Math.min(Math.floor(V.win.width / 2), lastCol(ln()))) }));
   M('gM', () => ({ pos: pos(cur().line, Math.floor(ln().length / 2)) }));
 
-  M('gg', c => ({ pos: firstNonBlankPos(L(), c.hasCount ? Math.min(c.count, V.buf.lineCount) - 1 : 0), linewise: true, jump: true }));
-  M('G', c => ({ pos: firstNonBlankPos(L(), c.hasCount ? Math.min(c.count, V.buf.lineCount) - 1 : V.buf.lineCount - 1), linewise: true, jump: true }));
+  /** A jump to line l: first non-blank with 'startofline', the remembered column without it (Neovim's default). */
+  const lineJump = (l: number): MotionResult =>
+    V.options.startofline
+      ? { pos: firstNonBlankPos(L(), l), linewise: true, jump: true }
+      : { pos: pos(l, Math.min(V.win.want, Math.max(0, L()[l].length - 1))), linewise: true, jump: true, keepWant: true };
+  M('gg', c => lineJump(c.hasCount ? Math.min(c.count, V.buf.lineCount) - 1 : 0));
+  M('G', c => lineJump(c.hasCount ? Math.min(c.count, V.buf.lineCount) - 1 : V.buf.lineCount - 1));
 
   // ---- words -------------------------------------------------------------------------
   const repeatMotion = (f: (p: Pos) => Pos | null) => (c: MotionCtx): MotionResult | null => {
@@ -141,7 +146,7 @@ export function installCommands(vim: Vim) {
   M('%', c => {
     if (c.hasCount) {
       const l = Math.min(V.buf.lineCount - 1, Math.max(0, Math.ceil((c.count * V.buf.lineCount) / 100) - 1));
-      return { pos: firstNonBlankPos(L(), l), linewise: true, jump: true };
+      return lineJump(l);
     }
     const p = matchPair(L(), cur());
     return p ? { pos: p, inclusive: true, jump: true, openFold: true } : null;
@@ -186,16 +191,16 @@ export function installCommands(vim: Vim) {
     const rows = screenRows();
     const so = Math.min(Number(V.options.scrolloff), Math.floor((rows.length - 1) / 2));
     const i = Math.min(rows.length - 1, Math.max(c.count - 1, V.win.top === 0 ? c.count - 1 : so));
-    return { pos: firstNonBlankPos(L(), rows[i]), linewise: true, jump: true };
+    return lineJump(rows[i]);
   });
   M('L', c => {
     const rows = screenRows();
     const i = Math.max(0, rows.length - c.count);
-    return { pos: firstNonBlankPos(L(), rows[i]), linewise: true, jump: true };
+    return lineJump(rows[i]);
   });
   M('M', () => {
     const rows = screenRows();
-    return { pos: firstNonBlankPos(L(), rows[Math.floor((rows.length - 1) / 2)]), linewise: true, jump: true };
+    return lineJump(rows[Math.floor((rows.length - 1) / 2)]);
   });
 
   // ---- marks ------------------------------------------------------------------------------
