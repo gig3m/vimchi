@@ -288,7 +288,8 @@ export const insertPower: Section = {
         body: (
           <p>
             LazyVim accepts with <Code>CR</Code> as well as <Code>C-y</Code>; kickstart uses <Code>C-y</Code> only,
-            so a stray Enter never grabs a candidate you did not want.
+            so a stray Enter never grabs a candidate you did not want. <Code>C-space</Code> opens the
+            documentation for the highlighted item in both.
           </p>
         ),
       },
@@ -349,8 +350,9 @@ export const insertPower: Section = {
         title: 'Where tab goes',
         body: (
           <p>
-            Kickstart's LuaSnip binds <Code>C-l</Code> / <Code>C-h</Code> to jump fields instead, keeping{' '}
-            <Code>tab</Code> for indentation.
+            In both starters a snippet is an item in the completion menu: <Code>C-y</Code> accepts it, which
+            expands it. The tutor's <Code>tab</Code> on the trigger word stands in for that step. Jumping
+            between fields with <Code>tab</Code> / <Code>S-tab</Code> is blink.cmp's default in both.
           </p>
         ),
       },

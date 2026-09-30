@@ -43,7 +43,8 @@ export const moreTextObjects: Section = {
       intro: (
         <>
           <p>
-            mini.ai extends the <Code>i</Code> and <Code>a</Code> objects. Put <Code>n</Code> (next) or{' '}
+            Both starters extend the <Code>i</Code> and <Code>a</Code> objects, with mini.ai and
+            treesitter-textobjects. mini.ai adds a direction: put <Code>n</Code> (next) or{' '}
             <Code>l</Code> (last) in the middle and the object is found ahead of or behind the cursor:{' '}
             <Code>cin(</Code> changes inside the next parentheses, <Code>dil"</Code> empties the previous string.
           </p>

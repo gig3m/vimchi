@@ -46,7 +46,8 @@ export const surround: Section = {
           <p>
             nvim-surround copies the keys of tpope's vim-surround, so <Code>ys</Code>, <Code>cs</Code> and{' '}
             <Code>ds</Code> work in both. mini.surround uses <Code>sa</Code>, <Code>sr</Code> and <Code>sd</Code>{' '}
-            instead. Shortcuts: <Code>b</Code> is <Mono>)</Mono>, <Code>B</Code> is <Mono>{'}'}</Mono>,{' '}
+            instead; LazyVim's mini.surround extra maps them to <Code>gsa</Code>, <Code>gsr</Code> and{' '}
+            <Code>gsd</Code>. Shortcuts: <Code>b</Code> is <Mono>)</Mono>, <Code>B</Code> is <Mono>{'}'}</Mono>,{' '}
             <Code>r</Code> is <Mono>]</Mono>.
           </p>
         ),

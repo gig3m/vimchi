@@ -1434,16 +1434,23 @@ export const substitute: Section = {
             type the new name, <Code>CR</Code>.
           </p>
           <p>
-            It matches whole words, so <Code>id</Code> leaves <Code>identity</Code> alone. For a rename the
-            language server understands, <Code>grn</Code> is safer still; for strings, comments and config,
-            this is the tool.
+            The tutor's panel is a simplified one: it matches whole words, so <Code>id</Code> leaves{' '}
+            <Code>identity</Code> alone. For a rename the language server understands, <Code>grn</Code> is
+            safer still; for strings, comments and config, this is the tool.
           </p>
         </>
       ),
       practice: total => <p>Rename the word the prompt names everywhere in the project. {total} rounds.</p>,
       aside: {
-        title: 'Before grug-far',
-        body: <p><Code>:grep</Code>, then <Code>:cdo s/old/new/g | update</Code>, does the same by hand — the Quickfix lessons show it.</p>,
+        title: 'The real grug-far',
+        body: (
+          <p>
+            LazyVim ships it on <Code>Space sr</Code>; kickstart does not. The real panel starts empty (or with a
+            visual selection), the search is a ripgrep regex rather than a whole word, and <Code>&lt;localleader&gt;r</Code>{' '}
+            applies. Before it, <Code>:grep</Code> then <Code>:cdo s/old/new/g | update</Code> did the same by hand —
+            the Quickfix lessons show it.
+          </p>
+        ),
       },
       challenge: {
         kind: 'rounds',

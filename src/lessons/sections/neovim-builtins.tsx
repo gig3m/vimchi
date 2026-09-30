@@ -787,7 +787,9 @@ export const neovimBuiltins: Section = {
         body: (
           <p>
             These came from Tim Pope's vim-unimpaired, along with <Code>[b</Code>, <Code>[q</Code> and friends. Neovim
-            0.11 built them in; in classic Vim you still need the plugin.
+            0.11 built them in; in classic Vim you still need the plugin. To see how a real config wires the
+            plugins in the next sections together, read kickstart.nvim's single <Code>init.lua</Code> next: it is
+            written to be read top to bottom.
           </p>
         ),
       },
