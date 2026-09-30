@@ -74,6 +74,8 @@ real Neovim.
 
 - 2026-09-30: P0 (items 1–7) and both owner decisions shipped on branch `p0` and merged; a fresh Opus review of the branch found no Critical items, and its six Important findings were fixed before the merge (re-feed via handleKey, layout-aware Alt rule, mini.surround fidelity: `srtt`, charwise `V`, cover-only search, `b` any bracket; outbox keyed by account; `nostartofline` for linewise operators and page scrolls; the `gv` round judged by `"0`).
 
+- 2026-09-30: P1 (items 8–12) shipped: typing budget test (6/8 insert, 24 cmdline, every band), ~70 rounds rewritten across 20 section files, multi-site `.` rounds, `npm run routes` guard (opt-in, ~100 s) with 61 rounds moved, generator kind-first with repeat groups (operator edits per run 1.9 → 5.7), checklist layout, Better Ways rendered from the engine with par shown. Review found no Critical; its Important items were fixed before merge.
+
 ## Ranked work list
 
 Ordered by learner effect per unit of work. Effort: S = under an hour, M = a session, L = days.
