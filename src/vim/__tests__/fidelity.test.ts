@@ -89,3 +89,22 @@ describe('block I / A leave the cursor at the block top-left', () => {
     expect(C(doc, keys)).toBe(want);
   });
 });
+
+describe('built-in gc leaves the cursor on the operator start (g@)', () => {
+  it.each([
+    ['a\n  foo |bar\n  baz qux\n\nb', 'gcj', 'a\n  // f|oo bar\n  // baz qux\n\nb'],
+    ['a\n | foo bar\n  baz qux\n\nb', 'gcj', 'a\n | // foo bar\n  // baz qux\n\nb'],
+    ['a\n  foo bar\n  baz |qux\n\nb', 'gcip', '|// a\n//   foo bar\n//   baz qux\n\nb'],
+    ['a\n  foo| bar\n  baz qux\n\nb', 'gc}', 'a\n  // |foo bar\n  // baz qux\n\nb'],
+    ['a\n  foo |bar\n  baz qux\n\nb', 'Vjgc', 'a\n|  // foo bar\n  // baz qux\n\nb'],
+    ['a\n  foo |bar\n  baz qux\n\nb', 'vjgc', 'a\n  // f|oo bar\n  // baz qux\n\nb'],
+    ['a\n  foo bar\n  baz |qux\n\nb', 'vkgc', 'a\n  // f|oo bar\n  // baz qux\n\nb'],
+    ['a\n  foo bar\n  baz |qux\n\nb', 'gck', 'a\n  // f|oo bar\n  // baz qux\n\nb'],
+    ['a\n  foo ba|r\n  baz qux\n\nb', '2gcc', 'a\n  // foo| bar\n  // baz qux\n\nb'],
+    // Uncommenting: gcgc starts on the comment block's first line, column 0; gcc on the first non-blank.
+    ['f {\n  // for (x) {\n  //  | y;\n  // }\n}', 'gcgc', 'f {\n|  for (x) {\n    y;\n  }\n}'],
+    ['if ok then\n  // vim.cm|d.x()\nend', 'gcc', 'if ok then\n  |vim.cmd.x()\nend'],
+  ])('%j %s', (d, keys, want) => {
+    expect(C(d, keys, 'x.ts')).toBe(want);
+  });
+});

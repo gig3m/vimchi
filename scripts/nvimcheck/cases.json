@@ -40,5 +40,12 @@
   { "id": "block-c-cursor", "src": "p3-ex", "text": "abcd\nefgh", "cursor": { "line": 0, "col": 1 }, "keys": "<C-v>jlcXY<Esc>" },
   { "id": "block-A-cursor", "src": "p3-ex", "text": "abcd\nefgh", "cursor": { "line": 0, "col": 1 }, "keys": "<C-v>jlAXY<Esc>" },
   { "id": "block-I-dot", "src": "p3-ex", "text": "abcd\nefgh", "keys": "l<C-v>jIXY<Esc>j." },
-  { "id": "block-A-dollar", "src": "p3-ex", "text": "ab\nefgh", "cursor": { "line": 0, "col": 1 }, "keys": "<C-v>j$AXY<Esc>" }
+  { "id": "block-A-dollar", "src": "p3-ex", "text": "ab\nefgh", "cursor": { "line": 0, "col": 1 }, "keys": "<C-v>j$AXY<Esc>" },
+  { "id": "gc-j-cursor", "src": "p3-ex", "name": "x.ts", "text": "a\n  foo bar\n  baz qux\n\nb", "cursor": { "line": 1, "col": 6 }, "keys": "gcj" },
+  { "id": "gc-ip-cursor", "src": "p3-ex", "name": "x.ts", "text": "a\n  foo bar\n  baz qux\n\nb", "cursor": { "line": 2, "col": 6 }, "keys": "gcip" },
+  { "id": "gc-para-cursor", "src": "p3-ex", "name": "x.ts", "text": "a\n  foo bar\n  baz qux\n\nb", "cursor": { "line": 1, "col": 5 }, "keys": "gc}" },
+  { "id": "gc-V-cursor", "src": "p3-ex", "name": "x.ts", "text": "a\n  foo bar\n  baz qux\n\nb", "cursor": { "line": 1, "col": 6 }, "keys": "Vjgc" },
+  { "id": "gc-v-back-cursor", "src": "p3-ex", "name": "x.ts", "text": "a\n  foo bar\n  baz qux\n\nb", "cursor": { "line": 2, "col": 6 }, "keys": "vkgc" },
+  { "id": "gc-k-cursor", "src": "p3-ex", "name": "x.ts", "text": "a\n  foo bar\n  baz qux\n\nb", "cursor": { "line": 2, "col": 6 }, "keys": "gck" },
+  { "id": "gcc-count-cursor", "src": "p3-ex", "name": "x.ts", "text": "a\n  foo bar\n  baz qux\n\nb", "cursor": { "line": 1, "col": 8 }, "keys": "2gcc" }
 ]

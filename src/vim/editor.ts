@@ -12,7 +12,7 @@ import { type Key, keysToString, parseKeys } from './keys';
 import { type QfItem, Tab, Window } from './layout';
 import { type Compiled, PatternError, compile } from './regex';
 import { type RegKind, type RegValue, Registers, isValidRegister } from './registers';
-import { indentOf, lastCol } from './text';
+import { firstNonBlank, indentOf, lastCol } from './text';
 import type { ObjectCtx, TextObject } from './textobjects';
 import {
   DEFAULT_OPTIONS, type Message, type Mode, type Options, type Pos, type Range, type VisualKind,
@@ -1013,6 +1013,7 @@ export class Vim {
     if (this.visual) {
       range = this.visualRange();
       dotVisual = this.visualShape();
+      this.opStart = range.kind === 'line' ? pos(range.start.line, 0) : range.kind === 'block' ? pos(range.start.line, Math.min(range.start.col, range.end.col)) : { ...range.start };
       this.exitVisual();
       this.win.cursor = { ...range.start };
       if (range.kind === 'block') this.win.cursor.col = Math.min(range.start.col, range.end.col);
@@ -1024,6 +1025,7 @@ export class Vim {
         let a = start, b = res.pos;
         const back = cmpPos(b, a) < 0;
         if (back) [a, b] = [b, a];
+        this.opStart = { ...a };
         let r: Range | null;
         if (res.linewise) r = this.forceKind({ start: pos(a.line, 0), end: pos(b.line, 0), kind: 'line' }, target.force);
         else {
@@ -1062,12 +1064,17 @@ export class Vim {
 
   /** Argument read after the motion for operators with argAfter. */
   opArgument = '';
+  /** Where Vim's operator starts (oap->start) before a linewise range drops the column. */
+  opStart: Pos = pos(0, 0);
 
   private operatorRange(p: Parsed, count: number, hasCount: boolean): Range | null {
     const t = p.target!;
     if (t.kind === 'self') {
       const start = this.cursor.line;
       const end = start + count - 1;
+      // Vim runs cc / dd / gcc as `_`: the start is the earlier of the cursor and the target's first non-blank.
+      const fnb = pos(Math.min(end, this.buf.lineCount - 1), firstNonBlank(this.line(Math.min(end, this.buf.lineCount - 1))));
+      this.opStart = cmpPos(fnb, this.cursor) < 0 ? fnb : { ...this.cursor };
       if (end >= this.buf.lineCount) {
         if (start === this.buf.lineCount - 1 || count > 1) {
           return { start: pos(start, 0), end: pos(this.buf.lineCount - 1, 0), kind: 'line' };
@@ -1079,6 +1086,7 @@ export class Vim {
     if (t.kind !== 'entry') return null;
     const te = t.entry;
     const cur = { ...this.cursor };
+    this.opStart = { ...cur };
     if (te.type === 'object') {
       const octx: ObjectCtx = { lines: this.lines, cur, count, visual: null };
       const r = te.obj(octx, te.inner);
@@ -1087,6 +1095,7 @@ export class Vim {
         if (octx.stop) { this.win.cursor = { ...octx.stop }; this.clampCursor(false); this.win.want = this.cursor.col; }
         return null;
       }
+      this.opStart = cmpPos(r.start, r.end) <= 0 ? { ...r.start } : { ...r.end };
       // Word objects report Vim's inclusive flag; apply the charwise operator rules.
       if ('inclusive' in r && typeof r.inclusive === 'boolean') {
         return this.vimCharwiseRange(r.start, r.end, r.inclusive, keysToString(p.cmdKeys) === 'd', t.force, true);
@@ -1116,6 +1125,7 @@ export class Vim {
     let start = cur, end = res.pos;
     const backwards = cmpPos(end, start) < 0;
     if (backwards) [start, end] = [end, start];
+    this.opStart = { ...start };
     if (res.linewise) return this.forceKind({ start: pos(start.line, 0), end: pos(end.line, 0), kind: 'line' }, t.force);
     // Charwise: o_v, :help exclusive-linewise and :help d apply to every motion.
     if (!res.inclusive && cmpPos(start, end) === 0 && !t.force) return null;

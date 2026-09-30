@@ -488,7 +488,8 @@ export function installCommands(vim: Vim) {
       const out = toggleComment(L().slice(r.start.line, r.end.line + 1), V.buf.filetype);
       V.buf.splice(r.start.line, r.end.line - r.start.line + 1, out);
       V.buf.recordChange(pos(r.start.line, 0));
-      V.setCursor(pos(r.start.line, Math.min(cur().col, lastCol(ln(r.start.line)))));
+      // g@ leaves the cursor on the operator's start (column kept; 0 for an object or linewise Visual).
+      V.setCursor(V.opStart);
     },
   });
   V.defineObject('gc', ({ lines, cur: c }) => {
