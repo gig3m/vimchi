@@ -250,3 +250,38 @@ describe('r<Tab> and r<CR>', () => {
     expect(C(doc, keys)).toBe(want);
   });
 });
+
+describe('J / gJ', () => {
+  it.each([
+    // J keeps the first line's trailing blanks, drops the next line's leading ones, and adds one
+    // space unless the line already ends in a blank, either side is empty, or the next starts with ')'.
+    // The cursor lands on the join point.
+    ['|one  \n two', 'J', 'one  |two'],
+    ['|one\n two', 'J', 'one| two'],
+    ['|one\n)two', 'J', 'one|)two'],
+    ['|one\n  )two', 'J', 'one|)two'],
+    ['|one \n)two', 'J', 'one |)two'],
+    ['|one\n\ttwo', 'J', 'one| two'],
+    ['|one\t\ntwo', 'J', 'one\t|two'],
+    ['|one\n\ntwo', 'J', 'on|e\ntwo'],
+    ['|\ntwo', 'J', '|two'],
+    ['|one\n   ', 'J', 'on|e'],
+    ['|one\n  two  ', 'J', 'one| two  '],
+    ['|one.\ntwo', 'J', 'one.| two'],
+    ['|one\ntwo', 'J.', 'one| two'],
+    ['|a', 'J', '|a'],
+    ['|a\n b\n c\nd', '3J', 'a b| c\nd'],
+    ['|a \n b\n  c', '3J', 'a b| c'],
+    ['|a\n\n\nb', '3J', '|a\nb'],
+    ['|a\n b', '5J', 'a| b'],
+    ['|a\n b\n c', 'VjjJ', 'a b| c'],
+    // gJ inserts and removes nothing
+    ['|one  \n two', 'gJ', 'one  | two'],
+    ['|one\n  two', 'gJ', 'one|  two'],
+    ['|one \n  two', 'gJ', 'one |  two'],
+    ['|a\n b\nc', '3gJ', 'a b|c'],
+    ['|a\n b\n c', 'VjjgJ', 'a b| c'],
+  ])('%j  %s', (doc, keys, want) => {
+    expect(C(doc, keys)).toBe(want);
+  });
+});

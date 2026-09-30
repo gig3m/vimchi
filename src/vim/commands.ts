@@ -605,10 +605,11 @@ export function installCommands(vim: Vim) {
     for (let l = start + 1; l <= last; l++) {
       const next = ln(l);
       if (spaces) {
-        const trimmed = next.replace(/^\s+/, '');
-        text = text.replace(/\s+$/, '');
+        // :help J: the joined line loses its leading blanks; one space goes in unless the line
+        // already ends in a blank (kept as is), either side is empty, or the next starts with ')'.
+        const trimmed = next.replace(/^[ \t]+/, '');
         col = text.length;
-        const sep = !trimmed || !text ? '' : trimmed.startsWith(')') ? '' : /[.!?]$/.test(text) ? ' ' : ' ';
+        const sep = !trimmed || !text || /[ \t]$/.test(text) || trimmed.startsWith(')') ? '' : ' ';
         text = text + sep + trimmed;
       } else {
         col = text.length;
