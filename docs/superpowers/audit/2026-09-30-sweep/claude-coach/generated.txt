@@ -1,0 +1,66 @@
+### challenge-fix-the-file seed 1: items 8, keys 98, done=true, critiques 8 (shown 5), live hints 49
+  fixes: extra-char:x | dropped-char:io<Esc> | extra-char:x | extra-char:x | wrong-char:ru | wrong-char:rn | dropped-char:it<Esc> | extra-char:x
+  CRIT 0: you jjjj0lllllllllllll -> /ol<CR> [motion 14] | j3j9l [motion 13]
+  CRIT 5: you jjjj0llllll -> /u<CR> [motion 8] | jw3j [motion 7]
+  CRIT 4: you jjjjjjjj0ll -> /tc<CR> [motion 7] | 2j3j3jl [motion 4]
+  CRIT 1: you jj0llllll -> jhj [motion 6] | /q<CR> [motion 6]
+  CRIT 3: you jjjjjjj0l -> /k<CR> [motion 6] | hj3j3j [motion 3]
+  CRIT 6: you jjjjjj0llll -> b3j3j [motion 6]
+  CRIT 2: you jjjjj0ll -> /c<CR> [motion 5] | 2jb3j [motion 3]
+  CRIT 0: you jj0llll -> /x<CR> [motion 4] | 2j4l [motion 3]
+  first live: /p<CR> does that in 3 // /o<CR> does that in 3 // /x<CR> does that in 3 // } does that in 1 // /f<CR> does that in 3 // /u<CR> does that in 3 // /n<CR> does that in 3 // /c<CR> does that in 3 // 3jj does that in 3 // /b<CR> does that in 3 // je3j does that in 4 // jw3j does that in 4
+### challenge-fix-the-file seed 2: items 9, keys 235, done=true, critiques 9 (shown 5), live hints 175
+  fixes: wrong-char:re | extra-char:x | dropped-char:ie<Esc> | extra-char:x | wrong-char:rs | dropped-char:it<Esc> | wrong-char:rr | extra-char:x | extra-char:x
+  CRIT 1: you jj0llllllllllllllllllllllllllllllllllllllllllllllll -> jEjl [motion 47] | $2j2h [motion 46]
+  CRIT 3: you jjjjj0llllllllllllllllllllllllllllllll -> /ri<CR> [motion 34] | $2j4h3j [motion 31]
+  CRIT 6: you jjj0llllllllllllllllllllllllllll -> /il<CR> [motion 28] | w3jtl [motion 27]
+  CRIT 7: you jjjjjjj0llllllllllllllll -> /hr<CR> [motion 20] | 2j3jh2j [motion 17]
+  CRIT 0: you j0lllllllllllllllllll -> jtq [motion 18] | jfr; [motion 17]
+  CRIT 0: you jjj0lllllllllllllllll -> /p<CR> [motion 18] | 2h3j [motion 17]
+  CRIT 4: you jjj0lllllllllll -> ^3j2e [motion 10] | ^3j2E [motion 10]
+  CRIT 5: you jjj0lllllll -> b3jh [motion 7] | 4h3j [motion 7]
+  first live: 3lj does that in 3 // ej does that in 2 // 5lj does that in 3 // wj does that in 2 // 7lj does that in 3 // 8lj does that in 3 // 9lj does that in 3 // 2ej does that in 3 // jfn does that in 3 // 2wj does that in 3 // jfi does that in 3 // 3wj does that in 3
+### challenge-fix-the-file seed 3: items 8, keys 140, done=true, critiques 8 (shown 5), live hints 86
+  fixes: extra-char:x | wrong-char:re | dropped-char:ig<Esc> | wrong-char:rs | wrong-char:rs | wrong-char:ri | extra-char:x | extra-char:x
+  CRIT 4: you jj0lllllllllllllllllllllll -> 2jfg [motion 22] | /gt<CR> [motion 22]
+  CRIT 2: you jjjj0lllllllllllllllll -> /x<CR> [motion 19] | j3j5l [motion 17]
+  CRIT 0: you jjjj0lllllllllllll -> /v<CR> [motion 15] | wj3jl [motion 13]
+  CRIT 5: you jjjjjjjjjjj0llllll -> /x<CR> [motion 15] | 2j3j3j3jFx [motion 8]
+  CRIT 1: you jj0llllllllllll -> 2jh [motion 12] | h2j [motion 12]
+  CRIT 0: you 0llllllll -> ty [motion 7] | 8l [motion 7]
+  CRIT 6: you jj0lllllll -> 2jl [motion 7] | l2j [motion 7]
+  CRIT 3: you jjjj0lll -> /us<CR> [motion 4] | j3jTa [motion 3]
+  first live: eh does that in 2 // e does that in 1 // wh does that in 2 // w does that in 1 // wl does that in 2 // ty does that in 2 // 6h3jj does that in 5 // 5h3jj does that in 5 // 4h3jj does that in 5 // 3h3jj does that in 5 // b3jj does that in 4 // hj3j does that in 4
+### challenge-operators seed 1: items 8, keys 114, done=true, critiques 8 (shown 5), live hints 63
+  fixes: extra-char:x | dropped-char:ir<Esc> | wrong-char:rr | extra-char:x | dropped-char:in<Esc> | wrong-short-ident:rn | wrong-char:ra | wrong-short-ident:rl
+  CRIT 4: you jjjjjjj0lllllllllllllllllll -> /a<CR> [motion 24] | j3j3jfa [motion 20]
+  CRIT 5: you jjjjjjjj0lllllllll -> /x<CR> [motion 15] | 2j3jb3j [motion 11]
+  CRIT 1: you jjjjjj0llllllll -> /q<CR> [motion 12] | 3j3j4l [motion 9]
+  CRIT 6: you jjjjjj0lllll -> /c<CR> [motion 9] | b3j3j [motion 7]
+  CRIT 0: you jj0llll -> 2j [motion 5] | jj [motion 5]
+  CRIT 2: you jj0lllll -> /q<CR> [motion 5] | b2jl [motion 4]
+  CRIT 0: you 0llll -> fm [motion 3] | 4l [motion 3]
+  CRIT 3: you jjj0ll -> b3j [motion 3] | /c<CR> [motion 3]
+  first live: fk does that in 2 // fm does that in 2 // /p<CR> does that in 3 // 2jh does that in 3 // 2j does that in 2 // } does that in 1 // 3j3j does that in 4 // 3j3j3h does that in 6 // 3j3j2h does that in 6 // 3j3jh does that in 5 // 3j3j does that in 4 // /e<CR> does that in 3
+### challenge-operators seed 2: items 9, keys 275, done=true, critiques 9 (shown 5), live hints 206
+  fixes: wrong-char:rn | dropped-char:is<Esc> | dropped-char:iq<Esc> | extra-char:x | wrong-word:cwinteger<Esc> | wrong-literal:r0 | extra-char:x | wrong-char:rt | dropped-char:it<Esc>
+  CRIT 2: you jjjjjjjjjj0llllllllllllllllllllllllllllllllll -> /ws<CR> [motion 41] | j3j3j3jfw [motion 36]
+  CRIT 0: you 0lllllllllllllllllllllllllllllllllll -> fh [motion 34] | /h<CR> [motion 33]
+  CRIT 7: you jj0llllllllllllllllllllllllllllllll -> 2jt[ [motion 31] | 2jfs;; [motion 29]
+  CRIT 5: you jjj0llllllllllllllllllllllllll -> /j<CR> [motion 27] | 3jfj [motion 26]
+  CRIT 3: you jjj0llllllllllllllllllllllll -> 3jb [motion 25] | 3jB [motion 25]
+  CRIT 0: you jjj0llllllllllllllllllllllll -> 3jFi [motion 24] | 3jTt [motion 24]
+  CRIT 1: you jj0lllllllllllllllll -> 7h2j [motion 16] | 2j7h [motion 16]
+  CRIT 4: you jj0llllllllllll -> 2j [motion 13] | jj [motion 13]
+  first live: eh does that in 2 // e does that in 1 // wh does that in 2 // w does that in 1 // wl does that in 2 // fy does that in 2 // fn does that in 2 // ee does that in 2 // t= does that in 2 // ww does that in 2 // tr does that in 2 // $B does that in 2
+### challenge-operators seed 3: items 8, keys 178, done=true, critiques 8 (shown 5), live hints 126
+  fixes: dropped-char:is<Esc> | extra-char:x | dropped-char:ie<Esc> | extra-char:x | extra-char:x | wrong-char:re | extra-char:x | wrong-char:ra
+  CRIT 6: you jjjjjj0llllllllllllllllllllllllllllll -> /sr<CR> [motion 33] | 3j3j7l [motion 31]
+  CRIT 4: you jj0lllllllllllllllllllllllllll -> 2jfr [motion 26] | 2jtg [motion 26]
+  CRIT 5: you jjjjj0lllllllllllllllllllllll -> /u<CR> [motion 26] | jb3jj [motion 24]
+  CRIT 2: you jjjjjjjjj0lllllllllll -> /j<CR> [motion 18] | 3j3j3jl [motion 14]
+  CRIT 0: you jjj0llllllllllllllll -> /z<CR> [motion 17] | 3j9l [motion 16]
+  CRIT 1: you jj0llllllllll -> 6h2j [motion 9] | 2j6h [motion 9]
+  CRIT 0: you 0lllllll -> wl [motion 6] | fy [motion 6]
+  CRIT 3: you jj0lll -> /j<CR> [motion 3] | B2jl [motion 2]
+  first live: eh does that in 2 // e does that in 1 // wh does that in 2 // w does that in 1 // wl does that in 2 // 5h3j does that in 4 // 4h3j does that in 4 // ^3je does that in 4 // 2h3j does that in 4 // 3jh does that in 3 // 3j does that in 2 // 3jl does that in 3

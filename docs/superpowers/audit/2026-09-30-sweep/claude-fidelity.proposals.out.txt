@@ -1,0 +1,31 @@
+OK   open-lines | jo<Esc> | keys 3 typed 0
+OK   open-lines | O<Esc>jo<Esc> | keys 5 typed 0
+FAIL open-lines | kO}<Esc> | keys 4 typed 1 GOT ["}","local M = {","  x = 1,","  y = 2,","return M"] mode normal
+FAIL open-lines | o- [ ] <Esc> | keys 8 typed 6 GOT ["## This week","- [ ] Write the migration","- [ ] Tag the release","- [ ] "] mode normal
+OK   open-lines | O// TODO<Esc> | keys 9 typed 7
+OK   substitute | s-<Esc>js-<Esc>js-<Esc> | keys 11 typed 3
+OK   substitute | 4s1rem<Esc> | keys 7 typed 4
+OK   substitute | jjSend<Esc> | keys 7 typed 3
+OK   change-lines | fyCno<Esc>j0fyCno<Esc>j0fyCno<Esc> | keys 22 typed 6
+FAIL change-lines | jjcc}<Esc> | keys 6 typed 1 GOT ["function one() {","  return 1;","}"] mode normal
+OK   change-lines | jf3C8080;<Esc> | keys 10 typed 5
+OK   change-lines | jf,ccreturn;<Esc> | keys 13 typed 7
+OK   reaching-objects | ci(ok<Esc> | keys 6 typed 2
+OK   reaching-objects | di'jdi'jdi' | keys 11 typed 0
+FAIL text-objects-quotes | jci"vimchi<Esc>jci"src<Esc> | keys 19 typed 9 GOT ["{","  \"vimchi\": \"vim-tutor-draft\",","  \"main\"src\"dist/index.js\"","}"] mode normal
+FAIL function-class-objects | dif | keys 3 typed 0 GOT ["export function isAdmin(user: User): boolean {","  const roles = user.roles ?? [];","  return roles.includes('admin');","}"] mode normal
+FAIL function-class-objects | yafP | keys 4 typed 0 GOT ["class Cart {","  add(item: Item) {","    this.items.push(item);","  }","}"] mode normal
+FAIL function-class-objects | >if | keys 3 typed 0 GOT ["function total(xs) {","  let t = 0;","  for (const x of xs) t += x;","  return t;","}"] mode normal
+FAIL back-to-edit | A<Esc> | keys 2 typed 0 GOT ["const res = await fetch(url);","if (!res.ok) throw new HttpError(res.status","return res.json();"] mode normal
+OK   boss-csv-to-object | qaI[<Esc>f,a '<Esc>A'],<Esc>jq2@a | keys 21 typed 6
+OK   boss-csv-to-object | qaI[<Esc>f,a '<Esc>f,i'<Esc>la '<Esc>A'],<Esc>jq2@a | keys 31 typed 9
+OK   paste-while-typing | yiwjf'a<C-r>0<Esc>f a<C-r>0<Esc> | keys 16 typed 2
+OK   paste-while-typing | yiwjf'a<C-r>0<Esc> | keys 10 typed 1
+OK   insert-delete-word | A<C-w>sum);<Esc> | keys 8 typed 5OK   open-lines | jjO}<Esc> | keys 5 typed 1
+OK   change-lines | jjcc}<Esc> | keys 6 typed 1
+OK   text-objects-quotes | jfvci"vimchi<Esc>jfdci"src<Esc> | keys 23 typed 9
+FAIL function-class-objects | dif | keys 3 typed 0 GOT ["export function isAdmin(user: User): boolean {","  ","}"] mode normal
+OK   function-class-objects | yafP | keys 4 typed 0
+FAIL function-class-objects | yafP | keys 4 typed 0 GOT ["class Cart {","  add(item: Item) {","    this.items.push(item);","  }","  add(item: Item) {","    this.items.push(item);","  }","}"] mode normal
+OK   function-class-objects | >if | keys 3 typed 0
+OK   back-to-edit | gi);<Esc> | keys 5 typed 2

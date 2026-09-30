@@ -1,0 +1,32 @@
+import { test } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { writeFileSync } from 'fs';
+import { SECTIONS, numberOf } from '../../../../../src/lessons';
+
+const txt = (n: any) => {
+  try { return renderToStaticMarkup(<>{n}</>).replace(/<code[^>]*>/g, '`').replace(/<\/code>/g, '`').replace(/<[^>]+>/g, ' ').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim(); }
+  catch (e) { return 'RENDER ERROR ' + e; }
+};
+
+test('dump', () => {
+  const out: string[] = [];
+  const sols: any[] = [];
+  for (const s of SECTIONS) {
+    out.push(`\n######## SECTION ${s.id} (${s.band})`);
+    for (const l of s.lessons) {
+      const c: any = l.challenge;
+      out.push(`\n=== ${l.boss ? '★' : numberOf(l.id)} ${l.id} "${l.title}" chips=${JSON.stringify(l.chips)} kind=${c.kind}`);
+      out.push(`CARDS: ${l.keyCards.map(k => `${k.key}=${k.label}${k.sub ? ' (' + k.sub + ')' : ''}`).join(' | ')}`);
+      out.push(`INTRO: ${txt(l.intro)}`);
+      out.push(`PRACTICE: ${txt(l.practice(5))}`);
+      out.push(`ASIDE [${l.aside.title}]: ${txt(l.aside.body)}`);
+      if (c.kind === 'rounds') for (const r of c.rounds) {
+        out.push(`  R: ${r.prompt ?? ''}  ::  ${r.solution}`);
+        sols.push({ id: l.id, n: numberOf(l.id), chips: l.chips, sol: r.solution });
+      }
+      if (c.kind === 'quiz') for (const q of c.questions) out.push(`  Q: ${q.prompt} -> ${q.options[q.answer]}`);
+    }
+  }
+  writeFileSync(__dirname + '/lessons.txt', out.join('\n'));
+  writeFileSync(__dirname + '/solutions.json', JSON.stringify(sols, null, 1));
+});

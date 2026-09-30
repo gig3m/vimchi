@@ -1,0 +1,1984 @@
+
+######## SECTION getting-around (core)
+
+=== 01 move "Four Keys to Move" chips=["h","j","k","l"] kind=target
+CARDS: h=left (index) | j=down (index) | k=up (middle) | l=right (ring)
+INTRO: In normal mode every key is a command. The four keys under your right hand, `h j k l`, move the cursor one character at a time. Rest your index finger on `j`. It reaches `h` too, so your hand never leaves the home row.
+PRACTICE: Move onto the green box . Clear 5 targets. Type a number before a motion to repeat it: `4j` moves down four lines.
+ASIDE [Why hjkl?]: They pull your right hand off the home row, and every trip there and back costs time. Arrow keys are turned off in these lessons.
+
+=== 02 words "Hopping by Word" chips=["w","e","b"] kind=word
+CARDS: w=start of next word | e=end of word | b=back to word start
+INTRO: Crossing a line of code one character at a time is slow. Word motions jump by whole words. A word is a run of letters, digits and underscores, or a run of punctuation. `res.json();` is four words: res , . , json and (); .
+PRACTICE: The green box sits on the first or last character of a word. Reach it with `w`, `e` or `b` in as few keystrokes as you can. Clear 5 targets.
+ASIDE [What counts as a word?]: A run of letters, digits and underscores is one word. So is a run of punctuation. Spaces separate words but aren't part of them. snake_case test1234 res.json(); a-->[diagram]ount before you move: `3w` jumps three words ahead. From the cursor below, each motion lands on the green box under its key[diagram]Üë w ‚Üë e ‚Üë b ‚Üë 3w
+
+######## SECTION small-edits (core)
+
+=== 03 x "Deleting Characters" chips=["x","u"] kind=fix
+CARDS: x=delete character | u=undo
+INTRO: `x` deletes the character under the cursor. It's the quickest fix for a stray keystroke. x befor[diagram]Üí afte[diagram]eleted the wrong one? `u` undoes the last change.
+PRACTICE: This function has 5 typos, marked in red . Move to each one and delete it with `x`. Word motions from the last lesson still work.
+ASIDE [Deleting several at once]: `3x` deletes three characters, starting at the cursor.
+
+=== 04 r "Replacing Characters" chips=["r"] kind=replace
+CARDS: r=replace character | u=undo
+INTRO: `r` followed by any character replaces the one under the cursor. You stay in normal mode the whole time. It's the fastest way to fix a misspelled name, as long as the fix is one letter. rm befor[diagram]Üí afte[diagram]
+PRACTICE: Some names in this class are misspelled. Each orange character has its correct letter tagged above it. Move there, press `r`, then type the letter.
+ASIDE [One character at a time]: `r` changes exactly one character. Renaming a whole identifier is a job for `cw`, covered in Change Words.
+
+######## SECTION next-steps (core)
+
+=== 05 insert-mode "Insert Mode" chips=["i","a","esc"] kind=rounds
+CARDS: i=insert before cursor | a=append after cursor | esc=back to normal
+INTRO: Normal mode is for moving and changing text. To type new text, switch to insert mode. `i` starts typing before the cursor, `a` right after it. i ) esc befor[diagram]Üí afte[diagram]i` types before the cursor. a ! esc befor[diagram]Üí afte[diagram]a` types after it. Press `esc` as soon as you finish typing. Coming back to normal mode straight away is the habit that makes everything else in Vim work.
+PRACTICE: Green marks in the editor show the missing text. Move there, type it, then press `esc`. 5 rounds.
+ASIDE [Esc is far away]: Many people remap Caps Lock to Escape at the OS level. `Ctrl-[` also works as Escape everywhere in Vim, and the tutor accepts it too.
+  R: Add the missing "l" in "Helo".  ::  jfHflal<Esc>
+  R: Add "const " before "name".  ::  kiconst <Esc>
+  R: Close the call with ")".  ::  jf;i)<Esc>
+  R: Insert "!" after "Hi".  ::  2jfia!<Esc>
+  R: Add the space after the comma.  ::  kf,a <Esc>
+
+=== 06 line-ends "Line Ends" chips=["0","$"] kind=rounds
+CARDS: 0=first column | $=last character
+INTRO: `0` jumps to the very first column of the line. `$` jumps to the last character. They work from anywhere on the line, and only on the current line: to reach the end of another line, move there with `j` or `k` first[diagram]Üë 0 ‚Üë $
+PRACTICE: Reach the green box at the start or end of a line. Some sit on another line, so combine with `j` and `k`. 5 rounds.
+ASIDE [A count on $]: `3$` goes to the end of the line two below. It's rarely worth it; `jj$` reads better.
+  R:   ::  $
+  R:   ::  0
+  R:   ::  $
+  R:   ::  j0
+  R:   ::  jj$
+  R:   ::  kk0
+
+=== 07 find-char "Find Character" chips=["f","t"] kind=rounds
+CARDS: f=onto next x | t=just before next x
+INTRO: `f` followed by a character jumps onto the next occurrence of that character on the line. `t` ("till") stops one character before it. Both search the current line only; if the character isn't there, the cursor stays put[diagram]Üë f, ‚Üë t{ ‚Üë f) Aim for a character that's rare on the line, like a bracket or a comma, and you'll get there in two keystrokes.
+PRACTICE: Reach each green box with `f` or `t`. When it's on another line, get there with `j` or `k` first. 5 rounds.
+ASIDE [Why till?]: On its own `t` looks pointless. It shines with operators: `dt)` deletes up to a closing parenthesis but keeps it.
+  R:   ::  f(
+  R:   ::  jf(
+  R:   ::  t{
+  R:   ::  jf'
+  R:   ::  2kf]
+  R:   ::  t)
+
+=== 08 change-words "Change Words" chips=["c","w"] kind=rounds
+CARDS: c=change | w=to the word‚Äôs end
+INTRO: `cw` deletes from the cursor to the end of the word and drops you into insert mode, ready to type the replacement. It's your first operator: `c` means change, `w` says how far. Press `esc` when the new word is in. cw user esc befor[diagram]Üí afte[diagram]
+PRACTICE: Rename each identifier to match the goal. 5 rounds.
+ASIDE [cw is really ce]: `dw` deletes the space after a word, but `cw` doesn't: Vim treats it like `ce` so you can type the new word without re-adding the space.
+  R: Rename "usr" to "user".  ::  cwuser<Esc>
+  R: Change "let" to "const".  ::  jwcwconst<Esc>
+  R: Replace "red" with "green".  ::  kf'lcwgreen<Esc>
+  R: Rename "fetchData" to "loadOrders".  ::  3wcwloadOrders<Esc>
+  R: Change "false" to "true".  ::  k2ffcwtrue<Esc>
+
+######## SECTION insert-like-a-pro (core)
+
+=== 09 insert-line-ends "Insert at Line Ends" chips=["I","A"] kind=rounds
+CARDS: I=insert at start | A=append at end
+INTRO: `I` starts insert mode at the first non-blank character of the line. `A` starts it after the last character. The cursor can be anywhere on the line. I export‚ê£ esc befor[diagram]Üí afte[diagram]sc befor[diagram]Üí afte[diagram]issing semicolon, a trailing comma, an `export` in front of a function: most edits at a line's edges are one of these two keys and some typing.
+PRACTICE: Make each line match the goal. `I` and `A` work from anywhere on the line, so you only need to get to the right line. 5 rounds.
+ASIDE [The very first column]: `I` skips indentation. To insert in column 0, before the indent, use `gI`.
+  R: Add the missing semicolon.  ::  A;<Esc>
+  R: Export the function.  ::  Iexport <Esc>
+  R: Comment out the option.  ::  I-- <Esc>
+  R: Add the trailing comma.  ::  A,<Esc>
+  R: Make the line a second-level heading.  ::  I## <Esc>
+  R: Store the result and end the statement.  ::  kIconst rows = <Esc>A;<Esc>
+
+=== 10 open-lines "Opening New Lines" chips=["o","O"] kind=rounds
+CARDS: o=open line below | O=open line above
+INTRO: `o` opens a new line below the cursor and starts insert mode on it. `O` opens one above. The new line gets the same indentation as the current one. You never need to reach for the end of a line and press Enter. Pick the neighbouring line, then `o` or `O`. o role: 'admin', esc befor[diagram]Üí afte[diagram]
+PRACTICE: Add the missing line from the goal. The cursor is already on a neighbouring line. 5 rounds.
+ASIDE [Blank lines]: `o` then `esc` adds an empty line below. Neovim 0.11 also maps `]‚ê£` and `[‚ê£` to add blank lines below and above without leaving normal mode.
+  R: Add an email field below the name.  ::  oemail: 'ada@example.com',<Esc>
+  R: Add a title above the list.  ::  O## This week<Esc>
+  R: Set the leader before the plugins load.  ::  Ovim.g.mapleader = ' '<Esc>
+  R: Add a blank line after the imports.  ::  O<Esc>
+  R: Log the id before the query.  ::  Olog.debug('getUser', id);<Esc>
+  R: Add a "lint" script under "build".  ::  o"lint": "eslint .",<Esc>
+
+=== 11 substitute "Substitute" chips=["s","S"] kind=rounds
+CARDS: s=substitute character | S=substitute line
+INTRO: `s` deletes the character under the cursor and starts insert mode, so one character becomes whatever you type. `S` clears the whole line, keeping its indentation, and starts insert mode. Use `r` when one character becomes one character. Use `s` when it becomes several, and `S` when the line needs rewriting from scratch. s === esc befor[diagram]Üí afte[diagram]eturn x; esc befor[diagram]Üí afte[diagram]
+PRACTICE: Fix each line with `s` or `S`. A count before `s` replaces that many characters. 5 rounds.
+ASIDE [S is cc]: `S` and `cc` do the same thing. You'll meet `cc` again in Change Lines, alongside `C`.
+  R: Turn the assignment into a strict comparison.  ::  s===<Esc>
+  R: Spell out "&".  ::  jjf&sand<Esc>
+  R: Change "14px" to "0.875rem".  ::  j4s0.875rem<Esc>
+  R: Replace the debug print with a logger call.  ::  Slogger.info({ order }, 'saving');<Esc>
+  R: Rewrite the mapping.  ::  Smap('n', '<lt>leader>w', '<lt>cmd>write<lt>CR>')<Esc>
+  R: Write the missing step.  ::  S2. Push it to the registry.<Esc>
+
+=== 12 replace-mode "Replace Mode" chips=["R"] kind=rounds
+CARDS: R=overwrite text
+INTRO: `R` enters Replace mode: every character you type overwrites the one under the cursor, like the Insert key on a PC keyboard. Typing past the end of the line adds new text. It's `r` for more than one character. Reach for it when new text should sit exactly over old text of the same width: dates, versions, colours, times. R 2.0.0 esc befor[diagram]Üí afte[diagram]
+PRACTICE: Overwrite the old value with the new one using `R`, then press `esc`. 5 rounds.
+ASIDE [Backspace undoes, not deletes]: In Replace mode `Backspace` puts back the original character instead of deleting, so a typo costs nothing: back up and type it again.
+  R: Bump the version to 2.0.0.  ::  f1R2.0.0<Esc>
+  R: Change the colour to #1e90ff.  ::  jf#lR1e90ff<Esc>
+  R: Move the meeting to 14:45.  ::  2jf0R14:45<Esc>
+  R: Set the expiry to 06/15/2027.  ::  f1R06/15/2027<Esc>
+  R: Mark the task done and say when.  ::  RDONE in v1.2<Esc>
+
+=== 13 undo-redo "Undo & Redo" chips=["u","C-r"] kind=rounds
+CARDS: u=undo | C-r=redo
+INTRO: `u` undoes the last change. `C-r` redoes what you just undid. Both take a count: `3u` undoes three changes. A change is one command, however much text it touches. Everything you type between `i` and `esc` is one change, so a whole line of typing goes with a single `u`.
+PRACTICE: Someone has been editing these files. Undo and redo until the buffer matches the goal. 5 rounds.
+ASIDE [Undo is a tree]: Undo, then make a new change, and the undone branch isn't lost. `g-` and `g+` walk through every state the buffer has been in, in time order.
+  R: The return line was deleted by mistake. Bring it back.  ::  u
+  R: Undo the whole line that was typed in.  ::  u
+  R: Undo both renames.  ::  uu
+  R: You undid one step too many. Redo it.  ::  <C-r>
+  R: Undo all three edits, then redo only the first.  ::  3u<C-r>
+
+######## SECTION essential-motions (core)
+
+=== 14 words-big "Moving by WORDs" chips=["W","E","B"] kind=rounds
+CARDS: W=next WORD start | E=WORD end | B=previous WORD start
+INTRO: A WORD is any run of non-blank characters. `W`, `E` and `B` work like `w`, `e` and `b`, but only stop at spaces. In code full of dots, slashes and brackets, a small word ends every few characters. u.roles?.includes('admin') is eight words but one WORD. u.roles?.includes('admin') ?? fals[diagram]0 words u.roles?.includes('admin') ?? false 1 2 3 WORDs
+PRACTICE: Reach each green box with `W`, `E` or `B`. Counts work: `3W`. 5 rounds.
+ASIDE [Which one to use]: Count the spaces, not the punctuation. When the target is a WORD or two away, `W` is the fewest keys; when it's in the middle of a WORD, finish with `w` or `f`.
+  R:   ::  E
+  R:   ::  B
+  R:   ::  W
+  R:   ::  4B
+  R:   ::  4W
+  R:   ::  3E
+
+=== 15 word-ends-backward "Word Ends Backward" chips=["ge","gE"] kind=rounds
+CARDS: ge=previous word end | gE=previous WORD end
+INTRO: `ge` moves back to the end of the previous word. `gE` does the same for WORDs. They are `e` and `E` in reverse. Use them to land on the last character of something behind you: a closing quote, the end of a name, a trailing comma[diagram]Üë ge ‚Üë 2ge ‚Üë gE
+PRACTICE: Reach each green box with `ge` or `gE`. 5 rounds.
+ASIDE [Why not b?]: `b` lands on the start of a word; you'd still need `e` to reach its end. `ge` gets there in one motion, and `dge` deletes back to it.
+  R:   ::  ge
+  R:   ::  2gE
+  R:   ::  gE
+  R:   ::  2ge
+  R:   ::  2gE
+  R:   ::  ge
+
+=== 16 first-char "First Character" chips=["^","_"] kind=rounds
+CARDS: ^=first non-blank | _=first non-blank (count goes down)
+INTRO: `^` jumps to the first non-blank character of the line, past the indentation. That's usually where you want to be, not column 0[diagram]Üë 0 ‚Üë ^ `_` does the same, but takes a count as lines: `3_` goes to the first non-blank two lines down.
+PRACTICE: Reach the green box at the start of the code on a line. Some are on other lines: `j` then `^` works, and a count on `_` is shorter. 5 rounds.
+ASIDE [Plus and minus]: `+` and `Enter` go to the first non-blank of the next line, `-` to the one above. `_` exists mostly for operators: `d_` deletes the whole line, like `dd`.
+  R:   ::  ^
+  R:   ::  ^
+  R:   ::  4_
+  R:   ::  ^
+  R:   ::  2_
+  R:   ::  6_
+
+=== 17 find-backward "Find Backward" chips=["F","T"] kind=rounds
+CARDS: F=back onto x | T=back till x
+INTRO: `F` and `T` are `f` and `t` going left. `F` lands on the previous occurrence of a character; `T` stops just after it. Like `f`, they only search the current line[diagram]Üë F( ‚Üë T( ‚Üë 2F, You often finish typing at the end of a line and need to fix something earlier in it. Look back for a rare character and jump.
+PRACTICE: The cursor starts late in a line. Reach each green box with `F` or `T`, moving to its line first when it's on another one. 5 rounds.
+ASIDE [Counts]: `2F,` jumps back to the second comma. Past two or three, repeating the jump is easier than counting, which is the next lesson.
+  R:   ::  F(
+  R:   ::  T(
+  R:   ::  F'
+  R:   ::  kFf
+  R:   ::  T'
+  R:   ::  2F,
+  R:   ::  jF.
+
+=== 18 repeat-find "Repeat Find" chips=[";",","] kind=rounds
+CARDS: ;=repeat find | ,=repeat, reversed
+INTRO: `;` repeats the last `f`, `t`, `F` or `T`. `,` repeats it in the opposite direction. You don't need to count commas before you jump. Press `f,`, then tap `;` until you're there. Overshoot, and `,` steps back. Neither leaves the line: past the last comma, `;` just stays put. f, ; ; ; , befor[diagram]Üí afte[diagram]f,` then three `;` overshoots to the fourth comma; `,` steps back to the third.
+PRACTICE: Some rounds start mid-jump: the prompt says which find you just typed. Continue it with `;` and `,`. 5 rounds.
+ASIDE [Repeating a till]: After `t,` the cursor sits just before a comma, and a plain repeat would find that same comma. Vim and Neovim skip it, so `;` moves on to the next one.
+  R:   ::  f,;;;
+  R: You just typed f, ‚Äî continue to the fourth comma.  ::  ;;;
+  R: One ; too many. Step back a comma.  ::  ,
+  R: You just typed F- ‚Äî keep going left.  ::  ;
+  R:   ::  jjt,;;
+  R: You typed F,;;; and went two commas too far. Go back.  ::  ,,
+
+=== 19 top-bottom "Top & Bottom" chips=["gg","G"] kind=rounds
+CARDS: gg=first line | G=last line
+INTRO: `gg` jumps to the first line of the file and `G` to the last. Both land on the first non-blank character. With a count they go to that line: `42G` and `42gg` both jump to line 42. Error messages and stack traces give you line numbers; this is how you use them.
+PRACTICE: Jump to the line each round names. 5 rounds.
+ASIDE [Getting back]: `gg` and `G` are jumps. Press `C-o` to return to where you were before, or ```` to toggle between the last two spots.
+  R: Go to the last line.  ::  G
+  R: Go to the first line.  ::  gg
+  R: Go to line 25.  ::  25G
+  R: Go to line 15.  ::  15G
+  R: Go to line 30.  ::  30gg
+  R: Go to line 10.  ::  10G
+
+=== 20 paragraphs "Paragraphs" chips=["{","}"] kind=rounds
+CARDS: {=previous blank line | }=next blank line
+INTRO: `}` jumps forward to the next blank line; `{` jumps back to the previous one. Vim calls the text between blank lines a paragraph. Code has paragraphs too: functions, import blocks, groups of settings. These motions skip a whole block at a time.
+PRACTICE: Reach each green box with `{` and `}`. A count skips several blocks. 5 rounds.
+ASIDE [Only truly empty lines]: A line containing just spaces doesn't count as blank for `{` and `}`. If a jump sails past a gap, that line probably has trailing whitespace.
+  R:   ::  }
+  R:   ::  2}
+  R:   ::  {
+  R:   ::  3{
+  R:   ::  2}
+  R:   ::  }
+
+=== 21 matching-pairs "Matching Pairs" chips=["%"] kind=rounds
+CARDS: %=jump to match
+INTRO: On a bracket, `%` jumps to its partner: ( to ) , [ to ] , { to } , and back. Not on a bracket? `%` finds the next one on the line first, then jumps to its match. From the start of an `if` line it lands on the closing parenthesis of the condition[diagram]Üë %
+PRACTICE: Reach each green box . Every one is a bracket's partner. 5 rounds.
+ASIDE [Beyond brackets]: Neovim ships the matchit plugin, and it is on by default: `%` also jumps between HTML tags and between `if`, `else` and `end` in Lua and shell. In classic Vim, run `:packadd matchit` first.
+  R:   ::  %
+  R:   ::  %
+  R:   ::  %
+  R:   ::  $%
+  R:   ::  %
+  R:   ::  f(;%
+
+######## SECTION screen-movement (core)
+
+=== 22 half-pages "Half Pages" chips=["C-d","C-u"] kind=rounds
+CARDS: C-d=half page down | C-u=half page up
+INTRO: `C-d` scrolls down half a screen and moves the cursor down by the same amount. `C-u` does the same going up. The cursor keeps its place on the screen, so your eyes don't have to hunt for it. Half a page is small enough that you can follow the text as it moves. It's the usual way to read through a file.
+PRACTICE: Scroll to the line each round names with `C-d` and `C-u`. The window shows 13 lines, so each press moves six. 5 rounds.
+ASIDE [Changing the step]: A count sets the step and it sticks: after `10C-d`, every `C-d` and `C-u` moves ten lines until the window is resized.
+  R: Go to the QueueOptions type on line 13.  ::  <C-d><C-d>
+  R: Go to the class on line 25.  ::  <C-d><C-d>
+  R: Go to the constructor on line 31.  ::  <C-d>
+  R: Go to run() on line 69.  ::  <C-d><C-d><C-d>
+  R: Go back up to tick() on line 56.  ::  <C-u><C-u><C-u>
+  R: Go up to push() on line 39.  ::  <C-u><C-u>
+
+=== 23 full-pages "Full Pages" chips=["C-f","C-b"] kind=rounds
+CARDS: C-f=page forward | C-b=page back
+INTRO: `C-f` scrolls forward a whole screen, keeping two lines of overlap, and puts the cursor at the top. `C-b` scrolls back a screen and puts the cursor at the bottom. Use them to skim a long file: a changelog, a log, generated code. When you spot what you want, finish with `j` or `k`.
+PRACTICE: Page to the line each round names with `C-f` and `C-b`, then step onto it. 5 rounds.
+ASIDE [Page Down works too]: `PageDown` and `PageUp` do the same thing, but `C-f` and `C-b` keep your hands on the home row. Many people use `C-d` for reading and save these for skimming.
+  R: Page down to the 3.1.0 release on line 23.  ::  <C-f><C-f>
+  R: Page down to the migration steps on line 45.  ::  <C-f><C-f><C-f><C-f>
+  R: Page down to the 2.4.1 release on line 56.  ::  <C-f><C-f><C-f>
+  R: Page back to the 2.4.0 release on line 61.  ::  <C-b>k
+  R: Page back to the 3.0.0 release on line 34.  ::  <C-b><C-b>
+  R: Page back to the first migration step on line 46.  ::  <C-b><C-b><C-b>
+
+=== 24 screen-lines "Screen Lines" chips=["H","M","L"] kind=rounds
+CARDS: H=top of screen (high) | M=middle of screen (middle) | L=bottom of screen (low)
+INTRO: `H`, `M` and `L` move the cursor to the top, middle and bottom line of the window, landing on the first non-blank character. Nothing scrolls. They get you near anything you can see in one key. Look at the line, pick the closest of the three, then finish with `j` or `k`.
+PRACTICE: Reach each green box . A count counts lines from the edge: `3H` is the third line from the top. 5 rounds.
+ASIDE [With scrolloff]: Neovim's `scrolloff` defaults to 0. If your config sets it, say to 8, `H` and `L` stop 8 lines short of the edges, because going further would scroll the window.
+  R:   ::  H
+  R:   ::  L
+  R:   ::  M
+  R:   ::  H
+  R:   ::  L
+  R:   ::  M
+  R:   ::  3H
+
+=== 25 recenter "Recenter" chips=["zz","zt","zb"] kind=rounds
+CARDS: zz=line to middle | zt=line to top | zb=line to bottom
+INTRO: These scroll the window without moving the cursor. `zz` puts the cursor's line in the middle of the screen, `zt` at the top, `zb` at the bottom. Use `zt` to see as much as possible of a function that starts on your line, `zb` to see what leads up to it, and `zz` to see both.
+PRACTICE: The cursor is already on the line in the green box . Scroll it where the round asks. 5 rounds.
+ASIDE [Always centred]: A popular mapping keeps the cursor mid-screen after half-page jumps: `vim.keymap.set('n', '<C-d>', '<C-d>zz')`, and the same for `<C-u>`.
+  R: Put run() at the top of the screen.  ::  zt
+  R: Put the constructor at the bottom, to see the fields above it.  ::  zb
+  R: Centre tick() on the screen.  ::  zz
+  R: Centre the retry backoff line.  ::  zz
+  R: Put the class line at the bottom, under the defaults.  ::  zb
+  R: Put next() at the top of the screen.  ::  zt
+
+######## SECTION basic-operators (core)
+
+=== 26 intro-operators "Intro to Operators" chips=["d","c","y"] kind=rounds
+CARDS: d=delete | c=change | y=yank (copy)
+INTRO: An operator is a verb waiting for a noun. `d` deletes, `c` changes, `y` copies, but none of them does anything until you say how far. Any motion you know finishes the sentence: `dw` deletes a word, `d$` deletes to the end of the line, `c$` changes it. dw befor[diagram]Üí afte[diagram]d` (delete) + `w` (to the next word) d$ befor[diagram]Üí afte[diagram]ame verb, new noun: `d` + `$` (to the end of the line) This is why Vim pays off. Learn a new motion and it works with every operator; learn a new operator and it works with every motion. A handful of keys multiplies into hundreds of edits.
+PRACTICE: Build each edit from an operator and a motion you already know. 5 rounds.
+ASIDE [Doubling up]: Typing an operator twice acts on the whole line: `dd` deletes it, `cc` changes it, `yy` copies it. The next lessons cover each one.
+  R: Delete "default " with dw.  ::  jjwdw
+  R: Change "noremap" to "silent" with cw.  ::  kfncwsilent<Esc>
+  R: Delete the comment with d$.  ::  jf;ld$
+  R: Rewrite the rest of the line with c$.  ::  jf'c$`Hello, ${name}`;<Esc>
+  R: Copy "await " with yw, then put it before getPosts with P.  ::  jfaywjlP
+
+=== 27 delete-words "Delete Words" chips=["d","w"] kind=rounds
+CARDS: d=delete | w=to next word
+INTRO: `dw` deletes from the cursor to the start of the next word, so the space after the word goes too and the line closes up neatly. A "word" is a run of letters, digits and underscores, or a run of punctuation. So `dw` on `getUserById(id)` with the cursor on `B` stops at the parenthesis. dw befor[diagram]Üí afte[diagram]
+PRACTICE: Get to the word, then delete it with `dw`. 5 rounds.
+ASIDE [Starting mid-word]: `dw` deletes from the cursor, not from the start of the word. To delete the whole word from anywhere inside it, use `daw` from the Text Objects section.
+  R: Delete the second "await".  ::  wdw
+  R: Delete "really".  ::  jj3wdw
+  R: Delete the duplicated "local".  ::  kk2wdw
+  R: Trim "getUserById" to "getUser".  ::  jfBdw
+  R: Delete the second "the".  ::  jj4wdw
+
+=== 28 delete-to-char "Delete to Character" chips=["dt","df"] kind=rounds
+CARDS: dt=delete till x (keeps x) | df=delete through x (takes x too)
+INTRO: `f` and `t` are motions, so they work after an operator. `dt)` deletes up to the next `)` and keeps it. `df,` deletes through the next comma, comma included. dt) befor[diagram]Üí afte[diagram]t) stops before the parenthesis. df. befor[diagram]Üí afte[diagram]f. takes the dot with it. Reach for these when the text you want gone doesn't line up with word boundaries: the rest of an argument list, a chunk of a dotted path, a suffix on a version string.
+PRACTICE: Get to the line, then delete the extra text with `dt` or `df`. Pick the character that ends the deletion. 5 rounds.
+ASIDE [Backwards too]: `dT(` and `dF(` delete backwards to the previous `(`. Backward deletes never include the character under the cursor.
+  R: Remove the "state" label.  ::  jf"dtu
+  R: Drop the options argument.  ::  kf,dt)
+  R: Remove "profile." from the path.  ::  jfpdf.
+  R: Drop the fallback port.  ::  kt?dt;
+  R: Strip the prerelease tag.  ::  jjf-dt"
+
+=== 29 delete-lines "Delete Lines" chips=["dd","D"] kind=rounds
+CARDS: dd=delete line | D=delete to end
+INTRO: `dd` deletes the whole line, wherever the cursor is on it. `D` deletes from the cursor to the end of the line and keeps the rest; it's short for `d$`. Use `dd` to throw away a stray log or a dead import. Use `D` to cut off a trailing comment or the second half of a statement. D befor[diagram]Üí afte[diagram]
+PRACTICE: Delete the line with `dd`, or the end of it with `D`. 5 rounds.
+ASIDE [Deleted, not gone]: Everything you delete goes into a register. After `dd`, press `p` to put the line back below the cursor. That's how you move lines around, as the Copy/Paste lesson shows.
+  R: Delete the console.log line.  ::  jdd
+  R: Delete the trailing comment.  ::  kf/hD
+  R: Remove the swapfile setting.  ::  kkdd
+  R: Cut the note off the end of the task.  ::  kf(hD
+  R: Delete the duplicate "lint" script.  ::  jjdd
+
+=== 30 delete-multiple-lines "Delete Multiple Lines" chips=["dj","dk"] kind=rounds
+CARDS: dj=this line + next | dk=this line + prev
+INTRO: `j` and `k` are linewise motions, so `dj` deletes the current line and the one below, and `dk` deletes the current line and the one above. Add a count to the motion for bigger blocks: `d2j` deletes three lines, this one and two more. There's no need to press `dd` again and again. d2j befor[diagram]Üí afte[diagram]
+PRACTICE: Delete each block in one go with `dj`, `dk` or a count. 5 rounds.
+ASIDE [Count the lines, not the jumps]: `d2j` and `3dd` both delete three lines. With `relativenumber` on, the number beside the last line you want is exactly the count for `j`.
+  R: Delete the two debug lines.  ::  jdj
+  R: Delete the commented-out pair.  ::  dk
+  R: Delete the whole if block.  ::  d2k
+  R: Delete the draft section: heading, text and blank line.  ::  d2j
+  R: Delete the last two lines.  ::  dj
+
+=== 31 change-lines "Change Lines" chips=["cc","C"] kind=rounds
+CARDS: cc=change line | C=change to end
+INTRO: `cc` clears the whole line and puts you in insert mode, keeping the indent. `C` clears from the cursor to the end of the line, like `c$`. They're `dd` and `D` with typing afterwards. Use `cc` when the line is wrong from the start, `C` when only the ending needs rewriting. cc return sum; esc befor[diagram]Üí afte[diagram]c keeps the indent.
+PRACTICE: Rewrite the line, or its end, to match the goal. Press `esc` when done. 5 rounds.
+ASIDE [S is cc]: `S` from the Substitute lesson does exactly what `cc` does. Use whichever your fingers prefer.
+  R: Point the URL at the environment variable.  ::  jjf'Cprocess.env.API_URL;<Esc>
+  R: Replace the debug line with a return.  ::  jjccreturn sum;<Esc>
+  R: Write the intro over the placeholder.  ::  kkccLearn Vim by doing.<Esc>
+  R: Map <leader>w to the write command.  ::  jf:C<lt>cmd>write<lt>CR>')<Esc>
+  R: Change the condition.  ::  jfuCcanVote(user)) {<Esc>
+
+=== 32 copy-paste-lines "Copy/Paste Lines" chips=["yy","p","P"] kind=rounds
+CARDS: yy=yank line | p=put below | P=put above
+INTRO: `yy` yanks (copies) the current line. `p` puts it on a new line below the cursor, `P` above. `y` takes motions like any operator: `yj` yanks two lines. Delete and put work together too, since `dd` also fills the register. `ddp` swaps a line with the one below; `ddkP` moves it up. dd p befor[diagram]Üí afte[diagram]
+PRACTICE: Duplicate or move lines with yank, delete and put. No retyping. 5 rounds.
+ASIDE [Lines stay lines]: A yanked line always goes onto a line of its own, wherever the cursor is. Yank part of a line instead, like `yw`, and `p` puts it right after the cursor.
+  R: Duplicate the first test case.  ::  kkyyp
+  R: Swap the two steps.  ::  jjddp
+  R: Move the import to the top.  ::  ddggP
+  R: Copy the header row above the data.  ::  ggyyGP
+  R: Duplicate both keymap lines below.  ::  jyjjp
+
+=== 33 yank-to-end "Yank to End" chips=["Y"] kind=rounds
+CARDS: Y=yank to end
+INTRO: `Y` yanks from the cursor to the end of the line, the same as `y$`. It pairs with `D` and `C`: all three act on the rest of the line. It's handy when two lines share an ending: yank the tail of one, then put it after the other with `p`. Y j $ p befor[diagram]Üí afte[diagram]
+PRACTICE: Yank the end of one line with `Y` and put it at the end of the next. 5 rounds.
+ASIDE [Neovim vs Vim]: In classic Vim, `Y` yanks the whole line like `yy`. Neovim changed it to `y$` for consistency. Add `nnoremap Y y$` to a vimrc to get the same.
+  R: Give accent the same colour as primary.  ::  jf'Yj$p
+  R: Map <C-p> to the same picker.  ::  kkfbYj$p
+  R: Load admin the same way as user.  ::  jfaYj$p
+  R: Give the second link the same URL.  ::  jjfhYj$p
+
+=== 34 join-lines "Join Lines" chips=["J","gJ"] kind=rounds
+CARDS: J=join with space | gJ=join, no space
+INTRO: `J` pulls the next line up onto this one. It drops the next line's indent and puts a single space between them. `gJ` joins exactly as the text is: no space added, no indent removed. A count joins that many lines: `3J` folds a short three-line object into one. Use `gJ` for things that were never meant to have a space, like a string or URL that got split. J befor[diagram]Üí afte[diagram]J befor[diagram]Üí afte[diagram]
+PRACTICE: Join the lines to match the goal. Choose `J` or `gJ` by whether you want the space. 5 rounds.
+ASIDE [Comments join cleanly]: Neovim's default `formatoptions` includes `j`, so joining two `//` comment lines removes the second `//`. Classic Vim leaves it in.
+  R: Join the sentence back into one line.  ::  jjJ
+  R: Put the table on one line.  ::  kkJ
+  R: Fold compilerOptions onto one line.  ::  jj3J
+  R: Repair the split URL.  ::  jjgJ
+  R: Repair the split key.  ::  jgJ
+
+=== 35 repeat-last-change "Repeat Last Change" chips=["."] kind=rounds
+CARDS: .=repeat change
+INTRO: `.` repeats your last change: the whole thing, including any text you typed in insert mode. After `cwlet`, a `.` on another word changes it to `let` too. It rewards making each change a single, repeatable action. Do it once properly, then move and press `.` for every other place it's needed. A ; esc j . j . befor[diagram]Üí afte[diagram]
+PRACTICE: Make the first edit, then repeat it with `.` instead of typing it again. 5 rounds.
+ASIDE [Motions are not changes]: `.` only repeats edits, never moves, so you're free to move between repeats. `A;` is one change; `$a;` is a motion plus a change, which is why `A` repeats better.
+  R: Add the missing semicolons.  ::  A;<Esc>j.j.
+  R: Change each var to let.  ::  cwlet<Esc>j0.j0.
+  R: Delete every console.log line.  ::  ddj.
+  R: Drop the second argument from each call.  ::  f,ldf,j.j.
+  R: Uncheck all three tasks.  ::  fxr k.k.
+
+=== 36 counts-operators "Counts & Operators" chips=["3dw","d3w"] kind=rounds
+CARDS: 3dw=do dw 3 times | d3w=delete 3 words
+INTRO: A count can go before the operator or before the motion. `3dw` means "delete a word, three times"; `d3w` means "delete three words". The result is the same. Counts work everywhere: `3dd` deletes three lines, `c2w` changes two words, `2yy` yanks two lines. One command beats three repeats. d3w befor[diagram]Üí afte[diagram]
+PRACTICE: Do each edit as one counted command. 5 rounds.
+ASIDE [Counts multiply]: With both, they multiply: `2d3w` deletes six words. Most people keep the count on the motion, because `d3w` reads like the sentence "delete three words".
+  R: Delete "default async ".  ::  kwd2w
+  R: Delete the whole retry block.  ::  4dd
+  R: Change "config.server" to "env".  ::  jjfcc3wenv<Esc>
+  R: Delete "very, very ".  ::  jjfvd3w
+  R: Duplicate both lines of the setting below.  ::  j2yyjp
+
+=== ‚òÖ boss-tidy-function "Boss: Tidy a Function" chips=["cw","dt","dd","."] kind=rounds
+CARDS: cw=change word | dt=delete till | dd=delete line | .=repeat
+INTRO: A working function that nobody tidied: a vague name, a debug flag, leftover logs, a stale comment. Clean it up one edit at a time, using everything from this section. Each round picks up where the last one left off. Think in operator and motion before you touch a key; par is set by the shortest idiomatic edit.
+PRACTICE: Five cleanups on the same function. Green marks show what to add, red what to remove. 5 rounds.
+ASIDE [Plan, then type]: Before each edit, ask where it ends: at a character (`t`, `f`), a word (`w`), the line end (`D`, `C`) or a whole line (`dd`). That answer is the motion.
+  R: Rename calc to orderTotal.  ::  wcworderTotal<Esc>
+  R: Drop the debug parameter.  ::  gg2f,dt)
+  R: Delete both debug lines.  ::  jdd4j.
+  R: Replace the price maths with lineTotal(item).  ::  jf=wct;lineTotal(item)<Esc>
+  R: Remove the stale comment.  ::  3jf;lD
+
+######## SECTION text-objects (core)
+
+=== 37 intro-text-objects "Intro to Text Objects" chips=["i","a"] kind=rounds
+CARDS: i=inner (just the thing) | a=around (plus space or pair)
+INTRO: A motion says where to go; a text object says what to act on. After an operator, `i` means inner and `a` means around, then one more key names the object: `w` for a word, `"` for a quoted string, `(` for parentheses. The cursor can be anywhere inside the object. `diw` deletes the word under the cursor whether you're on its first letter or its last, so you stop steering to the start of things. ciw count esc befor[diagram]Üí afte[diagram]c` (change) + `iw` (inner word), from mid-word di( befor[diagram]Üí afte[diagram]d` (delete) + `i(` (inside parentheses)
+PRACTICE: Put an operator in front of a text object: `diw`, `ciw`, `daw`, `ci"`. Get into the object, anywhere in it, then act. 5 rounds.
+ASIDE [Say it out loud]: Read commands as sentences: `ciw` is "change inner word", `da(` is "delete around parentheses". If you can say it, you can type it.
+  R: Rename "itemCount" to "count" with ciw.  ::  jfCciwcount<Esc>
+  R: Delete "very" and its space with daw.  ::  kfvdaw
+  R: Change the string to "dark" with ci".  ::  ci"dark<Esc>
+  R: Empty the argument list with di(.  ::  jf(di(
+  R: Poll every second instead of every five.  ::  jf5ciw1000<Esc>
+
+=== 38 word-objects "Word Objects" chips=["iw","aw"] kind=rounds
+CARDS: iw=inner word | aw=a word (with its space)
+INTRO: `iw` is the word under the cursor. `aw` is the word plus the space after it, or the space before it when the word ends the line. Change with `ciw`, since you want the gap kept for the new word. Delete with `daw`, since you want the gap gone too. i[diagram][diagram]
+PRACTICE: Land anywhere in the word, then `ciw` to rename or `daw` to remove. 5 rounds.
+ASIDE [Better than dw]: `daw` repeats well with `.` because it doesn't care where in the word you are. `dw` only works from the first letter.
+  R: Rename "orderList" to "orders".  ::  jfLciworders<Esc>
+  R: Delete "really".  ::  jjfydaw
+  R: Delete "again" at the end of the line.  ::  k$daw
+  R: Raise the timeout to 10000.  ::  jjf3ciw10000<Esc>
+  R: Swap "false" for "true".  ::  ciwtrue<Esc>
+  R: Delete the stray "async".  ::  k3wdaw
+
+=== 39 word-objects-big "WORD Objects" chips=["iW","aW"] kind=rounds
+CARDS: iW=inner WORD | aW=a WORD (with its space)
+INTRO: A WORD is everything between spaces, punctuation included. `ciW` on `user.profile.name` takes the whole path; `ciw` would take one piece. Reach for the capital version with paths, URLs, flags like `--no-verify`, and chained property access: anything a space separates but punctuation doesn't. i[diagram][diagram][diagram]
+PRACTICE: Change or delete the whole space-separated chunk with `ciW` or `daW`. 5 rounds.
+ASIDE [Watch the edges]: A WORD grabs punctuation on both ends too. In `f(a.b)`, `ciW` takes the whole call, so use `ci(` for what's inside brackets.
+  R: Replace the config path with PORT.  ::  k3wciWPORT<Esc>
+  R: Remove the --no-verify flag.  ::  jjf-daW
+  R: Point the link at the new docs.  ::  kWciWhttps://neovim.io/doc/<Esc>
+  R: Shorten the optional chain to profile.name.  ::  ciWprofile.name<Esc>
+  R: Delete the bold "really".  ::  jjf*daW
+
+=== 40 text-objects-quotes "Quotes" chips=["i\"","i'","i`"] kind=rounds
+CARDS: i"=inside "‚Ä¶" | i'=inside '‚Ä¶' | i`=inside `‚Ä¶`
+INTRO: `i"`, `i'` and `i`` select the text inside a pair of quotes on the current line. `ci"` is the fastest way to replace a string. i[diagram][diagram]he `a` versions take the quotes too, plus any trailing whitespace. The cursor can be inside the string or on either of its quote marks. Quotes never span lines, so these objects only look at the cursor's line: when the string is further down, move to its line first.
+PRACTICE: Change or empty each string without touching its quotes. Some are on other lines, so get there first. 5 rounds.
+ASIDE [Escapes are skipped]: A backslash-escaped quote doesn't end the string, so `ci"` inside `"say \"hi\""` takes the whole thing.
+  R: Rename the package to "vimchi".  ::  jfvci"vimchi<Esc>
+  R: Switch the theme to tokyonight.  ::  kkfgci'tokyonight<Esc>
+  R: Bump the API path to v2.  ::  ci`/api/v2/users<Esc>
+  R: Clear the hard-coded token.  ::  jjf"di"
+  R: Change the scheme from the opening quote.  ::  ci'kanagawa<Esc>
+
+=== 41 text-objects-parens "Parentheses" chips=["i(","a(","ib"] kind=rounds
+CARDS: i(=inside parens | a(=parens and all | ib=same as i( (b for block)
+INTRO: `i(` selects everything between the nearest enclosing parentheses. `a(` includes the parentheses themselves. `ib` and `ab` are the same objects, easier to type. The cursor can be deep inside: in `fetch(url, { retries: 3 })`, `di(` from `retries` still empties the call. `)` works as well as `(`. i[diagram][diagram]i[diagram]
+PRACTICE: Change or delete the contents of the parentheses. Anywhere inside them will do. 5 rounds.
+ASIDE [Counts climb outward]: `d2i(` skips the innermost pair and works on the one around it. Handy in nested calls like `max(0, min(x, 10))`.
+  R: Pass the whole user instead.  ::  jfFci(user<Esc>
+  R: Drop the parentheses in double.  ::  kkf(ca(n<Esc>
+  R: Empty the call from inside the options.  ::  dib
+  R: Simplify to Math.max(value, 0).  ::  ci(value, 0<Esc>
+  R: Print the greeting variable.  ::  jjf,cibgreeting<Esc>
+
+=== 42 text-objects-brackets "Brackets & Braces" chips=["i[","i{","iB"] kind=rounds
+CARDS: i[=inside [ ] | i{=inside { } | iB=same as i{ (B for Block)
+INTRO: Square brackets and braces work like parentheses: `i[` is inside an array, `i{` inside an object or block. `iB` is another name for `i{`. On a block that spans lines, `di{` deletes the lines inside and leaves the braces on their own lines, ready for a new body. i[diagram][diagram][diagram]
+PRACTICE: Change or empty what's inside the nearest brackets or braces. 5 rounds.
+ASIDE [Angle brackets too]: `i<` works on angle brackets, which is handy for TypeScript generics like `Promise<User[]>`.
+  R: Empty the array.  ::  kkf5di[
+  R: Import useMemo instead.  ::  ci{ useMemo <Esc>
+  R: Clear the function body.  ::  jdiB
+  R: Publish only dist.  ::  jjf[ci["dist"<Esc>
+  R: Empty the plugin options.  ::  di{
+
+=== 43 text-objects-tags "Tags" chips=["it","at"] kind=rounds
+CARDS: it=inside tag | at=whole element
+INTRO: In HTML, XML and JSX, `it` is the content between an opening and closing tag. `at` is the whole element, tags included. It picks the innermost element around the cursor, so `cit` on a link's text changes the link text, and on plain paragraph text changes the whole paragraph. i[diagram][diagram]i[diagram]
+PRACTICE: Change the text inside a tag with `cit`, or remove an element with `dat`. 5 rounds.
+ASIDE [On the tag itself]: With the cursor on the tag name, `cit` still works on that element. The same goes for the closing tag.
+  R: Change the heading to "Dashboard".  ::  jfWcitDashboard<Esc>
+  R: Label the button "Save".  ::  citSave<Esc>
+  R: Remove the icon span.  ::  kkf+dat
+  R: Replace the whole paragraph text.  ::  citComing soon.<Esc>
+  R: Change the page title.  ::  jjwcitvimchi<Esc>
+
+=== 44 sentences-paragraphs "Sentences & Paragraphs" chips=["is","as","ip","ap"] kind=rounds
+CARDS: is=inner sentence | as=a sentence (with its space) | ip=inner paragraph | ap=a paragraph (with blank line)
+INTRO: A sentence ends at `.`, `!` or `?` followed by a space or line end. A paragraph is a run of lines between blank lines. `is` and `ip` take just the text; `as` and `ap` take the trailing space or blank line too. Paragraphs aren't only for prose. In code, a blank-line-separated block is a paragraph, so `dap` deletes a whole function and `yap` copies one. i[diagram][diagram]
+PRACTICE: Delete, change or copy whole sentences and paragraphs. 5 rounds.
+ASIDE [Format a paragraph]: `gqap` rewraps a paragraph to `textwidth`, or 79 columns when that's unset. It's the quickest way to tidy a long Markdown paragraph or a block comment.
+  R: Delete the middle sentence.  ::  das
+  R: Rewrite the second sentence.  ::  jjfOcisPush daily.<Esc>
+  R: Delete the draft paragraph.  ::  dap
+  R: Delete the unused helper.  ::  dap
+  R: Duplicate the keymap block above itself.  ::  yapP
+
+=== 45 reaching-objects "Reaching Objects" chips=["ci\"","ci'","ci("] kind=rounds
+CARDS: ci"=next string (from before it) | ci'=same for quotes | ci(=next brackets (any line below)
+INTRO: Text objects don't need you inside them. If the cursor is before a string on the line, `ci"` jumps forward to the next one and changes it. Outside any brackets, `ci(`, `ci[` and `ci{` reach the next pair the same way. So from the start of a line, `ci'` edits its first string in three keys. Reaching only happens from outside: stand between two strings and the quotes either side of the cursor win, so you'd change the gap. i[diagram][diagram]
+PRACTICE: Change or empty each string or bracket. Strings only reach along the cursor's line, so move to that line first; brackets reach down to later lines. 5 rounds.
+ASIDE [Neovim vs Vim]: Quotes only reach along the current line; brackets keep searching on later lines. Older Vims don't reach for brackets at all, which is why plugins like targets.vim exist.
+  R: Switch the colorscheme.  ::  ci'rose-pine<Esc>
+  R: Make comma the leader key.  ::  jci',<Esc>
+  R: Log the total instead.  ::  jjci`total: ${sum}<Esc>
+  R: Replace the condition with isAdmin(user).  ::  ci(isAdmin(user)<Esc>
+  R: Empty the options table.  ::  di{
+  R: Write a real commit message.  ::  jjci"fix: handle empty cart<Esc>
+  R: Empty the placeholder test name.  ::  di'
+
+######## SECTION visual-mode (core)
+
+=== 46 visual-characters "Visual Characters" chips=["v","o"] kind=rounds
+CARDS: v=select characters | o=other end
+INTRO: `v` starts a selection at the cursor. Any motion now stretches it: `e`, `f,`, `t;`, `j`. Press `d` to delete what's selected, or `esc` to drop it. Only one end of the selection moves. `o` jumps the cursor to the other end, so you can grow the selection backwards when you started a little too far right. v t; o h d befor[diagram]Üí afte[diagram]vt;` selects up to the semicolon, `o` swaps ends, `h` takes the space too.
+PRACTICE: Select the text the goal no longer has, then press `d`. 5 rounds.
+ASIDE [See before you cut]: Most visual edits have an operator form (`vt;d` is `dt;`). Reach for `v` when you want to see the span first, or when no single motion covers it.
+  R: Drop the "debug" label from the log call.  ::  vf d
+  R: Delete the trailing comment on the timeout.  ::  jj$vT,d
+  R: Remove ".map(String)", dot included.  ::  vf)ohd
+  R: Keep only the first name.  ::  vt;ohd
+  R: Cut the middle sentence.  ::  vf.d
+
+=== 47 visual-lines "Visual Lines" chips=["V"] kind=rounds
+CARDS: V=select lines
+INTRO: `V` selects whole lines. Move with `j`, `k`, `}` or `G` and every line you touch is in, no matter where the cursor sits on it. Then act on the block: `d` deletes it, `J` joins it into one line, `p` replaces it with what you last yanked.
+PRACTICE: Select the lines with `V`, then finish with one command. 5 rounds.
+ASIDE [Count the lines for you]: `Vjjd` and `3dd` do the same thing. The visual version saves you counting, and you see the damage before you commit to it.
+  R: Delete the three debug lines.  ::  Vjjd
+  R: Join the import list onto one line.  ::  VjjjJ
+  R: Delete the whole retry block, from the cursor up.  ::  Vkkkd
+  R: Delete everything below the cursor line.  ::  VGd
+  R: Replace the two old routes with the yanked line.  ::  Vjp
+
+=== 48 reselect "Reselect" chips=["gv"] kind=rounds
+CARDS: gv=last selection
+INTRO: `gv` brings back the last visual selection, same kind and same span, wherever the cursor is now. Most visual commands end the selection. `gv` is how you apply a second command to the same text: shift a block twice, or select, check, and then act.
+PRACTICE: Each round names a selection you made a moment ago. Get it back with `gv` and finish the edit. 5 rounds.
+ASIDE [Marks behind it]: The selection is stored in the marks `'<` and `'>`. That's why pressing `:` in visual mode fills in `:'<,'>`, and why `gv` survives edits elsewhere.
+  R: You just selected the two "old" entries. Delete them.  ::  gvd
+  R: Indent the two lines, then reselect and indent again.  ::  Vj>gv>
+  R: You selected "timeout" a moment ago. Change it to "timeoutMs".  ::  gvctimeoutMs<Esc>
+  R: You last selected the hand-wrapped paragraph. Join it.  ::  gvJ
+
+=== 49 visual-operators "Visual Operators" chips=["d","c","y"] kind=rounds
+CARDS: d=delete selection | c=change selection | y=yank selection
+INTRO: In visual mode an operator needs no motion: the selection is the motion. `d` deletes it, `c` deletes it and starts insert mode, `y` copies it. This works the same for characters and lines. Select with `v` or `V`, then choose what to do.
+PRACTICE: Select, then use `d`, `c` or `y` to match the goal. 5 rounds.
+ASIDE [Paste over a selection]: `p` in visual mode replaces the selection with the register, and the replaced text goes into the register. Use `P` to keep the register as it was.
+  R: Replace the port expression with 8080.  ::  3wvt;c8080<Esc>
+  R: Drop the first check.  ::  v2f d
+  R: Copy "order.customer.id" into the empty argument.  ::  vt;yjf)P
+  R: Replace the loop with a single return.  ::  Vjjcreturn sum(xs);<Esc>
+  R: Copy port and host into the test config.  ::  VjyGP
+
+=== 50 visual-block "Visual Block" chips=["C-v"] kind=rounds
+CARDS: C-v=select a block
+INTRO: `C-v` selects a rectangle: the same columns on every line you move over. It's the tool for anything laid out in columns. Operators work on the rectangle only. `d` cuts a column out, `c` retypes it on every line, `r` overwrites every character in it. ^V j j 5l d befor[diagram]Üí afte[diagram]lock six columns wide and three lines tall, cut in one go.
+PRACTICE: Select a block with `C-v` and edit all the lines at once. 5 rounds.
+ASIDE [Windows terminals]: Some terminals take `C-v` for paste. `C-q` starts block mode too, in Vim and Neovim.
+  R: Uncomment the three lines.  ::  <C-v>jjlld
+  R: Tick every box.  ::  <C-v>jjrx
+  R: Change every "var" to "let".  ::  <C-v>jjeclet<Esc>
+  R: Delete the qty column.  ::  <C-v>3j4ld
+  R: Rename the "old_" prefix to "new_" on the lower two lines.  ::  <C-v>j3lcnew_<Esc>
+
+=== 51 block-insert-append "Block Insert & Append" chips=["I","A","$A"] kind=rounds
+CARDS: I=insert before block | A=append after block | $A=append at line ends
+INTRO: With a block selected, `I` types before it and `A` types after it. You see the text on the first line only; it appears on the rest when you press `esc`. Lines are rarely the same length, so press `$` before `A`. The block then runs to the end of every line, and the text lands at each end. ^[diagram]sc befor[diagram]Üí afte[diagram]ith `$`, the comma lands at the end of each line, however long.
+PRACTICE: Select a block, type once with `I` or `A`, then `esc`. 5 rounds.
+ASIDE [Commenting]: `C-v` `I//` is the classic way to comment lines out. Neovim also has `gc`, which knows each filetype's comment syntax.
+  R: Turn the lines into a bullet list.  ::  2j<C-v>jjI- <Esc>
+  R: Make the three globals local.  ::  <C-v>kkIlocal <Esc>
+  R: Add "-outline" after each size.  ::  <C-v>jjA-outline<Esc>
+  R: End every statement with a semicolon.  ::  <C-v>jj$A;<Esc>
+  R: Add a comma after the first two items.  ::  <C-v>j$A,<Esc>
+
+=== 52 growing-selections "Growing Selections" chips=["v","a(","i("] kind=rounds
+CARDS: v=start selecting | a(=around parens | i(=inside parens
+INTRO: Text objects work in visual mode too. `va(` selects the nearest parentheses and what's inside. Press `a(` again and the selection grows to the next pair out. `i(` grows the same way, one level at a time, but stops inside the parentheses. Keep pressing until the highlight covers what you want, then act on it. i[diagram][diagram]i[diagram]a[diagram]i[diagram]ach press grows the selection one pair of parentheses further out.
+PRACTICE: Grow the selection from the cursor until it covers the right span, then change or delete it. 5 rounds.
+ASIDE [Counts do the same]: `v2i(` equals `vi(i(`, and it works without visual mode: `c2i(` changes the second level out. Growing by hand is easier when you can't count the brackets at a glance.
+  R: Replace everything inside render(...) with "app".  ::  vi(i(capp<Esc>
+  R: Replace the whole "(isAdmin || isOwner)" group with canEdit(user).  ::  va(a(ccanEdit(user)<Esc>
+  R: Log "body" instead of the whole expression.  ::  vi(i(i(cbody<Esc>
+  R: Empty the grid, keeping the outer brackets.  ::  vi[i[d
+  R: Replace the whole config object with {}.  ::  va{a{c{}<Esc>
+
+######## SECTION search (core)
+
+=== 53 search-forward "Search Forward" chips=["/","n","N"] kind=rounds
+CARDS: /=search forward | n=next match | N=previous match
+INTRO: `/` opens a search prompt at the bottom. Type a pattern and press `enter`: the cursor jumps to the next match. `n` goes to the match after that, `N` back to the one before. Search is the fastest way to cross a file. Type just enough to be unique: `/sleep(` skips the import and lands on the call[diagram]Üë /sleep<CR> ‚Üë /sleep(<CR> Each pattern lands on the first match after the cursor.
+PRACTICE: Reach the green box with a search, then `n` or `N` if you need to. 5 rounds.
+ASIDE [Counts and wrapping]: `3n` skips ahead three matches. At the end of the file the search wraps to the top and says so; `:set nowrapscan` makes it stop instead.
+  R:   ::  /catch<CR>
+  R:   ::  /sleep(<CR>
+  R:   ::  /throw<CR>
+  R:   ::  /lastError<CR>2n
+  R: The last search was "retries".  ::  n
+  R: The last search was "attempt".  ::  N
+
+=== 54 search-backward "Search Backward" chips=["?"] kind=rounds
+CARDS: ?=search backward
+INTRO: `?` works like `/` but searches up the file, towards the top. After a `?` search, `n` keeps going backwards and `N` goes forwards. `n` always means "same direction as the last search".
+PRACTICE: The cursor starts low in the file. Reach the green box above it with `?`. 5 rounds.
+ASIDE [Search history]: At the `/` or `?` prompt, `C-p` and `C-n` (or the arrow keys) step through earlier searches, so you rarely retype a long pattern.
+  R:   ::  ?fn<CR>
+  R:   ::  ?try<CR>
+  R:   ::  ?let<CR>
+  R:   ::  ?import<CR>
+  R:   ::  ?await<CR>n
+  R:   ::  ?Promise<CR>
+
+=== 55 word-under-cursor "Word Under Cursor" chips=["*","#"] kind=rounds
+CARDS: *=next same word | #=previous same word
+INTRO: `*` searches forward for the word under the cursor, `#` searches backward. No typing needed. They match whole words only: `*` on err skips errs . Afterwards `n` and `N` keep going with the same word.
+PRACTICE: Put the cursor's word to work: reach the green box with `*` or `#`. 5 rounds.
+ASIDE [Partial matches]: `g*` and `g#` drop the whole-word rule, so `g*` on err stops inside errs too[diagram]Üë * ‚Üë g*
+  R:   ::  *
+  R:   ::  *
+  R:   ::  #
+  R:   ::  #
+  R:   ::  *
+  R:   ::  2*
+
+=== 56 search-as-motion "Search as a Motion" chips=["d/","c/"] kind=rounds
+CARDS: d/=delete to match | c/=change to match
+INTRO: A search is a motion, so operators take it. `d/return` then `enter` deletes from the cursor up to the next return , across lines if needed. The match itself stays. Use it when the end of the edit is easier to name than to count: a keyword, a heading, the next place a word appears.
+PRACTICE: Delete or change up to a search match to reach the goal. 5 rounds.
+ASIDE [Include the match]: Search motions stop before the match. Add an end offset to eat it too: `d/foo/e` deletes through the last letter of foo .
+  R: Delete the debug lines, up to "return".  ::  d/return<CR>
+  R: Drop the admin check, up to the next "user".  ::  d/user<CR>
+  R: Replace the concatenation with full_name.  ::  /first<CR>c/ AS<CR>full_name<Esc>
+  R: Delete the fields before "version".  ::  d/"version<CR>
+  R: Delete the outdated section, up to "## Usage".  ::  d/## Usage<CR>
+
+=== 57 change-next-match "Change Next Match" chips=["gn","cgn","."] kind=rounds
+CARDS: gn=select next match | cgn=change next match | .=do it again
+INTRO: `gn` is a text object for the next search match. `cgn` changes it, `dgn` deletes it, `gUgn` uppercases it. The payoff is `.`: it repeats the change on the next match, no `n` needed. Search once, change once, then press `.` for every other occurrence. * cgn rows esc . . befor[diagram]Üí afte[diagram]
+PRACTICE: Change every match with one `gn` edit and some `.`s. 5 rounds.
+ASIDE [A safer :s]: Unlike `:%s`, you see each change as it happens and can stop early. To leave one match alone, move past it before pressing `.` again.
+  R: Rename every "data" to "rows".  ::  *cgnrows<Esc>..
+  R: The last search was "print". Make each one "log".  ::  cgnlog<Esc>..
+  R: Delete every " !important".  ::  dgn..
+  R: Uppercase every "todo".  ::  gUgn..
+  R: Rename "cfg" to "config" everywhere.  ::  /cfg<CR>cgnconfig<Esc>...
+
+=== 58 search-offsets "Search Offsets" chips=["/e","/+1"] kind=rounds
+CARDS: /e=land on match end | /+1=line below match
+INTRO: A search can say where to land. `/tabstop/e` puts the cursor on the last letter of the match. `/e+1` goes one character past it, which is handy for landing on a value after its name. A plain number moves by lines instead: `/keymap/+1` lands at the start of the line below the match, `/tabstop/-1` on the line above[diagram]Üë /shift<CR> ‚Üë /shift/e<CR> ‚Üë /= /e+1<CR>
+PRACTICE: Reach the green box with one search and an offset. 5 rounds.
+ASIDE [Offsets stick]: `n` reuses the offset along with the pattern. `//e` keeps the last pattern and gives it a new offset, and `/s-1` or `/b+2` count from the start of the match.
+  R:   ::  /tabstop/e<CR>
+  R: Land on the shiftwidth value.  ::  /shiftwidth = /e+1<CR>
+  R:   ::  /keymap/+1<CR>
+  R:   ::  /tabstop/-1<CR>
+  R: The last search was "keymap". Land on its end.  ::  //e<CR>
+
+=== 59 clear-highlights "Clear Highlights" chips=[":noh","C-l"] kind=rounds
+CARDS: :noh=hide highlights | C-l=redraw and clear
+INTRO: Neovim highlights every match of the last search and leaves them lit. `:noh` (short for `:nohlsearch`) turns them off until the next search. `C-l` redraws the screen, and in Neovim it also runs `:noh`. The pattern is kept: `n` still works and brings the highlights back.
+PRACTICE: Get to the box if there is one, then clear the highlights. 5 rounds.
+ASIDE [In Vim]: Classic Vim's `C-l` only redraws, and `hlsearch` is off by default. Many configs map `esc` to `:noh` instead.
+  R: Clear the "opt" highlights with :noh.  ::  :noh<CR>
+  R: Clear the "vim" highlights with C-l.  ::  <C-l>
+  R: Search your way to the box, then clear.  ::  /leader<CR><C-l>
+  R: Jump to the next "opt" with *, then clear.  ::  *<C-l>
+
+######## SECTION indent-case (core)
+
+=== 60 indenting "Indenting" chips=[">>","<<",">"] kind=rounds
+CARDS: >>=indent line | <<=dedent line | >=indent operator
+INTRO: `>>` shifts the current line right by one shiftwidth , `<<` shifts it left. A count shifts that many lines: `3>>`. `>` and `<` are operators, so they take any motion or text object. `>i{` indents the body of a block, `<2j` this line and the two below. >j befor[diagram]Üí afte[diagram]
+PRACTICE: Shift lines until the indentation matches the goal. Shiftwidth is 2 here. 5 rounds.
+ASIDE [Deeper in one go]: In visual mode a count means levels: `V` `3>` shifts the selection three times. In normal mode, press `.` to shift again.
+  R: Indent the return statement.  ::  >>
+  R: The font line is indented one level too far.  ::  <<
+  R: Indent everything inside the braces.  ::  >i{
+  R: This call sits two levels deep.  ::  >>.
+  R: Pull the three lines under "test:" back one level.  ::  <2j
+
+=== 61 auto-indent "Auto-Indent" chips=["=","=="] kind=rounds
+CARDS: ==reindent operator | ===reindent line
+INTRO: `=` re-indents lines the way the filetype says they should be. `==` fixes the current line; `=i{` fixes a block; `gg=G` fixes the whole file. Use it after pasting code from somewhere else, or when an edit has left a block ragged. You don't count levels; Vim works them out from the brackets and keywords around. =G befor[diagram]Üí afte[diagram]
+PRACTICE: Let `=` fix the indentation. 5 rounds.
+ASIDE [Formatters]: `=` only moves lines left and right. For full formatting (line breaks, quotes, spacing) most setups run a formatter such as Prettier or stylua through conform.nvim or the LSP.
+  R: Fix the return line.  ::  ==
+  R: Fix everything inside the routes object.  ::  =i{
+  R: Fix the second function.  ::  =ap
+  R: Re-indent the whole file.  ::  gg=G
+
+=== 62 toggle-case "Toggle Case" chips=["~"] kind=rounds
+CARDS: ~=toggle case
+INTRO: `~` flips the case of the character under the cursor and moves one to the right. A count flips that many: `4~`. It's the quick fix for one wrong capital, and since it moves along as it goes, repeated presses walk across a word. 3~ befor[diagram]Üí afte[diagram]
+PRACTICE: Move to the wrong letters and flip them with `~`. 5 rounds.
+ASIDE [Classic Vim]: With `:set tildeop`, `~` becomes an operator like `g~` and needs a motion. It's off by default in both Vim and Neovim.
+  R: Class names start with a capital.  ::  kkw~
+  R: Title-case the heading.  ::  w~w~
+  R: The property is innerHTML.  ::  jft3~
+  R: Constants are all caps.  ::  kfu3~
+  R: Uppercase the SQL keywords.  ::  6~2w4~
+
+=== 63 case-operators "Case Operators" chips=["gu","gU","g~"] kind=rounds
+CARDS: gu=lowercase | gU=uppercase | g~=toggle case
+INTRO: `gu`, `gU` and `g~` are operators: lowercase, uppercase and toggle, over any motion or text object. `gUiw` uppercases a word, `gu$` lowercases to the end of the line. Doubled, they work on the whole line: `guu`, `gUU`, `g~~`. gUiw befor[diagram]Üí afte[diagram]
+PRACTICE: Fix the case with one operator and a motion or text object. 5 rounds.
+ASIDE [In visual mode]: With a selection, `u` lowercases, `U` uppercases and `~` toggles. Handy after `C-v` when the text sits in a column.
+  R: Make the constant uppercase.  ::  gUiw
+  R: Lowercase the email address.  ::  gu$
+  R: Uppercase the variable name, up to the "=".  ::  gUt=
+  R: Caps Lock was on. Fix the string.  ::  g~i"
+  R: Uppercase the Normal background colour.  ::  gUi'
+
+=== 64 formatting-text "Formatting Text" chips=["gq","gw"] kind=rounds
+CARDS: gq=format lines | gw=format, stay put
+INTRO: `gq` re-wraps text to textwidth : long lines break, short lines join up. It keeps comment leaders, so a wrapped // comment stays a comment. `gqq` does one line, `gqip` a paragraph. `gw` does the same but leaves the cursor where it was, so you can keep typing where you left off.
+PRACTICE: Wrap the text to the goal. textwidth is 40 here. 5 rounds.
+ASIDE [No textwidth set]: With `textwidth=0`, `gq` wraps at 79 columns. Set it per filetype, for example `vim.opt_local.textwidth = 72` for git commit messages.
+  R: Wrap the long comment.  ::  kgqq
+  R: Reflow the whole paragraph.  ::  gqip
+  R: Reflow the paragraph without moving the cursor.  ::  gwip
+  R: Join the choppy comment into fuller lines.  ::  gqip
+
+=== 65 incrementing-numbers "Incrementing Numbers" chips=["C-a","C-x"] kind=rounds
+CARDS: C-a=add | C-x=subtract
+INTRO: `C-a` adds one to the number under the cursor, `C-x` subtracts one. With a count they add or subtract that much: `5C-a`. The cursor doesn't have to be on the number. From anywhere before it on the line, they find the next number and change that. 4^A befor[diagram]Üí afte[diagram]rom the start of the line, C-a finds the first number.
+PRACTICE: Change the numbers with `C-a` and `C-x`, no typing. 5 rounds.
+ASIDE [Other bases]: Hex like 0xff and binary like 0b101 count in their own base. Neovim leaves out octal by default, so 007 becomes 008 .
+  R: Make the margin 12px.  ::  j4<C-a>
+  R: Halve the timeout.  ::  500<C-x>
+  R: Flip the offset to +1.  ::  kk2<C-a>
+  R: Grow each heading by 2px.  ::  2<C-a>j.j.
+  R: Retry one time fewer.  ::  <C-x>
+
+=== 66 number-sequences "Number Sequences" chips=["g C-a"] kind=rounds
+CARDS: g C-a=count up
+INTRO: In visual mode, `C-a` adds one to the first number on every selected line. `g C-a` adds progressively: one to the first line, two to the second, three to the third. Write the same line several times, select them, press `g C-a`, and you have a numbered sequence. A count sets the step: `10g C-a` counts in tens. V G g^A befor[diagram]Üí afte[diagram]
+PRACTICE: Select the lines and turn the repeated numbers into a sequence. 5 rounds.
+ASIDE [Block selections]: Only the selected columns count. With `C-v` you can skip numbers earlier in the line, like the 1 in h1 .
+  R: Number the steps 1 to 4.  ::  jVGg<C-a>
+  R: Give the rows ids 1 to 3.  ::  VGg<C-a>
+  R: Set the values to 1, 2, 3 without touching h1, h2, h3.  ::  <C-v>jjg<C-a>
+  R: Space the layers out in steps of 10.  ::  VG10g<C-a>
+  R: Point the second and third servers at the next ports.  ::  jVjg<C-a>
+
+=== ‚òÖ boss-clean-config "Boss: Clean Up a Config File" chips=["=","C-x","~","gq"] kind=rounds
+CARDS: ==reindent | C-x=subtract | ~=toggle case | gq=format lines
+INTRO: Someone pasted this Neovim config together from three places. The indentation is all over the place, the numbers are wrong, the font name is lowercase and the header comment is too wide. Fix it one step at a time with this section's keys and the motions you already know.
+PRACTICE: Each round is one clean-up step on the same file. textwidth is 50. 5 rounds.
+ASIDE [Real life]: On a real file you'd start with `gg=G` too: fixed indentation makes every other problem easier to see.
+  R: Re-indent the whole file.  ::  gg=G
+  R: Set tabstop and shiftwidth to 2.  ::  2<C-x>j.
+  R: The font is "JetBrains Mono".  ::  fj~fb~w~
+  R: Wrap the header comment.  ::  gqj
+
+######## SECTION registers (repeat)
+
+=== 67 unnamed-register "The Unnamed Register" chips=["\"\"","xp","ddp"] kind=rounds
+CARDS: ""=unnamed register (what p puts) | xp=swap two chars | ddp=move line down
+INTRO: Every yank, delete and change lands in the unnamed register, `""`, and `p` and `P` put from it. So `dd` is really cut: `ddp` moves a line down and `xp` swaps two characters. You rarely type `""p`, because plain `p` means the same thing. What matters is knowing that `x`, `dw` and `cw` all overwrite it. x p befor[diagram]Üí afte[diagram]x` cuts the r into `""`, `p` puts it back one to the right.
+PRACTICE: Cut and put to make the buffer match the goal. 5 rounds.
+ASIDE [Where did my yank go?]: Yank a word, delete the one you meant to replace, press `p`: you get the deleted word back. The next lesson shows where the yank went.`"+` is the system clipboard; `:reg` lists every register.
+  R: Fix "retrun".  ::  kfuhxp
+  R: Sort the imports: move the first line down one.  ::  ddp
+  R: Move "async " so it comes after "default".  ::  2kwdwwP
+  R: The tax is used before it is defined. Move its line up one.  ::  ddkP
+  R: Swap the first two helper functions.  ::  dap}p
+
+=== 68 yank-register "The Yank Register" chips=["\"0"] kind=rounds
+CARDS: "0=last yank (deletes leave it alone)
+INTRO: A yank also goes into register `0`, and deletes never touch it. After `yy`, then `dd`, the unnamed register holds the deleted line but `"0p` still puts the yank. That's the fix for the most common register surprise: yank the good text, delete the bad text, then put from `"0`. yy j dd "0P befor[diagram]Üí afte[diagram]dd` overwrote `""`, but `"0` still holds the yank.
+PRACTICE: Yank the right text, delete what it replaces, then put with `"0`. 5 rounds.
+ASIDE [One more idea]: Replacing the same word in several places? Yank it once, then `viw"0p` on each target. Plain `viwp` works the first time only, because it puts the replaced word in `""`.
+  R: Give staging the same retries line as prod.  ::  yy4jdd"0P
+  R: Replace the TODO with a copy of the first expect line.  ::  yy3jdd"0P
+  R: Match the react-dom version to react.  ::  f^yi"jf^di""0P
+  R: Use the local "map" alias on both lines below it.  ::  yiwjvt(pj0vt("0p
+  R: Replace both stale lines with the export line.  ::  yyGdk"0p
+
+=== 69 named-registers "Named Registers" chips=["\"a","\"b"] kind=rounds
+CARDS: "a=use register a (before y, d, c or p) | "b=use register b
+INTRO: Put `"` and a letter in front of a yank, delete or put to use one of 26 named registers. `"ayy` yanks the line into `a`, `"ap` puts it back. Named registers only change when you ask, so they're the place to park text you'll need a few edits from now, or two snippets you need at once.
+PRACTICE: Yank into the named registers each round asks for, then put them where they belong. 5 rounds.
+ASIDE [Registers survive restarts]: Neovim saves registers in the ShaDa file, so text in `a` is still there tomorrow. Handy for a snippet you paste every day.
+  R: Yank the query line into register q.  ::  k"qyy
+  R: Save the URL in u and the header name in k.  ::  2kf'"uyi'jf'"kyi'
+  R: Give the orders suite the same beforeEach and afterAll.  ::  "ayy2j"byy4j"aPj"bp
+  R: Register h holds the license header and s the strict pragma. Put both at the top, h first.  ::  gg"sP"hP
+
+=== 70 appending-registers "Appending to Registers" chips=["\"A"] kind=rounds
+CARDS: "A=append to a (uppercase name)
+INTRO: Name a register in uppercase to add to it instead of replacing it. `"ayy` starts a collection, and each `"Ayy` after that adds another line. It turns scattered lines into one paste: gather every TODO, every import, every failing test name, then `"ap` once. "ayy 2j "Ayy G "ap befor[diagram]Üí afte[diagram]
+PRACTICE: Collect the lines into one register with `"a` then `"A`, and put them where the goal shows. 5 rounds.
+ASIDE [Collect with :g]: Clear the register with `qaq`, then `:g/TODO/y A` appends every matching line in one command.
+  R: Copy the three TODO lines under "Open TODOs".  ::  j"ayy2j"Ayy2j"AyyG"ap
+  R: Move both imports to the top of the file.  ::  "addj"Addgg"aP
+  R: Register e already holds one exported name. Add the other two lines to it.  ::  "Eyy2j"Eyy
+  R: Cut the two debug lines into t and put them at the bottom.  ::  "tddj"TddG"tp
+
+=== 71 delete-history "Delete History" chips=["\"1","\"-"] kind=rounds
+CARDS: "1=recent line deletes ("1 newest, "9 oldest) | "-=small delete (within one line)
+INTRO: Deleting a line or more pushes it onto a stack: the newest in `"1`, the one before in `"2`, down to `"9`. Deletes inside a line, like `dw` or `x`, go to `"-` instead. So nothing you deleted recently is gone. `"3p` brings back the line you cut three deletes ago, without undoing the two since. dd dd "2p befor[diagram]Üí afte[diagram]wo deletes later, `"2` still holds the first line.
+PRACTICE: Some text has already been deleted in each round. Put back the piece the prompt asks for from the delete registers. 5 rounds.
+ASIDE [Walking the stack]: Not sure which number? Type `"1p`, then `u.` repeatedly: each `.` after a numbered put moves on to the next register.
+  R: Three lines were deleted. Put the first one back below the cursor.  ::  "3p
+  R: Two lines were deleted. Put back the first one, the return, below the cursor.  ::  "2p
+  R: A word was cut, then a line. Put the word back before "function".  ::  w"-P
+  R: Delete the "old" line, then put the benchmark task deleted earlier back at the end.  ::  dd"2p
+
+=== 72 black-hole-register "The Black Hole" chips=["\"_"] kind=rounds
+CARDS: "_=black hole (delete without saving)
+INTRO: Text deleted into `"_` goes nowhere. `"_dd` removes a line and leaves every other register, including `""`, exactly as it was. Use it when you yank first and clear space second: the plain `p` afterwards still puts your yank.
+PRACTICE: Yank the good text, delete the bad text into `"_`, then put with plain `p` or `P`. 5 rounds.
+ASIDE [Visual P]: In visual mode, `P` replaces the selection and keeps the register as it was, so `viwP` can replace word after word. Vim before 9.0 doesn't have it.
+  R: Replace the two log lines with a copy of the return line.  ::  yy3j"_2ddP
+  R: Replace "ctx2" with the yanked "ctx".  ::  yiwjfc"_diwP
+  R: Swap in the yanked name for "tmp", keeping the comma.  ::  yiw2jf(l"_dt,P
+  R: Replace the placeholder paragraph with the yanked intro.  ::  yyG"_dipp
+
+=== 73 read-only-registers "Read-Only Registers" chips=["\".","\"%","\":"] kind=rounds
+CARDS: ".=last inserted text | "%=current file name | ":=last command line
+INTRO: Vim fills a few registers for you. `".` holds the text you last typed in insert mode, `"%` the current file name, and `":` the last command you ran. You can't yank into them, but you can put from them: `"%p` writes the file name into a comment, `":p` pastes a command into your notes.
+PRACTICE: Put from the read-only register the prompt describes. 5 rounds.
+ASIDE [Run it again]: `@:` runs the `":` register as a command again, and `@@` repeats that. It's dot-repeat for Ex commands.
+  R: You just typed the aria attribute on the first icon. Add it to the second one too.  ::  jF/".P
+  R: Finish the header comment with the file name.  ::  gg$"%p
+  R: Paste the command you just ran into the code block.  ::  o:<Esc>":p
+  R: Name the module after its file.  ::  2jf'"%p
+
+=== 74 paste-while-typing "Paste While Typing" chips=["C-r"] kind=rounds
+CARDS: C-r=insert a register (then its name) | C-r "=what you just cut | C-r 0=your last yank
+INTRO: In insert mode, `C-r` followed by a register name types that register's contents at the cursor. `C-r 0` inserts your last yank, `C-r "` what you just deleted. It saves the leave-insert, put, re-enter dance, and it works on the command line too: yank a word, then `:%s/` and `C-r 0` to search for it.
+PRACTICE: Build each line with `C-r` instead of retyping. 5 rounds.
+ASIDE [Word under the cursor]: On the command line, `C-r C-w` inserts the word under the cursor without yanking it first. `:%s/``C-r C-w``/` is the classic rename.
+  R: Log the value with a label.  ::  yiwOconsole.log('<C-r>0', <C-r>0);<Esc>
+  R: Wrap the id in String().  ::  kf(wciwString(<C-r>")<Esc>
+  R: Register u holds the endpoint. Fill in the empty string.  ::  ggf'a<C-r>u<Esc>
+  R: Rename every "amt" to "amount" with :s and C-r.  ::  yiw:%s/<C-r>0/amount/g<CR>
+  R: Turn the key into a getter call.  ::  $byiwjf;isettings.get('<C-r>0')<Esc>
+
+=== 75 expression-register "Expression Register" chips=["C-r","="] kind=rounds
+CARDS: C-r=insert a register | ==expression (type it, then Enter)
+INTRO: `C-r =` opens a prompt at the bottom of the screen. Type an expression, press Enter, and its result is inserted at the cursor: `C-r =` 24*60*60 Enter types 86400 . It's a calculator that writes straight into the buffer, and it knows Vim's string functions too.
+PRACTICE: Let the expression register do the arithmetic. 5 rounds.
+ASIDE [Integer maths]: 7/2 is 3 : numbers without a decimal point are integers, and dividing them drops the remainder. printf('%.2f', x) formats a decimal result.
+  R: Fill in one day in milliseconds.  ::  kf;i<C-r>=24*60*60*1000<CR><Esc>
+  R: Fill in the total.  ::  $i<C-r>=129+18+45<CR> <Esc>
+  R: Set the upload limit to 25 MB in bytes.  ::  2kf0s<C-r>=25*1024*1024<CR><Esc>
+  R: Underline the 23-character heading with "=" signs.  ::  ggo<C-r>=repeat('=', 23)<CR><Esc>
+  R: Fill in the line total for 3 mugs at 4.99, to two decimals.  ::  2j$s<C-r>=printf('%.2f', 3 * 4.99)<CR><Esc>
+
+######## SECTION macros (repeat)
+
+=== 76 recording-macro "Recording a Macro" chips=["q","@"] kind=rounds
+CARDS: q=record / stop (qa records into a) | @=play (@a plays a)
+INTRO: `qa` starts recording every key you press into register `a`. Do the edit once, then `q` stops. `@a` plays those keys back. Finish the recording on the next line, usually with `j`, so each replay picks up where the last one left off. qa I -‚ê£ esc j q @a @a befor[diagram]Üí afte[diagram]ecord the edit and a j once, then each @a does the next line.
+PRACTICE: Record the edit on the first line, then replay it on the rest with `@a`. 5 rounds.
+ASIDE [Watch the mode line]: While recording, the bottom line shows `recording @a`. If you see it when you didn't mean to, press `q` to stop.
+  R: Turn each line into a list item.  ::  qaI- <Esc>jq@a@a@a
+  R: End every statement with a semicolon.  ::  qaA;<Esc>jq@a@a@a@a
+  R: Quote each key.  ::  qaI"<Esc>f:i"<Esc>jq@a@a
+  R: Swap print for log.info on each line.  ::  jqa^cwlog.info<Esc>jq@a@a
+
+=== 77 replaying-macros "Replaying" chips=["@@","5@a"] kind=rounds
+CARDS: @@=replay last macro | 5@a=play a five times
+INTRO: `@@` replays whichever macro ran last, so after one `@a` you can keep going with a key that's easier to hit. A count plays it that many times: `5@a`. Record once, check the result, then fire off the rest with a count. qa yy p ^A q 3@a befor[diagram]Üí afte[diagram]ecord one copy-and-bump, then 3@a makes three more.
+PRACTICE: Use a count or `@@` instead of pressing `@a` over and over. 5 rounds.
+ASIDE [Overshooting is fine]: If a motion fails, like `j` on the last line, the macro stops. So `99@a` means "until the end of the file".
+  R: Add a trailing comma to every row but the last.  ::  jqaA,<Esc>jq4@a
+  R: Register a comments out a line and moves down. Comment out all four.  ::  4@a
+  R: Fill in seats 2 to 6 by copying the row and bumping the number.  ::  qayyp<C-a>q4@a
+  R: Uppercase each constant name. Replay with @@.  ::  qa02wgUiwjq@a@@@@
+
+=== 78 robust-macros "Robust Macros" chips=["macros"] kind=rounds
+CARDS: 0=start from a known spot | f=move by content (not by counting) | j=end on the next line
+INTRO: A macro replays keys, not intentions. `5l` works on the line you recorded and misses on a longer one. Move by what the text says instead: `f=`, `t,`, `w`, `$`, `I` and `A`. Start with `0` or `^` so each run begins in the same place, and finish on the next line so the next run can start.
+PRACTICE: The lines differ in length. Record a macro that works on all of them, then replay it. 5 rounds.
+ASIDE [Test before you count]: Run the macro once with `@a` and check the line before you reach for `99@a`. If it's wrong, `u` and record again; `qa` overwrites.
+  R: Export each variable with its value quoted.  ::  qaIexport <Esc>f=a"<Esc>A"<Esc>jq3@a
+  R: Turn each "name url" line into a Markdown link.  ::  qaI[<Esc>f s](<Esc>A)<Esc>jq2@a
+  R: Turn each parameter into a dict entry.  ::  qa^yiwI'<Esc>A': <C-r>0,<Esc>jq3@a
+  R: Change each default value to null, keeping the names.  ::  jqa^f:wct,null<Esc>jq3@a
+
+=== 79 recursive-macros "Recursive Macros" chips=["qaq","@a"] kind=rounds
+CARDS: qaq=clear register a | @a=call itself (last key of the macro)
+INTRO: A macro can end by playing itself. Clear the register with `qaq`, record the edit, finish with `j@a`, stop with `q`, and one `@a` runs to the end of the file. It stops when a motion fails: `j` on the last line, or a search with no more matches. No counting lines. qa q qa I -‚ê£ esc j @a q @a befor[diagram]Üí afte[diagram]ne @a keeps calling itself until j fails on the last line.
+PRACTICE: Clear the register, record a macro that calls itself, then start it once. 5 rounds.
+ASIDE [Why clear it first]: The `@a` you type while recording runs right away. If `a` still held an old macro, that would play in the middle of your recording.
+  R: Make every line a checkbox item.  ::  qaqqa0a [ ]<Esc>j@aq@a
+  R: Delete every debug line. The search failing ends it.  ::  qaqqa/debug<CR>dd@aq@a
+  R: Wrap every function name in backticks.  ::  qaqqaI`<Esc>ea`<Esc>j@aq@a
+  R: Join each key with its value on the next line, with ": " between.  ::  qaqqaA:<Esc>Jj@aq@a
+
+=== 80 editing-macros "Editing a Macro" chips=["\"ap","\"ay$"] kind=rounds
+CARDS: "ap=put the macro (as text) | "ay$=yank it back (without the newline)
+INTRO: A macro is just text in a register. When one is almost right, don't re-record it: put it on an empty line with `"ap`, fix it like any other text, then `0"ay$` to store it again and `dd` the scratch line. Yank with `y$`, not `yy`. A linewise yank adds a newline, and the macro would press Enter at the end.
+PRACTICE: Each register holds a macro with one mistake. Put it on a new line at the end, fix it, yank it back, delete the scratch line, then use it if the round asks. 5 rounds.
+ASIDE [Or use :let]: `:let @a = '0f=r:j'` writes a register directly. Press `C-r a` inside the quotes to start from the current contents.
+  R: Register a deletes a trailing semicolon but forgets to move down. Add the j, then run it on all four lines.  ::  Go<Esc>"apAj<Esc>0"ay$ddgg4@a
+  R: Register v should delete the version at the start of a line, but dw stops at the dot. Make it dW.  ::  Go<Esc>"vpFwrW0"vy$dd
+  R: Register c removes one character, but each comment starts with "# ". Make it 02xj, then uncomment all three.  ::  Go<Esc>"cp0a2<Esc>0"cy$ddgg3@c
+
+=== 81 macros-over-lines "Macros over Lines" chips=[":norm @a"] kind=rounds
+CARDS: :norm=run normal keys (on every line in a range) | @a=the macro to run
+INTRO: `:%norm @a` runs macro `a` once on every line, with the cursor at the start of each. Select lines first and `:` fills in the range: `:'<,'>norm @a`. The macro doesn't need a `j`, and a line where it fails doesn't stop the others. That makes it safer than a count when only some lines fit.
+PRACTICE: Apply the macro to a range of lines with `:norm`. 5 rounds.
+ASIDE [No macro needed]: `:norm` takes keys directly too: `:%norm A;` appends a semicolon to every line. Pair it with `:g` to pick lines by pattern. : %norm A; ‚èé befor[diagram]Üí afte[diagram]
+  R: Register a appends a semicolon. Run it on every line.  ::  :%norm @a<CR>
+  R: Record a macro that makes a line a numbered step, then run it on the other lines.  ::  qaI1. <Esc>q:4,$norm @a<CR>
+  R: Register q quotes a line and adds a comma. Select the three hosts and run it.  ::  Vjj:norm @q<CR>
+  R: Register a turns "key = value" into "key: value". Run it on every line; the comments have no "=" and are skipped.  ::  :%norm @a<CR>
+
+=== ‚òÖ boss-csv-to-object "Boss: CSV to Object Literal" chips=["q","@a"] kind=rounds
+CARDS: q=record once | 4@a=replay the rest
+INTRO: A CSV export needs to become a TypeScript array of objects. Five rows, a few fields each: exactly the kind of repetition a macro is for. Set up the first and last lines, record one row with `f,` and `s`, and replay it on the rest. Three exports, three shapes.
+PRACTICE: Turn each CSV export into the code shown below the editor. Par assumes one recorded macro and a count per round. 5 rounds.
+ASIDE [Commas in fields]: Real CSV can quote a field that contains a comma, and `f,` will stop inside it. Search the data for `"` first; if a row is odd, run the macro on the others and fix that one by hand.
+  R:   ::  Go];<Esc>ggccconst users = [<Esc>jqaI  { id: <Esc>f,s, name: '<Esc>f,s', role: '<Esc>A' },<Esc>jq4@a
+  R:   ::  Go];<Esc>ggccexport const products = [<Esc>jqaI  { sku: '<Esc>f,s', title: '<Esc>f,s', price: <Esc>A },<Esc>jq3@a
+  R:   ::  Go]);<Esc>ggccconst statusText = new Map([<Esc>jqaI  [<Esc>f,s, '<Esc>A'],<Esc>jq5@a
+
+######## SECTION buffers-files (project)
+
+=== 82 opening-files "Opening Files" chips=[":e"] kind=rounds
+CARDS: :e=edit a file (:e path) | :e!=reload from disk
+INTRO: `:e src/db.ts` opens a file in the current window. Paths are relative to the directory Neovim started in, and a name that doesn't exist yet starts a new, empty buffer that reaches the disk on `:w`. Each file you open becomes a buffer and stays loaded after you move on. `:e!` with no name throws away your changes and reloads the current file from disk.
+PRACTICE: The notes API is open. Open each file with `:e` and press `Enter`. 5 rounds.
+ASIDE [Leaving unsaved buffers]: Neovim turns on `hidden` by default, so `:e` lets you leave a file with unsaved changes and they wait in the buffer. Classic Vim refuses with E37 unless you `:set hidden`.
+  R: Open src/db.ts.  ::  :e src/db.ts<CR>
+  R: Open the README.  ::  :e README.md<CR>
+  R: Open src/routes/users.ts.  ::  :e src/routes/users.ts<CR>
+  R: Start a new file, src/routes/tags.ts, and write it to disk.  ::  :e src/routes/tags.ts<CR>:w<CR>
+  R: You deleted the wrong lines. Reload the file from disk.  ::  :e!<CR>
+
+=== 83 buffer-list "Buffer List" chips=[":ls",":b"] kind=rounds
+CARDS: :ls=list buffers | :b=switch buffer (:b name or :b 3)
+INTRO: `:ls` lists the open buffers with their numbers. `%a` marks the one in this window and `#` the one you were in before. `:b` switches to a buffer by number (`:b3`) or by any unique part of its name (`:b db`). You rarely need the full path.
+PRACTICE: Five buffers are open: index.ts, server.ts, notes.ts, db.ts and the README. Switch to the one each round asks for. 5 rounds.
+ASIDE [Tab completes]: `:b` completes buffer names with `Tab`, matching anywhere in the path, so `:b not` then `Tab` finds src/routes/notes.ts. With a picker, `Space fb` (LazyVim `Space ,`) lists the same buffers with fuzzy search.
+  R: Switch to db.ts by name.  ::  :b db<CR>
+  R: List the buffers, then switch to server.ts by its number.  ::  :ls<CR>:b2<CR>
+  R: Switch to the notes routes.  ::  :b notes<CR>
+  R: Switch to buffer 1.  ::  :b1<CR>
+  R: Back to the README.  ::  :b READ<CR>
+
+=== 84 cycling-buffers "Cycling Buffers" chips=["[b","]b"] kind=rounds
+CARDS: [b=previous buffer | ]b=next buffer
+INTRO: `]b` moves to the next buffer in the list and `[b` to the previous one. Both wrap around at the ends. They are quickest when you have a handful of related files open. A count skips ahead: `2]b` moves two buffers on.
+PRACTICE: Buffers 1‚Äì5 are index.ts, server.ts, notes.ts, db.ts and the README. Cycle to the one each round asks for. 5 rounds.
+ASIDE [New in Neovim 0.11]: `[b` `]b` (and `[B` `]B` for first and last) are built-in maps since Neovim 0.11, borrowed from vim-unimpaired. LazyVim also binds `S-h` / `S-l` to the same moves, with bufferline showing the buffers as tabs. In classic Vim use `:bnext` and `:bprevious`.
+  R: Go to the next buffer.  ::  ]b
+  R: Go to the previous buffer.  ::  [b
+  R: From index.ts, go back one. It wraps.  ::  [b
+  R: Skip ahead two buffers.  ::  2]b
+  R: Forward one, past the end.  ::  ]b
+
+=== 85 alternate-file "Alternate File" chips=["C-^"] kind=rounds
+CARDS: C-^=alternate file (Ctrl-6)
+INTRO: `C-^` (Ctrl-6 on most keyboards) jumps back to the file you were in before this one, the alternate file marked `#` in `:ls`. Press it again to come back. It is the fastest way to flip between two files, like a route and the module it imports. With a count, `3 C-^` edits buffer 3.
+PRACTICE: Flip back to the file the round asks for. In the browser, press `Ctrl-Shift-6`: plain Ctrl-6 switches browser tabs. 5 rounds.
+ASIDE [The ex spelling]: `#` means the alternate file on the command line too: `:e #` does what `C-^` does, and `:vs #` opens it in a split.
+  R: You just opened server.ts. Go back to index.ts.  ::  <C-^>
+  R: Open src/config.ts, then flip back here.  ::  :e src/config.ts<CR><C-^>
+  R: Follow the import with gf, then flip back.  ::  gf<C-^>
+  R: Edit buffer 4 (db.ts) with a count.  ::  4<C-^>
+
+=== 86 closing-buffers "Closing Buffers" chips=[":bd"] kind=rounds
+CARDS: :bd=delete buffer (:bd name, :bd 2 3) | :bd!=discard changes
+INTRO: `:bd` removes the current buffer from the list and shows another one in its place. Give it names or numbers to close other buffers without leaving this one: `:bd db`, `:bd 2 3`. A buffer with unsaved changes won't go quietly. `:bd!` drops it and its changes.
+PRACTICE: Buffers 1‚Äì5 are index.ts, server.ts, notes.ts, db.ts and the README. Close the ones each round names. 5 rounds.
+ASIDE [:q is not :bd]: `:q` closes a window but the buffer stays in `:ls`. `:bd` takes it out of the list, which keeps `]b` and `:b` completion short.
+  R: You're done with the README. Close it.  ::  :bd<CR>
+  R: Close db.ts but stay in the README.  ::  :bd db<CR>
+  R: Close buffers 2 and 3 in one command.  ::  :bd 2 3<CR>
+  R: notes.ts has edits you don't want. Close it anyway.  ::  :bd! notes<CR>
+
+=== 87 go-to-file "Go to File" chips=["gf"] kind=rounds
+CARDS: gf=open file under cursor
+INTRO: `gf` opens the file whose name is under the cursor, or the next one after it on the line. Relative paths like `'../db'` resolve from the current file. Imports without an extension work too: the TypeScript filetype tells Vim to try `.ts`, `.tsx` and friends.
+PRACTICE: Put the cursor on or before the path and press `gf`. 5 rounds.
+ASIDE [Getting back]: `gf` adds a jump, so `C-o` takes you back to the exact spot. `C-^` works too, but only remembers one file.
+  R: Open the server module.  ::  f'gf
+  R: Open the notes routes.  ::  f.gf
+  R: Open the settings file the README mentions.  ::  $gf
+  R: Open the db module this route imports.  ::  f'gf
+  R: Follow the import from the test to the server.  ::  jf'gf
+
+=== 88 finding-files "Finding Files" chips=[":find"] kind=rounds
+CARDS: :find=find by name (:find users.ts)
+INTRO: `:find users.ts` searches the directories in `'path'` and opens the first match, so you can open a file by name without knowing where it lives. Press `Tab` after part of a name to complete it. The completion shows the full path, which helps when two files share a name.
+PRACTICE: Open each file with `:find` and just its file name. 5 rounds.
+ASIDE [Set 'path' first]: Neovim's default `path` only covers the current file's directory and the working directory. Add `vim.opt.path:append('**')` to your config so `:find` searches every subdirectory, as it does here.
+  R: Open users.ts.  ::  :find users.ts<CR>
+  R: Open config.ts.  ::  :find config.ts<CR>
+  R: Open the notes test.  ::  :find notes.test.ts<CR>
+  R: Open server.ts, completing the name with Tab.  ::  :find se<Tab><CR>
+  R: Open notes.ts, the routes file.  ::  :find notes.ts<CR>
+
+######## SECTION windows-tabs (project)
+
+=== 89 splitting "Splitting" chips=[":sp",":vs"] kind=rounds
+CARDS: :sp=split above (:sp file) | :vs=split beside (:vs file)
+INTRO: `:sp` splits the window in two, one above the other. `:vs` splits it side by side. Both leave the cursor in the new window. Give either a file name to open that file in the new window: `:vs init.lua` puts init.lua next to what you are editing. Without a name you get a second view of the same buffer.
+PRACTICE: Your Neovim config is open. Split the screen the way each round asks. 5 rounds.
+ASIDE [Without the command line]: `C-w s` and `C-w v` split without typing a command, just like `:sp` and `:vs` with no file name.
+  R: Split the window side by side.  ::  :vs<CR>
+  R: Open keymaps.lua in a split above this one.  ::  :sp lua/config/keymaps.lua<CR>
+  R: Put init.lua beside this file.  ::  :vs init.lua<CR>
+  R: Open telescope.lua above lsp.lua, on the left.  ::  :sp lua/plugins/telescope.lua<CR>
+  R: Split this window horizontally.  ::  :sp<CR>
+
+=== 90 moving-between-windows "Moving Between Windows" chips=["C-w h","C-w j","C-w k","C-w l"] kind=rounds
+CARDS: C-w h=left | C-w j=down | C-w k=up | C-w l=right
+INTRO: `C-w` starts a window command. Follow it with `h`, `j`, `k` or `l` to move to the window in that direction. They are the same directions as the cursor keys, one level up: moving between windows, not characters.
+PRACTICE: Four windows are open. Move to the one each round names. (In the browser, `Alt-w` stands in for `Ctrl-w`; full screen captures the real key.) 5 rounds.
+ASIDE [The remap everyone makes]: Both kickstart and LazyVim map `C-h` `C-j` `C-k` `C-l` to `C-w` plus the same letter, so one chord moves between splits. The lesson uses the built-in form so it works in plain Vim too.
+  R: Move right to lsp.lua.  ::  <C-w>l
+  R: Move down to init.lua.  ::  <C-w>j
+  R: Move left to options.lua.  ::  <C-w>h
+  R: Move up to keymaps.lua.  ::  <C-w>k
+  R: Get to init.lua, bottom right.  ::  <C-w>j<C-w>l
+  R: Get to keymaps.lua, top left.  ::  <C-w>k<C-w>h
+
+=== 91 closing-windows "Closing Windows" chips=["C-w c","C-w o"] kind=rounds
+CARDS: C-w c=close window | C-w o=only this one
+INTRO: `C-w c` closes the current window. The buffer stays loaded, so nothing is lost. `C-w o` does the opposite: it closes every other window and keeps this one. Reach for `C-w o` when a layout has served its purpose and you want the whole screen back.
+PRACTICE: Four windows: keymaps and options on the left, lsp and init on the right. Close the ones each round asks for. (In the browser, `Alt-w` stands in for `Ctrl-w`; full screen captures the real key.) 5 rounds.
+ASIDE [The last window]: `C-w c` won't close the last window (E444), so it can't quit Neovim by accident. `C-w q` is `:q` and will.
+  R: Close this window (lsp.lua).  ::  <C-w>c
+  R: Keep only options.lua.  ::  <C-w>o
+  R: Close the window below this one.  ::  <C-w>j<C-w>c
+  R: Make lsp.lua the only window.  ::  <C-w>k<C-w>o
+  R: Close the window to the left.  ::  <C-w>h<C-w>c
+
+=== 92 resizing-windows "Resizing" chips=["C-w =","C-w _","C-w |"] kind=rounds
+CARDS: C-w ==equal sizes | C-w _=max height | C-w |=max width
+INTRO: `C-w _` makes the current window as tall as it can be, and `C-w |` as wide. The other windows shrink to a line or a column but stay open. `C-w =` evens everything out again. Use the pair to zoom into one file for a while, then restore the layout.
+PRACTICE: Resize the windows the way each round asks. (In the browser, `Alt-w` stands in for `Ctrl-w`; full screen captures the real key.) 5 rounds.
+ASIDE [Small steps]: `C-w +` and `C-w -` grow and shrink the height a little; `C-w >` and `C-w <` do the width. A count sets the size outright: `10 C-w _` gives 10 rows.
+  R: Give keymaps.lua all the height.  ::  <C-w>_
+  R: Make init.lua as wide as it goes.  ::  <C-w>|
+  R: Even out all four windows.  ::  <C-w>=
+  R: Maximize the height of the window below.  ::  <C-w>j<C-w>_
+  R: Make lsp.lua as wide as it goes.  ::  <C-w>l<C-w>|
+
+=== 93 rearranging-windows "Rearranging" chips=["C-w H","C-w J","C-w K","C-w L"] kind=rounds
+CARDS: C-w H=far left | C-w J=bottom | C-w K=top | C-w L=far right
+INTRO: Capital `H` `J` `K` `L` after `C-w` move the current window to that edge of the screen. `H` and `L` make it full height, `J` and `K` full width. This is how you turn a stacked split into a side-by-side one without closing anything: `C-w L` on the top window.
+PRACTICE: Move the current window to the edge each round asks for. (In the browser, `Alt-w` stands in for `Ctrl-w`; full screen captures the real key.) 5 rounds.
+ASIDE [Swapping]: `C-w x` swaps the current window with the next one, and `C-w r` rotates windows in a row or column. `C-w T` moves the window into a tab of its own.
+  R: Turn the stack into a side-by-side split, keymaps on the right.  ::  <C-w>L
+  R: Put init.lua on top, full width.  ::  <C-w>K
+  R: Make lsp.lua a full-width window at the bottom.  ::  <C-w>J
+  R: Make options.lua a full-height window on the left.  ::  <C-w>H
+  R: Move init.lua to the far right.  ::  <C-w>L
+
+=== 94 tab-pages "Tab Pages" chips=[":tabnew","gt","gT"] kind=rounds
+CARDS: :tabnew=new tab (:tabnew file) | gt=next tab (3gt: tab 3) | gT=previous tab
+INTRO: A tab page holds a whole layout of windows. `:tabnew lsp.lua` opens a file in a new tab; `gt` and `gT` move to the next and previous tab, and `3gt` goes straight to the third. Tabs are not one-per-file like in other editors. Use them for separate workspaces: code in one, tests in another, a diff in a third.
+PRACTICE: Open and switch tabs as each round asks. 5 rounds.
+ASIDE [Closing tabs]: `:tabclose` closes the current tab and its windows; `:tabonly` keeps just this one. Closing the last window in a tab closes the tab too.
+  R: Open lsp.lua in a new tab.  ::  :tabnew lua/plugins/lsp.lua<CR>
+  R: Go to the next tab.  ::  gt
+  R: Go back one tab.  ::  gT
+  R: Jump straight to tab 3.  ::  3gt
+  R: You're on the last tab. Go forward: it wraps to the first.  ::  gt
+  R: Open init.lua in a new tab, then come back.  ::  :tabnew init.lua<CR>gT
+
+######## SECTION marks-jumps (project)
+
+=== 95 setting-marks "Setting Marks" chips=["m","'","`"] kind=rounds
+CARDS: m=set a mark (ma ‚Ä¶ mz) | '=mark's line (first non-blank) | `=mark's exact spot
+INTRO: `ma` drops mark `a` at the cursor. Later, `'a` jumps back to that line and ``a` to the exact line and column. Lowercase marks `a` to `z` belong to the file. Set a mark before you go and look something up, and one keystroke pair brings you back. They also move with the text when lines above them are added or deleted.
+PRACTICE: Reach the green box using the mark the prompt names. 5 rounds.
+ASIDE [Marks on screen]: `:marks` lists every mark with its line and text. The marks.nvim plugin also shows them in the sign column.
+  R: Jump to the line of mark a.  ::  'a
+  R: Jump to the exact spot of mark a.  ::  `a
+  R: Back to mark d, exact column.  ::  `d
+  R: Mark this spot b, then jump to the line of mark a.  ::  mb'a
+  R: Jump to the line of mark r.  ::  'r
+  R: Jump to the exact spot of mark h.  ::  `h
+
+=== 96 operating-to-marks "Operating to Marks" chips=["d'a","y`a"] kind=rounds
+CARDS: d'a=lines to mark (linewise) | y`a=chars to mark (exclusive)
+INTRO: A mark jump is a motion, so operators take it. `d'a` deletes every line from the cursor to mark `a`. `y`a` yanks from the exact mark to the cursor, character by character. That's how you act on a region too long to count: mark one end, move to the other, and apply `d`, `y`, `c` or `>`. ma 2j d'a befor[diagram]Üí afte[diagram]ark the first line, move to the last, delete every line between.
+PRACTICE: Mark `a` is already set in each round. Apply the operator from the cursor to it. 5 rounds.
+ASIDE [Marks in ranges]: Ex commands take marks as addresses: `:'a,.d` is the same delete as `d'a`, and `:'a,'bs/foo/bar/` substitutes between two marks.
+  R: Delete the old implementation, from mark a down to the cursor line.  ::  d'a
+  R: Yank from mark a to the cursor and put it inside the log call.  ::  y`ajF(p
+  R: Indent the lines from mark a to the cursor.  ::  >'a
+  R: Delete the legacy arguments, from mark a up to the cursor.  ::  d`a
+  R: Copy the checklist, mark a to the cursor line, to the end of the file.  ::  y'aGp
+
+=== 97 file-marks "File Marks" chips=["mA"] kind=rounds
+CARDS: mA=mark in any file (A ‚Ä¶ Z) | 'A=open file at mark
+INTRO: Uppercase marks remember the file as well as the position. `mR` in the router, and `'R` from anywhere else opens that file and jumps to the line. Use them as bookmarks for the few places you keep returning to: the config, the test you're fixing, the route you're building.
+PRACTICE: Hop between files with uppercase marks. Each round says which mark to use or set. 5 rounds.
+ASIDE [They persist]: Neovim stores uppercase marks in ShaDa, so `'C` opens your config tomorrow too. Delete one with `:delmarks C`.
+  R: Jump to mark R in routes.ts.  ::  'R
+  R: Jump to the exact spot of mark C in config.ts.  ::  `C
+  R: Mark this line A, then jump to mark R.  ::  mA'R
+  R: You are in config.ts. Go back to mark A in app.ts.  ::  'A
+  R: Jump to mark C, then from there to mark R.  ::  'C'R
+
+=== 98 back-to-edit "Back to Your Edit" chips=["`.","gi"] kind=rounds
+CARDS: `.=last change ('. for its line) | gi=insert where you left
+INTRO: Vim keeps a mark on your last change. ``.` jumps to it, `'.` to its line. And `gi` goes one better: it returns to where you last left insert mode and starts inserting again. Scroll up to check an import, read a signature, then `gi` and keep typing. No need to find your place.
+PRACTICE: You made an edit, then wandered off. Get back to it and finish the job. 5 rounds.
+ASIDE [Two different marks]: `gi` uses the `^` mark, where insert mode last stopped. ``.` is where anything last changed, including a `dd` or a put.
+  R: You went to check the import mid-line. Finish the throw: "res.status);".  ::  gires.status);<Esc>
+  R: Jump back to the number you just typed and make it 30_000.  ::  `.hhi_<Esc>
+  R: Add a "// ms" comment to the end of the line you last changed.  ::  '.A // ms<Esc>
+  R: You jumped to the top to check the title. Finish the sentence: "on first run."  ::  gi on first run.<Esc>
+
+=== 99 change-edges "Edges of a Change" chips=["`[","`]"] kind=rounds
+CARDS: `[=start of last change (or yank) | `]=end of last change (or yank)
+INTRO: After a yank, put or change, the marks `[` and `]` sit on its first and last character. ``[` and ``]` jump there; `'[` and `']` go to the lines. Put a block and the cursor lands at its start. ``]` takes you to the end, ready to keep going below it. yj G p `] befor[diagram]Üí afte[diagram]ank two lines, put them at the end, then jump to the last character put.
+PRACTICE: Something was just yanked, put or typed. Reach the green box at one of its edges. 5 rounds.
+ASIDE [Select what you pasted]: ``[v`]` selects exactly the text you just put, ready to indent with `>` or re-indent with `=`.
+  R: You yanked the return object. Jump to the end of it.  ::  `]
+  R: You put three lines below. Jump to the last character put.  ::  `]
+  R: You replaced 5000 with a constant. Jump to its first character.  ::  `[
+  R: You just typed two new lines. Jump to the line where you started.  ::  '[
+  R: You yanked the whole function. Jump to its last character.  ::  `]
+
+=== 100 previous-position "Previous Position" chips=["``","''"] kind=rounds
+CARDS: ``=back to exact spot (before the last jump) | ''=back to that line
+INTRO: Big moves like `G`, `/search`, `%` and `'a` are jumps, and each one remembers where you were. ```` goes back to that exact spot, `''` to its line. Press it again to go forward. It's a toggle between two places, like Alt-Tab for your cursor.
+PRACTICE: Each round has just made a jump. Go back to the green box where it started. 5 rounds.
+ASIDE [What counts as a jump]: `j`, `w` and `f` are not jumps, so they don't move the `'` mark. Searches, `G`, `gg`, `%`, `{`, `}`, `H`, `M`, `L` and mark jumps are.
+  R: You pressed G. Go back to the exact spot.  ::  ``
+  R: You searched for "listen". Go back to the line you came from.  ::  ''
+  R: You jumped to the closing brace with %. Go back.  ::  ``
+  R: You pressed gg. Return to that line.  ::  ''
+  R: You searched twice. Go back to where the last search started.  ::  ``
+
+=== 101 jump-list "Jump List" chips=["C-o","C-i"] kind=rounds
+CARDS: C-o=older jump | C-i=newer jump (same key as Tab)
+INTRO: Every jump is recorded in a list per window. `C-o` walks back through it, older and older; `C-i` walks forward again. It's the back and forward buttons of a browser. Unlike ````, it goes more than one step, and it crosses files: `gd` into a definition, then `C-o` brings you home.
+PRACTICE: Each round has already made a few jumps. Walk the list to the green box . 5 rounds.
+ASIDE [See the list]: `:jumps` prints the list with a `>` at your place in it. Counts work too: `3C-o` goes back three jumps at once.
+  R: Go back one jump.  ::  <C-o>
+  R: Go back two jumps.  ::  <C-o><C-o>
+  R: You went back too far. Go forward one jump.  ::  <C-i>
+  R: Go back three jumps.  ::  3<C-o>
+  R: Go back to where the search landed.  ::  <C-o>
+
+=== 102 change-list "Change List" chips=["g;","g,"] kind=rounds
+CARDS: g;=older change | g,=newer change
+INTRO: Vim also keeps a list of the places you changed. `g;` steps back to older edits, `g,` forward to newer ones. Where `C-o` retraces where you looked, `g;` retraces where you worked. It survives closing the file, too.
+PRACTICE: Several edits were made in each round. Walk the change list to the green box . 5 rounds.
+ASIDE [One entry per line]: Several edits close together on one line count as one entry, so `g;` doesn't make you step through every character you typed. `:changes` shows the list.
+  R: Go to your most recent change.  ::  g;
+  R: Go to the change before the last one.  ::  g;g;
+  R: You stepped back too far. Go one change newer.  ::  g,
+  R: Go back to the oldest of the three changes.  ::  3g;
+
+######## SECTION quickfix (project)
+
+=== 103 grep "Grep" chips=[":grep",":vimgrep"] kind=rounds
+CARDS: :grep=external search (:grep word) | :vimgrep=Vim regex search (:vim /pat/ files)
+INTRO: `:vimgrep /TODO/ **/*.ts` searches files with a Vim pattern and collects every match in the quickfix list, then jumps to the first one. `**` reaches into subdirectories and `%` means the current file. `:grep formatPrice` does the same through an external program, searching the whole project by default. It is the faster choice for big trees.
+PRACTICE: Search the shop project and fill the quickfix list. The message line shows how many matches you got. 5 rounds.
+ASIDE [ripgrep inside]: When ripgrep is installed, Neovim sets `grepprg` to `rg --vimgrep -uu`, so `:grep` takes ripgrep's regex syntax. `:vimgrep` always uses Vim's own patterns.
+  R: Find every TODO in the .ts files.  ::  :vimgrep /TODO/ **/*.ts<CR>
+  R: Find every use of formatPrice with :grep.  ::  :grep formatPrice<CR>
+  R: Find the fetch calls in src/api only.  ::  :vimgrep /fetch(/ src/api/*.ts<CR>
+  R: Find the word "total" in this file only.  ::  :vimgrep /\<lt>total\>/ %<CR>
+
+=== 104 quickfix-list "Quickfix List" chips=[":copen",":cclose"] kind=rounds
+CARDS: :copen=open the list | CR=jump to entry | :cclose=close the list
+INTRO: `:copen` shows the quickfix list in a window along the bottom, one match per line with its file and line number. Move with `j` and `k`, and press `Enter` to jump to an entry in the window above. `:cclose` hides the list again. The list itself stays, ready for the next `:copen`.
+PRACTICE: The quickfix list already holds search results. Open it, pick entries and close it. 5 rounds.
+ASIDE [Only when needed]: `:cwindow` opens the list only if it has entries, which makes it a good follow-up to `:grep` in a mapping: `:grep foo | cwindow`.
+  R: Open the quickfix window.  ::  :copen<CR>
+  R: Open the list and jump to the third TODO.  ::  :copen<CR>jj<CR>
+  R: Open the list and jump to the last TODO.  ::  :copen<CR>G<CR>
+  R: Close the quickfix window.  ::  :cclose<CR>
+  R: Go to the formatPrice call in products.ts, not its import.  ::  :copen<CR>j<CR>
+
+=== 105 walking-results "Walking Results" chips=["[q","]q"] kind=rounds
+CARDS: [q=previous match | ]q=next match
+INTRO: `]q` jumps to the next entry in the quickfix list and `[q` to the previous one, opening other files as needed. A count skips entries: `3]q`. It's the loop for reviewing search results: jump, read or fix, jump again. You don't need the quickfix window open.
+PRACTICE: The list holds every `formatPrice` in the project. Walk to the match each round asks for; the message line shows where you are. 5 rounds.
+ASIDE [In classic Vim]: These maps are built in since Neovim 0.11, with `[Q` and `]Q` for the first and last entry. In Vim use `:cnext` and `:cprev`, or install vim-unimpaired.
+  R: Go to the next match.  ::  ]q
+  R: Go back one match.  ::  [q
+  R: Skip ahead three matches.  ::  3]q
+  R: Back two matches, into checkout.ts.  ::  [q[q
+  R: On to the next TODO.  ::  ]q
+
+=== 106 edit-every-match "Edit Every Match" chips=[":cdo"] kind=rounds
+CARDS: :cdo=run on each entry (:cdo s/a/b/ | update)
+INTRO: `:cdo` runs a command at every entry in the quickfix list, one after another. With `:s` it becomes a project-wide search and replace that only touches the lines you found. Add `| update` so each file is saved after its change: `:cdo s/old/new/ | update`.
+PRACTICE: The quickfix list is open with the matches. Change every one with a single `:cdo` and save the files. 5 rounds.
+ASIDE [Once per file]: `:cfdo` runs the command once per file instead of once per entry, so it pairs with `%s`: `:cfdo %s/old/new/g | update`.
+  R: Rename formatPrice to formatMoney everywhere.  ::  :cdo s/formatPrice/formatMoney/ | update<CR>
+  R: The TODOs are done. Delete each TODO line.  ::  :cdo d | update<CR>
+  R: Rename total to cartTotal, tests included.  ::  :cdo s/total/cartTotal/ | update<CR>
+  R: Rename the Line type to CartLine.  ::  :cdo s/\<lt>Line\>/CartLine/ | update<CR>
+
+=== 107 location-list "Location List" chips=[":lopen","[l","]l"] kind=rounds
+CARDS: :lopen=open location list | [l=previous entry | ]l=next entry
+INTRO: The location list is a quickfix list that belongs to one window. Commands that fill or walk it start with `l`: `:lvimgrep`, `:lopen`, and `[l` `]l` to step through it. Use it for searches that only matter where you are, like every reference in this file, and keep the quickfix list for the project-wide ones.
+PRACTICE: The location list for this window holds every `lines` in cart.ts. Open it and walk it. 5 rounds.
+ASIDE [Diagnostics too]: `vim.diagnostic.setloclist()` puts the LSP's errors for the current buffer in the location list, and `[d` `]d` walk them directly.
+  R: Go to the next entry.  ::  ]l
+  R: Go back one entry.  ::  [l
+  R: Open the location list.  ::  :lopen<CR>
+  R: Open the list and jump to the last entry.  ::  :lopen<CR>G<CR>
+  R: Build a location list of formatPrice in this file.  ::  :lvimgrep /formatPrice/ %<CR>
+
+=== 108 every-buffer "Every Buffer" chips=[":bufdo"] kind=rounds
+CARDS: :bufdo=run in each buffer
+INTRO: `:bufdo` runs a command in every buffer in `:ls`. The files you have open are often exactly the ones a change is about. Use `%s` with the `e` flag so buffers without a match don't stop the run, and end with `| update` to save each one.
+PRACTICE: A few files are open as buffers. Change them all with one `:bufdo`. Files that aren't open must stay as they are. 5 rounds.
+ASIDE [Every window]: `:windo` does the same for the windows in the current tab, which suits window options: `:windo set wrap`.
+  R: Rename formatPrice to formatMoney in the open buffers.  ::  :bufdo %s/formatPrice/formatMoney/ge | update<CR>
+  R: Point both API modules at /api/v2/.  ::  :bufdo %s#/api/#/api/v2/#e | update<CR>
+  R: Switch the open files to euros: USD becomes EUR.  ::  :bufdo %s/USD/EUR/ge | update<CR>
+  R: Delete the TODO lines in the open buffers.  ::  :bufdo g/TODO/d | update<CR>
+
+######## SECTION finding-things (project)
+
+=== 109 picker-files "Find Files" chips=["‚ê£sf","C-n","C-v"] kind=rounds
+CARDS: ‚ê£sf=find files (kickstart) | C-n=next result (C-p: previous) | CR=open it | C-v=open in vsplit (C-x: split)
+INTRO: `Space sf` opens the file picker (LazyVim binds `Space Space` to the same thing): a prompt, the matching files and a preview of the one selected. Type a few letters of the path, in order but not necessarily together, and `CR` opens the best match. `C-n` and `C-p` move down and up the list. `C-v` opens the file in a vertical split and `C-x` in a horizontal one. Typing `money` is quicker than remembering that the file lives in `src/lib/`.
+PRACTICE: Open each file the prompt names with `Space sf`. Type just enough to put it at the top. (In the browser, `Alt-n` stands in for `C-n`.) 5 rounds.
+ASIDE [The same picker, other keys]: LazyVim's default is `Space Space` for files and `Space /` for grep, both on snacks.picker; kickstart uses `Space sf` and `Space sg` on Telescope. The prompt, `C-n` / `C-p` and `CR` behave the same in all of them.
+  R: Open src/lib/money.ts.  ::  <Space>sfmoney<CR>
+  R: Open the customers route.  ::  <Space>sfcust<CR>
+  R: Open the README.  ::  <Space>sfread<CR>
+  R: Open test/money.test.ts: type "money", then take the second result.  ::  <Space>sfmoney<C-n><CR>
+  R: Open dates.ts in a vertical split.  ::  <Space>sfdates<C-v>
+  R: Open the logger in a horizontal split.  ::  <Space>sflog<C-x>
+
+=== 110 picker-grep "Live Grep" chips=["‚ê£sg"] kind=rounds
+CARDS: ‚ê£sg=grep the project (kickstart; LazyVim: ‚ê£/) | CR=jump to the hit
+INTRO: `Space sg` searches the contents of every file as you type and lists each matching line as file:line:col:text . `CR` opens the file with the cursor on the match. The prompt is a regular expression, run through ripgrep with smart case: all lowercase ignores case, one capital makes it exact. Use it when you know a name but not which file it lives in.
+PRACTICE: Grep for the code the prompt describes and jump to it. (In the browser, `Alt-n` stands in for `C-n`.) 5 rounds.
+ASIDE [Narrowing to files]: Type the pattern, then two spaces and a glob ‚Äî parse *.ts ‚Äî and multi-grep restricts the search to matching files (TJ's multi-ripgrep picker; snacks does it with -- -g *.ts ). Live grep needs ripgrep installed.
+  R: Jump to where TAX_RATE is defined.  ::  <Space>sgTAX_RATE =<CR>
+  R: Jump to the handler for POST /invoices.  ::  <Space>sginvoices.post<CR>
+  R: Find where the port is read from the environment.  ::  <Space>sgenv.PORT<CR>
+  R: Jump to the TODO in money.ts: grep "todo", then take the second hit.  ::  <Space>sgtodo<C-n><CR>
+  R: Jump to the definition of createLogger.  ::  <Space>sgfunction createL<CR>
+
+=== 111 picker-word "Word Under Cursor" chips=["‚ê£sw"] kind=rounds
+CARDS: ‚ê£sw=grep this word (kickstart) | CR=open the match
+INTRO: `Space sw` opens live grep with the word under the cursor already typed, so every use in the project is one key away. It is the picker form of `*`: where `*` finds the next use in this file, `sw` lists every use in every file. The first result is usually the line you are on. `C-n` steps to the others, and the preview shows each one before you commit with `CR`.
+PRACTICE: Put the cursor on the named word, open its uses with `Space sw` and pick the match the prompt names. (In the browser, `Alt-n` stands in for `C-n`.) 5 rounds.
+ASIDE [Buffers picker]: `Space fb` (kickstart `Space Space`, LazyVim `Space ,`) lists open buffers in the same picker; `dd` on an entry closes that buffer.
+  R: From the import of createLogger, jump to its definition.  ::  <Space>sw<C-n><C-n><CR>
+  R: From the import of formatCents, jump to its definition (hits list by file, so it comes first).  ::  <Space>sw<CR>
+  R: From the test, jump to the definition of addTax.  ::  <Space>sw<CR>
+
+=== 112 picker-quickfix "Send to Quickfix" chips=["C-q"] kind=rounds
+CARDS: C-q=results to quickfix (and open it) | CR=jump from the list
+INTRO: `C-q` in any picker sends every result to the quickfix list and opens it. The picker closes; the results stay. Use it when there is more than one hit to visit: grep for a name, `C-q`, then walk the list with `]q` or `CR`, or change them all with `:cdo`.
+PRACTICE: Fill the quickfix list from a picker. (In the browser, `Alt-q` stands in for `C-q`.) 5 rounds.
+ASIDE [Only some results]: `Tab` marks results one by one and `M-q` sends just the marked ones. The quickfix list outlives the picker, so `:copen` brings it back later.
+  R: Send every TODO in the project to the quickfix list.  ::  <Space>sgTODO<C-q>
+  R: Put both test files in the quickfix list.  ::  <Space>sftest/<C-q>
+  R: List every formatCents, then open the second hit from the quickfix window.  ::  <Space>sgformatCents<C-q>j<CR>
+  R: List the console calls and jump to the last one.  ::  <Space>sgconsole<C-q>G<CR>
+
+######## SECTION file-navigation (project)
+
+=== 113 oil-open-directory "Open the Directory" chips=["-","CR"] kind=rounds
+CARDS: -=parent directory (oil.nvim) | CR=open entry
+INTRO: With oil.nvim, `-` opens the directory of the current file as an ordinary buffer: one entry per line, directories ending in `/`, the cursor on the file you came from. `CR` opens the entry under the cursor, and `-` again goes up a level. Since it is a buffer, you move with `j`, `k`, `/` and the rest, and `C-^` takes you back to the file.
+PRACTICE: Walk the project with `-` and `CR` to reach each file. 5 rounds.
+ASIDE [Tree explorers]: LazyVim's default is neo-tree on `Space e`; kickstart ships none (netrw's `:Explore`is built in). The idea is the same: a directory you move through. oil's twist is that the listing is a buffer you edit and `:w`; its README maps it to `-`, replacing a rarely used motion.
+  R: Open the directory this file is in.  ::  -
+  R: Go to the directory and open dates.ts.  ::  -gg<CR>
+  R: Open the project root.  ::  --
+  R: From the customers route, open src/lib/logger.ts.  ::  --k<CR>j<CR>
+  R: From the README, open test/invoices.test.ts.  ::  -kk<CR><CR>
+
+=== 114 oil-edit-directory "Edit a Directory" chips=["dd","cw",":w"] kind=rounds
+CARDS: dd=delete entry | cw=rename entry | o=new entry | :w=apply changes (y to confirm)
+INTRO: An oil buffer is the file system as text. Delete a line to delete the file, change a name to rename it, add a line to create one. `:w` lists the changes in a float; `y` applies them, `n` backs out. All your editing works here: `cw` renames up to the extension, `dj` removes two entries, `dd` in one directory and `p` in another moves a file.
+PRACTICE: Change the files the prompt asks for, then save and confirm. 5 rounds.
+ASIDE [How oil keeps track]: Each line starts with a hidden id like `/003`, which is how oil tells a rename from a delete plus a create. Clear a whole line with `cc` and the id goes too, so that entry counts as new.
+  R: Rename dates.ts to time.ts.  ::  cwtime<Esc>:w<CR>y
+  R: Delete logger.ts.  ::  dd:w<CR>y
+  R: Create format.ts in src/lib.  ::  oformat.ts<Esc>:w<CR>y
+  R: Delete both test files; keep setup.ts.  ::  dj:w<CR>y
+  R: Rename the routes directory to handlers.  ::  cwhandlers<Esc>:w<CR>y
+  R: In one save: rename money.ts to currency.ts and delete dates.ts.  ::  cwcurrency<Esc>ggdd:w<CR>y
+
+######## SECTION command-line (patterns)
+
+=== 115 jump-to-line "Jump to Line" chips=[":42",":$"] kind=rounds
+CARDS: :42=go to line 42 | :$=go to last line
+INTRO: `:` opens the command line; `esc` leaves it, `tab` completes, and `:w` / `:q` / `ZZ` save and quit. A bare line number on the command line jumps there: `:42` then `Enter` lands on line 42, at its first non-blank character. `:$` goes to the last line. Error messages, stack traces and code review comments all come with line numbers. Type the number instead of scrolling to it.
+PRACTICE: Jump to each line with `:` and its number. Line numbers are on the left. 5 rounds.
+ASIDE [Or 42G]: `42G` does the same from normal mode. Both add to the jumplist, so `C-o` takes you back to where you were.
+  R: The yank highlight is on line 35. Go there.  ::  :35<CR>
+  R: Go to line 14.  ::  :14<CR>
+  R: Go to the last line.  ::  :$<CR>
+  R: The format call is on line 43.  ::  :43<CR>
+  R: Go to line 22.  ::  :22<CR>
+  R: Go to line 8.  ::  :8<CR>
+
+=== 116 ex-ranges "Ranges" chips=["%",".","$"] kind=rounds
+CARDS: 5,8=lines 5 to 8 | .=current line | $=last line | %=whole file
+INTRO: Most Ex commands take a range in front: `:5,8d` deletes lines 5 to 8. Besides numbers there are three shorthands: `.` is the current line, `$` the last line, and `%` the whole file. A range lets you change lines without moving to them. `:d` deletes, `:>` indents and `:j` joins; everything later in this section takes a range too. : 2,3d ‚èé befor[diagram]Üí afte[diagram]he cursor is on line 5. :2,3d removes lines 2 and 3 without going there.
+PRACTICE: Make each change with one Ex command and a range. 5 rounds.
+ASIDE [Offsets]: Addresses take offsets: `:.,+3d` deletes this line and the three below it, and `$-1` is the second-to-last line.
+  R: Delete from the restart marker to the end.  ::  :.,$d<CR>
+  R: These are moving into a class. Indent the whole file.  ::  :%><CR>
+  R: Delete the internal notes, lines 3 to 7.  ::  :3,7d<CR>
+  R: Join the query, lines 2 to 5, onto one line.  ::  :2,5j<CR>
+  R: Delete the local overrides: this line through line 7.  ::  :.,7d<CR>
+
+=== 117 visual-ranges "Visual Ranges" chips=["'<,'>","gv"] kind=rounds
+CARDS: V :=selected lines | '<=selection start | '>=selection end | gv=reselect
+INTRO: Press `:` with text selected and Vim fills in `'<,'>`: the marks for the first and last selected lines. Whatever command you type runs over those lines. Selecting is often easier than counting line numbers, especially with text objects like `ip`. The range is always whole lines, even from a characterwise selection.
+PRACTICE: Select the lines, press `:`, and finish the command. 5 rounds.
+ASIDE [The marks stay]: `'<` and `'>` survive after the selection ends, so you can type `:'<,'>` by hand later. `gv` then `:` is usually quicker.
+  R: Write the retry function to retry.ts.  ::  vip:w retry.ts<CR>
+  R: Write the March rows to march.csv.  ::  Vjj:w march.csv<CR>
+  R: You just selected the sleep helper. Reselect it and write it to sleep.ts.  ::  gv:w sleep.ts<CR>
+  R: Join the paragraph into one line.  ::  vip:j<CR>
+
+=== 118 ex-delete-yank "Delete & Yank Lines" chips=[":d",":y"] kind=rounds
+CARDS: :d=delete lines | :y=yank lines
+INTRO: `:d` deletes lines and `:y` yanks them, both into the usual registers. Give them a range: `:10,15d`, `:3,4y`. Add a register name after: `:3,4y a`. You don't have to go there first. Read the line numbers off the screen and act on them from wherever you are.
+PRACTICE: Delete or yank by line number. 5 rounds.
+ASIDE [Search addresses]: An address can be a pattern: `:/^}/d` deletes the next line that starts with a brace, and `:.,/^$/d` deletes up to the next blank line.
+  R: Delete the debug middleware, lines 10 to 15.  ::  :10,15d<CR>
+  R: Yank the route imports, lines 3 and 4, into register a.  ::  :3,4y a<CR>
+  R: Delete the leftover test line at the end.  ::  :$d<CR>
+  R: Start a second table: copy the header from line 1 and put it below the cursor.  ::  :1y<CR>p
+  R: Delete line 7, the cors middleware.  ::  :7d<CR>
+
+=== 119 ex-move-copy "Move & Copy Lines" chips=[":m",":t"] kind=rounds
+CARDS: :m=move lines (below address) | :t=copy lines (below address)
+INTRO: `:m` moves lines and `:t` copies them. The address after the command is the line they land below: `:m0` moves the current line to the top, `:5,7t$` copies lines 5 to 7 to the end. Neither touches a register, so whatever you yanked earlier is still waiting in `"`. : m0 ‚èé befor[diagram]Üí afte[diagram]m0 moves the current line below line 0, which is the top of the file. : 1,2t$ ‚èé befor[diagram]Üí afte[diagram]1,2t$ copies lines 1 and 2 below the last line. The originals stay put.
+PRACTICE: Move or copy lines with one command each. 5 rounds.
+ASIDE [Why t?]: `:t` is short for "to", and it's the same command as `:co[py]`. `:t.` duplicates the current line.
+  R: Move this import to the top.  ::  :m0<CR>
+  R: Copy DATABASE_URL (line 2) below the cursor.  ::  :2t.<CR>
+  R: Move lines 2 to 4, the License section, to the end.  ::  :2,4m$<CR>
+  R: Move which-key to the top of the list, below line 1.  ::  :m1<CR>
+  R: Copy the two March rows (lines 4 and 5) to the end.  ::  :4,5t$<CR>
+
+=== 120 ex-normal "Normal over a Range" chips=[":norm"] kind=rounds
+CARDS: :norm=run keys per line
+INTRO: `:normal` runs normal-mode keys on every line of a range, with the cursor starting at column 0 each time. `:%norm A;` appends a semicolon to every line. Anything you can type once, you can now apply to fifty lines. It pairs well with `.` and with macros: `:norm .` and `:norm @q`. : %norm A; ‚èé befor[diagram]Üí afte[diagram]; runs once per line in the range, each time from column 0.
+PRACTICE: Use `:norm` over a range to make each change. 5 rounds.
+ASIDE [Insert mode ends itself]: `:norm` presses `esc` for you after each line, so `:%norm I- ` needs no escape at the end. Trailing spaces count, so type exactly what you want inserted.
+  R: Add a semicolon to the end of every line.  ::  :%norm A;<CR>
+  R: Turn the paragraph into a list: prefix each line with "- ".  ::  vip:norm I- <CR>
+  R: Strip the timestamp from every line.  ::  :%norm dW<CR>
+  R: Register q quotes one line. Run it on lines 2 to 4.  ::  :2,4norm @q<CR>
+  R: Make host readonly with I, then repeat it on lines 3 and 4 with :norm .  ::  Ireadonly <Esc>:3,4norm .<CR>
+
+=== 121 repeat-ex "Repeat a Command" chips=["@:","@@"] kind=rounds
+CARDS: @:=repeat last Ex | @@=repeat again
+INTRO: `@:` runs the last command-line command again. After that, `@@` repeats it once more, and a count works too: `3@:`. It's the `.` of the command line. Run a command once, move, and replay it where it's needed next.
+PRACTICE: Run the command once (or reuse the one you just ran) and repeat it with `@:`. 5 rounds.
+ASIDE [Register :]: The last command lives in the read-only `:` register. `":p` pastes it, which is a quick way to put a command you just tested into your config.
+  R: You just ran :norm A; on the line above. Repeat it here and on the next line.  ::  @:j@@
+  R: Delete the next console.log line with :/console/d, then the one after it.  ::  :/console/d<CR>@:
+  R: Duplicate the fixture row with :t., then make three more copies.  ::  :t.<CR>3@:
+  R: The last command changed var to let on line 1. Repeat it on lines 2 and 4.  ::  j@:jj@@
+
+=== 122 cmdline-word "Insert Word Under Cursor" chips=["C-r C-w","C-r C-a"] kind=rounds
+CARDS: C-r C-w=insert word | C-r C-a=insert WORD
+INTRO: On the command line, `C-r C-w` inserts the word under the cursor. `C-r C-a` inserts the WORD, which includes dots and other punctuation. Put the cursor on a name, then build the command around it without retyping (or mistyping) it: `:%s/`, `C-r C-w`, `/newName/g`.
+PRACTICE: The cursor is already on the word. Pull it into the command with `C-r`. 5 rounds.
+ASIDE [Registers too]: `C-r` followed by any register name pastes it: `C-r "` for the last yank, `C-r /` for the last search. It works in insert mode as well.
+  R: Rename sm to sum everywhere.  ::  :%s/<C-r><C-w>/sum/g<CR>
+  R: Delete every line that mentions this flag.  ::  :g/<C-r><C-w>/d<CR>
+  R: Change cfg.retries to cfg.http.retries everywhere.  ::  :%s/<C-r><C-a>/cfg.http.retries/g<CR>
+  R: Rename the userName key to username.  ::  :s/<C-r><C-w>/username/<CR>
+
+=== 123 command-window "Command Window" chips=["q:"] kind=rounds
+CARDS: q:=command history window | enter=run this line
+INTRO: `q:` opens your command history in a small window, one command per line, newest at the bottom. Move and edit with normal Vim keys, then press `Enter` to run the line under the cursor. Long commands are painful to fix on the command line. Here you get `cw`, `f`, `.` and everything else.
+PRACTICE: Open the history with `q:`, find or fix the command, and run it. 5 rounds.
+ASIDE [From the command line]: Already typing a command? `C-f` opens the same window with it. `q/` does the same for search history.
+  R: Rerun the sort from your history.  ::  q:gg<CR>
+  R: Rerun the :g command, but delete the INFO lines instead of DEBUG.  ::  q:ggfDcwINFO<Esc><CR>
+  R: Rerun the :norm command, this time over lines 2 to 4.  ::  q:ggI2,4<Esc><CR>
+  R: Rerun the :m command, four entries up.  ::  q:4k<CR>
+
+######## SECTION substitute (patterns)
+
+=== 124 sub-basics "Substitute" chips=[":s"] kind=rounds
+CARDS: :s=substitute (:s/old/new/)
+INTRO: `:s/old/new/` replaces the first match of `old` on the cursor's line with `new`. The pattern is a Vim regex; the replacement is plain text. It fixes a line without moving along it, and every bulk edit in this section starts from it. Leave the replacement empty to delete the match. : s/True/False/ ‚èé befor[diagram]Üí afte[diagram]nly the cursor's line changes.
+PRACTICE: Fix the cursor's line with one `:s`. Other lines stay as they are. 5 rounds.
+ASIDE [The last slash is optional]: `:s/True/False` works without the closing slash. You need it only when flags follow, which is the next lesson.
+  R: Change "var" to "const" on this line.  ::  :s/var/const/<CR>
+  R: Fix the spelling of "instalation".  ::  :s/instalation/installation/<CR>
+  R: Turn debug mode off.  ::  :s/True/False/<CR>
+  R: Turn the first "=" into ": " (YAML style). The one in the URL stays.  ::  :s/=/: /<CR>
+  R: Delete the 'debug' label from the log call.  ::  :s/'debug', //<CR>
+
+=== 125 sub-whole-file "Whole File" chips=["%s","/g"] kind=rounds
+CARDS: %=every line (range before s) | g=every match (flag after the last /)
+INTRO: A range goes in front of `s`. `%` means every line, so `:%s/old/new/` changes the whole file. The `g` flag after the last slash replaces every match on a line, not just the first. `:%s/old/new/g` is the one to memorise. Leave off `g` only when you want the first match on each line. : %s/api/client/ ‚èé befor[diagram]Üí afte[diagram]ithout g: the first match on each line. : %s/api/client/g ‚èé befor[diagram]Üí afte[diagram]ith g: every match.
+PRACTICE: Make each file match the goal with one `:%s`. 5 rounds.
+ASIDE [Other ranges]: `:5,12s` works on lines 5 to 12. Press `:` in visual mode and Vim types `:'<,'>` for you, so the substitute only touches the selection.
+  R: Rename "api" to "client" everywhere.  ::  :%s/api/client/g<CR>
+  R: Swap every ";" for a ",".  ::  :%s/;/,/g<CR>
+  R: Switch every link to https.  ::  :%s/http:/https:/<CR>
+  R: Use American spelling: "colour" becomes "color".  ::  :%s/colour/color/g<CR>
+
+=== 126 sub-confirm "Confirm Each" chips=["/c"] kind=rounds
+CARDS: c=ask each time (flag) | y=replace this | n=skip this | a=replace the rest | q=stop
+INTRO: With the `c` flag, Vim stops at each match, highlights it and asks `replace with ‚Ä¶ (y/n/a/q/l)?`. `y` replaces it, `n` skips it, `a` replaces it and every match after, `q` stops. Use it when the pattern hits a few things it shouldn't, and pressing `n` twice is quicker than writing a tighter regex.
+PRACTICE: Run a `:%s` with `gc` and answer each prompt so the file matches the goal. 5 rounds.
+ASIDE [l for last]: `l` replaces the current match and stops, for when you can see it's the last one you want.
+  R: Rename the variable "item" to "product". Leave the message text alone.  ::  :%s/item/product/gc<CR>yny
+  R: Rename master to main, except in the comment.  ::  :%s/master/main/gc<CR>yyny
+  R: Turn print( into log.info( everywhere but the first one.  ::  :%s/print(/log.info(/gc<CR>na
+  R: Tick off the first two tasks only.  ::  :%s/\[ ]/[x]/gc<CR>yyq
+  R: Bump the package version to 1.3.0, not the dependency.  ::  :%s/1.2.0/1.3.0/gc<CR>nl
+
+=== 127 sub-ignore-case "Ignoring Case" chips=["/i","\\c"] kind=rounds
+CARDS: i=ignore case (flag) | \c=ignore case (anywhere in the pattern) | \C=match case
+INTRO: Patterns match case exactly unless you say otherwise. The `i` flag ignores case for one substitute; `\c` anywhere in the pattern does the same, and `\C` forces an exact match. Many Neovim configs set `ignorecase` and `smartcase`: an all-lowercase pattern ignores case, and a capital letter makes it exact. `\c` and `\C` override both.
+PRACTICE: Replace every match whatever its case, or exactly one case where the prompt says so. 5 rounds.
+ASIDE [The I flag]: Capital `I` is the opposite flag: `:%s/user/account/gI` matches case exactly, even with `ignorecase` on.
+  R: Spell JavaScript one way throughout.  ::  :%s/javascript/JavaScript/gi<CR>
+  R: Make every log level uppercase.  ::  :%s/\cwarn/WARN/<CR>
+  R: smartcase is on. Make every "todo:" read "TODO:".  ::  :%s/todo:/TODO:/<CR>
+  R: smartcase is on. Rename the variable "user" to "account", but not the type "User".  ::  :%s/\Cuser/account/g<CR>
+
+=== 128 sub-word-boundaries "Word Boundaries" chips=["\\<","\\>"] kind=rounds
+CARDS: \<=word start | \>=word end
+INTRO: `\<` matches where a word starts and `\>` where it ends. They match no characters themselves. `\<id\>` finds `id` but not the letters inside `idle` or `valid`. Without them, renaming a short name also rewrites every longer name that contains it. Wrap the name and the rename stays exact. : s/id/uid/g ‚èé befor[diagram]Üí afte[diagram]alid turns into valuid. : s/\<id\>/uid/g ‚èé befor[diagram]Üí afte[diagram]nly the whole word id changes.
+PRACTICE: Rename only the whole word. Longer names that contain it must survive. 5 rounds.
+ASIDE [* adds them for you]: `*` searches for the word under the cursor wrapped in `\< \>`. Follow it with `:%s//new/g` and you never type the pattern.
+  R: Rename the loop variable "i" to "idx".  ::  :%s/\<lt>i\>/idx/g<CR>
+  R: Rename "id" to "user_id".  ::  :%s/\<lt>id\>/user_id/g<CR>
+  R: Rename the local "map" to "nmap". Leave keymap and mapleader alone.  ::  :%s/\<lt>map\>/nmap/g<CR>
+  R: Rename test classes ending in "Test" to end in "Spec". TestHelpers stays.  ::  :%s/Test\>/Spec/g<CR>
+
+=== 129 sub-very-magic "Very Magic" chips=["\\v"] kind=rounds
+CARDS: \v=very magic (punctuation is special) | \V=very nomagic (everything literal)
+INTRO: By default, `[diagram]` are plain characters and need a backslash to do regex work. Start the pattern with `\v` ("very magic") and every punctuation character except `_` is special, much like a JavaScript regex. Reach for it when a pattern has groups, alternation or counts; it removes most of the backslashes. In `\v` mode the word boundaries are plain `<` and `>`.
+PRACTICE: Write each pattern with `\v`. 5 rounds.
+ASIDE [The literal end]: `\V` is the opposite: only a backslash is special. `:%s/\V1.2.0/1.3.0/g` matches the dots as dots. In `\v`, remember `=` and `@` are special too.
+  R: Spell it "color" everywhere, with one optional "u".  ::  :%s/\vcolou?r/color/g<CR>
+  R: Replace every var and let with const. Don't touch "variant".  ::  :%s/\v<lt>(var|let)>/const/g<CR>
+  R: Strip trailing whitespace.  ::  :%s/\v\s+$//<CR>
+  R: Squeeze every run of two or more spaces down to one.  ::  :%s/\v {2,}/ /g<CR>
+
+=== 130 sub-capture-groups "Capture Groups" chips=["()","\\1"] kind=rounds
+CARDS: ( )=capture (\( \) without \v) | \1=first group (\1 to \9)
+INTRO: Parentheses capture part of the match. In the replacement, `\1` puts back what the first group matched, `\2` the second, up to `\9`. That lets you move pieces around: swap arguments, reorder a date, turn one syntax into another. Use `\v` so the groups are plain `( )`. : %s/\v(\d+), (\d+)/\2, \1/ ‚èé befor[diagram]Üí afte[diagram]roup 1 and group 2 trade places.
+PRACTICE: Capture the pieces and rearrange them in the replacement. 5 rounds.
+ASIDE [Change the delimiter]: When the text is full of slashes, use another delimiter: `:s#a/b#c/d#`. Any non-word character works, as long as you use it all three times.
+  R: Turn "Last, First" into "First Last".  ::  :%s/\v(\w+), (\w+)/\2 \1/<CR>
+  R: Rewrite the asserts as expect(‚Ä¶).toBe(‚Ä¶).  ::  :%s/\vassert.equal\((.+), (.+)\)/expect(\1).toBe(\2)/<CR>
+  R: Reformat the dates from 2026-03-15 to 15/03/2026.  ::  :%s#\v(\d+)-(\d+)-(\d+)#\3/\2/\1#<CR>
+  R: Convert the requires to imports.  ::  :%s/\vconst (\w+).*\((.*)\);/import \1 from \2;/<CR>
+
+=== 131 sub-whole-match "The Whole Match" chips=["&"] kind=rounds
+CARDS: &=whole match (in the replacement)
+INTRO: In the replacement, `&` stands for everything the pattern matched. `:s/\d\+/&px/` turns `16` into `16px`. It's the quickest way to wrap or decorate text without capturing anything: quotes, backticks, units. For a literal ampersand, write `\&`. : %s/\d\+/&%/ ‚èé befor[diagram]Üí afte[diagram]uts the matched number back, then % follows it.
+PRACTICE: Keep each match and add to it with `&`. 5 rounds.
+ASIDE [~ is the last replacement]: `~` in a replacement inserts the previous substitute's replacement string. Like `&`, it needs a backslash (`\~`) to be literal.
+  R: Add "px" to every number.  ::  :%s/\d\+/&px/g<CR>
+  R: Wrap each npm command in backticks.  ::  :%s/npm \w\+/`&`/g<CR>
+  R: Quote every field.  ::  :%s/[^,]\+/"&"/g<CR>
+  R: Make every TODO bold.  ::  :%s/TODO/**&**/<CR>
+
+=== 132 sub-case "Case in Replacements" chips=["\\u","\\U","\\E"] kind=rounds
+CARDS: \u=next char upper | \l=next char lower | \U=upper until \E | \L=lower until \E | \E=stop changing case
+INTRO: In the replacement, `\u` uppercases the next character and `\l` lowercases it. `\U` and `\L` change everything after them until `\E` or the end of the replacement. Combined with `&` and groups, they convert naming styles: snake_case to camelCase, keys to constants, words to Title Case.
+PRACTICE: Change the case of the matched text in the replacement. 5 rounds.
+ASIDE [Stacking them]: `\u\L` lowercases everything and capitalises the first letter. : %s/\v<\w+>/\u\L&/g ‚èé befor[diagram]Üí afte[diagram]
+  R: Convert snake_case names to camelCase.  ::  :%s/\v_(\l)/\u\1/g<CR>
+  R: Uppercase every key.  ::  :%s/\v^\w+/\U&/<CR>
+  R: Turn each name into a member: PENDING = 'pending',  ::  :%s/\v\w+$/\U&\E = '&',/<CR>
+  R: Capitalise every word of the heading.  ::  :s/\v<lt>\l/\u&/g<CR>
+
+=== 133 sub-line-breaks "Line Breaks" chips=["\\r","\\n"] kind=rounds
+CARDS: \n=end of line (in the pattern) | \r=line break (in the replacement)
+INTRO: In a pattern, `\n` matches the end of a line, so a match can join lines together. In a replacement, `\r` inserts a line break, so one line can become several. The mismatch is historical and trips everyone up once: `\n` in a replacement inserts a null byte, shown as `^@`. : s/, /\r/g ‚èé befor[diagram]Üí afte[diagram]ne line becomes three. : 1,2s/\n/, / ‚èé befor[diagram]Üí afte[diagram]hree lines become one.
+PRACTICE: Split lines apart with `\r` or join them with `\n`. 5 rounds.
+ASIDE [Across lines]: `\_s` matches whitespace or a newline, and `\_.` any character including a newline. They let one pattern span a line break wherever it falls.
+  R: Put each directory of the PATH on its own line.  ::  :s/:/\r/g<CR>
+  R: Join the ids into one comma-separated line. Leave the last line alone, or its newline gets a comma too.  ::  :2,4s/\n/, /<CR>
+  R: Start each sentence on a new line.  ::  :s/\. /.\r/g<CR>
+  R: Collapse the runs of blank lines to a single blank line.  ::  :%s/\n\{3,}/\r\r/<CR>
+
+=== 134 sub-zs-ze "Trimming a Match" chips=["\\zs","\\ze"] kind=rounds
+CARDS: \zs=match starts here | \ze=match ends here
+INTRO: The whole pattern has to match, but only the part between `\zs` and `\ze` is replaced. Anything before `\zs` or after `\ze` is context that stays put. It saves capturing the context and putting it back with `\1`. Use either one alone, or both. : %s/max-width: \zs100/80/ ‚èé befor[diagram]Üí afte[diagram]ax-width: must match, but only 100 is replaced.
+PRACTICE: Match with context, but replace only the part that changes. 5 rounds.
+ASIDE [Search with it too]: `\zs` works in `/` searches: `/function \zs\w\+` lands the cursor on each function's name instead of the keyword.
+  R: Set the version to 2.0.0.  ::  :%s/"version": "\zs[^"]*/2.0.0/<CR>
+  R: Change the "get" prefix to "fetch", only on User functions.  ::  :%s/get\zeUser/fetch/<CR>
+  R: Extend the copyright to 2026. Leave the other years alone.  ::  :%s/-\zs2024/2026/<CR>
+  R: Change console.log calls to console.debug. logger.log stays.  ::  :%s/console.\zslog\ze(/debug/<CR>
+
+=== 135 sub-lazy "Lazy Matches" chips=["\\{-}"] kind=rounds
+CARDS: \{-}=as few as possible | *=as many as possible
+INTRO: `*` is greedy: on `"a" and "b"`, the pattern `".*"` runs from the first quote to the last. `\{-}` is the lazy version and stops at the first place the rest of the pattern can match. Use it whenever a match should end at the next delimiter: a tag, a quote, a bracket. With `\v` it's written `{-}`. : s/".*"/"x"/g ‚èé befor[diagram]Üí afte[diagram]reedy: one match, quote to quote. : s/".\{-}"/"x"/g ‚èé befor[diagram]Üí afte[diagram]azy: each quoted string on its own.
+PRACTICE: Each greedy `.*` here would swallow too much. Use `.\{-}`. 5 rounds.
+ASIDE [Counts, lazily]: `\{-1,}` is a lazy `\+`: at least one, as few as possible. For a single delimiter, `[^"]*` does the same job as `.\{-}`.
+  R: Strip the tags from the paragraph, keep the text.  ::  :s/<lt>.\{-}>//g<CR>
+  R: Drop the timestamp in brackets. Keep the level.  ::  :%s/^.\{-}] //<CR>
+  R: Turn **bold** into _italics_.  ::  :%s/\v\*\*(.{-})\*\*/_\1_/g<CR>
+  R: Redact every quoted value on the login line.  ::  :s/".\{-}"/"***"/g<CR>
+
+=== 136 sub-last-search "Reuse the Last Search" chips=[":s//"] kind=rounds
+CARDS: :s//=last search (empty pattern) | *=search word
+INTRO: Leave the pattern empty and `:s` uses the last search. Build the pattern with `/` first, watch what the highlight hits, then run `:%s//new/g`. With `*` it's the quickest rename there is: `*` on the word, then `:%s//newName/g`.
+PRACTICE: Search (or reuse the search already set), then substitute with an empty pattern. 5 rounds.
+ASIDE [Tweak it instead]: `C-r /` on the command line pastes the last search pattern, for when you want to edit it rather than reuse it as is.
+  R: The last search was /\<tmp\>. Replace every match with "buf".  ::  :%s//buf/g<CR>
+  R: Rename the variable under the cursor to "total".  ::  *:%s//total/g<CR>
+  R: Search for the durations like 250ms, then wrap each in backticks.  ::  /\d\+ms<CR>:%s//`&`/g<CR>
+  R: The last search was /colou\?r. Fix this line only.  ::  :s//color/g<CR>
+
+=== 137 sub-repeat "Repeat Substitute" chips=["&","g&"] kind=rounds
+CARDS: &=repeat on this line (:&&) | g&=repeat on every line (:%s//~/&)
+INTRO: In normal mode, `&` reruns the last `:s` on the current line with the same flags. `g&` reruns it on every line of the file. Try a substitute on one line, check the result, then `g&` to apply it everywhere. Or step through with `n&` and choose the lines yourself.
+PRACTICE: A substitute has already run on the cursor's line. Repeat it where the goal needs it. 5 rounds.
+ASIDE [Vim drops the flags]: In classic Vim, `&` is `:s` and forgets the flags, so a `/g` substitute only replaces the first match. Neovim maps `&` to `:&&`, which keeps them.
+  R: Line 1 went through :s/"/'/g. Do the same to the whole file.  ::  g&
+  R: Line 1 went through :s/;/,/g. Repeat it on line 3 only.  ::  jj&
+  R: Line 1 went through :s/\s\+$//. Repeat it on the next two matches only.  ::  n&n&
+  R: Line 1 went through :s/px/rem/g. Repeat it on the last line.  ::  G&
+
+=== 138 sub-expressions "Expressions" chips=["\\="] kind=rounds
+CARDS: \==expression (the rest is Vim script) | submatch(0)=the match (submatch(1) is \1)
+INTRO: When the replacement starts with `\=`, the rest is a Vim script expression, evaluated for every match. `submatch(0)` is the whole match and `submatch(1)` the first group. That covers what plain text can't: arithmetic, padding with `printf()`, numbering with `line('.')`. : %s/\d\+/\=submatch(0)*4/ ‚èé befor[diagram]Üí afte[diagram]ach number is multiplied by 4.
+PRACTICE: Compute each replacement with `\=`. 5 rounds.
+ASIDE [Numbers from strings]: `submatch(0)` is a string; arithmetic turns it into a whole number. For decimals, wrap it in `str2float()` first.
+  R: Bump the patch version by one.  ::  :s/\d\+\ze"/\=submatch(0)+1/<CR>
+  R: Double the recipe.  ::  :%s/\d\+/\=submatch(0)*2/<CR>
+  R: Renumber the steps to match their line numbers.  ::  :%s/^\d\+/\=line('.')/<CR>
+  R: Pad the track numbers to two digits.  ::  :%s/\d\+/\=printf('%02d', submatch(0))/<CR>
+
+=== 139 project-replace "Project Replace" chips=["‚ê£sr"] kind=rounds
+CARDS: ‚ê£sr=search & replace (across files) | CR=apply
+INTRO: `:%s` changes one file. `Space sr` opens grug-far, which takes a search and a replacement and applies them to every file in the project, listing what changed. The word under the cursor is the default search, so renaming a symbol is: cursor on it, `Space sr`, type the new name, `CR`. The tutor's panel is a simplified one: it matches whole words, so `id` leaves `identity` alone. For a rename the language server understands, `grn` is safer still; for strings, comments and config, this is the tool.
+PRACTICE: Rename the word the prompt names everywhere in the project. 5 rounds.
+ASIDE [The real grug-far]: LazyVim ships it on `Space sr`; kickstart does not. The real panel starts empty (or with a visual selection), the search is a ripgrep regex rather than a whole word, and `<localleader>r` applies. Before it, `:grep` then `:cdo s/old/new/g | update` did the same by hand ‚Äî the Quickfix lessons show it.
+  R: Rename total to cartTotal everywhere.  ::  <Space>srcartTotal<CR>q
+  R: Rename sum to subtotal (it appears only in cart.ts).  ::  <Space>srsubtotal<CR>q
+  R: From the README, rename shop to store everywhere.  ::  <Space>srstore<CR>q
+
+=== ‚òÖ sub-boss "Rename & Reformat" chips=[":%s"] kind=rounds
+CARDS: :%s=three commands
+INTRO: An old script needs a cleanup: modern declarations, camelCase names, single-quoted strings. Each change is one `:%s` over the whole file. Use what this section taught: word boundaries, `\v`, groups, case changes and lazy matches. Three commands, no hand edits.
+PRACTICE: One command per round; each round starts from the result of the last. 5 rounds.
+ASIDE [Check before g&]: On a real file, run the substitute on one line first, look at it, then `g&`. If it goes wrong, `u` undoes the whole substitute in one step.
+  R: 1/3: Replace every var with let. Leave "variant" alone.  ::  :%s/\<lt>var\>/let/<CR>
+  R: 2/3: Convert every snake_case name to camelCase.  ::  :%s/\v_(\l)/\u\1/g<CR>
+  R: 3/3: Switch every double-quoted string to single quotes.  ::  :%s/\v"(.{-})"/'\1'/g<CR>
+
+######## SECTION global-commands (patterns)
+
+=== 140 global-delete "Delete Matching Lines" chips=[":g","/d"] kind=rounds
+CARDS: :g=every matching line | /d=delete it
+INTRO: `:g/pattern/cmd` runs an Ex command on every line that matches the pattern. `:g/console\.log/d` deletes every line with a `console.log` in it. The pattern is a normal Vim search, so anything you can find with `/` you can act on. Delete is the most common command, and the one to learn first. : g/^#/d ‚èé befor[diagram]Üí afte[diagram]very line starting with # goes, wherever the cursor is.
+PRACTICE: Delete the matching lines with one `:g` command. 5 rounds.
+ASIDE [Try it with p first]: `:g/pattern/` with no command prints the matching lines, so you can check what a pattern hits before deleting. An empty pattern, `:g//d`, reuses your last search.
+  R: Delete every console.log line.  ::  :g/console/d<CR>
+  R: Strip the comment lines from the config.  ::  :g/^#/d<CR>
+  R: Delete the blank lines.  ::  :g/^$/d<CR>
+  R: Drop the DEBUG noise from the log.  ::  :g/DEBUG/d<CR>
+  R: Delete the comment lines, including the indented one.  ::  :g/^\s*--/d<CR>
+
+=== 141 global-keep "Keep Matching Lines" chips=[":v",":g!"] kind=rounds
+CARDS: :v=every non-matching line | :g!=same thing
+INTRO: `:v/pattern/cmd` is the inverse of `:g`: it runs the command on every line that does not match. `:g!` is the same command. `:v/ERROR/d` reads as "keep only the errors". It's grep, inside the buffer. : v/ERROR/d ‚èé befor[diagram]Üí afte[diagram]
+PRACTICE: Keep only the lines you want with `:v`. 5 rounds.
+ASIDE [Protect the header]: Both commands take a range. `:2,$v/pat/d` leaves line 1 alone, which keeps a CSV header in place.
+  R: Keep only the ERROR lines.  ::  :v/ERROR/d<CR>
+  R: Keep the header and the German customers only.  ::  :2,$v/DE/d<CR>
+  R: Keep only the exported functions.  ::  :v/^export/d<CR>
+  R: Delete every line that is empty or only whitespace.  ::  :v/\S/d<CR>
+
+=== 142 global-normal "Global Normal" chips=[":g","norm"] kind=rounds
+CARDS: :g=every matching line | norm=run normal keys
+INTRO: `:g` can run any Ex command, and `:normal` is one. Together they apply a normal-mode edit to every matching line: `:g/^let/norm A;`. Each run starts with the cursor at column 0 of the matching line, so begin with a motion if the edit isn't at the start. The keys can move off the line, too. : g/^let/norm A; ‚èé befor[diagram]Üí afte[diagram]
+PRACTICE: Combine `:g` with `norm`. 5 rounds.
+ASIDE [Mark, then act]: `:g` marks every matching line first and only then runs the command, so deleting or adding lines along the way doesn't make it lose its place.
+  R: Comment out every console.log line.  ::  :g/console/norm gcc<CR>
+  R: Tick every task assigned to @lin.  ::  :g/@lin/norm f[lrx<CR>
+  R: Demote every level-2 heading to level 3.  ::  :g/^## /norm I#<CR>
+  R: Delete the stack-trace line under each ERROR.  ::  :g/ERROR/norm jdd<CR>
+
+=== 143 global-move "Reverse Lines" chips=[":g/^/m0","m$","t$"] kind=rounds
+CARDS: :g/^/m0=reverse the file | m$=move matches to end | t$=copy matches to end
+INTRO: `^` matches every line, and `:m0` moves a line to the top. Run one on each line in order and the file comes out reversed: `:g/^/m0`. The same idea gathers lines. `:g/TODO/m$` moves every TODO to the end of the file, in order, and `:g/TODO/t$` copies them there instead. : g/^/m0 ‚èé befor[diagram]Üí afte[diagram]ach line in turn moves to the top, so the last one ends up first.
+PRACTICE: Reverse or gather lines with `:g` and `:m` or `:t`. 5 rounds.
+ASIDE [Reversing part of a file]: Give `:g` a range and move to the line above it: `:5,9g/^/m4` reverses lines 5 to 9. On Unix, `:5,9!tac` does the same.
+  R: Reverse the log so the newest commit is on top.  ::  :g/^/m0<CR>
+  R: Reverse the data rows, lines 2 to 5, below the header.  ::  :2,$g/^/m1<CR>
+  R: Move every TODO line to the end of the file.  ::  :g/TODO/m$<CR>
+  R: Copy every exported name to the end, to start an index.  ::  :g/^export/t$<CR>
+
+=== 144 ex-sort "Sorting" chips=[":sort","n","!","i"] kind=rounds
+CARDS: :sort=sort lines | n=by number | !=reverse | i=ignore case
+INTRO: `:sort` sorts the whole file, or a range: `:2,$sort`, or a selection with `'<,'>`. Flags change the order: `n` sorts by the first number on each line, `i` ignores case, and `:sort!` reverses. Sorted imports, keys and lists are easier to scan and produce smaller diffs. Without `n`, numbers sort as text, so 10 comes before 9 : : sort n ‚èé befor[diagram]Üí afte[diagram]
+PRACTICE: Sort each block with `:sort` and the right flags. 5 rounds.
+ASIDE [Sort by a column]: `:sort /pattern/` sorts by what comes after the match. `:sort /[^,]*,/` sorts CSV rows by their second column.
+  R: Sort the requirements.  ::  :sort<CR>
+  R: Sort by size, smallest first.  ::  :sort n<CR>
+  R: Highest score first.  ::  :sort! n<CR>
+  R: Sort the declarations inside the rule.  ::  vi{:sort<CR>
+  R: Sort the rows under the header, ignoring case.  ::  :2,$sort i<CR>
+
+=== 145 sort-unique "Unique Sort" chips=[":sort u"] kind=rounds
+CARDS: :sort u=sort, drop duplicates
+INTRO: The `u` flag keeps only the first of each run of identical lines after sorting. `:sort u` turns a messy list into a clean, deduplicated one. It combines with the other flags: `:sort ui` treats `Vim` and `vim` as duplicates, and `:sort nu` sorts numbers first. : sort u ‚èé befor[diagram]Üí afte[diagram]
+PRACTICE: Sort and remove the duplicates in one command. 5 rounds.
+ASIDE [Dedupe without sorting]: To drop duplicates but keep the original order, there's a classic regex: `:g/^\(.*\)\n\1$/d` removes a line when the next one is identical. For scattered duplicates, sorting is the practical way.
+  R: Sort the mailing list and drop the duplicate addresses.  ::  :sort u<CR>
+  R: Deduplicate the ports numerically.  ::  :sort nu<CR>
+  R: Merge the tags, ignoring case.  ::  :sort ui<CR>
+  R: Clean up the build section only.  ::  :5,$sort u<CR>
+
+=== 146 shell-filters "Shell Filters" chips=["!",":%!"] kind=rounds
+CARDS: !{motion}=filter lines | :%!=filter the file
+INTRO: `:{range}!cmd` sends those lines through a shell command and replaces them with its output. `:%!jq .` pretty-prints a JSON file. The operator `!` does the same for a motion: `!ip` fills in the range and waits for the command. Every Unix tool becomes an editing command: `sort`, `column -t`, `awk`, `jq`. The tutor emulates a handful of them.
+PRACTICE: Filter the text through a command. 5 rounds.
+ASIDE [Read, not filter]: `:r !cmd` inserts a command's output below the cursor without replacing anything, and `:!cmd` with no range just shows it.
+  R: Pretty-print the JSON with jq.  ::  :%!jq .<CR>
+  R: Sort this paragraph through the shell with !ip.  ::  !ipsort<CR>
+  R: Line the columns up with column -t.  ::  :%!column -t<CR>
+  R: Keep only the request paths, the third field.  ::  :%!awk '{print $3}'<CR>
+
+######## SECTION neovim-builtins (code)
+
+=== 147 commenting "Commenting" chips=["gcc","gc"] kind=rounds
+CARDS: gcc=toggle line comment | gc=comment operator (motion, object or selection)
+INTRO: `gcc` comments out the current line, or uncomments it if it's already a comment. `gc` is the operator: `gcip` toggles a paragraph, `gc3j` four lines, `gc` in visual mode the selection. Neovim picks the comment style from the file type (`//`, `--`, `#`) and keeps the indent lined up. Commenting was a plugin for years; since 0.10 it's built in. gcc befor[diagram]Üí afte[diagram]cc toggles the cursor line. Press it again to uncomment. gcip befor[diagram]Üí afte[diagram]c takes a motion or text object: ip is the paragraph.
+PRACTICE: Comment and uncomment code to match the marks in the editor. 5 rounds.
+ASIDE [gc is also a text object]: `gc` after an operator means "this block of comments": `dgc` deletes it, and `gcgc` uncomments the whole block from any line inside.
+  R: Comment out the debug log.  ::  gcc
+  R: Turn off the whole block of options.  ::  gcip
+  R: Bring the commented-out retry loop back.  ::  gcgc
+  R: Select the two print lines and comment them.  ::  Vjgc
+  R: Comment out the three export lines.  ::  3gcc
+  R: Uncomment the colorscheme line.  ::  gcc
+
+=== 148 diagnostics "Diagnostics" chips=["[d","]d"] kind=rounds
+CARDS: [d=previous diagnostic | ]d=next diagnostic
+INTRO: A language server reports errors and warnings as diagnostics: a letter in the sign column and the message at the end of the line. `]d` jumps to the next one, `[d` to the previous. Both wrap around the file and take a count. Fix, `]d`, fix: no scrolling to find the next red squiggle.
+PRACTICE: Reach the green box on each diagnostic with `]d` and `[d`. 5 rounds.
+ASIDE [First, last and the full message]: `[D` and `]D` jump to the first and last diagnostic. `C-w d` opens the one under the cursor in a float, for messages too long to read at the end of the line.
+  R:   ::  ]d
+  R:   ::  ]d
+  R:   ::  [d
+  R:   ::  2]d
+  R:   ::  [d
+  R:   ::  3[d
+
+=== 149 definition-hover "Definitions & Hover" chips=["gd","K"] kind=rounds
+CARDS: gd=go to definition | K=hover docs
+INTRO: With a language server attached, `gd` jumps to where the name under the cursor is defined, even in another file. `K` shows its type and documentation in a float. `C-o` takes you back after a jump, so you can dive into a definition, read it and return to where you were.
+PRACTICE: Jump to definitions with `gd` and open docs with `K`. Any key closes the float. 5 rounds.
+ASIDE [Out of the box]: Neovim 0.11 maps `K` for you and points `C-]` at the server's definition. Most configs add `gd` with `vim.keymap.set('n', 'gd', vim.lsp.buf.definition)`; without a server it finds the local declaration.
+  R: Jump to where formatMoney is defined.  ::  gd
+  R: Read the docs for formatMoney.  ::  ffK
+  R: Go to the TAX_RATE constant.  ::  gd
+  R: What does CartItem hold? Show its type.  ::  fCK
+  R: Jump to the CartItem interface.  ::  gd
+  R: What does padEnd take? Show its docs.  ::  K
+
+=== 150 references "References" chips=["grr","gri"] kind=rounds
+CARDS: grr=list references | gri=implementations
+INTRO: `grr` asks the language server for every reference to the name under the cursor and opens them in the quickfix list. `gri` lists implementations: the classes behind an interface, the bodies behind a method. From the list, `]q` and `[q` walk through the hits and `]Q` jumps to the last. With a single implementation, `gri` jumps straight there.
+PRACTICE: List the references or implementations, then walk the quickfix list to the one the prompt asks for. 5 rounds.
+ASIDE [Better than grep]: `:vimgrep` finds text; `grr` finds uses of a symbol, so a `total` in a comment or another scope doesn't show up. The list includes the definition itself.
+  R: List the references to formatMoney and jump to the last one.  ::  grr]Q
+  R: From receipt.ts, list the references and jump to the second: the call in lineTotal.  ::  grr]q
+  R: List the classes implementing PaymentProvider and go to the second.  ::  gri]q
+  R: Logger has one implementation. Go to it.  ::  gri
+  R: Find the charge method implementations and go to the last.  ::  gri]Q
+
+=== 151 lsp-rename "Rename" chips=["grn"] kind=rounds
+CARDS: grn=rename symbol (across the project)
+INTRO: `grn` renames the symbol under the cursor everywhere it's used. Neovim prompts New Name: with the old name filled in; edit it and press `enter`. The prompt is a normal command line: type to append, `C-u` to clear it, `bs` to trim. Other files are changed in their buffers; `:wa` writes them all.
+PRACTICE: Rename each symbol to match the goal. 5 rounds.
+ASIDE [Why not :s?]: A substitute changes text. Rename changes one symbol, so a `user` inside `users` or in an unrelated scope stays put. `u` undoes the whole rename in the current buffer.
+  R: Rename d to daysLate.  ::  grn<C-u>daysLate<CR>
+  R: Rename user to userId by adding "Id".  ::  grnId<CR>
+  R: Shorten bufnr to buf.  ::  grn<BS><BS><CR>
+  R: Rename tmp to rows.  ::  grn<C-u>rows<CR>
+  R: Rename formatMoney to formatCents in every file, then write them all.  ::  grn<C-u>formatCents<CR>:wa<CR>
+
+=== 152 code-actions "Code Actions" chips=["gra"] kind=rounds
+CARDS: gra=code actions (fixes for the cursor spot)
+INTRO: `gra` asks the language server what it can do at the cursor: add a missing import, remove an unused variable, convert a string. Pick one from the list with `j`/`k` and `enter`, or its number. Pair it with `]d`: jump to the problem, `gra`, pick the fix. The change is one undo step.
+PRACTICE: Jump to the problem if needed, then apply the code action the prompt asks for. 5 rounds.
+ASIDE [A nicer menu]: Stock Neovim lists the actions with `vim.ui.select`, a numbered prompt. Pickers such as Telescope or fzf-lua can take over `vim.ui.select` to give you a fuzzy menu instead.
+  R: useState is not imported. Jump to the error and add the import.  ::  ]dgra<CR>
+  R: Convert the concatenation to a template string.  ::  gra<CR>
+  R: req is unused. Keep the parameter but prefix it with an underscore (the second action).  ::  [dgraj<CR>
+  R: res is a Promise. Let the server add the missing await.  ::  ]dgra<CR>
+  R: Silence the unused-local warning for this line only.  ::  gra1
+
+=== 153 blank-lines "Blank Lines" chips=["[‚ê£","]‚ê£"] kind=rounds
+CARDS: [‚ê£=blank line above | ]‚ê£=blank line below
+INTRO: `[<Space>` adds a blank line above the cursor and `]<Space>` one below. A count adds that many. Unlike `o` and `O`, you stay in normal mode and the cursor stays on its line, so you can space out code without stopping what you're doing. ]‚ê£ befor[diagram]Üí afte[diagram]lank line below; the cursor stays on the brace. 2[‚ê£ befor[diagram]Üí afte[diagram]ith a count: two blank lines above.
+PRACTICE: Add the blank lines the goal shows. 5 rounds.
+ASIDE [Borrowed from unimpaired]: These came from Tim Pope's vim-unimpaired, along with `[b`, `[q` and friends. Neovim 0.11 built them in; in classic Vim you still need the plugin. To see how a real config wires the plugins in the next sections together, read kickstart.nvim's single `init.lua` next: it is written to be read top to bottom.
+  R: Separate the two functions.  ::  ] 
+  R: Give the heading room above it.  ::  [ 
+  R: PEP 8 wants two blank lines before a top-level def.  ::  2[ 
+  R: Put a blank line on both sides of the rule.  ::  [ ] 
+  R: Split the keymaps from the options.  ::  ] 
+
+######## SECTION more-text-objects (code)
+
+=== 154 next-last-objects "Next & Last Objects" chips=["in(","il\""] kind=rounds
+CARDS: in(=next object (also an( in" in[ ‚Ä¶) | il"=last object (also al" il( il[ ‚Ä¶)
+INTRO: Both starters extend the `i` and `a` objects, with mini.ai and treesitter-textobjects. mini.ai adds a direction: put `n` (next) or `l` (last) in the middle and the object is found ahead of or behind the cursor: `cin(` changes inside the next parentheses, `dil"` empties the previous string. Plain `ci(` also looks ahead when the cursor isn't inside any parentheses. `in(` is for when you are inside one pair and want the one after it. i[diagram]n[diagram]l[diagram]
+PRACTICE: Change or delete the object before or after the cursor, with `n` or `l`. 5 rounds.
+ASIDE [From targets.vim]: The `n` and `l` objects come from targets.vim, which also adds them to classic Vim. A count reaches further: `2cin(` skips one pair.
+  R: Pass "render" to then() instead of "parse".  ::  cin(render<Esc>
+  R: The sum is 3: fix the expected value.  ::  cin(3<Esc>
+  R: Change "Hi" to "Hello".  ::  cil"Hello<Esc>
+  R: Index the column with k.  ::  cin[k<Esc>
+  R: Empty the first condition.  ::  dil(
+
+=== 155 argument-objects "Arguments" chips=["ia","aa"] kind=rounds
+CARDS: ia=inner argument | aa=argument + comma
+INTRO: `ia` is one argument of a call, parameter list, array or object: everything between the commas, however many words it has. `cia` replaces a + b as easily as x . `aa` takes the comma and space with it, so `daa` removes an argument and leaves a clean list, whether it was the first, a middle or the last one. i[diagram][diagram]
+PRACTICE: Change or delete one argument. 5 rounds.
+ASIDE [Nested calls]: Commas inside nested brackets and strings don't count, so f(g(1, 2), 'a, b') has two arguments. targets.vim and nvim-treesitter-textobjects offer the same object as `ia` or `i,`.
+  R: Drop the email argument.  ::  daa
+  R: Drop the URL; keep the options.  ::  kfudaa
+  R: Compare against "sum" instead.  ::  ciasum<Esc>
+  R: Remove the last argument.  ::  daa
+  R: Map it in normal and visual mode.  ::  cia{ 'n', 'v' }<Esc>
+
+=== 156 indent-objects "Indent Objects" chips=["ii","ai"] kind=rounds
+CARDS: ii=inner indent (lines at this level) | ai=around indent (plus header and end)
+INTRO: `ii` selects the block of lines indented at least as deep as the cursor line: a function body, an if branch, a nested list. `ai` adds the line above it and, when there is one, the closing line below ( } or end ). It needs no brackets, so it works the same in Python, YAML, Lua and Markdown lists. i[diagram][diagram]
+PRACTICE: Change or delete a whole indented block. 5 rounds.
+ASIDE [Where it comes from]: LazyVim adds `ii` and `ai` to mini.ai; mini.indentscope and vim-indent-object provide the same objects on their own.
+  R: Replace the method body with pass.  ::  ciipass<Esc>
+  R: Delete the whole debug branch.  ::  dai
+  R: Remove the Neovide block.  ::  dai
+  R: Rewrite the body as one return.  ::  ciireturn !list?.length;<Esc>
+  R: Drop the sub-steps under "Setup".  ::  dii
+
+=== 157 function-class-objects "Functions & Classes" chips=["if","af","ic","ac"] kind=rounds
+CARDS: if=function body | af=whole function | ic=class body | ac=whole class
+INTRO: With treesitter the editor knows where functions and classes begin and end. `if` is a function's body, `af` the whole function; `ic` and `ac` do the same for classes. The cursor can be anywhere inside, even deep in a nested block. `cif` rewrites a body in one go; `daf` removes a method without counting lines. i[diagram][diagram]
+PRACTICE: Change or delete a function or class from anywhere inside it. 5 rounds.
+ASIDE [Not built in]: These come from nvim-treesitter-textobjects or from mini.ai with a treesitter spec (LazyVim's default). The keys are a convention, set in your config.
+  R: Replace the body with a single return.  ::  cifreturn user.role === 'admin';<Esc>
+  R: Delete the debug() method.  ::  daf
+  R: Delete the legacy class.  ::  dac
+  R: Replace the class body with one field.  ::  ciclog = console.info;<Esc>
+  R: Simplify setup() to store opts as given.  ::  cifM.opts = opts<Esc>
+  R: Delete the callback, from anywhere in it.  ::  daf
+
+=== 158 function-motions "Function Motions" chips=["]m","[m"] kind=rounds
+CARDS: ]m=next function | [m=previous function
+INTRO: `]m` jumps to the start of the next function or method, `[m` to the start of the previous one. From inside a body, `[m` takes you to the top of the function you're in. They skip everything that isn't a function, so they're the quickest way down a file of methods. A count skips several: `2]m`.
+PRACTICE: Reach the green box with `]m` or `[m`. 5 rounds.
+ASIDE [Ends too]: `]M` and `[M` go to function ends. Vim has `]m` built in, but it only understands Java-style classes; nvim-treesitter-textobjects makes it work in every language.
+  R:   ::  ]m
+  R:   ::  ]m
+  R:   ::  [m
+  R:   ::  ]m
+  R:   ::  2[m
+  R:   ::  3]m
+
+######## SECTION jumping (code)
+
+=== 159 flash-jump "Label Jumps" chips=["s"] kind=rounds
+CARDS: s=jump (s{chars}{label})
+INTRO: flash.nvim turns `s` into a jump to anywhere on screen. Press `s` and type the first letters of where you want to go. Every match gets a label, a letter on a pink background; type the label and the cursor is there. Two letters are usually enough. The nearest matches get the easiest labels, and no label is ever a letter that could continue what you're typing, so you can keep typing until the label appears.
+PRACTICE: Reach the green box : `s`, two letters of the target, then its label. 5 rounds.
+ASIDE [leap and hop]: leap.nvim (`s` plus two characters, then a label) and hop.nvim do the same job. flash replaces the built-in `s`; `cl` does what `s` did.
+  R:   ::  scrs
+  R:   ::  sths
+  R:   ::  sloa
+  R:   ::  sinj
+  R:   ::  sErs
+  R:   ::  sdbd
+
+=== 160 flash-motions "Jumps as Motions" chips=["d","s"] kind=rounds
+CARDS: d=any operator | s=to the label
+INTRO: After an operator, `s` is a motion: `d`, `s`, a few letters and a label deletes from the cursor to that match. `c`, `y` and visual mode work the same way. Forward, the match's first character is included, as with `f`. Backward, the text from the match up to the cursor goes. Either way the target can be on another line.
+PRACTICE: Use `d` or `c` with an `s` jump. 5 rounds.
+ASIDE [Remote actions]: flash also has `r` in operator-pending mode: `yr`, a jump, then a text object yanks something elsewhere on screen and brings the cursor back.
+  R: Delete the role field, backwards from email.  ::  dsroa
+  R: Delete the filter step, backwards from .map.  ::  ds.fa
+  R: Replace the ternary with plural(count, 'item').  ::  cs';aplural(count, 'item')<Esc>
+  R: Drop useEffect and useMemo.  ::  dsuss
+
+=== 161 flash-treesitter "Treesitter Select" chips=["S"] kind=rounds
+CARDS: S=select a node (S{label})
+INTRO: `S` labels the syntax nodes around the cursor: the word, the call it's in, the argument list, the statement, the block, the function. The same label sits at both ends of each node. Type one and that node is selected in visual mode. From there any visual command applies: `d`, `c`, `y`. Press `V` first to make the selection linewise when you're removing whole lines.
+PRACTICE: Select the node with `S` and a label, then change or delete it. 5 rounds.
+ASIDE [Incremental selection]: nvim-treesitter's incremental selection grows a selection one node at a time; flash's labels skip the stepping. The labels start at the innermost node and go outward[diagram]Ä¶
+  R: Delete the argument of sum().  ::  Sdd
+  R: Pass reload as the callback.  ::  Sdcreload<Esc>
+  R: Turn retries off: replace the object with false.  ::  Sdcfalse<Esc>
+  R: Remove the whole if block.  ::  SgVd
+
+######## SECTION surround (code)
+
+=== 162 add-surroundings "Add Surroundings" chips=["ys"] kind=rounds
+CARDS: ys=add a pair (ys{motion}{char})
+INTRO: nvim-surround adds `ys`, an operator that wraps text in a pair. Give it a motion or text object, then the character to wrap with: `ysiw"` puts quotes around the word under the cursor, `ys$)` wraps everything to the end of the line in parentheses. Opening brackets add a space inside, closing brackets don't: `ysiw(` gives ( word ) , `ysiw)` gives (word) . Any other character is used on both sides. ysiw[diagram]Ü[diagram]siw[diagram]Ü[diagram]siw[diagram]Ü[diagram]s$[diagram]Ü[diagram]
+PRACTICE: Wrap the text with `ys`, a motion and the character. 5 rounds.
+ASIDE [Other surround plugins]: nvim-surround copies the keys of tpope's vim-surround, so `ys`, `cs` and `ds` work in both. mini.surround uses `sa`, `sr` and `sd` instead; LazyVim's mini.surround extra maps them to `gsa`, `gsr` and `gsd`. Shortcuts: `b` is ) , `B` is } , `r` is ] .
+  R: Quote "production".  ::  ysiw"
+  R: Put "width * height" in parentheses.  ::  ys3e)
+  R: Make the list of ports an array.  ::  yst;]
+  R: Wrap "silent = true" in a table, with spaces inside.  ::  yst){
+  R: Mark "npm install" as code.  ::  wys2e`
+
+=== 163 change-surroundings "Change Surroundings" chips=["cs"] kind=rounds
+CARDS: cs=change a pair (cs{old}{new})
+INTRO: `cs` swaps one pair for another. Name the pair around the cursor, then the new one: `cs'"` turns 'text' into "text" . The cursor only has to be inside the pair. If it isn't inside one, nvim-surround uses the next pair on the line. The same spacing rule applies: `cs)(` adds spaces inside, `cs()` removes them. cs'[diagram]Ü[diagram]s)[diagram]Ü[diagram]s)[diagram]Ü[diagram]
+PRACTICE: Change each pair with `cs`. 5 rounds.
+ASIDE [Any quote]: `q` stands for whichever quote is closest, so `csq"` works on single quotes and backticks alike.
+  R: Switch "express" to double quotes.  ::  cs'"
+  R: Make the URL a template string.  ::  cs"`
+  R: Turn the tuple into an array.  ::  cs)]
+  R: Drop the spaces inside the parentheses.  ::  cs()
+  R: Swap the brackets for braces, spaced.  ::  cs[{
+
+=== 164 delete-surroundings "Delete Surroundings" chips=["ds"] kind=rounds
+CARDS: ds=delete a pair (ds{char})
+INTRO: `ds` removes the pair around the cursor and keeps what's inside: `ds"` strips the quotes, `ds)` the parentheses. `ds(` also removes the spaces just inside the brackets, so ( a ) becomes a . `dst` deletes the nearest HTML tag pair and `dsf` unwraps a function call. ds[diagram]Ü[diagram]s[diagram]Ü[diagram]s[diagram]Ü[diagram]s[diagram]Üí i d = n
+PRACTICE: Remove the pair with `ds`. 5 rounds.
+ASIDE [Nested pairs]: `ds` works on the innermost pair of that kind around the cursor. In log((total)) with the cursor on total , `ds)` removes the inner parentheses and leaves the call alone.
+  R: Remove the extra parentheses.  ::  ds)
+  R: Make the port a number.  ::  ds"
+  R: Unwrap the expression, spaces too.  ::  ds(
+  R: Drop the emphasis.  ::  ds_
+  R: Remove the <strong> tag.  ::  dst
+  R: Unwrap the call to String().  ::  dsf
+
+=== 165 surround-a-line "Surround a Line" chips=["yss"] kind=rounds
+CARDS: yss=wrap the line (yss{char})
+INTRO: Like `dd` and `yy`, doubling the operator acts on the whole line: `yss)` wraps the current line in parentheses. Leading indentation and trailing spaces stay outside the pair, so `yss` is safe on indented code. The cursor can be anywhere on the line.
+PRACTICE: Wrap each line with `yss`. 5 rounds.
+ASIDE [On their own lines]: `ySS` puts the pair on separate lines and indents the text between them. `yS` does the same with a motion.
+  R: Italicise the whole line with underscores.  ::  yss_
+  R: Mark the command as code.  ::  yss`
+  R: Make the override an object.  ::  yss{
+  R: Wrap the plugin in a spec table.  ::  jyss{
+  R: Bold the warning: ** means yss* twice.  ::  yss*.
+
+=== 166 surround-a-selection "Surround a Selection" chips=["v","S"] kind=rounds
+CARDS: v=select | S=wrap selection (S{char})
+INTRO: In visual mode, `S` followed by a character wraps the selection. Use it when the text is easier to select than to describe with one motion. With a linewise selection (`V`), the pair goes on lines of its own above and below, and the lines between are indented. vee S[diagram]Ü[diagram]j S[diagram]Ü[diagram]
+PRACTICE: Select the text, then press `S` and the character. 5 rounds.
+ASIDE [S in normal mode]: Only visual `S` changes. In normal mode `S` still clears the line and starts insert mode, like `cc`.
+  R: Group the sum before dividing.  ::  v3eS)
+  R: An array of string or null: wrap the union.  ::  vt[S)
+  R: Turn "migration guide" into link text.  ::  veeS]
+  R: Wrap all three settings in an object.  ::  VGS}
+  R: Quote the whole path.  ::  vg_S"
+
+=== 167 surround-with-tags "Surround with Tags" chips=["cst","yst"] kind=rounds
+CARDS: cst=change a tag (type the name, then Enter) | ys‚Ä¶t=add a tag
+INTRO: `t` means an HTML or JSX tag. `cst` asks for a new tag name: type it and press `Enter`. The attributes stay, so <div class="card"> can become <section class="card"> . To add a tag, use `t` as the character after `ys`, `yss` or visual `S`. You can type attributes too: a href="/" . cst h3 ‚è[diagram]Ü[diagram]siwt em ‚è[diagram]Ü[diagram]
+PRACTICE: Change or add tags. Finish each name with `Enter`. 5 rounds.
+ASIDE [t and T]: `csT` replaces the whole opening tag, attributes included. In vim-surround you type the tag itself instead: `cst<em>`, which nvim-surround also accepts.
+  R: Use <strong> instead of <b>.  ::  cststrong<CR>
+  R: Make the card a <section>, keeping its class.  ::  jcstsection<CR>
+  R: Demote the heading to <h3>.  ::  csth3<CR>
+  R: Make the item a list entry.  ::  2jysstli<CR>
+  R: Emphasise "never".  ::  ysiwtem<CR>
+  R: Replace the whole <span> with a link to /docs.  ::  csTa href="/docs"<CR>
+
+######## SECTION insert-power (code)
+
+=== 168 insert-delete-word "Deleting While Typing" chips=["C-w","C-u"] kind=rounds
+CARDS: C-w=delete word back | C-u=delete to line start
+INTRO: In insert mode, `C-w` deletes the word before the cursor and `C-u` deletes everything before the cursor on the line, back to the indent. Mistakes happen mid-word. Instead of leaving insert mode or leaning on backspace, wipe the word and type it again. a ^W subtotal esc befor[diagram]Üí afte[diagram]-w takes the whole word back; type the right one. i ^U return null esc befor[diagram]Üí afte[diagram]-u clears back to the indent, so you start the line over.
+PRACTICE: Each round starts in insert mode, just after a typo. Fix it with `C-w` or `C-u`, then press `esc`. (In the browser, `Alt-w` stands in for `C-w`.) 5 rounds.
+ASIDE [You can take it back]: Neovim maps both keys to start a new undo step first, so if you wipe too much, `esc` then `u` brings it back. Both also work on the `:` command line.
+  R: You typed "totl". Make it "subtotal".  ::  <C-w>subtotal<Esc>
+  R: Fix "find_fils".  ::  <C-w>find_files<Esc>
+  R: Nothing on this line is right. Start it over.  ::  <C-u>return null<Esc>
+  R: Two typos in a row: make it "email address".  ::  <C-w><C-w>email address<Esc>
+  R: Change the last word to "README".  ::  <C-w>README<Esc>
+  R: Retype this one from the indent.  ::  <C-u>'nvim-telescope/telescope.nvim'<Esc>
+
+=== 169 insert-one-command "One Normal Command" chips=["C-o"] kind=rounds
+CARDS: C-o=one normal command (then back to insert)
+INTRO: `C-o` in insert mode runs a single normal-mode command, then drops you straight back into insert mode where the cursor ends up. It saves the `esc`, command, `i` dance when you only need one thing: jump to the end of the line, delete a word ahead, change the case of what you just typed. i ^O $ ; esc befor[diagram]Üí afte[diagram]rom inside the parentheses, C-o $ hops to the end; the ; lands there.
+PRACTICE: Each round starts in insert mode. Use `C-o` for the one normal-mode step, finish typing, then press `esc`. 5 rounds.
+ASIDE [Keep your place on screen]: `C-o zz` recentres the screen while you keep typing, which helps when you've drifted to the bottom edge.
+  R: Finish the line with a semicolon.  ::  <C-o>$;<Esc>
+  R: Replace "debugMessage" with "msg".  ::  <C-o>dwmsg<Esc>
+  R: Add "await " before the call.  ::  <C-o>T await <Esc>
+  R: You just typed max_retries. Make it upper case.  ::  <C-o>gUb<Esc>
+  R: Type "v2", then delete the rest of the path up to the quote.  ::  v2<C-o>dt'<Esc>
+
+=== 170 completion-menu "Completion Menu" chips=["C-n","C-y","C-e"] kind=rounds
+CARDS: C-n=next candidate (C-p: previous) | C-y=accept | C-e=dismiss
+INTRO: In a starter config the completion menu (blink.cmp or nvim-cmp) pops up as you type: names from your buffers, the language server, snippets. `C-n` and `C-p` move through it, `C-y` takes the highlighted item, `C-e` closes it and keeps what you typed. Vim's own menu works the same way without a plugin: `C-n` opens it on words from open buffers, and the same `C-y` / `C-e` apply. That is what you practise here.
+PRACTICE: Each round starts in insert mode. Open the menu, accept the right word, then `esc`. 5 rounds.
+ASIDE [Enter or C-y?]: LazyVim accepts with `CR` as well as `C-y`; kickstart uses `C-y` only, so a stray Enter never grabs a candidate you did not want. `C-space` opens the documentation for the highlighted item in both.
+  R: Complete "cus" to customerName.  ::  <C-n><C-y><Esc>
+  R: Complete "inv" to invoiceTotal, not invoiceId (it comes first).  ::  <C-n><C-n><C-y><Esc>
+  R: Open the menu, then dismiss it and keep "ord".  ::  <C-n><C-e><Esc>
+
+=== 171 snippets "Snippets" chips=["tab","S-tab"] kind=rounds
+CARDS: tab=expand / next field | S-tab=previous field
+INTRO: A snippet turns a short trigger into a block with blanks to fill: type `fn`, press `tab`, and a whole function skeleton appears with the cursor on its name. Each `tab` jumps to the next blank; `S-tab` goes back. friendly-snippets ships hundreds of these for every language; both starters wire them into the completion menu. The tutor has four: `fn`, `for`, `if`, `log`.
+PRACTICE: Each round starts in insert mode after a trigger. Expand it and fill its fields, then `esc`. 5 rounds.
+ASIDE [Where tab goes]: In both starters a snippet is an item in the completion menu: `C-y` accepts it, which expands it. The tutor's `tab` on the trigger word stands in for that step. Jumping between fields with `tab` / `S-tab` is blink.cmp's default in both.
+  R: Expand fn into function greet(name) { return name; }.  ::  <Tab>greet<Tab>name<Tab>return name;<Esc>
+  R: Expand log to print total.  ::  <Tab>total<Esc>
+  R: Expand for over items as item, with the body item.run().  ::  <Tab>item<Tab>items<Tab>item.run();<Esc>
+
+######## SECTION git (code)
+
+=== 172 gitsigns-hunks "Walking Hunks" chips=["]h","[h"] kind=rounds
+CARDS: ]h=next hunk (LazyVim; kickstart: ]c) | [h=previous hunk (kickstart: [c)
+INTRO: gitsigns marks every changed line in the sign column: a green bar for added lines, an orange one for changed lines, and a red `_` under the spot where lines were deleted. `]h` jumps to the start of the next hunk and `[h` to the previous one. Both take a count and wrap around the file.
+PRACTICE: Reach the green box at the start of each hunk. 5 rounds.
+ASIDE [kickstart's keys]: kickstart maps the same jumps to `]c` / `[c` (gitsigns' README keys, shared with diff mode) and staging to `Space hs` / `Space hr`; both sets work here.
+  R:   ::  ]h
+  R:   ::  2]h
+  R:   ::  [h
+  R:   ::  ]h
+  R:   ::  [c[c
+
+=== 173 gitsigns-stage-hunk "Stage a Hunk" chips=["‚ê£ghs","‚ê£ghr"] kind=rounds
+CARDS: ‚ê£ghs=stage hunk (LazyVim; kickstart: ‚ê£hs) | ‚ê£ghr=reset hunk (undo with u)
+INTRO: `Space ghs` (LazyVim's `Space gh` is the git-hunk prefix) stages the hunk under the cursor without leaving the file; its sign disappears. `Space ghr` resets the hunk, putting back what the index has. Pair them with `]c`: walk the hunks, stage the ones that belong in this commit and reset the debugging you forgot about. A reset is an ordinary change, so `u` brings it back.
+PRACTICE: Stage or reset the hunks the prompt names. 5 rounds.
+ASIDE [Look before you stage]: `Space hp` previews the hunk in a float. kickstart keeps gitsigns' README keys, `Space hs` and `Space hr`; in visual mode either stages just the selected lines' hunks.
+  R: Stage the argparse setup in main() (the cursor is in that hunk).  ::  <Space>ghs
+  R: Stage the first hunk of the file.  ::  [h<Space>ghs
+  R: Put back the deleted sys.stdout.flush() line.  ::  2]h<Space>ghr
+  R: Reset the debug print you left in api.py.  ::  ]h<Space>ghr
+  R: Stage the second hunk, then reset the third.  ::  ]h<Space>ghs]h<Space>ghr
+
+=== 174 git-lazygit "Lazygit" chips=["‚ê£gg","q"] kind=rounds
+CARDS: ‚ê£gg=open lazygit (LazyVim) | q=close it
+INTRO: Staging one hunk at a time is gitsigns' job. For everything else ‚Äî the full status, commits, branches, logs ‚Äî the starters hand you `lazygit` in a floating terminal: `Space gg` opens it over the editor, `q` brings the editor back. Inside, lazygit has its own keys (`?` lists them). The habit to build is the round trip: open, do the git thing, close, keep editing.
+PRACTICE: Open lazygit, read what is changed, and close it again. 5 rounds.
+ASIDE [kickstart]: kickstart does not ship lazygit; `:!git status` or a second terminal fills the gap until you add it.
+  R: Open lazygit.  ::  <Space>gg
+  R: Open it, read the status, and close it again.  ::  <Space>ggq
+  R: Once more: open and close in one go.  ::  <Space>ggq
+
+######## SECTION challenges (challenges)
+
+=== ‚òÖ challenge-fix-the-file "Fix the File" chips=["f","x","r","i"] kind=generated
+CARDS: 
+INTRO: Everything from the first five sections, together. A real file with a dozen small mistakes: typos, a wrong digit, an identifier with one letter off. The list beside the editor says what each one is; you decide how to get there and which key fixes it. Work top to bottom, or by whatever is closest. `f` and `/` beat counting columns; `r` beats `x` + `i` for a one-character swap.
+PRACTICE: Every fix is on the list. Any keys you like; the file is done when every item is ticked.
+ASIDE [Every run is new]: The file and its mistakes are generated from a seed. Replay a seed to race yourself, or take a new file.
+
+=== ‚òÖ challenge-operators "Operators" chips=["d","c","dd","."] kind=generated
+CARDS: 
+INTRO: Adds operators to the mix: stray lines and words to delete, wrong words to change, a line that is missing its near-twin. `dd`, `dw`, `cw` and `yyp` do the heavy lifting; `.` repeats the last one. The checklist tells you what changed. Read the item, jump there, pick the operator that does it in one go.
+PRACTICE: Every fix is on the list. Any keys you like; the file is done when every item is ticked.
+ASIDE [Clean means clean]: Stray edits outside the list count against Clean even if you `u` them. Every key, including `u`, counts toward Accuracy.

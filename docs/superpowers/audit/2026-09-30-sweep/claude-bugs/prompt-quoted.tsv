@@ -1,0 +1,7 @@
+growing-selections r2	"(isAdmin || isOwner)"	Replace the whole "(isAdmin || isOwner)" group with canEdit(user).
+robust-macros r2	"name url"	Turn each "name url" line into a Markdown link.
+macros-over-lines r4	"key = value"	Register a turns "key = value" into "key: value". Run it on every line; the comments have no "=" and are skipped.
+macros-over-lines r4	"key: value"	Register a turns "key = value" into "key: value". Run it on every line; the comments have no "=" and are skipped.
+picker-grep r4	"todo"	Jump to the TODO in money.ts: grep "todo", then take the second hit.
+sub-capture-groups r1	"Last, First"	Turn "Last, First" into "First Last".
+sub-capture-groups r1	"First Last"	Turn "Last, First" into "First Last".

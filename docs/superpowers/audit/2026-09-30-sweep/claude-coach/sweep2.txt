@@ -1,0 +1,210 @@
+### change-lines r1  ^C instead of cc
+cursor={"line":0,"col":0} line="function total(items) {"
+keys=jj^Creturn sum;<Esc> (16)  goalMet=true  expert=jjccreturn sum;<Esc>  ref=jjccreturn sum;<Esc>
+taught has: f t ; A I o O s S D C cc dd G gg % COUNT d c e $ r x
+  (silent)
+
+### change-lines r1  total novice
+cursor={"line":0,"col":0} line="function total(items) {"
+keys=jj^lllllllllllllllllllxxxxxxxxxxxxxxxxxxxxireturn sum;<Esc> (55)  goalMet=false  expert=jjcc…  ref=jjccreturn sum;<Esc>
+taught has: f t ; A I o O s S D C cc dd G gg % COUNT d c e $ r x
+  (silent)
+
+### repeat-find r0  f repeated instead of ;
+cursor={"line":1,"col":0} line="42,Ada Lovelace,ada@example.com,admin,true,2024-03-01"
+keys=f,f,f,f, (8)  goalMet=true  expert=f,;;;  ref=f,;;;
+taught has: f t ; A I o O s S COUNT c e $ r x
+  REF: you 8 par 5 ref=f,;;;
+
+### find-char r4  l-spam to end (49 l)
+cursor={"line":2,"col":0} line="if (total > limit) throw new Error('over limit');"
+keys=kkllllllllllllllllllllllllllllllllllllllllllllllll (50)  goalMet=false  expert=2kf]  ref=2kf]
+taught has: f t COUNT e $ r x
+  CRIT u0: you kkllllllllllllllllllllllllllllllllllllllllllllllll -> 2kt] [motion, saves 46] "Fewer keys to the same spot."
+  LIVE @5/50 after 'kklll' mode=normal: w2k does that in 3  [for "kklll"]
+  LIVE @6/50 after 'kkllll' mode=normal: 2ke does that in 3  [for "kkllll"]
+  LIVE @7/50 after 'kklllll' mode=normal: 2k5l does that in 4  [for "kklllll"]
+  LIVE @8/50 after 'kkllllll' mode=normal: 2kw does that in 3  [for "kkllllll"]
+  LIVE @9/50 after 'kklllllll' mode=normal: 2k7l does that in 4  [for "kklllllll"]
+  LIVE @10/50 after 'kkllllllll' mode=normal: 2k8l does that in 4  [for "kkllllllll"]
+  LIVE @11/50 after 'kklllllllll' mode=normal: 2k9l does that in 4  [for "kklllllllll"]
+  LIVE @12/50 after 'kkllllllllll' mode=normal: 2k2e does that in 4  [for "kkllllllllll"]
+  LIVE @13/50 after 'kklllllllllll' mode=normal: 2kt= does that in 4  [for "kklllllllllll"]
+  LIVE @14/50 after 'kkllllllllllll' mode=normal: 2k2w does that in 4  [for "kkllllllllllll"]
+  LIVE @15/50 after 'kklllllllllllll' mode=normal: 2ktc does that in 4  [for "kklllllllllllll"]
+  LIVE @16/50 after 'kkllllllllllllll' mode=normal: 2k3w does that in 4  [for "kkllllllllllllll"]
+  LIVE @17/50 after 'kklllllllllllllll' mode=normal: 2kw9l does that in 5  [for "kklllllllllllllll"]
+  LIVE @18/50 after 'kkllllllllllllllll' mode=normal: 2kta does that in 4  [for "kkllllllllllllllll"]
+  LIVE @19/50 after 'kklllllllllllllllll' mode=normal: 2kfa does that in 4  [for "kklllllllllllllllll"]
+  LIVE @20/50 after 'kkllllllllllllllllll' mode=normal: 2kwft does that in 5  [for "kkllllllllllllllllll"]
+  LIVE @21/50 after 'kklllllllllllllllllll' mode=normal: 2ktO does that in 4  [for "kklllllllllllllllllll"]
+  LIVE @22/50 after 'kkllllllllllllllllllll' mode=normal: 2kfO does that in 4  [for "kkllllllllllllllllllll"]
+  LIVE @23/50 after 'kklllllllllllllllllllll' mode=normal: 2kfOl does that in 5  [for "kklllllllllllllllllllll"]
+  LIVE @24/50 after 'kkllllllllllllllllllllll' mode=normal: 2k3w8l does that in 6  [for "kkllllllllllllllllllllll"]
+  LIVE @25/50 after 'kklllllllllllllllllllllll' mode=normal: 2kt(h does that in 5  [for "kklllllllllllllllllllllll"]
+  LIVE @26/50 after 'kkllllllllllllllllllllllll' mode=normal: 2kt( does that in 4  [for "kkllllllllllllllllllllllll"]
+  LIVE @27/50 after 'kklllllllllllllllllllllllll' mode=normal: 2kf( does that in 4  [for "kklllllllllllllllllllllllll"]
+  LIVE @28/50 after 'kkllllllllllllllllllllllllll' mode=normal: 2kf{ does that in 4  [for "kkllllllllllllllllllllllllll"]
+  LIVE @29/50 after 'kklllllllllllllllllllllllllll' mode=normal: 2kti does that in 4  [for "kklllllllllllllllllllllllllll"]
+  LIVE @30/50 after 'kkllllllllllllllllllllllllllll' mode=normal: 2kfi does that in 4  [for "kkllllllllllllllllllllllllllll"]
+  LIVE @31/50 after 'kklllllllllllllllllllllllllllll' mode=normal: 2kt: does that in 4  [for "kklllllllllllllllllllllllllllll"]
+  LIVE @32/50 after 'kkllllllllllllllllllllllllllllll' mode=normal: 2kf: does that in 4  [for "kkllllllllllllllllllllllllllllll"]
+  LIVE @33/50 after 'kklllllllllllllllllllllllllllllll' mode=normal: 2kt4 does that in 4  [for "kklllllllllllllllllllllllllllllll"]
+  LIVE @34/50 after 'kkllllllllllllllllllllllllllllllll' mode=normal: 2kf4 does that in 4  [for "kkllllllllllllllllllllllllllllllll"]
+  LIVE @35/50 after 'kklllllllllllllllllllllllllllllllll' mode=normal: 2kf2 does that in 4  [for "kklllllllllllllllllllllllllllllllll"]
+  LIVE @36/50 after 'kkllllllllllllllllllllllllllllllllll' mode=normal: 2kf, does that in 4  [for "kkllllllllllllllllllllllllllllllllll"]
+  LIVE @37/50 after 'kklllllllllllllllllllllllllllllllllll' mode=normal: 2kf,l does that in 5  [for "kklllllllllllllllllllllllllllllllllll"]
+  LIVE @38/50 after 'kkllllllllllllllllllllllllllllllllllll' mode=normal: $3b2k does that in 5  [for "kkllllllllllllllllllllllllllllllllllll"]
+  LIVE @39/50 after 'kklllllllllllllllllllllllllllllllllllll' mode=normal: 2ktmh does that in 5  [for "kklllllllllllllllllllllllllllllllllllll"]
+  LIVE @40/50 after 'kkllllllllllllllllllllllllllllllllllllll' mode=normal: 2ktm does that in 4  [for "kkllllllllllllllllllllllllllllllllllllll"]
+  LIVE @41/50 after 'kklllllllllllllllllllllllllllllllllllllll' mode=normal: 2kfm does that in 4  [for "kklllllllllllllllllllllllllllllllllllllll"]
+  LIVE @42/50 after 'kkllllllllllllllllllllllllllllllllllllllll' mode=normal: $8h2k does that in 5  [for "kkllllllllllllllllllllllllllllllllllllllll"]
+  LIVE @43/50 after 'kklllllllllllllllllllllllllllllllllllllllll' mode=normal: $7h2k does that in 5  [for "kklllllllllllllllllllllllllllllllllllllllll"]
+  LIVE @44/50 after 'kkllllllllllllllllllllllllllllllllllllllllll' mode=normal: 2kt[ does that in 4  [for "kkllllllllllllllllllllllllllllllllllllllllll"]
+  LIVE @45/50 after 'kklllllllllllllllllllllllllllllllllllllllllll' mode=normal: 2kf[ does that in 4  [for "kklllllllllllllllllllllllllllllllllllllllllll"]
+  LIVE @46/50 after 'kkllllllllllllllllllllllllllllllllllllllllllll' mode=normal: 2ktp does that in 4  [for "kkllllllllllllllllllllllllllllllllllllllllllll"]
+  LIVE @47/50 after 'kklllllllllllllllllllllllllllllllllllllllllllll' mode=normal: 2kfp does that in 4  [for "kklllllllllllllllllllllllllllllllllllllllllllll"]
+  LIVE @48/50 after 'kkllllllllllllllllllllllllllllllllllllllllllllll' mode=normal: $b2k does that in 4  [for "kkllllllllllllllllllllllllllllllllllllllllllllll"]
+  LIVE @49/50 after 'kklllllllllllllllllllllllllllllllllllllllllllllll' mode=normal: $h2k does that in 4  [for "kklllllllllllllllllllllllllllllllllllllllllllllll"]
+  LIVE @50/50 after 'kkllllllllllllllllllllllllllllllllllllllllllllllll' mode=normal: 2kt] does that in 4  [for "kkllllllllllllllllllllllllllllllllllllllllllllllll"]
+
+### counts-operators r3  dw three times
+cursor={"line":0,"col":0} line="# Contributing"
+keys=jjfvdwdwdw (10)  goalMet=true  expert=jjfvd3w  ref=jjfvd3w
+taught has: f t ; A I o O s S D C cc dd . G gg % J COUNT d c e $ r x
+  REF: you 10 par 7 ref=(hidden)
+
+### word-objects r0  b de i instead of ciw
+cursor={"line":0,"col":0} line="const orders = await loadOrders();"
+keys=jfLbdeiorders<Esc> (14)  goalMet=true  expert=jfLciworders<Esc>  ref=jfLciworders<Esc>
+taught has: f t ; A I o O s S D C cc dd . iw aw G gg % J COUNT d c e $ r x
+  CRIT u0: you deiorders<Esc> -> cworders<Esc> [cw, saves 1] "cw changes the word and drops you into insert mode."
+  LIVE @14/14 after 'jfLbdeiorders<Esc>' mode=normal: cworders<Esc> does that in 9  [for "deiorders<Esc>"]
+
+### word-objects r1  b dw instead of daw
+cursor={"line":0,"col":0} line="## Pull requests"
+keys=jjfybdw (7)  goalMet=true  expert=jjfydaw  ref=jjfydaw
+taught has: f t ; A I o O s S D C cc dd . iw aw G gg % J COUNT d c e $ r x
+  (silent)
+
+### change-next-match r1  retype cgn
+cursor={"line":0,"col":0} line="print('start')"
+keys=cgnlog<Esc>cgnlog<Esc>cgnlog<Esc> (21)  goalMet=true  expert=cgnlog<Esc>..  ref=cgnlog<Esc>..
+taught has: f t ; A I o O s S D C cc dd . iw aw i" * / G gg % J v COUNT d c e $ r x
+  CRIT u0: you cgnlog<Esc>cgnlog<Esc> -> cgnlog<Esc>. [dot-repeat, saves 6] ". repeats the last change."
+  REF: you 21 par 9 ref=(hidden)
+  LIVE @14/21 after 'cgnlog<Esc>cgnlog<Esc>' mode=normal: cgnlog<Esc>. does that in 8  [for "cgnlog<Esc>cgnlog<Esc>"]
+  LIVE @21/21 after 'cgnlog<Esc>cgnlog<Esc>cgnlog<Esc>' mode=normal: cgnlog<Esc>. does that in 8  [for "cgnlog<Esc>cgnlog<Esc>"]
+
+### search-as-motion r0  dump only
+cursor={"line":1,"col":2} line="  console.log(items);"
+keys= (0)  goalMet=false  expert=  ref=d/return<CR>
+taught has: f t ; A I o O s S D C cc dd . iw aw i" * / G gg % J v COUNT d c e $ r x
+  (silent)
+
+### delete-words r1  undo test
+cursor={"line":0,"col":0} line="# vimchi"
+keys=jjwwwdwu (8)  goalMet=true  expert=  ref=jj3wdw
+taught has: f t ; A I o O s S G gg % COUNT d c e $ r x
+  (silent)
+  LIVE !! key 7 u after done
+
+### line-ends r4  jj then l spam
+cursor={"line":1,"col":0} line="  host: 'localhost',"
+keys=jjllllllllllll (14)  goalMet=true  expert=jj$  ref=jj$
+taught has: COUNT e $ r x
+  CRIT u0: you jjllllllllllll -> $2j [motion, saves 11] "Fewer keys to the same spot." | 2j$ [motion, saves 11] "Fewer keys to the same spot."
+  REF: you 14 par 3 ref=jj$
+  LIVE @6/14 after 'jjllll' mode=normal: e2jh does that in 4  [for "jjllll"]
+  LIVE @7/14 after 'jjlllll' mode=normal: e2j does that in 3  [for "jjlllll"]
+  LIVE @8/14 after 'jjllllll' mode=normal: e2jl does that in 4  [for "jjllllll"]
+  LIVE @9/14 after 'jjlllllll' mode=normal: 2j7l does that in 4  [for "jjlllllll"]
+  LIVE @10/14 after 'jjllllllll' mode=normal: 2je does that in 3  [for "jjllllllll"]
+  LIVE @11/14 after 'jjlllllllll' mode=normal: w2jw does that in 4  [for "jjlllllllll"]
+  LIVE @12/14 after 'jjllllllllll' mode=normal: $2j2h does that in 5  [for "jjllllllllll"]
+  LIVE @13/14 after 'jjlllllllllll' mode=normal: $2jh does that in 4  [for "jjlllllllllll"]
+  LIVE @14/14 after 'jjllllllllllll' mode=normal: $2j does that in 3  [for "jjllllllllllll"]
+
+### insert-mode r2  l-spam then i (f not taught yet)
+cursor={"line":0,"col":0} line="const name = prompt('Your name?');"
+keys=jllllllllllli)<Esc> (15)  goalMet=true  expert=jf;i)  ref=jf;i)<Esc>
+taught has: COUNT e r x
+  CRIT u0: you jllllllllll -> wjw [motion, saves 8] "Fewer keys to the same spot." | 2wj [motion, saves 8] "Fewer keys to the same spot."
+  REF: you 15 par 6 ref=(hidden)
+  LIVE @5/15 after 'jllll' mode=normal: ej does that in 2  [for "jllll"]
+  LIVE @6/15 after 'jlllll' mode=normal: jw does that in 2  [for "jlllll"]
+  LIVE @7/15 after 'jllllll' mode=normal: wj does that in 2  [for "jllllll"]
+  LIVE @8/15 after 'jlllllll' mode=normal: wjl does that in 3  [for "jlllllll"]
+  LIVE @9/15 after 'jllllllll' mode=normal: 8lj does that in 3  [for "jllllllll"]
+  LIVE @10/15 after 'jlllllllll' mode=normal: wje does that in 3  [for "jlllllllll"]
+  LIVE @11/15 after 'jllllllllll' mode=normal: wjw does that in 3  [for "jllllllllll"]
+
+### boss-tidy-function r2  dd again rather than .
+cursor={"line":0,"col":0} line="function orderTotal(items, taxRate) {"
+keys=jddjjjjdd (9)  goalMet=true  expert=jdd4j.  ref=jdd4j.
+taught has: f t ; A I o O s S D C cc dd . G gg % J COUNT d c e $ r x
+  REF: you 9 par 6 ref=jdd4j.
+
+### boss-tidy-function r0  x x x x i
+cursor={"line":0,"col":0} line="function calc(items, taxRate, debug) {"
+keys=wxxxxiorderTotal<Esc> (17)  goalMet=true  expert=wcworderTotal<Esc>  ref=wcworderTotal<Esc>
+taught has: f t ; A I o O s S D C cc dd . G gg % J COUNT d c e $ r x
+  CRIT u0: you xxxx -> de [count-x, saves 2] "de deletes to the end of the word in one go."
+  REF: you 17 par 14 ref=wcworderTotal<Esc>
+  LIVE @4/17 after 'wxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @5/17 after 'wxxxx' mode=normal: de does that in 2  [for "xxx"]
+
+### text-objects-quotes r3  x-spam inside quotes
+cursor={"line":0,"col":0} line="export const env = {"
+keys=jjf"lxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx (43)  goalMet=true  expert=jjf"di"  ref=jjf"di"
+taught has: f t ; A I o O s S D C cc dd . iw aw i" G gg % J COUNT d c e $ r x
+  CRIT u0: you xxxxxxxxxxxxxx -> 14x [count-x, saves 11] "A count repeats a command: 3x deletes three characters."
+  REF: you 19 par 7 ref=(hidden)
+  LIVE @8/43 after 'jjf"lxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @9/43 after 'jjf"lxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @10/43 after 'jjf"lxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @11/43 after 'jjf"lxxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @12/43 after 'jjf"lxxxxxxx' mode=normal: de does that in 2  [for "xxx"]
+  LIVE @13/43 after 'jjf"lxxxxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @14/43 after 'jjf"lxxxxxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @15/43 after 'jjf"lxxxxxxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @16/43 after 'jjf"lxxxxxxxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @17/43 after 'jjf"lxxxxxxxxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @18/43 after 'jjf"lxxxxxxxxxxxxx' mode=normal: 3x does that in 2  [for "xxx"]
+  LIVE @19/43 after 'jjf"lxxxxxxxxxxxxxx' mode=normal: de does that in 2  [for "xxx"]
+  LIVE !! key 19 x after done
+  LIVE !! key 20 x after done
+  LIVE !! key 21 x after done
+  LIVE !! key 22 x after done
+  LIVE !! key 23 x after done
+  LIVE !! key 24 x after done
+  LIVE !! key 25 x after done
+  LIVE !! key 26 x after done
+  LIVE !! key 27 x after done
+  LIVE !! key 28 x after done
+  LIVE !! key 29 x after done
+  LIVE !! key 30 x after done
+  LIVE !! key 31 x after done
+  LIVE !! key 32 x after done
+  LIVE !! key 33 x after done
+  LIVE !! key 34 x after done
+  LIVE !! key 35 x after done
+  LIVE !! key 36 x after done
+  LIVE !! key 37 x after done
+  LIVE !! key 38 x after done
+  LIVE !! key 39 x after done
+  LIVE !! key 40 x after done
+  LIVE !! key 41 x after done
+  LIVE !! key 42 x after done
+
+### visual-lines r0  dump
+cursor={"line":1,"col":2} line="  console.log(req.url);"
+keys= (0)  goalMet=false  expert=  ref=Vjjd
+taught has: f t ; A I o O s S D C cc dd . iw aw i" G gg % J v COUNT d c e $ r x
+  (silent)
+
+### yank-register r0  dump
+cursor={"line":2,"col":0} line="  retries: 5,"
+keys= (0)  goalMet=false  expert=  ref=yy4jdd"0P
+taught has: f t ; A I o O s S D C cc dd . iw aw i" * / G gg % ~ gU J >> v COUNT d c e $ r x
+  (silent)

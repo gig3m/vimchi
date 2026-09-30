@@ -1,0 +1,38 @@
+30 delete-multiple-lines MISSING [] rounds_using_any_chip 3 / 5
+36 counts-operators MISSING ['3dw→3dw'] rounds_using_any_chip 1 / 5
+00 boss-tidy-function MISSING [] rounds_using_any_chip 3 / 5
+44 sentences-paragraphs MISSING ['ip→ip'] rounds_using_any_chip 5 / 5
+45 reaching-objects MISSING [] rounds_using_any_chip 4 / 7
+58 search-offsets MISSING [] rounds_using_any_chip 4 / 5
+60 indenting MISSING [] rounds_using_any_chip 4 / 5
+67 unnamed-register MISSING ['""→""'] rounds_using_any_chip 2 / 5
+69 named-registers MISSING [] rounds_using_any_chip 1 / 4
+70 appending-registers MISSING [] rounds_using_any_chip 2 / 4
+71 delete-history MISSING ['"1→"1'] rounds_using_any_chip 1 / 4
+77 replaying-macros MISSING ['5@a→5@a'] rounds_using_any_chip 1 / 4
+78 robust-macros MISSING ['macros→macros'] rounds_using_any_chip 0 / 4
+80 editing-macros MISSING [] rounds_using_any_chip 1 / 3
+81 macros-over-lines MISSING [':norm @a→:norm@a'] rounds_using_any_chip 0 / 4
+96 operating-to-marks MISSING [] rounds_using_any_chip 2 / 5
+97 file-marks MISSING [] rounds_using_any_chip 1 / 5
+98 back-to-edit MISSING [] rounds_using_any_chip 3 / 4
+99 change-edges MISSING [] rounds_using_any_chip 4 / 5
+107 location-list MISSING [] rounds_using_any_chip 4 / 5
+115 jump-to-line MISSING [':42→:42'] rounds_using_any_chip 1 / 6
+116 ex-ranges MISSING [] rounds_using_any_chip 3 / 5
+117 visual-ranges MISSING ["'<,'>→'<,'>"] rounds_using_any_chip 1 / 4
+118 ex-delete-yank MISSING [':d→:d', ':y→:y'] rounds_using_any_chip 0 / 5
+119 ex-move-copy MISSING [':t→:t'] rounds_using_any_chip 2 / 5
+120 ex-normal MISSING [] rounds_using_any_chip 1 / 5
+126 sub-confirm MISSING ['/c→/c'] rounds_using_any_chip 0 / 5
+127 sub-ignore-case MISSING ['/i→/i'] rounds_using_any_chip 1 / 4
+130 sub-capture-groups MISSING ['()→()'] rounds_using_any_chip 4 / 4
+135 sub-lazy MISSING [] rounds_using_any_chip 3 / 4
+136 sub-last-search MISSING [] rounds_using_any_chip 1 / 4
+141 global-keep MISSING [':g!→:g!'] rounds_using_any_chip 3 / 4
+143 global-move MISSING [] rounds_using_any_chip 3 / 4
+145 sort-unique MISSING [':sort u→:sortu'] rounds_using_any_chip 0 / 4
+154 next-last-objects MISSING [] rounds_using_any_chip 3 / 5
+167 surround-with-tags MISSING ['yst→yst'] rounds_using_any_chip 3 / 6
+171 snippets MISSING ['S-tab→<S-Tab>'] rounds_using_any_chip 3 / 3
+172 gitsigns-hunks MISSING [] rounds_using_any_chip 4 / 5

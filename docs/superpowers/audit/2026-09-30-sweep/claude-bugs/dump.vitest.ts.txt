@@ -1,0 +1,26 @@
+import { it, expect } from 'vitest';
+import { writeFileSync } from 'node:fs';
+import { LESSONS } from '../../../../../src/lessons';
+import { Session } from '../../../../../src/lessons/runtime';
+import { parseKeys } from '../../../../../src/vim/keys';
+it('dump', () => {
+  const out: Record<string, string[][]> = {};
+  for (const id of ['change-words', 'add-surroundings', 'picker-files', 'oil-open-directory', 'find-char', 'insert-line-ends', 'diagnostics']) {
+    const c: any = LESSONS[id]?.challenge;
+    if (!c) { console.log('missing', id); continue; }
+    out[id] = c.rounds.map((r: any) => parseKeys(r.solution));
+  }
+  for (const [id, seed] of [['challenge-fix-the-file', 7], ['challenge-operators', 42]] as const) {
+    const s = new Session(LESSONS[id].challenge, { seed });
+    const g = s.generated!;
+    const items = [...g.items].sort((a, b) => b.fixAt.line - a.fixAt.line || b.fixAt.col - a.fixAt.col);
+    const keys: string[] = [];
+    for (const it of items) {
+      keys.push(...parseKeys(`${it.fixAt.line + 1}G0` + (it.fixAt.col ? `${it.fixAt.col}l` : '')), ...parseKeys(it.fixKeys));
+    }
+    let t = 1000; for (const k of keys) s.key(k, t += 50);
+    console.log(id, seed, 'done', s.done, g.items.map(i => i.kind + ':' + i.fixKeys).join(' | '));
+    out[`${id}?seed=${seed}`] = [keys];
+  }
+  writeFileSync('docs/superpowers/audit/2026-09-30-sweep/claude-bugs/solutions.json', JSON.stringify(out));
+});

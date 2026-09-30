@@ -1,0 +1,7620 @@
+[
+ {
+  "id": "insert-mode",
+  "n": "05",
+  "chips": [
+   "i",
+   "a",
+   "esc"
+  ],
+  "sol": "jfHflal<Esc>"
+ },
+ {
+  "id": "insert-mode",
+  "n": "05",
+  "chips": [
+   "i",
+   "a",
+   "esc"
+  ],
+  "sol": "kiconst <Esc>"
+ },
+ {
+  "id": "insert-mode",
+  "n": "05",
+  "chips": [
+   "i",
+   "a",
+   "esc"
+  ],
+  "sol": "jf;i)<Esc>"
+ },
+ {
+  "id": "insert-mode",
+  "n": "05",
+  "chips": [
+   "i",
+   "a",
+   "esc"
+  ],
+  "sol": "2jfia!<Esc>"
+ },
+ {
+  "id": "insert-mode",
+  "n": "05",
+  "chips": [
+   "i",
+   "a",
+   "esc"
+  ],
+  "sol": "kf,a <Esc>"
+ },
+ {
+  "id": "line-ends",
+  "n": "06",
+  "chips": [
+   "0",
+   "$"
+  ],
+  "sol": "$"
+ },
+ {
+  "id": "line-ends",
+  "n": "06",
+  "chips": [
+   "0",
+   "$"
+  ],
+  "sol": "0"
+ },
+ {
+  "id": "line-ends",
+  "n": "06",
+  "chips": [
+   "0",
+   "$"
+  ],
+  "sol": "$"
+ },
+ {
+  "id": "line-ends",
+  "n": "06",
+  "chips": [
+   "0",
+   "$"
+  ],
+  "sol": "j0"
+ },
+ {
+  "id": "line-ends",
+  "n": "06",
+  "chips": [
+   "0",
+   "$"
+  ],
+  "sol": "jj$"
+ },
+ {
+  "id": "line-ends",
+  "n": "06",
+  "chips": [
+   "0",
+   "$"
+  ],
+  "sol": "kk0"
+ },
+ {
+  "id": "find-char",
+  "n": "07",
+  "chips": [
+   "f",
+   "t"
+  ],
+  "sol": "f("
+ },
+ {
+  "id": "find-char",
+  "n": "07",
+  "chips": [
+   "f",
+   "t"
+  ],
+  "sol": "jf("
+ },
+ {
+  "id": "find-char",
+  "n": "07",
+  "chips": [
+   "f",
+   "t"
+  ],
+  "sol": "t{"
+ },
+ {
+  "id": "find-char",
+  "n": "07",
+  "chips": [
+   "f",
+   "t"
+  ],
+  "sol": "jf'"
+ },
+ {
+  "id": "find-char",
+  "n": "07",
+  "chips": [
+   "f",
+   "t"
+  ],
+  "sol": "2kf]"
+ },
+ {
+  "id": "find-char",
+  "n": "07",
+  "chips": [
+   "f",
+   "t"
+  ],
+  "sol": "t)"
+ },
+ {
+  "id": "change-words",
+  "n": "08",
+  "chips": [
+   "c",
+   "w"
+  ],
+  "sol": "cwuser<Esc>"
+ },
+ {
+  "id": "change-words",
+  "n": "08",
+  "chips": [
+   "c",
+   "w"
+  ],
+  "sol": "jwcwconst<Esc>"
+ },
+ {
+  "id": "change-words",
+  "n": "08",
+  "chips": [
+   "c",
+   "w"
+  ],
+  "sol": "kf'lcwgreen<Esc>"
+ },
+ {
+  "id": "change-words",
+  "n": "08",
+  "chips": [
+   "c",
+   "w"
+  ],
+  "sol": "3wcwloadOrders<Esc>"
+ },
+ {
+  "id": "change-words",
+  "n": "08",
+  "chips": [
+   "c",
+   "w"
+  ],
+  "sol": "k2ffcwtrue<Esc>"
+ },
+ {
+  "id": "insert-line-ends",
+  "n": "09",
+  "chips": [
+   "I",
+   "A"
+  ],
+  "sol": "A;<Esc>"
+ },
+ {
+  "id": "insert-line-ends",
+  "n": "09",
+  "chips": [
+   "I",
+   "A"
+  ],
+  "sol": "Iexport <Esc>"
+ },
+ {
+  "id": "insert-line-ends",
+  "n": "09",
+  "chips": [
+   "I",
+   "A"
+  ],
+  "sol": "I-- <Esc>"
+ },
+ {
+  "id": "insert-line-ends",
+  "n": "09",
+  "chips": [
+   "I",
+   "A"
+  ],
+  "sol": "A,<Esc>"
+ },
+ {
+  "id": "insert-line-ends",
+  "n": "09",
+  "chips": [
+   "I",
+   "A"
+  ],
+  "sol": "I## <Esc>"
+ },
+ {
+  "id": "insert-line-ends",
+  "n": "09",
+  "chips": [
+   "I",
+   "A"
+  ],
+  "sol": "kIconst rows = <Esc>A;<Esc>"
+ },
+ {
+  "id": "open-lines",
+  "n": "10",
+  "chips": [
+   "o",
+   "O"
+  ],
+  "sol": "oemail: 'ada@example.com',<Esc>"
+ },
+ {
+  "id": "open-lines",
+  "n": "10",
+  "chips": [
+   "o",
+   "O"
+  ],
+  "sol": "O## This week<Esc>"
+ },
+ {
+  "id": "open-lines",
+  "n": "10",
+  "chips": [
+   "o",
+   "O"
+  ],
+  "sol": "Ovim.g.mapleader = ' '<Esc>"
+ },
+ {
+  "id": "open-lines",
+  "n": "10",
+  "chips": [
+   "o",
+   "O"
+  ],
+  "sol": "O<Esc>"
+ },
+ {
+  "id": "open-lines",
+  "n": "10",
+  "chips": [
+   "o",
+   "O"
+  ],
+  "sol": "Olog.debug('getUser', id);<Esc>"
+ },
+ {
+  "id": "open-lines",
+  "n": "10",
+  "chips": [
+   "o",
+   "O"
+  ],
+  "sol": "o\"lint\": \"eslint .\",<Esc>"
+ },
+ {
+  "id": "substitute",
+  "n": "11",
+  "chips": [
+   "s",
+   "S"
+  ],
+  "sol": "s===<Esc>"
+ },
+ {
+  "id": "substitute",
+  "n": "11",
+  "chips": [
+   "s",
+   "S"
+  ],
+  "sol": "jjf&sand<Esc>"
+ },
+ {
+  "id": "substitute",
+  "n": "11",
+  "chips": [
+   "s",
+   "S"
+  ],
+  "sol": "j4s0.875rem<Esc>"
+ },
+ {
+  "id": "substitute",
+  "n": "11",
+  "chips": [
+   "s",
+   "S"
+  ],
+  "sol": "Slogger.info({ order }, 'saving');<Esc>"
+ },
+ {
+  "id": "substitute",
+  "n": "11",
+  "chips": [
+   "s",
+   "S"
+  ],
+  "sol": "Smap('n', '<lt>leader>w', '<lt>cmd>write<lt>CR>')<Esc>"
+ },
+ {
+  "id": "substitute",
+  "n": "11",
+  "chips": [
+   "s",
+   "S"
+  ],
+  "sol": "S2. Push it to the registry.<Esc>"
+ },
+ {
+  "id": "replace-mode",
+  "n": "12",
+  "chips": [
+   "R"
+  ],
+  "sol": "f1R2.0.0<Esc>"
+ },
+ {
+  "id": "replace-mode",
+  "n": "12",
+  "chips": [
+   "R"
+  ],
+  "sol": "jf#lR1e90ff<Esc>"
+ },
+ {
+  "id": "replace-mode",
+  "n": "12",
+  "chips": [
+   "R"
+  ],
+  "sol": "2jf0R14:45<Esc>"
+ },
+ {
+  "id": "replace-mode",
+  "n": "12",
+  "chips": [
+   "R"
+  ],
+  "sol": "f1R06/15/2027<Esc>"
+ },
+ {
+  "id": "replace-mode",
+  "n": "12",
+  "chips": [
+   "R"
+  ],
+  "sol": "RDONE in v1.2<Esc>"
+ },
+ {
+  "id": "undo-redo",
+  "n": "13",
+  "chips": [
+   "u",
+   "C-r"
+  ],
+  "sol": "u"
+ },
+ {
+  "id": "undo-redo",
+  "n": "13",
+  "chips": [
+   "u",
+   "C-r"
+  ],
+  "sol": "u"
+ },
+ {
+  "id": "undo-redo",
+  "n": "13",
+  "chips": [
+   "u",
+   "C-r"
+  ],
+  "sol": "uu"
+ },
+ {
+  "id": "undo-redo",
+  "n": "13",
+  "chips": [
+   "u",
+   "C-r"
+  ],
+  "sol": "<C-r>"
+ },
+ {
+  "id": "undo-redo",
+  "n": "13",
+  "chips": [
+   "u",
+   "C-r"
+  ],
+  "sol": "3u<C-r>"
+ },
+ {
+  "id": "words-big",
+  "n": "14",
+  "chips": [
+   "W",
+   "E",
+   "B"
+  ],
+  "sol": "E"
+ },
+ {
+  "id": "words-big",
+  "n": "14",
+  "chips": [
+   "W",
+   "E",
+   "B"
+  ],
+  "sol": "B"
+ },
+ {
+  "id": "words-big",
+  "n": "14",
+  "chips": [
+   "W",
+   "E",
+   "B"
+  ],
+  "sol": "W"
+ },
+ {
+  "id": "words-big",
+  "n": "14",
+  "chips": [
+   "W",
+   "E",
+   "B"
+  ],
+  "sol": "4B"
+ },
+ {
+  "id": "words-big",
+  "n": "14",
+  "chips": [
+   "W",
+   "E",
+   "B"
+  ],
+  "sol": "4W"
+ },
+ {
+  "id": "words-big",
+  "n": "14",
+  "chips": [
+   "W",
+   "E",
+   "B"
+  ],
+  "sol": "3E"
+ },
+ {
+  "id": "word-ends-backward",
+  "n": "15",
+  "chips": [
+   "ge",
+   "gE"
+  ],
+  "sol": "ge"
+ },
+ {
+  "id": "word-ends-backward",
+  "n": "15",
+  "chips": [
+   "ge",
+   "gE"
+  ],
+  "sol": "2gE"
+ },
+ {
+  "id": "word-ends-backward",
+  "n": "15",
+  "chips": [
+   "ge",
+   "gE"
+  ],
+  "sol": "gE"
+ },
+ {
+  "id": "word-ends-backward",
+  "n": "15",
+  "chips": [
+   "ge",
+   "gE"
+  ],
+  "sol": "2ge"
+ },
+ {
+  "id": "word-ends-backward",
+  "n": "15",
+  "chips": [
+   "ge",
+   "gE"
+  ],
+  "sol": "2gE"
+ },
+ {
+  "id": "word-ends-backward",
+  "n": "15",
+  "chips": [
+   "ge",
+   "gE"
+  ],
+  "sol": "ge"
+ },
+ {
+  "id": "first-char",
+  "n": "16",
+  "chips": [
+   "^",
+   "_"
+  ],
+  "sol": "^"
+ },
+ {
+  "id": "first-char",
+  "n": "16",
+  "chips": [
+   "^",
+   "_"
+  ],
+  "sol": "^"
+ },
+ {
+  "id": "first-char",
+  "n": "16",
+  "chips": [
+   "^",
+   "_"
+  ],
+  "sol": "4_"
+ },
+ {
+  "id": "first-char",
+  "n": "16",
+  "chips": [
+   "^",
+   "_"
+  ],
+  "sol": "^"
+ },
+ {
+  "id": "first-char",
+  "n": "16",
+  "chips": [
+   "^",
+   "_"
+  ],
+  "sol": "2_"
+ },
+ {
+  "id": "first-char",
+  "n": "16",
+  "chips": [
+   "^",
+   "_"
+  ],
+  "sol": "6_"
+ },
+ {
+  "id": "find-backward",
+  "n": "17",
+  "chips": [
+   "F",
+   "T"
+  ],
+  "sol": "F("
+ },
+ {
+  "id": "find-backward",
+  "n": "17",
+  "chips": [
+   "F",
+   "T"
+  ],
+  "sol": "T("
+ },
+ {
+  "id": "find-backward",
+  "n": "17",
+  "chips": [
+   "F",
+   "T"
+  ],
+  "sol": "F'"
+ },
+ {
+  "id": "find-backward",
+  "n": "17",
+  "chips": [
+   "F",
+   "T"
+  ],
+  "sol": "kFf"
+ },
+ {
+  "id": "find-backward",
+  "n": "17",
+  "chips": [
+   "F",
+   "T"
+  ],
+  "sol": "T'"
+ },
+ {
+  "id": "find-backward",
+  "n": "17",
+  "chips": [
+   "F",
+   "T"
+  ],
+  "sol": "2F,"
+ },
+ {
+  "id": "find-backward",
+  "n": "17",
+  "chips": [
+   "F",
+   "T"
+  ],
+  "sol": "jF."
+ },
+ {
+  "id": "repeat-find",
+  "n": "18",
+  "chips": [
+   ";",
+   ","
+  ],
+  "sol": "f,;;;"
+ },
+ {
+  "id": "repeat-find",
+  "n": "18",
+  "chips": [
+   ";",
+   ","
+  ],
+  "sol": ";;;"
+ },
+ {
+  "id": "repeat-find",
+  "n": "18",
+  "chips": [
+   ";",
+   ","
+  ],
+  "sol": ","
+ },
+ {
+  "id": "repeat-find",
+  "n": "18",
+  "chips": [
+   ";",
+   ","
+  ],
+  "sol": ";"
+ },
+ {
+  "id": "repeat-find",
+  "n": "18",
+  "chips": [
+   ";",
+   ","
+  ],
+  "sol": "jjt,;;"
+ },
+ {
+  "id": "repeat-find",
+  "n": "18",
+  "chips": [
+   ";",
+   ","
+  ],
+  "sol": ",,"
+ },
+ {
+  "id": "top-bottom",
+  "n": "19",
+  "chips": [
+   "gg",
+   "G"
+  ],
+  "sol": "G"
+ },
+ {
+  "id": "top-bottom",
+  "n": "19",
+  "chips": [
+   "gg",
+   "G"
+  ],
+  "sol": "gg"
+ },
+ {
+  "id": "top-bottom",
+  "n": "19",
+  "chips": [
+   "gg",
+   "G"
+  ],
+  "sol": "25G"
+ },
+ {
+  "id": "top-bottom",
+  "n": "19",
+  "chips": [
+   "gg",
+   "G"
+  ],
+  "sol": "15G"
+ },
+ {
+  "id": "top-bottom",
+  "n": "19",
+  "chips": [
+   "gg",
+   "G"
+  ],
+  "sol": "30gg"
+ },
+ {
+  "id": "top-bottom",
+  "n": "19",
+  "chips": [
+   "gg",
+   "G"
+  ],
+  "sol": "10G"
+ },
+ {
+  "id": "paragraphs",
+  "n": "20",
+  "chips": [
+   "{",
+   "}"
+  ],
+  "sol": "}"
+ },
+ {
+  "id": "paragraphs",
+  "n": "20",
+  "chips": [
+   "{",
+   "}"
+  ],
+  "sol": "2}"
+ },
+ {
+  "id": "paragraphs",
+  "n": "20",
+  "chips": [
+   "{",
+   "}"
+  ],
+  "sol": "{"
+ },
+ {
+  "id": "paragraphs",
+  "n": "20",
+  "chips": [
+   "{",
+   "}"
+  ],
+  "sol": "3{"
+ },
+ {
+  "id": "paragraphs",
+  "n": "20",
+  "chips": [
+   "{",
+   "}"
+  ],
+  "sol": "2}"
+ },
+ {
+  "id": "paragraphs",
+  "n": "20",
+  "chips": [
+   "{",
+   "}"
+  ],
+  "sol": "}"
+ },
+ {
+  "id": "matching-pairs",
+  "n": "21",
+  "chips": [
+   "%"
+  ],
+  "sol": "%"
+ },
+ {
+  "id": "matching-pairs",
+  "n": "21",
+  "chips": [
+   "%"
+  ],
+  "sol": "%"
+ },
+ {
+  "id": "matching-pairs",
+  "n": "21",
+  "chips": [
+   "%"
+  ],
+  "sol": "%"
+ },
+ {
+  "id": "matching-pairs",
+  "n": "21",
+  "chips": [
+   "%"
+  ],
+  "sol": "$%"
+ },
+ {
+  "id": "matching-pairs",
+  "n": "21",
+  "chips": [
+   "%"
+  ],
+  "sol": "%"
+ },
+ {
+  "id": "matching-pairs",
+  "n": "21",
+  "chips": [
+   "%"
+  ],
+  "sol": "f(;%"
+ },
+ {
+  "id": "half-pages",
+  "n": "22",
+  "chips": [
+   "C-d",
+   "C-u"
+  ],
+  "sol": "<C-d><C-d>"
+ },
+ {
+  "id": "half-pages",
+  "n": "22",
+  "chips": [
+   "C-d",
+   "C-u"
+  ],
+  "sol": "<C-d><C-d>"
+ },
+ {
+  "id": "half-pages",
+  "n": "22",
+  "chips": [
+   "C-d",
+   "C-u"
+  ],
+  "sol": "<C-d>"
+ },
+ {
+  "id": "half-pages",
+  "n": "22",
+  "chips": [
+   "C-d",
+   "C-u"
+  ],
+  "sol": "<C-d><C-d><C-d>"
+ },
+ {
+  "id": "half-pages",
+  "n": "22",
+  "chips": [
+   "C-d",
+   "C-u"
+  ],
+  "sol": "<C-u><C-u><C-u>"
+ },
+ {
+  "id": "half-pages",
+  "n": "22",
+  "chips": [
+   "C-d",
+   "C-u"
+  ],
+  "sol": "<C-u><C-u>"
+ },
+ {
+  "id": "full-pages",
+  "n": "23",
+  "chips": [
+   "C-f",
+   "C-b"
+  ],
+  "sol": "<C-f><C-f>"
+ },
+ {
+  "id": "full-pages",
+  "n": "23",
+  "chips": [
+   "C-f",
+   "C-b"
+  ],
+  "sol": "<C-f><C-f><C-f><C-f>"
+ },
+ {
+  "id": "full-pages",
+  "n": "23",
+  "chips": [
+   "C-f",
+   "C-b"
+  ],
+  "sol": "<C-f><C-f><C-f>"
+ },
+ {
+  "id": "full-pages",
+  "n": "23",
+  "chips": [
+   "C-f",
+   "C-b"
+  ],
+  "sol": "<C-b>k"
+ },
+ {
+  "id": "full-pages",
+  "n": "23",
+  "chips": [
+   "C-f",
+   "C-b"
+  ],
+  "sol": "<C-b><C-b>"
+ },
+ {
+  "id": "full-pages",
+  "n": "23",
+  "chips": [
+   "C-f",
+   "C-b"
+  ],
+  "sol": "<C-b><C-b><C-b>"
+ },
+ {
+  "id": "screen-lines",
+  "n": "24",
+  "chips": [
+   "H",
+   "M",
+   "L"
+  ],
+  "sol": "H"
+ },
+ {
+  "id": "screen-lines",
+  "n": "24",
+  "chips": [
+   "H",
+   "M",
+   "L"
+  ],
+  "sol": "L"
+ },
+ {
+  "id": "screen-lines",
+  "n": "24",
+  "chips": [
+   "H",
+   "M",
+   "L"
+  ],
+  "sol": "M"
+ },
+ {
+  "id": "screen-lines",
+  "n": "24",
+  "chips": [
+   "H",
+   "M",
+   "L"
+  ],
+  "sol": "H"
+ },
+ {
+  "id": "screen-lines",
+  "n": "24",
+  "chips": [
+   "H",
+   "M",
+   "L"
+  ],
+  "sol": "L"
+ },
+ {
+  "id": "screen-lines",
+  "n": "24",
+  "chips": [
+   "H",
+   "M",
+   "L"
+  ],
+  "sol": "M"
+ },
+ {
+  "id": "screen-lines",
+  "n": "24",
+  "chips": [
+   "H",
+   "M",
+   "L"
+  ],
+  "sol": "3H"
+ },
+ {
+  "id": "recenter",
+  "n": "25",
+  "chips": [
+   "zz",
+   "zt",
+   "zb"
+  ],
+  "sol": "zt"
+ },
+ {
+  "id": "recenter",
+  "n": "25",
+  "chips": [
+   "zz",
+   "zt",
+   "zb"
+  ],
+  "sol": "zb"
+ },
+ {
+  "id": "recenter",
+  "n": "25",
+  "chips": [
+   "zz",
+   "zt",
+   "zb"
+  ],
+  "sol": "zz"
+ },
+ {
+  "id": "recenter",
+  "n": "25",
+  "chips": [
+   "zz",
+   "zt",
+   "zb"
+  ],
+  "sol": "zz"
+ },
+ {
+  "id": "recenter",
+  "n": "25",
+  "chips": [
+   "zz",
+   "zt",
+   "zb"
+  ],
+  "sol": "zb"
+ },
+ {
+  "id": "recenter",
+  "n": "25",
+  "chips": [
+   "zz",
+   "zt",
+   "zb"
+  ],
+  "sol": "zt"
+ },
+ {
+  "id": "intro-operators",
+  "n": "26",
+  "chips": [
+   "d",
+   "c",
+   "y"
+  ],
+  "sol": "jjwdw"
+ },
+ {
+  "id": "intro-operators",
+  "n": "26",
+  "chips": [
+   "d",
+   "c",
+   "y"
+  ],
+  "sol": "kfncwsilent<Esc>"
+ },
+ {
+  "id": "intro-operators",
+  "n": "26",
+  "chips": [
+   "d",
+   "c",
+   "y"
+  ],
+  "sol": "jf;ld$"
+ },
+ {
+  "id": "intro-operators",
+  "n": "26",
+  "chips": [
+   "d",
+   "c",
+   "y"
+  ],
+  "sol": "jf'c$`Hello, ${name}`;<Esc>"
+ },
+ {
+  "id": "intro-operators",
+  "n": "26",
+  "chips": [
+   "d",
+   "c",
+   "y"
+  ],
+  "sol": "jfaywjlP"
+ },
+ {
+  "id": "delete-words",
+  "n": "27",
+  "chips": [
+   "d",
+   "w"
+  ],
+  "sol": "wdw"
+ },
+ {
+  "id": "delete-words",
+  "n": "27",
+  "chips": [
+   "d",
+   "w"
+  ],
+  "sol": "jj3wdw"
+ },
+ {
+  "id": "delete-words",
+  "n": "27",
+  "chips": [
+   "d",
+   "w"
+  ],
+  "sol": "kk2wdw"
+ },
+ {
+  "id": "delete-words",
+  "n": "27",
+  "chips": [
+   "d",
+   "w"
+  ],
+  "sol": "jfBdw"
+ },
+ {
+  "id": "delete-words",
+  "n": "27",
+  "chips": [
+   "d",
+   "w"
+  ],
+  "sol": "jj4wdw"
+ },
+ {
+  "id": "delete-to-char",
+  "n": "28",
+  "chips": [
+   "dt",
+   "df"
+  ],
+  "sol": "jf\"dtu"
+ },
+ {
+  "id": "delete-to-char",
+  "n": "28",
+  "chips": [
+   "dt",
+   "df"
+  ],
+  "sol": "kf,dt)"
+ },
+ {
+  "id": "delete-to-char",
+  "n": "28",
+  "chips": [
+   "dt",
+   "df"
+  ],
+  "sol": "jfpdf."
+ },
+ {
+  "id": "delete-to-char",
+  "n": "28",
+  "chips": [
+   "dt",
+   "df"
+  ],
+  "sol": "kt?dt;"
+ },
+ {
+  "id": "delete-to-char",
+  "n": "28",
+  "chips": [
+   "dt",
+   "df"
+  ],
+  "sol": "jjf-dt\""
+ },
+ {
+  "id": "delete-lines",
+  "n": "29",
+  "chips": [
+   "dd",
+   "D"
+  ],
+  "sol": "jdd"
+ },
+ {
+  "id": "delete-lines",
+  "n": "29",
+  "chips": [
+   "dd",
+   "D"
+  ],
+  "sol": "kf/hD"
+ },
+ {
+  "id": "delete-lines",
+  "n": "29",
+  "chips": [
+   "dd",
+   "D"
+  ],
+  "sol": "kkdd"
+ },
+ {
+  "id": "delete-lines",
+  "n": "29",
+  "chips": [
+   "dd",
+   "D"
+  ],
+  "sol": "kf(hD"
+ },
+ {
+  "id": "delete-lines",
+  "n": "29",
+  "chips": [
+   "dd",
+   "D"
+  ],
+  "sol": "jjdd"
+ },
+ {
+  "id": "delete-multiple-lines",
+  "n": "30",
+  "chips": [
+   "dj",
+   "dk"
+  ],
+  "sol": "jdj"
+ },
+ {
+  "id": "delete-multiple-lines",
+  "n": "30",
+  "chips": [
+   "dj",
+   "dk"
+  ],
+  "sol": "dk"
+ },
+ {
+  "id": "delete-multiple-lines",
+  "n": "30",
+  "chips": [
+   "dj",
+   "dk"
+  ],
+  "sol": "d2k"
+ },
+ {
+  "id": "delete-multiple-lines",
+  "n": "30",
+  "chips": [
+   "dj",
+   "dk"
+  ],
+  "sol": "d2j"
+ },
+ {
+  "id": "delete-multiple-lines",
+  "n": "30",
+  "chips": [
+   "dj",
+   "dk"
+  ],
+  "sol": "dj"
+ },
+ {
+  "id": "change-lines",
+  "n": "31",
+  "chips": [
+   "cc",
+   "C"
+  ],
+  "sol": "jjf'Cprocess.env.API_URL;<Esc>"
+ },
+ {
+  "id": "change-lines",
+  "n": "31",
+  "chips": [
+   "cc",
+   "C"
+  ],
+  "sol": "jjccreturn sum;<Esc>"
+ },
+ {
+  "id": "change-lines",
+  "n": "31",
+  "chips": [
+   "cc",
+   "C"
+  ],
+  "sol": "kkccLearn Vim by doing.<Esc>"
+ },
+ {
+  "id": "change-lines",
+  "n": "31",
+  "chips": [
+   "cc",
+   "C"
+  ],
+  "sol": "jf:C<lt>cmd>write<lt>CR>')<Esc>"
+ },
+ {
+  "id": "change-lines",
+  "n": "31",
+  "chips": [
+   "cc",
+   "C"
+  ],
+  "sol": "jfuCcanVote(user)) {<Esc>"
+ },
+ {
+  "id": "copy-paste-lines",
+  "n": "32",
+  "chips": [
+   "yy",
+   "p",
+   "P"
+  ],
+  "sol": "kkyyp"
+ },
+ {
+  "id": "copy-paste-lines",
+  "n": "32",
+  "chips": [
+   "yy",
+   "p",
+   "P"
+  ],
+  "sol": "jjddp"
+ },
+ {
+  "id": "copy-paste-lines",
+  "n": "32",
+  "chips": [
+   "yy",
+   "p",
+   "P"
+  ],
+  "sol": "ddggP"
+ },
+ {
+  "id": "copy-paste-lines",
+  "n": "32",
+  "chips": [
+   "yy",
+   "p",
+   "P"
+  ],
+  "sol": "ggyyGP"
+ },
+ {
+  "id": "copy-paste-lines",
+  "n": "32",
+  "chips": [
+   "yy",
+   "p",
+   "P"
+  ],
+  "sol": "jyjjp"
+ },
+ {
+  "id": "yank-to-end",
+  "n": "33",
+  "chips": [
+   "Y"
+  ],
+  "sol": "jf'Yj$p"
+ },
+ {
+  "id": "yank-to-end",
+  "n": "33",
+  "chips": [
+   "Y"
+  ],
+  "sol": "kkfbYj$p"
+ },
+ {
+  "id": "yank-to-end",
+  "n": "33",
+  "chips": [
+   "Y"
+  ],
+  "sol": "jfaYj$p"
+ },
+ {
+  "id": "yank-to-end",
+  "n": "33",
+  "chips": [
+   "Y"
+  ],
+  "sol": "jjfhYj$p"
+ },
+ {
+  "id": "join-lines",
+  "n": "34",
+  "chips": [
+   "J",
+   "gJ"
+  ],
+  "sol": "jjJ"
+ },
+ {
+  "id": "join-lines",
+  "n": "34",
+  "chips": [
+   "J",
+   "gJ"
+  ],
+  "sol": "kkJ"
+ },
+ {
+  "id": "join-lines",
+  "n": "34",
+  "chips": [
+   "J",
+   "gJ"
+  ],
+  "sol": "jj3J"
+ },
+ {
+  "id": "join-lines",
+  "n": "34",
+  "chips": [
+   "J",
+   "gJ"
+  ],
+  "sol": "jjgJ"
+ },
+ {
+  "id": "join-lines",
+  "n": "34",
+  "chips": [
+   "J",
+   "gJ"
+  ],
+  "sol": "jgJ"
+ },
+ {
+  "id": "repeat-last-change",
+  "n": "35",
+  "chips": [
+   "."
+  ],
+  "sol": "A;<Esc>j.j."
+ },
+ {
+  "id": "repeat-last-change",
+  "n": "35",
+  "chips": [
+   "."
+  ],
+  "sol": "cwlet<Esc>j0.j0."
+ },
+ {
+  "id": "repeat-last-change",
+  "n": "35",
+  "chips": [
+   "."
+  ],
+  "sol": "ddj."
+ },
+ {
+  "id": "repeat-last-change",
+  "n": "35",
+  "chips": [
+   "."
+  ],
+  "sol": "f,ldf,j.j."
+ },
+ {
+  "id": "repeat-last-change",
+  "n": "35",
+  "chips": [
+   "."
+  ],
+  "sol": "fxr k.k."
+ },
+ {
+  "id": "counts-operators",
+  "n": "36",
+  "chips": [
+   "3dw",
+   "d3w"
+  ],
+  "sol": "kwd2w"
+ },
+ {
+  "id": "counts-operators",
+  "n": "36",
+  "chips": [
+   "3dw",
+   "d3w"
+  ],
+  "sol": "4dd"
+ },
+ {
+  "id": "counts-operators",
+  "n": "36",
+  "chips": [
+   "3dw",
+   "d3w"
+  ],
+  "sol": "jjfcc3wenv<Esc>"
+ },
+ {
+  "id": "counts-operators",
+  "n": "36",
+  "chips": [
+   "3dw",
+   "d3w"
+  ],
+  "sol": "jjfvd3w"
+ },
+ {
+  "id": "counts-operators",
+  "n": "36",
+  "chips": [
+   "3dw",
+   "d3w"
+  ],
+  "sol": "j2yyjp"
+ },
+ {
+  "id": "boss-tidy-function",
+  "n": "00",
+  "chips": [
+   "cw",
+   "dt",
+   "dd",
+   "."
+  ],
+  "sol": "wcworderTotal<Esc>"
+ },
+ {
+  "id": "boss-tidy-function",
+  "n": "00",
+  "chips": [
+   "cw",
+   "dt",
+   "dd",
+   "."
+  ],
+  "sol": "gg2f,dt)"
+ },
+ {
+  "id": "boss-tidy-function",
+  "n": "00",
+  "chips": [
+   "cw",
+   "dt",
+   "dd",
+   "."
+  ],
+  "sol": "jdd4j."
+ },
+ {
+  "id": "boss-tidy-function",
+  "n": "00",
+  "chips": [
+   "cw",
+   "dt",
+   "dd",
+   "."
+  ],
+  "sol": "jf=wct;lineTotal(item)<Esc>"
+ },
+ {
+  "id": "boss-tidy-function",
+  "n": "00",
+  "chips": [
+   "cw",
+   "dt",
+   "dd",
+   "."
+  ],
+  "sol": "3jf;lD"
+ },
+ {
+  "id": "intro-text-objects",
+  "n": "37",
+  "chips": [
+   "i",
+   "a"
+  ],
+  "sol": "jfCciwcount<Esc>"
+ },
+ {
+  "id": "intro-text-objects",
+  "n": "37",
+  "chips": [
+   "i",
+   "a"
+  ],
+  "sol": "kfvdaw"
+ },
+ {
+  "id": "intro-text-objects",
+  "n": "37",
+  "chips": [
+   "i",
+   "a"
+  ],
+  "sol": "ci\"dark<Esc>"
+ },
+ {
+  "id": "intro-text-objects",
+  "n": "37",
+  "chips": [
+   "i",
+   "a"
+  ],
+  "sol": "jf(di("
+ },
+ {
+  "id": "intro-text-objects",
+  "n": "37",
+  "chips": [
+   "i",
+   "a"
+  ],
+  "sol": "jf5ciw1000<Esc>"
+ },
+ {
+  "id": "word-objects",
+  "n": "38",
+  "chips": [
+   "iw",
+   "aw"
+  ],
+  "sol": "jfLciworders<Esc>"
+ },
+ {
+  "id": "word-objects",
+  "n": "38",
+  "chips": [
+   "iw",
+   "aw"
+  ],
+  "sol": "jjfydaw"
+ },
+ {
+  "id": "word-objects",
+  "n": "38",
+  "chips": [
+   "iw",
+   "aw"
+  ],
+  "sol": "k$daw"
+ },
+ {
+  "id": "word-objects",
+  "n": "38",
+  "chips": [
+   "iw",
+   "aw"
+  ],
+  "sol": "jjf3ciw10000<Esc>"
+ },
+ {
+  "id": "word-objects",
+  "n": "38",
+  "chips": [
+   "iw",
+   "aw"
+  ],
+  "sol": "ciwtrue<Esc>"
+ },
+ {
+  "id": "word-objects",
+  "n": "38",
+  "chips": [
+   "iw",
+   "aw"
+  ],
+  "sol": "k3wdaw"
+ },
+ {
+  "id": "word-objects-big",
+  "n": "39",
+  "chips": [
+   "iW",
+   "aW"
+  ],
+  "sol": "k3wciWPORT<Esc>"
+ },
+ {
+  "id": "word-objects-big",
+  "n": "39",
+  "chips": [
+   "iW",
+   "aW"
+  ],
+  "sol": "jjf-daW"
+ },
+ {
+  "id": "word-objects-big",
+  "n": "39",
+  "chips": [
+   "iW",
+   "aW"
+  ],
+  "sol": "kWciWhttps://neovim.io/doc/<Esc>"
+ },
+ {
+  "id": "word-objects-big",
+  "n": "39",
+  "chips": [
+   "iW",
+   "aW"
+  ],
+  "sol": "ciWprofile.name<Esc>"
+ },
+ {
+  "id": "word-objects-big",
+  "n": "39",
+  "chips": [
+   "iW",
+   "aW"
+  ],
+  "sol": "jjf*daW"
+ },
+ {
+  "id": "text-objects-quotes",
+  "n": "40",
+  "chips": [
+   "i\"",
+   "i'",
+   "i`"
+  ],
+  "sol": "jfvci\"vimchi<Esc>"
+ },
+ {
+  "id": "text-objects-quotes",
+  "n": "40",
+  "chips": [
+   "i\"",
+   "i'",
+   "i`"
+  ],
+  "sol": "kkfgci'tokyonight<Esc>"
+ },
+ {
+  "id": "text-objects-quotes",
+  "n": "40",
+  "chips": [
+   "i\"",
+   "i'",
+   "i`"
+  ],
+  "sol": "ci`/api/v2/users<Esc>"
+ },
+ {
+  "id": "text-objects-quotes",
+  "n": "40",
+  "chips": [
+   "i\"",
+   "i'",
+   "i`"
+  ],
+  "sol": "jjf\"di\""
+ },
+ {
+  "id": "text-objects-quotes",
+  "n": "40",
+  "chips": [
+   "i\"",
+   "i'",
+   "i`"
+  ],
+  "sol": "ci'kanagawa<Esc>"
+ },
+ {
+  "id": "text-objects-parens",
+  "n": "41",
+  "chips": [
+   "i(",
+   "a(",
+   "ib"
+  ],
+  "sol": "jfFci(user<Esc>"
+ },
+ {
+  "id": "text-objects-parens",
+  "n": "41",
+  "chips": [
+   "i(",
+   "a(",
+   "ib"
+  ],
+  "sol": "kkf(ca(n<Esc>"
+ },
+ {
+  "id": "text-objects-parens",
+  "n": "41",
+  "chips": [
+   "i(",
+   "a(",
+   "ib"
+  ],
+  "sol": "dib"
+ },
+ {
+  "id": "text-objects-parens",
+  "n": "41",
+  "chips": [
+   "i(",
+   "a(",
+   "ib"
+  ],
+  "sol": "ci(value, 0<Esc>"
+ },
+ {
+  "id": "text-objects-parens",
+  "n": "41",
+  "chips": [
+   "i(",
+   "a(",
+   "ib"
+  ],
+  "sol": "jjf,cibgreeting<Esc>"
+ },
+ {
+  "id": "text-objects-brackets",
+  "n": "42",
+  "chips": [
+   "i[",
+   "i{",
+   "iB"
+  ],
+  "sol": "kkf5di["
+ },
+ {
+  "id": "text-objects-brackets",
+  "n": "42",
+  "chips": [
+   "i[",
+   "i{",
+   "iB"
+  ],
+  "sol": "ci{ useMemo <Esc>"
+ },
+ {
+  "id": "text-objects-brackets",
+  "n": "42",
+  "chips": [
+   "i[",
+   "i{",
+   "iB"
+  ],
+  "sol": "jdiB"
+ },
+ {
+  "id": "text-objects-brackets",
+  "n": "42",
+  "chips": [
+   "i[",
+   "i{",
+   "iB"
+  ],
+  "sol": "jjf[ci[\"dist\"<Esc>"
+ },
+ {
+  "id": "text-objects-brackets",
+  "n": "42",
+  "chips": [
+   "i[",
+   "i{",
+   "iB"
+  ],
+  "sol": "di{"
+ },
+ {
+  "id": "text-objects-tags",
+  "n": "43",
+  "chips": [
+   "it",
+   "at"
+  ],
+  "sol": "jfWcitDashboard<Esc>"
+ },
+ {
+  "id": "text-objects-tags",
+  "n": "43",
+  "chips": [
+   "it",
+   "at"
+  ],
+  "sol": "citSave<Esc>"
+ },
+ {
+  "id": "text-objects-tags",
+  "n": "43",
+  "chips": [
+   "it",
+   "at"
+  ],
+  "sol": "kkf+dat"
+ },
+ {
+  "id": "text-objects-tags",
+  "n": "43",
+  "chips": [
+   "it",
+   "at"
+  ],
+  "sol": "citComing soon.<Esc>"
+ },
+ {
+  "id": "text-objects-tags",
+  "n": "43",
+  "chips": [
+   "it",
+   "at"
+  ],
+  "sol": "jjwcitvimchi<Esc>"
+ },
+ {
+  "id": "sentences-paragraphs",
+  "n": "44",
+  "chips": [
+   "is",
+   "as",
+   "ip",
+   "ap"
+  ],
+  "sol": "das"
+ },
+ {
+  "id": "sentences-paragraphs",
+  "n": "44",
+  "chips": [
+   "is",
+   "as",
+   "ip",
+   "ap"
+  ],
+  "sol": "jjfOcisPush daily.<Esc>"
+ },
+ {
+  "id": "sentences-paragraphs",
+  "n": "44",
+  "chips": [
+   "is",
+   "as",
+   "ip",
+   "ap"
+  ],
+  "sol": "dap"
+ },
+ {
+  "id": "sentences-paragraphs",
+  "n": "44",
+  "chips": [
+   "is",
+   "as",
+   "ip",
+   "ap"
+  ],
+  "sol": "dap"
+ },
+ {
+  "id": "sentences-paragraphs",
+  "n": "44",
+  "chips": [
+   "is",
+   "as",
+   "ip",
+   "ap"
+  ],
+  "sol": "yapP"
+ },
+ {
+  "id": "reaching-objects",
+  "n": "45",
+  "chips": [
+   "ci\"",
+   "ci'",
+   "ci("
+  ],
+  "sol": "ci'rose-pine<Esc>"
+ },
+ {
+  "id": "reaching-objects",
+  "n": "45",
+  "chips": [
+   "ci\"",
+   "ci'",
+   "ci("
+  ],
+  "sol": "jci',<Esc>"
+ },
+ {
+  "id": "reaching-objects",
+  "n": "45",
+  "chips": [
+   "ci\"",
+   "ci'",
+   "ci("
+  ],
+  "sol": "jjci`total: ${sum}<Esc>"
+ },
+ {
+  "id": "reaching-objects",
+  "n": "45",
+  "chips": [
+   "ci\"",
+   "ci'",
+   "ci("
+  ],
+  "sol": "ci(isAdmin(user)<Esc>"
+ },
+ {
+  "id": "reaching-objects",
+  "n": "45",
+  "chips": [
+   "ci\"",
+   "ci'",
+   "ci("
+  ],
+  "sol": "di{"
+ },
+ {
+  "id": "reaching-objects",
+  "n": "45",
+  "chips": [
+   "ci\"",
+   "ci'",
+   "ci("
+  ],
+  "sol": "jjci\"fix: handle empty cart<Esc>"
+ },
+ {
+  "id": "reaching-objects",
+  "n": "45",
+  "chips": [
+   "ci\"",
+   "ci'",
+   "ci("
+  ],
+  "sol": "di'"
+ },
+ {
+  "id": "visual-characters",
+  "n": "46",
+  "chips": [
+   "v",
+   "o"
+  ],
+  "sol": "vf d"
+ },
+ {
+  "id": "visual-characters",
+  "n": "46",
+  "chips": [
+   "v",
+   "o"
+  ],
+  "sol": "jj$vT,d"
+ },
+ {
+  "id": "visual-characters",
+  "n": "46",
+  "chips": [
+   "v",
+   "o"
+  ],
+  "sol": "vf)ohd"
+ },
+ {
+  "id": "visual-characters",
+  "n": "46",
+  "chips": [
+   "v",
+   "o"
+  ],
+  "sol": "vt;ohd"
+ },
+ {
+  "id": "visual-characters",
+  "n": "46",
+  "chips": [
+   "v",
+   "o"
+  ],
+  "sol": "vf.d"
+ },
+ {
+  "id": "visual-lines",
+  "n": "47",
+  "chips": [
+   "V"
+  ],
+  "sol": "Vjjd"
+ },
+ {
+  "id": "visual-lines",
+  "n": "47",
+  "chips": [
+   "V"
+  ],
+  "sol": "VjjjJ"
+ },
+ {
+  "id": "visual-lines",
+  "n": "47",
+  "chips": [
+   "V"
+  ],
+  "sol": "Vkkkd"
+ },
+ {
+  "id": "visual-lines",
+  "n": "47",
+  "chips": [
+   "V"
+  ],
+  "sol": "VGd"
+ },
+ {
+  "id": "visual-lines",
+  "n": "47",
+  "chips": [
+   "V"
+  ],
+  "sol": "Vjp"
+ },
+ {
+  "id": "reselect",
+  "n": "48",
+  "chips": [
+   "gv"
+  ],
+  "sol": "gvd"
+ },
+ {
+  "id": "reselect",
+  "n": "48",
+  "chips": [
+   "gv"
+  ],
+  "sol": "Vj>gv>"
+ },
+ {
+  "id": "reselect",
+  "n": "48",
+  "chips": [
+   "gv"
+  ],
+  "sol": "gvctimeoutMs<Esc>"
+ },
+ {
+  "id": "reselect",
+  "n": "48",
+  "chips": [
+   "gv"
+  ],
+  "sol": "gvJ"
+ },
+ {
+  "id": "visual-operators",
+  "n": "49",
+  "chips": [
+   "d",
+   "c",
+   "y"
+  ],
+  "sol": "3wvt;c8080<Esc>"
+ },
+ {
+  "id": "visual-operators",
+  "n": "49",
+  "chips": [
+   "d",
+   "c",
+   "y"
+  ],
+  "sol": "v2f d"
+ },
+ {
+  "id": "visual-operators",
+  "n": "49",
+  "chips": [
+   "d",
+   "c",
+   "y"
+  ],
+  "sol": "vt;yjf)P"
+ },
+ {
+  "id": "visual-operators",
+  "n": "49",
+  "chips": [
+   "d",
+   "c",
+   "y"
+  ],
+  "sol": "Vjjcreturn sum(xs);<Esc>"
+ },
+ {
+  "id": "visual-operators",
+  "n": "49",
+  "chips": [
+   "d",
+   "c",
+   "y"
+  ],
+  "sol": "VjyGP"
+ },
+ {
+  "id": "visual-block",
+  "n": "50",
+  "chips": [
+   "C-v"
+  ],
+  "sol": "<C-v>jjlld"
+ },
+ {
+  "id": "visual-block",
+  "n": "50",
+  "chips": [
+   "C-v"
+  ],
+  "sol": "<C-v>jjrx"
+ },
+ {
+  "id": "visual-block",
+  "n": "50",
+  "chips": [
+   "C-v"
+  ],
+  "sol": "<C-v>jjeclet<Esc>"
+ },
+ {
+  "id": "visual-block",
+  "n": "50",
+  "chips": [
+   "C-v"
+  ],
+  "sol": "<C-v>3j4ld"
+ },
+ {
+  "id": "visual-block",
+  "n": "50",
+  "chips": [
+   "C-v"
+  ],
+  "sol": "<C-v>j3lcnew_<Esc>"
+ },
+ {
+  "id": "block-insert-append",
+  "n": "51",
+  "chips": [
+   "I",
+   "A",
+   "$A"
+  ],
+  "sol": "2j<C-v>jjI- <Esc>"
+ },
+ {
+  "id": "block-insert-append",
+  "n": "51",
+  "chips": [
+   "I",
+   "A",
+   "$A"
+  ],
+  "sol": "<C-v>kkIlocal <Esc>"
+ },
+ {
+  "id": "block-insert-append",
+  "n": "51",
+  "chips": [
+   "I",
+   "A",
+   "$A"
+  ],
+  "sol": "<C-v>jjA-outline<Esc>"
+ },
+ {
+  "id": "block-insert-append",
+  "n": "51",
+  "chips": [
+   "I",
+   "A",
+   "$A"
+  ],
+  "sol": "<C-v>jj$A;<Esc>"
+ },
+ {
+  "id": "block-insert-append",
+  "n": "51",
+  "chips": [
+   "I",
+   "A",
+   "$A"
+  ],
+  "sol": "<C-v>j$A,<Esc>"
+ },
+ {
+  "id": "growing-selections",
+  "n": "52",
+  "chips": [
+   "v",
+   "a(",
+   "i("
+  ],
+  "sol": "vi(i(capp<Esc>"
+ },
+ {
+  "id": "growing-selections",
+  "n": "52",
+  "chips": [
+   "v",
+   "a(",
+   "i("
+  ],
+  "sol": "va(a(ccanEdit(user)<Esc>"
+ },
+ {
+  "id": "growing-selections",
+  "n": "52",
+  "chips": [
+   "v",
+   "a(",
+   "i("
+  ],
+  "sol": "vi(i(i(cbody<Esc>"
+ },
+ {
+  "id": "growing-selections",
+  "n": "52",
+  "chips": [
+   "v",
+   "a(",
+   "i("
+  ],
+  "sol": "vi[i[d"
+ },
+ {
+  "id": "growing-selections",
+  "n": "52",
+  "chips": [
+   "v",
+   "a(",
+   "i("
+  ],
+  "sol": "va{a{c{}<Esc>"
+ },
+ {
+  "id": "search-forward",
+  "n": "53",
+  "chips": [
+   "/",
+   "n",
+   "N"
+  ],
+  "sol": "/catch<CR>"
+ },
+ {
+  "id": "search-forward",
+  "n": "53",
+  "chips": [
+   "/",
+   "n",
+   "N"
+  ],
+  "sol": "/sleep(<CR>"
+ },
+ {
+  "id": "search-forward",
+  "n": "53",
+  "chips": [
+   "/",
+   "n",
+   "N"
+  ],
+  "sol": "/throw<CR>"
+ },
+ {
+  "id": "search-forward",
+  "n": "53",
+  "chips": [
+   "/",
+   "n",
+   "N"
+  ],
+  "sol": "/lastError<CR>2n"
+ },
+ {
+  "id": "search-forward",
+  "n": "53",
+  "chips": [
+   "/",
+   "n",
+   "N"
+  ],
+  "sol": "n"
+ },
+ {
+  "id": "search-forward",
+  "n": "53",
+  "chips": [
+   "/",
+   "n",
+   "N"
+  ],
+  "sol": "N"
+ },
+ {
+  "id": "search-backward",
+  "n": "54",
+  "chips": [
+   "?"
+  ],
+  "sol": "?fn<CR>"
+ },
+ {
+  "id": "search-backward",
+  "n": "54",
+  "chips": [
+   "?"
+  ],
+  "sol": "?try<CR>"
+ },
+ {
+  "id": "search-backward",
+  "n": "54",
+  "chips": [
+   "?"
+  ],
+  "sol": "?let<CR>"
+ },
+ {
+  "id": "search-backward",
+  "n": "54",
+  "chips": [
+   "?"
+  ],
+  "sol": "?import<CR>"
+ },
+ {
+  "id": "search-backward",
+  "n": "54",
+  "chips": [
+   "?"
+  ],
+  "sol": "?await<CR>n"
+ },
+ {
+  "id": "search-backward",
+  "n": "54",
+  "chips": [
+   "?"
+  ],
+  "sol": "?Promise<CR>"
+ },
+ {
+  "id": "word-under-cursor",
+  "n": "55",
+  "chips": [
+   "*",
+   "#"
+  ],
+  "sol": "*"
+ },
+ {
+  "id": "word-under-cursor",
+  "n": "55",
+  "chips": [
+   "*",
+   "#"
+  ],
+  "sol": "*"
+ },
+ {
+  "id": "word-under-cursor",
+  "n": "55",
+  "chips": [
+   "*",
+   "#"
+  ],
+  "sol": "#"
+ },
+ {
+  "id": "word-under-cursor",
+  "n": "55",
+  "chips": [
+   "*",
+   "#"
+  ],
+  "sol": "#"
+ },
+ {
+  "id": "word-under-cursor",
+  "n": "55",
+  "chips": [
+   "*",
+   "#"
+  ],
+  "sol": "*"
+ },
+ {
+  "id": "word-under-cursor",
+  "n": "55",
+  "chips": [
+   "*",
+   "#"
+  ],
+  "sol": "2*"
+ },
+ {
+  "id": "search-as-motion",
+  "n": "56",
+  "chips": [
+   "d/",
+   "c/"
+  ],
+  "sol": "d/return<CR>"
+ },
+ {
+  "id": "search-as-motion",
+  "n": "56",
+  "chips": [
+   "d/",
+   "c/"
+  ],
+  "sol": "d/user<CR>"
+ },
+ {
+  "id": "search-as-motion",
+  "n": "56",
+  "chips": [
+   "d/",
+   "c/"
+  ],
+  "sol": "/first<CR>c/ AS<CR>full_name<Esc>"
+ },
+ {
+  "id": "search-as-motion",
+  "n": "56",
+  "chips": [
+   "d/",
+   "c/"
+  ],
+  "sol": "d/\"version<CR>"
+ },
+ {
+  "id": "search-as-motion",
+  "n": "56",
+  "chips": [
+   "d/",
+   "c/"
+  ],
+  "sol": "d/## Usage<CR>"
+ },
+ {
+  "id": "change-next-match",
+  "n": "57",
+  "chips": [
+   "gn",
+   "cgn",
+   "."
+  ],
+  "sol": "*cgnrows<Esc>.."
+ },
+ {
+  "id": "change-next-match",
+  "n": "57",
+  "chips": [
+   "gn",
+   "cgn",
+   "."
+  ],
+  "sol": "cgnlog<Esc>.."
+ },
+ {
+  "id": "change-next-match",
+  "n": "57",
+  "chips": [
+   "gn",
+   "cgn",
+   "."
+  ],
+  "sol": "dgn.."
+ },
+ {
+  "id": "change-next-match",
+  "n": "57",
+  "chips": [
+   "gn",
+   "cgn",
+   "."
+  ],
+  "sol": "gUgn.."
+ },
+ {
+  "id": "change-next-match",
+  "n": "57",
+  "chips": [
+   "gn",
+   "cgn",
+   "."
+  ],
+  "sol": "/cfg<CR>cgnconfig<Esc>..."
+ },
+ {
+  "id": "search-offsets",
+  "n": "58",
+  "chips": [
+   "/e",
+   "/+1"
+  ],
+  "sol": "/tabstop/e<CR>"
+ },
+ {
+  "id": "search-offsets",
+  "n": "58",
+  "chips": [
+   "/e",
+   "/+1"
+  ],
+  "sol": "/shiftwidth = /e+1<CR>"
+ },
+ {
+  "id": "search-offsets",
+  "n": "58",
+  "chips": [
+   "/e",
+   "/+1"
+  ],
+  "sol": "/keymap/+1<CR>"
+ },
+ {
+  "id": "search-offsets",
+  "n": "58",
+  "chips": [
+   "/e",
+   "/+1"
+  ],
+  "sol": "/tabstop/-1<CR>"
+ },
+ {
+  "id": "search-offsets",
+  "n": "58",
+  "chips": [
+   "/e",
+   "/+1"
+  ],
+  "sol": "//e<CR>"
+ },
+ {
+  "id": "clear-highlights",
+  "n": "59",
+  "chips": [
+   ":noh",
+   "C-l"
+  ],
+  "sol": ":noh<CR>"
+ },
+ {
+  "id": "clear-highlights",
+  "n": "59",
+  "chips": [
+   ":noh",
+   "C-l"
+  ],
+  "sol": "<C-l>"
+ },
+ {
+  "id": "clear-highlights",
+  "n": "59",
+  "chips": [
+   ":noh",
+   "C-l"
+  ],
+  "sol": "/leader<CR><C-l>"
+ },
+ {
+  "id": "clear-highlights",
+  "n": "59",
+  "chips": [
+   ":noh",
+   "C-l"
+  ],
+  "sol": "*<C-l>"
+ },
+ {
+  "id": "indenting",
+  "n": "60",
+  "chips": [
+   ">>",
+   "<<",
+   ">"
+  ],
+  "sol": ">>"
+ },
+ {
+  "id": "indenting",
+  "n": "60",
+  "chips": [
+   ">>",
+   "<<",
+   ">"
+  ],
+  "sol": "<<"
+ },
+ {
+  "id": "indenting",
+  "n": "60",
+  "chips": [
+   ">>",
+   "<<",
+   ">"
+  ],
+  "sol": ">i{"
+ },
+ {
+  "id": "indenting",
+  "n": "60",
+  "chips": [
+   ">>",
+   "<<",
+   ">"
+  ],
+  "sol": ">>."
+ },
+ {
+  "id": "indenting",
+  "n": "60",
+  "chips": [
+   ">>",
+   "<<",
+   ">"
+  ],
+  "sol": "<2j"
+ },
+ {
+  "id": "auto-indent",
+  "n": "61",
+  "chips": [
+   "=",
+   "=="
+  ],
+  "sol": "=="
+ },
+ {
+  "id": "auto-indent",
+  "n": "61",
+  "chips": [
+   "=",
+   "=="
+  ],
+  "sol": "=i{"
+ },
+ {
+  "id": "auto-indent",
+  "n": "61",
+  "chips": [
+   "=",
+   "=="
+  ],
+  "sol": "=ap"
+ },
+ {
+  "id": "auto-indent",
+  "n": "61",
+  "chips": [
+   "=",
+   "=="
+  ],
+  "sol": "gg=G"
+ },
+ {
+  "id": "toggle-case",
+  "n": "62",
+  "chips": [
+   "~"
+  ],
+  "sol": "kkw~"
+ },
+ {
+  "id": "toggle-case",
+  "n": "62",
+  "chips": [
+   "~"
+  ],
+  "sol": "w~w~"
+ },
+ {
+  "id": "toggle-case",
+  "n": "62",
+  "chips": [
+   "~"
+  ],
+  "sol": "jft3~"
+ },
+ {
+  "id": "toggle-case",
+  "n": "62",
+  "chips": [
+   "~"
+  ],
+  "sol": "kfu3~"
+ },
+ {
+  "id": "toggle-case",
+  "n": "62",
+  "chips": [
+   "~"
+  ],
+  "sol": "6~2w4~"
+ },
+ {
+  "id": "case-operators",
+  "n": "63",
+  "chips": [
+   "gu",
+   "gU",
+   "g~"
+  ],
+  "sol": "gUiw"
+ },
+ {
+  "id": "case-operators",
+  "n": "63",
+  "chips": [
+   "gu",
+   "gU",
+   "g~"
+  ],
+  "sol": "gu$"
+ },
+ {
+  "id": "case-operators",
+  "n": "63",
+  "chips": [
+   "gu",
+   "gU",
+   "g~"
+  ],
+  "sol": "gUt="
+ },
+ {
+  "id": "case-operators",
+  "n": "63",
+  "chips": [
+   "gu",
+   "gU",
+   "g~"
+  ],
+  "sol": "g~i\""
+ },
+ {
+  "id": "case-operators",
+  "n": "63",
+  "chips": [
+   "gu",
+   "gU",
+   "g~"
+  ],
+  "sol": "gUi'"
+ },
+ {
+  "id": "formatting-text",
+  "n": "64",
+  "chips": [
+   "gq",
+   "gw"
+  ],
+  "sol": "kgqq"
+ },
+ {
+  "id": "formatting-text",
+  "n": "64",
+  "chips": [
+   "gq",
+   "gw"
+  ],
+  "sol": "gqip"
+ },
+ {
+  "id": "formatting-text",
+  "n": "64",
+  "chips": [
+   "gq",
+   "gw"
+  ],
+  "sol": "gwip"
+ },
+ {
+  "id": "formatting-text",
+  "n": "64",
+  "chips": [
+   "gq",
+   "gw"
+  ],
+  "sol": "gqip"
+ },
+ {
+  "id": "incrementing-numbers",
+  "n": "65",
+  "chips": [
+   "C-a",
+   "C-x"
+  ],
+  "sol": "j4<C-a>"
+ },
+ {
+  "id": "incrementing-numbers",
+  "n": "65",
+  "chips": [
+   "C-a",
+   "C-x"
+  ],
+  "sol": "500<C-x>"
+ },
+ {
+  "id": "incrementing-numbers",
+  "n": "65",
+  "chips": [
+   "C-a",
+   "C-x"
+  ],
+  "sol": "kk2<C-a>"
+ },
+ {
+  "id": "incrementing-numbers",
+  "n": "65",
+  "chips": [
+   "C-a",
+   "C-x"
+  ],
+  "sol": "2<C-a>j.j."
+ },
+ {
+  "id": "incrementing-numbers",
+  "n": "65",
+  "chips": [
+   "C-a",
+   "C-x"
+  ],
+  "sol": "<C-x>"
+ },
+ {
+  "id": "number-sequences",
+  "n": "66",
+  "chips": [
+   "g C-a"
+  ],
+  "sol": "jVGg<C-a>"
+ },
+ {
+  "id": "number-sequences",
+  "n": "66",
+  "chips": [
+   "g C-a"
+  ],
+  "sol": "VGg<C-a>"
+ },
+ {
+  "id": "number-sequences",
+  "n": "66",
+  "chips": [
+   "g C-a"
+  ],
+  "sol": "<C-v>jjg<C-a>"
+ },
+ {
+  "id": "number-sequences",
+  "n": "66",
+  "chips": [
+   "g C-a"
+  ],
+  "sol": "VG10g<C-a>"
+ },
+ {
+  "id": "number-sequences",
+  "n": "66",
+  "chips": [
+   "g C-a"
+  ],
+  "sol": "jVjg<C-a>"
+ },
+ {
+  "id": "boss-clean-config",
+  "n": "00",
+  "chips": [
+   "=",
+   "C-x",
+   "~",
+   "gq"
+  ],
+  "sol": "gg=G"
+ },
+ {
+  "id": "boss-clean-config",
+  "n": "00",
+  "chips": [
+   "=",
+   "C-x",
+   "~",
+   "gq"
+  ],
+  "sol": "2<C-x>j."
+ },
+ {
+  "id": "boss-clean-config",
+  "n": "00",
+  "chips": [
+   "=",
+   "C-x",
+   "~",
+   "gq"
+  ],
+  "sol": "fj~fb~w~"
+ },
+ {
+  "id": "boss-clean-config",
+  "n": "00",
+  "chips": [
+   "=",
+   "C-x",
+   "~",
+   "gq"
+  ],
+  "sol": "gqj"
+ },
+ {
+  "id": "unnamed-register",
+  "n": "67",
+  "chips": [
+   "\"\"",
+   "xp",
+   "ddp"
+  ],
+  "sol": "kfuhxp"
+ },
+ {
+  "id": "unnamed-register",
+  "n": "67",
+  "chips": [
+   "\"\"",
+   "xp",
+   "ddp"
+  ],
+  "sol": "ddp"
+ },
+ {
+  "id": "unnamed-register",
+  "n": "67",
+  "chips": [
+   "\"\"",
+   "xp",
+   "ddp"
+  ],
+  "sol": "2kwdwwP"
+ },
+ {
+  "id": "unnamed-register",
+  "n": "67",
+  "chips": [
+   "\"\"",
+   "xp",
+   "ddp"
+  ],
+  "sol": "ddkP"
+ },
+ {
+  "id": "unnamed-register",
+  "n": "67",
+  "chips": [
+   "\"\"",
+   "xp",
+   "ddp"
+  ],
+  "sol": "dap}p"
+ },
+ {
+  "id": "yank-register",
+  "n": "68",
+  "chips": [
+   "\"0"
+  ],
+  "sol": "yy4jdd\"0P"
+ },
+ {
+  "id": "yank-register",
+  "n": "68",
+  "chips": [
+   "\"0"
+  ],
+  "sol": "yy3jdd\"0P"
+ },
+ {
+  "id": "yank-register",
+  "n": "68",
+  "chips": [
+   "\"0"
+  ],
+  "sol": "f^yi\"jf^di\"\"0P"
+ },
+ {
+  "id": "yank-register",
+  "n": "68",
+  "chips": [
+   "\"0"
+  ],
+  "sol": "yiwjvt(pj0vt(\"0p"
+ },
+ {
+  "id": "yank-register",
+  "n": "68",
+  "chips": [
+   "\"0"
+  ],
+  "sol": "yyGdk\"0p"
+ },
+ {
+  "id": "named-registers",
+  "n": "69",
+  "chips": [
+   "\"a",
+   "\"b"
+  ],
+  "sol": "k\"qyy"
+ },
+ {
+  "id": "named-registers",
+  "n": "69",
+  "chips": [
+   "\"a",
+   "\"b"
+  ],
+  "sol": "2kf'\"uyi'jf'\"kyi'"
+ },
+ {
+  "id": "named-registers",
+  "n": "69",
+  "chips": [
+   "\"a",
+   "\"b"
+  ],
+  "sol": "\"ayy2j\"byy4j\"aPj\"bp"
+ },
+ {
+  "id": "named-registers",
+  "n": "69",
+  "chips": [
+   "\"a",
+   "\"b"
+  ],
+  "sol": "gg\"sP\"hP"
+ },
+ {
+  "id": "appending-registers",
+  "n": "70",
+  "chips": [
+   "\"A"
+  ],
+  "sol": "j\"ayy2j\"Ayy2j\"AyyG\"ap"
+ },
+ {
+  "id": "appending-registers",
+  "n": "70",
+  "chips": [
+   "\"A"
+  ],
+  "sol": "\"addj\"Addgg\"aP"
+ },
+ {
+  "id": "appending-registers",
+  "n": "70",
+  "chips": [
+   "\"A"
+  ],
+  "sol": "\"Eyy2j\"Eyy"
+ },
+ {
+  "id": "appending-registers",
+  "n": "70",
+  "chips": [
+   "\"A"
+  ],
+  "sol": "\"tddj\"TddG\"tp"
+ },
+ {
+  "id": "delete-history",
+  "n": "71",
+  "chips": [
+   "\"1",
+   "\"-"
+  ],
+  "sol": "\"3p"
+ },
+ {
+  "id": "delete-history",
+  "n": "71",
+  "chips": [
+   "\"1",
+   "\"-"
+  ],
+  "sol": "\"2p"
+ },
+ {
+  "id": "delete-history",
+  "n": "71",
+  "chips": [
+   "\"1",
+   "\"-"
+  ],
+  "sol": "w\"-P"
+ },
+ {
+  "id": "delete-history",
+  "n": "71",
+  "chips": [
+   "\"1",
+   "\"-"
+  ],
+  "sol": "dd\"2p"
+ },
+ {
+  "id": "black-hole-register",
+  "n": "72",
+  "chips": [
+   "\"_"
+  ],
+  "sol": "yy3j\"_2ddP"
+ },
+ {
+  "id": "black-hole-register",
+  "n": "72",
+  "chips": [
+   "\"_"
+  ],
+  "sol": "yiwjfc\"_diwP"
+ },
+ {
+  "id": "black-hole-register",
+  "n": "72",
+  "chips": [
+   "\"_"
+  ],
+  "sol": "yiw2jf(l\"_dt,P"
+ },
+ {
+  "id": "black-hole-register",
+  "n": "72",
+  "chips": [
+   "\"_"
+  ],
+  "sol": "yyG\"_dipp"
+ },
+ {
+  "id": "read-only-registers",
+  "n": "73",
+  "chips": [
+   "\".",
+   "\"%",
+   "\":"
+  ],
+  "sol": "jF/\".P"
+ },
+ {
+  "id": "read-only-registers",
+  "n": "73",
+  "chips": [
+   "\".",
+   "\"%",
+   "\":"
+  ],
+  "sol": "gg$\"%p"
+ },
+ {
+  "id": "read-only-registers",
+  "n": "73",
+  "chips": [
+   "\".",
+   "\"%",
+   "\":"
+  ],
+  "sol": "o:<Esc>\":p"
+ },
+ {
+  "id": "read-only-registers",
+  "n": "73",
+  "chips": [
+   "\".",
+   "\"%",
+   "\":"
+  ],
+  "sol": "2jf'\"%p"
+ },
+ {
+  "id": "paste-while-typing",
+  "n": "74",
+  "chips": [
+   "C-r"
+  ],
+  "sol": "yiwOconsole.log('<C-r>0', <C-r>0);<Esc>"
+ },
+ {
+  "id": "paste-while-typing",
+  "n": "74",
+  "chips": [
+   "C-r"
+  ],
+  "sol": "kf(wciwString(<C-r>\")<Esc>"
+ },
+ {
+  "id": "paste-while-typing",
+  "n": "74",
+  "chips": [
+   "C-r"
+  ],
+  "sol": "ggf'a<C-r>u<Esc>"
+ },
+ {
+  "id": "paste-while-typing",
+  "n": "74",
+  "chips": [
+   "C-r"
+  ],
+  "sol": "yiw:%s/<C-r>0/amount/g<CR>"
+ },
+ {
+  "id": "paste-while-typing",
+  "n": "74",
+  "chips": [
+   "C-r"
+  ],
+  "sol": "$byiwjf;isettings.get('<C-r>0')<Esc>"
+ },
+ {
+  "id": "expression-register",
+  "n": "75",
+  "chips": [
+   "C-r",
+   "="
+  ],
+  "sol": "kf;i<C-r>=24*60*60*1000<CR><Esc>"
+ },
+ {
+  "id": "expression-register",
+  "n": "75",
+  "chips": [
+   "C-r",
+   "="
+  ],
+  "sol": "$i<C-r>=129+18+45<CR> <Esc>"
+ },
+ {
+  "id": "expression-register",
+  "n": "75",
+  "chips": [
+   "C-r",
+   "="
+  ],
+  "sol": "2kf0s<C-r>=25*1024*1024<CR><Esc>"
+ },
+ {
+  "id": "expression-register",
+  "n": "75",
+  "chips": [
+   "C-r",
+   "="
+  ],
+  "sol": "ggo<C-r>=repeat('=', 23)<CR><Esc>"
+ },
+ {
+  "id": "expression-register",
+  "n": "75",
+  "chips": [
+   "C-r",
+   "="
+  ],
+  "sol": "2j$s<C-r>=printf('%.2f', 3 * 4.99)<CR><Esc>"
+ },
+ {
+  "id": "recording-macro",
+  "n": "76",
+  "chips": [
+   "q",
+   "@"
+  ],
+  "sol": "qaI- <Esc>jq@a@a@a"
+ },
+ {
+  "id": "recording-macro",
+  "n": "76",
+  "chips": [
+   "q",
+   "@"
+  ],
+  "sol": "qaA;<Esc>jq@a@a@a@a"
+ },
+ {
+  "id": "recording-macro",
+  "n": "76",
+  "chips": [
+   "q",
+   "@"
+  ],
+  "sol": "qaI\"<Esc>f:i\"<Esc>jq@a@a"
+ },
+ {
+  "id": "recording-macro",
+  "n": "76",
+  "chips": [
+   "q",
+   "@"
+  ],
+  "sol": "jqa^cwlog.info<Esc>jq@a@a"
+ },
+ {
+  "id": "replaying-macros",
+  "n": "77",
+  "chips": [
+   "@@",
+   "5@a"
+  ],
+  "sol": "jqaA,<Esc>jq4@a"
+ },
+ {
+  "id": "replaying-macros",
+  "n": "77",
+  "chips": [
+   "@@",
+   "5@a"
+  ],
+  "sol": "4@a"
+ },
+ {
+  "id": "replaying-macros",
+  "n": "77",
+  "chips": [
+   "@@",
+   "5@a"
+  ],
+  "sol": "qayyp<C-a>q4@a"
+ },
+ {
+  "id": "replaying-macros",
+  "n": "77",
+  "chips": [
+   "@@",
+   "5@a"
+  ],
+  "sol": "qa02wgUiwjq@a@@@@"
+ },
+ {
+  "id": "robust-macros",
+  "n": "78",
+  "chips": [
+   "macros"
+  ],
+  "sol": "qaIexport <Esc>f=a\"<Esc>A\"<Esc>jq3@a"
+ },
+ {
+  "id": "robust-macros",
+  "n": "78",
+  "chips": [
+   "macros"
+  ],
+  "sol": "qaI[<Esc>f s](<Esc>A)<Esc>jq2@a"
+ },
+ {
+  "id": "robust-macros",
+  "n": "78",
+  "chips": [
+   "macros"
+  ],
+  "sol": "qa^yiwI'<Esc>A': <C-r>0,<Esc>jq3@a"
+ },
+ {
+  "id": "robust-macros",
+  "n": "78",
+  "chips": [
+   "macros"
+  ],
+  "sol": "jqa^f:wct,null<Esc>jq3@a"
+ },
+ {
+  "id": "recursive-macros",
+  "n": "79",
+  "chips": [
+   "qaq",
+   "@a"
+  ],
+  "sol": "qaqqa0a [ ]<Esc>j@aq@a"
+ },
+ {
+  "id": "recursive-macros",
+  "n": "79",
+  "chips": [
+   "qaq",
+   "@a"
+  ],
+  "sol": "qaqqa/debug<CR>dd@aq@a"
+ },
+ {
+  "id": "recursive-macros",
+  "n": "79",
+  "chips": [
+   "qaq",
+   "@a"
+  ],
+  "sol": "qaqqaI`<Esc>ea`<Esc>j@aq@a"
+ },
+ {
+  "id": "recursive-macros",
+  "n": "79",
+  "chips": [
+   "qaq",
+   "@a"
+  ],
+  "sol": "qaqqaA:<Esc>Jj@aq@a"
+ },
+ {
+  "id": "editing-macros",
+  "n": "80",
+  "chips": [
+   "\"ap",
+   "\"ay$"
+  ],
+  "sol": "Go<Esc>\"apAj<Esc>0\"ay$ddgg4@a"
+ },
+ {
+  "id": "editing-macros",
+  "n": "80",
+  "chips": [
+   "\"ap",
+   "\"ay$"
+  ],
+  "sol": "Go<Esc>\"vpFwrW0\"vy$dd"
+ },
+ {
+  "id": "editing-macros",
+  "n": "80",
+  "chips": [
+   "\"ap",
+   "\"ay$"
+  ],
+  "sol": "Go<Esc>\"cp0a2<Esc>0\"cy$ddgg3@c"
+ },
+ {
+  "id": "macros-over-lines",
+  "n": "81",
+  "chips": [
+   ":norm @a"
+  ],
+  "sol": ":%norm @a<CR>"
+ },
+ {
+  "id": "macros-over-lines",
+  "n": "81",
+  "chips": [
+   ":norm @a"
+  ],
+  "sol": "qaI1. <Esc>q:4,$norm @a<CR>"
+ },
+ {
+  "id": "macros-over-lines",
+  "n": "81",
+  "chips": [
+   ":norm @a"
+  ],
+  "sol": "Vjj:norm @q<CR>"
+ },
+ {
+  "id": "macros-over-lines",
+  "n": "81",
+  "chips": [
+   ":norm @a"
+  ],
+  "sol": ":%norm @a<CR>"
+ },
+ {
+  "id": "boss-csv-to-object",
+  "n": "00",
+  "chips": [
+   "q",
+   "@a"
+  ],
+  "sol": "Go];<Esc>ggccconst users = [<Esc>jqaI  { id: <Esc>f,s, name: '<Esc>f,s', role: '<Esc>A' },<Esc>jq4@a"
+ },
+ {
+  "id": "boss-csv-to-object",
+  "n": "00",
+  "chips": [
+   "q",
+   "@a"
+  ],
+  "sol": "Go];<Esc>ggccexport const products = [<Esc>jqaI  { sku: '<Esc>f,s', title: '<Esc>f,s', price: <Esc>A },<Esc>jq3@a"
+ },
+ {
+  "id": "boss-csv-to-object",
+  "n": "00",
+  "chips": [
+   "q",
+   "@a"
+  ],
+  "sol": "Go]);<Esc>ggccconst statusText = new Map([<Esc>jqaI  [<Esc>f,s, '<Esc>A'],<Esc>jq5@a"
+ },
+ {
+  "id": "opening-files",
+  "n": "82",
+  "chips": [
+   ":e"
+  ],
+  "sol": ":e src/db.ts<CR>"
+ },
+ {
+  "id": "opening-files",
+  "n": "82",
+  "chips": [
+   ":e"
+  ],
+  "sol": ":e README.md<CR>"
+ },
+ {
+  "id": "opening-files",
+  "n": "82",
+  "chips": [
+   ":e"
+  ],
+  "sol": ":e src/routes/users.ts<CR>"
+ },
+ {
+  "id": "opening-files",
+  "n": "82",
+  "chips": [
+   ":e"
+  ],
+  "sol": ":e src/routes/tags.ts<CR>:w<CR>"
+ },
+ {
+  "id": "opening-files",
+  "n": "82",
+  "chips": [
+   ":e"
+  ],
+  "sol": ":e!<CR>"
+ },
+ {
+  "id": "buffer-list",
+  "n": "83",
+  "chips": [
+   ":ls",
+   ":b"
+  ],
+  "sol": ":b db<CR>"
+ },
+ {
+  "id": "buffer-list",
+  "n": "83",
+  "chips": [
+   ":ls",
+   ":b"
+  ],
+  "sol": ":ls<CR>:b2<CR>"
+ },
+ {
+  "id": "buffer-list",
+  "n": "83",
+  "chips": [
+   ":ls",
+   ":b"
+  ],
+  "sol": ":b notes<CR>"
+ },
+ {
+  "id": "buffer-list",
+  "n": "83",
+  "chips": [
+   ":ls",
+   ":b"
+  ],
+  "sol": ":b1<CR>"
+ },
+ {
+  "id": "buffer-list",
+  "n": "83",
+  "chips": [
+   ":ls",
+   ":b"
+  ],
+  "sol": ":b READ<CR>"
+ },
+ {
+  "id": "cycling-buffers",
+  "n": "84",
+  "chips": [
+   "[b",
+   "]b"
+  ],
+  "sol": "]b"
+ },
+ {
+  "id": "cycling-buffers",
+  "n": "84",
+  "chips": [
+   "[b",
+   "]b"
+  ],
+  "sol": "[b"
+ },
+ {
+  "id": "cycling-buffers",
+  "n": "84",
+  "chips": [
+   "[b",
+   "]b"
+  ],
+  "sol": "[b"
+ },
+ {
+  "id": "cycling-buffers",
+  "n": "84",
+  "chips": [
+   "[b",
+   "]b"
+  ],
+  "sol": "2]b"
+ },
+ {
+  "id": "cycling-buffers",
+  "n": "84",
+  "chips": [
+   "[b",
+   "]b"
+  ],
+  "sol": "]b"
+ },
+ {
+  "id": "alternate-file",
+  "n": "85",
+  "chips": [
+   "C-^"
+  ],
+  "sol": "<C-^>"
+ },
+ {
+  "id": "alternate-file",
+  "n": "85",
+  "chips": [
+   "C-^"
+  ],
+  "sol": ":e src/config.ts<CR><C-^>"
+ },
+ {
+  "id": "alternate-file",
+  "n": "85",
+  "chips": [
+   "C-^"
+  ],
+  "sol": "gf<C-^>"
+ },
+ {
+  "id": "alternate-file",
+  "n": "85",
+  "chips": [
+   "C-^"
+  ],
+  "sol": "4<C-^>"
+ },
+ {
+  "id": "closing-buffers",
+  "n": "86",
+  "chips": [
+   ":bd"
+  ],
+  "sol": ":bd<CR>"
+ },
+ {
+  "id": "closing-buffers",
+  "n": "86",
+  "chips": [
+   ":bd"
+  ],
+  "sol": ":bd db<CR>"
+ },
+ {
+  "id": "closing-buffers",
+  "n": "86",
+  "chips": [
+   ":bd"
+  ],
+  "sol": ":bd 2 3<CR>"
+ },
+ {
+  "id": "closing-buffers",
+  "n": "86",
+  "chips": [
+   ":bd"
+  ],
+  "sol": ":bd! notes<CR>"
+ },
+ {
+  "id": "go-to-file",
+  "n": "87",
+  "chips": [
+   "gf"
+  ],
+  "sol": "f'gf"
+ },
+ {
+  "id": "go-to-file",
+  "n": "87",
+  "chips": [
+   "gf"
+  ],
+  "sol": "f.gf"
+ },
+ {
+  "id": "go-to-file",
+  "n": "87",
+  "chips": [
+   "gf"
+  ],
+  "sol": "$gf"
+ },
+ {
+  "id": "go-to-file",
+  "n": "87",
+  "chips": [
+   "gf"
+  ],
+  "sol": "f'gf"
+ },
+ {
+  "id": "go-to-file",
+  "n": "87",
+  "chips": [
+   "gf"
+  ],
+  "sol": "jf'gf"
+ },
+ {
+  "id": "finding-files",
+  "n": "88",
+  "chips": [
+   ":find"
+  ],
+  "sol": ":find users.ts<CR>"
+ },
+ {
+  "id": "finding-files",
+  "n": "88",
+  "chips": [
+   ":find"
+  ],
+  "sol": ":find config.ts<CR>"
+ },
+ {
+  "id": "finding-files",
+  "n": "88",
+  "chips": [
+   ":find"
+  ],
+  "sol": ":find notes.test.ts<CR>"
+ },
+ {
+  "id": "finding-files",
+  "n": "88",
+  "chips": [
+   ":find"
+  ],
+  "sol": ":find se<Tab><CR>"
+ },
+ {
+  "id": "finding-files",
+  "n": "88",
+  "chips": [
+   ":find"
+  ],
+  "sol": ":find notes.ts<CR>"
+ },
+ {
+  "id": "splitting",
+  "n": "89",
+  "chips": [
+   ":sp",
+   ":vs"
+  ],
+  "sol": ":vs<CR>"
+ },
+ {
+  "id": "splitting",
+  "n": "89",
+  "chips": [
+   ":sp",
+   ":vs"
+  ],
+  "sol": ":sp lua/config/keymaps.lua<CR>"
+ },
+ {
+  "id": "splitting",
+  "n": "89",
+  "chips": [
+   ":sp",
+   ":vs"
+  ],
+  "sol": ":vs init.lua<CR>"
+ },
+ {
+  "id": "splitting",
+  "n": "89",
+  "chips": [
+   ":sp",
+   ":vs"
+  ],
+  "sol": ":sp lua/plugins/telescope.lua<CR>"
+ },
+ {
+  "id": "splitting",
+  "n": "89",
+  "chips": [
+   ":sp",
+   ":vs"
+  ],
+  "sol": ":sp<CR>"
+ },
+ {
+  "id": "moving-between-windows",
+  "n": "90",
+  "chips": [
+   "C-w h",
+   "C-w j",
+   "C-w k",
+   "C-w l"
+  ],
+  "sol": "<C-w>l"
+ },
+ {
+  "id": "moving-between-windows",
+  "n": "90",
+  "chips": [
+   "C-w h",
+   "C-w j",
+   "C-w k",
+   "C-w l"
+  ],
+  "sol": "<C-w>j"
+ },
+ {
+  "id": "moving-between-windows",
+  "n": "90",
+  "chips": [
+   "C-w h",
+   "C-w j",
+   "C-w k",
+   "C-w l"
+  ],
+  "sol": "<C-w>h"
+ },
+ {
+  "id": "moving-between-windows",
+  "n": "90",
+  "chips": [
+   "C-w h",
+   "C-w j",
+   "C-w k",
+   "C-w l"
+  ],
+  "sol": "<C-w>k"
+ },
+ {
+  "id": "moving-between-windows",
+  "n": "90",
+  "chips": [
+   "C-w h",
+   "C-w j",
+   "C-w k",
+   "C-w l"
+  ],
+  "sol": "<C-w>j<C-w>l"
+ },
+ {
+  "id": "moving-between-windows",
+  "n": "90",
+  "chips": [
+   "C-w h",
+   "C-w j",
+   "C-w k",
+   "C-w l"
+  ],
+  "sol": "<C-w>k<C-w>h"
+ },
+ {
+  "id": "closing-windows",
+  "n": "91",
+  "chips": [
+   "C-w c",
+   "C-w o"
+  ],
+  "sol": "<C-w>c"
+ },
+ {
+  "id": "closing-windows",
+  "n": "91",
+  "chips": [
+   "C-w c",
+   "C-w o"
+  ],
+  "sol": "<C-w>o"
+ },
+ {
+  "id": "closing-windows",
+  "n": "91",
+  "chips": [
+   "C-w c",
+   "C-w o"
+  ],
+  "sol": "<C-w>j<C-w>c"
+ },
+ {
+  "id": "closing-windows",
+  "n": "91",
+  "chips": [
+   "C-w c",
+   "C-w o"
+  ],
+  "sol": "<C-w>k<C-w>o"
+ },
+ {
+  "id": "closing-windows",
+  "n": "91",
+  "chips": [
+   "C-w c",
+   "C-w o"
+  ],
+  "sol": "<C-w>h<C-w>c"
+ },
+ {
+  "id": "resizing-windows",
+  "n": "92",
+  "chips": [
+   "C-w =",
+   "C-w _",
+   "C-w |"
+  ],
+  "sol": "<C-w>_"
+ },
+ {
+  "id": "resizing-windows",
+  "n": "92",
+  "chips": [
+   "C-w =",
+   "C-w _",
+   "C-w |"
+  ],
+  "sol": "<C-w>|"
+ },
+ {
+  "id": "resizing-windows",
+  "n": "92",
+  "chips": [
+   "C-w =",
+   "C-w _",
+   "C-w |"
+  ],
+  "sol": "<C-w>="
+ },
+ {
+  "id": "resizing-windows",
+  "n": "92",
+  "chips": [
+   "C-w =",
+   "C-w _",
+   "C-w |"
+  ],
+  "sol": "<C-w>j<C-w>_"
+ },
+ {
+  "id": "resizing-windows",
+  "n": "92",
+  "chips": [
+   "C-w =",
+   "C-w _",
+   "C-w |"
+  ],
+  "sol": "<C-w>l<C-w>|"
+ },
+ {
+  "id": "rearranging-windows",
+  "n": "93",
+  "chips": [
+   "C-w H",
+   "C-w J",
+   "C-w K",
+   "C-w L"
+  ],
+  "sol": "<C-w>L"
+ },
+ {
+  "id": "rearranging-windows",
+  "n": "93",
+  "chips": [
+   "C-w H",
+   "C-w J",
+   "C-w K",
+   "C-w L"
+  ],
+  "sol": "<C-w>K"
+ },
+ {
+  "id": "rearranging-windows",
+  "n": "93",
+  "chips": [
+   "C-w H",
+   "C-w J",
+   "C-w K",
+   "C-w L"
+  ],
+  "sol": "<C-w>J"
+ },
+ {
+  "id": "rearranging-windows",
+  "n": "93",
+  "chips": [
+   "C-w H",
+   "C-w J",
+   "C-w K",
+   "C-w L"
+  ],
+  "sol": "<C-w>H"
+ },
+ {
+  "id": "rearranging-windows",
+  "n": "93",
+  "chips": [
+   "C-w H",
+   "C-w J",
+   "C-w K",
+   "C-w L"
+  ],
+  "sol": "<C-w>L"
+ },
+ {
+  "id": "tab-pages",
+  "n": "94",
+  "chips": [
+   ":tabnew",
+   "gt",
+   "gT"
+  ],
+  "sol": ":tabnew lua/plugins/lsp.lua<CR>"
+ },
+ {
+  "id": "tab-pages",
+  "n": "94",
+  "chips": [
+   ":tabnew",
+   "gt",
+   "gT"
+  ],
+  "sol": "gt"
+ },
+ {
+  "id": "tab-pages",
+  "n": "94",
+  "chips": [
+   ":tabnew",
+   "gt",
+   "gT"
+  ],
+  "sol": "gT"
+ },
+ {
+  "id": "tab-pages",
+  "n": "94",
+  "chips": [
+   ":tabnew",
+   "gt",
+   "gT"
+  ],
+  "sol": "3gt"
+ },
+ {
+  "id": "tab-pages",
+  "n": "94",
+  "chips": [
+   ":tabnew",
+   "gt",
+   "gT"
+  ],
+  "sol": "gt"
+ },
+ {
+  "id": "tab-pages",
+  "n": "94",
+  "chips": [
+   ":tabnew",
+   "gt",
+   "gT"
+  ],
+  "sol": ":tabnew init.lua<CR>gT"
+ },
+ {
+  "id": "setting-marks",
+  "n": "95",
+  "chips": [
+   "m",
+   "'",
+   "`"
+  ],
+  "sol": "'a"
+ },
+ {
+  "id": "setting-marks",
+  "n": "95",
+  "chips": [
+   "m",
+   "'",
+   "`"
+  ],
+  "sol": "`a"
+ },
+ {
+  "id": "setting-marks",
+  "n": "95",
+  "chips": [
+   "m",
+   "'",
+   "`"
+  ],
+  "sol": "`d"
+ },
+ {
+  "id": "setting-marks",
+  "n": "95",
+  "chips": [
+   "m",
+   "'",
+   "`"
+  ],
+  "sol": "mb'a"
+ },
+ {
+  "id": "setting-marks",
+  "n": "95",
+  "chips": [
+   "m",
+   "'",
+   "`"
+  ],
+  "sol": "'r"
+ },
+ {
+  "id": "setting-marks",
+  "n": "95",
+  "chips": [
+   "m",
+   "'",
+   "`"
+  ],
+  "sol": "`h"
+ },
+ {
+  "id": "operating-to-marks",
+  "n": "96",
+  "chips": [
+   "d'a",
+   "y`a"
+  ],
+  "sol": "d'a"
+ },
+ {
+  "id": "operating-to-marks",
+  "n": "96",
+  "chips": [
+   "d'a",
+   "y`a"
+  ],
+  "sol": "y`ajF(p"
+ },
+ {
+  "id": "operating-to-marks",
+  "n": "96",
+  "chips": [
+   "d'a",
+   "y`a"
+  ],
+  "sol": ">'a"
+ },
+ {
+  "id": "operating-to-marks",
+  "n": "96",
+  "chips": [
+   "d'a",
+   "y`a"
+  ],
+  "sol": "d`a"
+ },
+ {
+  "id": "operating-to-marks",
+  "n": "96",
+  "chips": [
+   "d'a",
+   "y`a"
+  ],
+  "sol": "y'aGp"
+ },
+ {
+  "id": "file-marks",
+  "n": "97",
+  "chips": [
+   "mA"
+  ],
+  "sol": "'R"
+ },
+ {
+  "id": "file-marks",
+  "n": "97",
+  "chips": [
+   "mA"
+  ],
+  "sol": "`C"
+ },
+ {
+  "id": "file-marks",
+  "n": "97",
+  "chips": [
+   "mA"
+  ],
+  "sol": "mA'R"
+ },
+ {
+  "id": "file-marks",
+  "n": "97",
+  "chips": [
+   "mA"
+  ],
+  "sol": "'A"
+ },
+ {
+  "id": "file-marks",
+  "n": "97",
+  "chips": [
+   "mA"
+  ],
+  "sol": "'C'R"
+ },
+ {
+  "id": "back-to-edit",
+  "n": "98",
+  "chips": [
+   "`.",
+   "gi"
+  ],
+  "sol": "gires.status);<Esc>"
+ },
+ {
+  "id": "back-to-edit",
+  "n": "98",
+  "chips": [
+   "`.",
+   "gi"
+  ],
+  "sol": "`.hhi_<Esc>"
+ },
+ {
+  "id": "back-to-edit",
+  "n": "98",
+  "chips": [
+   "`.",
+   "gi"
+  ],
+  "sol": "'.A // ms<Esc>"
+ },
+ {
+  "id": "back-to-edit",
+  "n": "98",
+  "chips": [
+   "`.",
+   "gi"
+  ],
+  "sol": "gi on first run.<Esc>"
+ },
+ {
+  "id": "change-edges",
+  "n": "99",
+  "chips": [
+   "`[",
+   "`]"
+  ],
+  "sol": "`]"
+ },
+ {
+  "id": "change-edges",
+  "n": "99",
+  "chips": [
+   "`[",
+   "`]"
+  ],
+  "sol": "`]"
+ },
+ {
+  "id": "change-edges",
+  "n": "99",
+  "chips": [
+   "`[",
+   "`]"
+  ],
+  "sol": "`["
+ },
+ {
+  "id": "change-edges",
+  "n": "99",
+  "chips": [
+   "`[",
+   "`]"
+  ],
+  "sol": "'["
+ },
+ {
+  "id": "change-edges",
+  "n": "99",
+  "chips": [
+   "`[",
+   "`]"
+  ],
+  "sol": "`]"
+ },
+ {
+  "id": "previous-position",
+  "n": "100",
+  "chips": [
+   "``",
+   "''"
+  ],
+  "sol": "``"
+ },
+ {
+  "id": "previous-position",
+  "n": "100",
+  "chips": [
+   "``",
+   "''"
+  ],
+  "sol": "''"
+ },
+ {
+  "id": "previous-position",
+  "n": "100",
+  "chips": [
+   "``",
+   "''"
+  ],
+  "sol": "``"
+ },
+ {
+  "id": "previous-position",
+  "n": "100",
+  "chips": [
+   "``",
+   "''"
+  ],
+  "sol": "''"
+ },
+ {
+  "id": "previous-position",
+  "n": "100",
+  "chips": [
+   "``",
+   "''"
+  ],
+  "sol": "``"
+ },
+ {
+  "id": "jump-list",
+  "n": "101",
+  "chips": [
+   "C-o",
+   "C-i"
+  ],
+  "sol": "<C-o>"
+ },
+ {
+  "id": "jump-list",
+  "n": "101",
+  "chips": [
+   "C-o",
+   "C-i"
+  ],
+  "sol": "<C-o><C-o>"
+ },
+ {
+  "id": "jump-list",
+  "n": "101",
+  "chips": [
+   "C-o",
+   "C-i"
+  ],
+  "sol": "<C-i>"
+ },
+ {
+  "id": "jump-list",
+  "n": "101",
+  "chips": [
+   "C-o",
+   "C-i"
+  ],
+  "sol": "3<C-o>"
+ },
+ {
+  "id": "jump-list",
+  "n": "101",
+  "chips": [
+   "C-o",
+   "C-i"
+  ],
+  "sol": "<C-o>"
+ },
+ {
+  "id": "change-list",
+  "n": "102",
+  "chips": [
+   "g;",
+   "g,"
+  ],
+  "sol": "g;"
+ },
+ {
+  "id": "change-list",
+  "n": "102",
+  "chips": [
+   "g;",
+   "g,"
+  ],
+  "sol": "g;g;"
+ },
+ {
+  "id": "change-list",
+  "n": "102",
+  "chips": [
+   "g;",
+   "g,"
+  ],
+  "sol": "g,"
+ },
+ {
+  "id": "change-list",
+  "n": "102",
+  "chips": [
+   "g;",
+   "g,"
+  ],
+  "sol": "3g;"
+ },
+ {
+  "id": "grep",
+  "n": "103",
+  "chips": [
+   ":grep",
+   ":vimgrep"
+  ],
+  "sol": ":vimgrep /TODO/ **/*.ts<CR>"
+ },
+ {
+  "id": "grep",
+  "n": "103",
+  "chips": [
+   ":grep",
+   ":vimgrep"
+  ],
+  "sol": ":grep formatPrice<CR>"
+ },
+ {
+  "id": "grep",
+  "n": "103",
+  "chips": [
+   ":grep",
+   ":vimgrep"
+  ],
+  "sol": ":vimgrep /fetch(/ src/api/*.ts<CR>"
+ },
+ {
+  "id": "grep",
+  "n": "103",
+  "chips": [
+   ":grep",
+   ":vimgrep"
+  ],
+  "sol": ":vimgrep /\\<lt>total\\>/ %<CR>"
+ },
+ {
+  "id": "quickfix-list",
+  "n": "104",
+  "chips": [
+   ":copen",
+   ":cclose"
+  ],
+  "sol": ":copen<CR>"
+ },
+ {
+  "id": "quickfix-list",
+  "n": "104",
+  "chips": [
+   ":copen",
+   ":cclose"
+  ],
+  "sol": ":copen<CR>jj<CR>"
+ },
+ {
+  "id": "quickfix-list",
+  "n": "104",
+  "chips": [
+   ":copen",
+   ":cclose"
+  ],
+  "sol": ":copen<CR>G<CR>"
+ },
+ {
+  "id": "quickfix-list",
+  "n": "104",
+  "chips": [
+   ":copen",
+   ":cclose"
+  ],
+  "sol": ":cclose<CR>"
+ },
+ {
+  "id": "quickfix-list",
+  "n": "104",
+  "chips": [
+   ":copen",
+   ":cclose"
+  ],
+  "sol": ":copen<CR>j<CR>"
+ },
+ {
+  "id": "walking-results",
+  "n": "105",
+  "chips": [
+   "[q",
+   "]q"
+  ],
+  "sol": "]q"
+ },
+ {
+  "id": "walking-results",
+  "n": "105",
+  "chips": [
+   "[q",
+   "]q"
+  ],
+  "sol": "[q"
+ },
+ {
+  "id": "walking-results",
+  "n": "105",
+  "chips": [
+   "[q",
+   "]q"
+  ],
+  "sol": "3]q"
+ },
+ {
+  "id": "walking-results",
+  "n": "105",
+  "chips": [
+   "[q",
+   "]q"
+  ],
+  "sol": "[q[q"
+ },
+ {
+  "id": "walking-results",
+  "n": "105",
+  "chips": [
+   "[q",
+   "]q"
+  ],
+  "sol": "]q"
+ },
+ {
+  "id": "edit-every-match",
+  "n": "106",
+  "chips": [
+   ":cdo"
+  ],
+  "sol": ":cdo s/formatPrice/formatMoney/ | update<CR>"
+ },
+ {
+  "id": "edit-every-match",
+  "n": "106",
+  "chips": [
+   ":cdo"
+  ],
+  "sol": ":cdo d | update<CR>"
+ },
+ {
+  "id": "edit-every-match",
+  "n": "106",
+  "chips": [
+   ":cdo"
+  ],
+  "sol": ":cdo s/total/cartTotal/ | update<CR>"
+ },
+ {
+  "id": "edit-every-match",
+  "n": "106",
+  "chips": [
+   ":cdo"
+  ],
+  "sol": ":cdo s/\\<lt>Line\\>/CartLine/ | update<CR>"
+ },
+ {
+  "id": "location-list",
+  "n": "107",
+  "chips": [
+   ":lopen",
+   "[l",
+   "]l"
+  ],
+  "sol": "]l"
+ },
+ {
+  "id": "location-list",
+  "n": "107",
+  "chips": [
+   ":lopen",
+   "[l",
+   "]l"
+  ],
+  "sol": "[l"
+ },
+ {
+  "id": "location-list",
+  "n": "107",
+  "chips": [
+   ":lopen",
+   "[l",
+   "]l"
+  ],
+  "sol": ":lopen<CR>"
+ },
+ {
+  "id": "location-list",
+  "n": "107",
+  "chips": [
+   ":lopen",
+   "[l",
+   "]l"
+  ],
+  "sol": ":lopen<CR>G<CR>"
+ },
+ {
+  "id": "location-list",
+  "n": "107",
+  "chips": [
+   ":lopen",
+   "[l",
+   "]l"
+  ],
+  "sol": ":lvimgrep /formatPrice/ %<CR>"
+ },
+ {
+  "id": "every-buffer",
+  "n": "108",
+  "chips": [
+   ":bufdo"
+  ],
+  "sol": ":bufdo %s/formatPrice/formatMoney/ge | update<CR>"
+ },
+ {
+  "id": "every-buffer",
+  "n": "108",
+  "chips": [
+   ":bufdo"
+  ],
+  "sol": ":bufdo %s#/api/#/api/v2/#e | update<CR>"
+ },
+ {
+  "id": "every-buffer",
+  "n": "108",
+  "chips": [
+   ":bufdo"
+  ],
+  "sol": ":bufdo %s/USD/EUR/ge | update<CR>"
+ },
+ {
+  "id": "every-buffer",
+  "n": "108",
+  "chips": [
+   ":bufdo"
+  ],
+  "sol": ":bufdo g/TODO/d | update<CR>"
+ },
+ {
+  "id": "picker-files",
+  "n": "109",
+  "chips": [
+   "␣sf",
+   "C-n",
+   "C-v"
+  ],
+  "sol": "<Space>sfmoney<CR>"
+ },
+ {
+  "id": "picker-files",
+  "n": "109",
+  "chips": [
+   "␣sf",
+   "C-n",
+   "C-v"
+  ],
+  "sol": "<Space>sfcust<CR>"
+ },
+ {
+  "id": "picker-files",
+  "n": "109",
+  "chips": [
+   "␣sf",
+   "C-n",
+   "C-v"
+  ],
+  "sol": "<Space>sfread<CR>"
+ },
+ {
+  "id": "picker-files",
+  "n": "109",
+  "chips": [
+   "␣sf",
+   "C-n",
+   "C-v"
+  ],
+  "sol": "<Space>sfmoney<C-n><CR>"
+ },
+ {
+  "id": "picker-files",
+  "n": "109",
+  "chips": [
+   "␣sf",
+   "C-n",
+   "C-v"
+  ],
+  "sol": "<Space>sfdates<C-v>"
+ },
+ {
+  "id": "picker-files",
+  "n": "109",
+  "chips": [
+   "␣sf",
+   "C-n",
+   "C-v"
+  ],
+  "sol": "<Space>sflog<C-x>"
+ },
+ {
+  "id": "picker-grep",
+  "n": "110",
+  "chips": [
+   "␣sg"
+  ],
+  "sol": "<Space>sgTAX_RATE =<CR>"
+ },
+ {
+  "id": "picker-grep",
+  "n": "110",
+  "chips": [
+   "␣sg"
+  ],
+  "sol": "<Space>sginvoices.post<CR>"
+ },
+ {
+  "id": "picker-grep",
+  "n": "110",
+  "chips": [
+   "␣sg"
+  ],
+  "sol": "<Space>sgenv.PORT<CR>"
+ },
+ {
+  "id": "picker-grep",
+  "n": "110",
+  "chips": [
+   "␣sg"
+  ],
+  "sol": "<Space>sgtodo<C-n><CR>"
+ },
+ {
+  "id": "picker-grep",
+  "n": "110",
+  "chips": [
+   "␣sg"
+  ],
+  "sol": "<Space>sgfunction createL<CR>"
+ },
+ {
+  "id": "picker-word",
+  "n": "111",
+  "chips": [
+   "␣sw"
+  ],
+  "sol": "<Space>sw<C-n><C-n><CR>"
+ },
+ {
+  "id": "picker-word",
+  "n": "111",
+  "chips": [
+   "␣sw"
+  ],
+  "sol": "<Space>sw<CR>"
+ },
+ {
+  "id": "picker-word",
+  "n": "111",
+  "chips": [
+   "␣sw"
+  ],
+  "sol": "<Space>sw<CR>"
+ },
+ {
+  "id": "picker-quickfix",
+  "n": "112",
+  "chips": [
+   "C-q"
+  ],
+  "sol": "<Space>sgTODO<C-q>"
+ },
+ {
+  "id": "picker-quickfix",
+  "n": "112",
+  "chips": [
+   "C-q"
+  ],
+  "sol": "<Space>sftest/<C-q>"
+ },
+ {
+  "id": "picker-quickfix",
+  "n": "112",
+  "chips": [
+   "C-q"
+  ],
+  "sol": "<Space>sgformatCents<C-q>j<CR>"
+ },
+ {
+  "id": "picker-quickfix",
+  "n": "112",
+  "chips": [
+   "C-q"
+  ],
+  "sol": "<Space>sgconsole<C-q>G<CR>"
+ },
+ {
+  "id": "oil-open-directory",
+  "n": "113",
+  "chips": [
+   "-",
+   "CR"
+  ],
+  "sol": "-"
+ },
+ {
+  "id": "oil-open-directory",
+  "n": "113",
+  "chips": [
+   "-",
+   "CR"
+  ],
+  "sol": "-gg<CR>"
+ },
+ {
+  "id": "oil-open-directory",
+  "n": "113",
+  "chips": [
+   "-",
+   "CR"
+  ],
+  "sol": "--"
+ },
+ {
+  "id": "oil-open-directory",
+  "n": "113",
+  "chips": [
+   "-",
+   "CR"
+  ],
+  "sol": "--k<CR>j<CR>"
+ },
+ {
+  "id": "oil-open-directory",
+  "n": "113",
+  "chips": [
+   "-",
+   "CR"
+  ],
+  "sol": "-kk<CR><CR>"
+ },
+ {
+  "id": "oil-edit-directory",
+  "n": "114",
+  "chips": [
+   "dd",
+   "cw",
+   ":w"
+  ],
+  "sol": "cwtime<Esc>:w<CR>y"
+ },
+ {
+  "id": "oil-edit-directory",
+  "n": "114",
+  "chips": [
+   "dd",
+   "cw",
+   ":w"
+  ],
+  "sol": "dd:w<CR>y"
+ },
+ {
+  "id": "oil-edit-directory",
+  "n": "114",
+  "chips": [
+   "dd",
+   "cw",
+   ":w"
+  ],
+  "sol": "oformat.ts<Esc>:w<CR>y"
+ },
+ {
+  "id": "oil-edit-directory",
+  "n": "114",
+  "chips": [
+   "dd",
+   "cw",
+   ":w"
+  ],
+  "sol": "dj:w<CR>y"
+ },
+ {
+  "id": "oil-edit-directory",
+  "n": "114",
+  "chips": [
+   "dd",
+   "cw",
+   ":w"
+  ],
+  "sol": "cwhandlers<Esc>:w<CR>y"
+ },
+ {
+  "id": "oil-edit-directory",
+  "n": "114",
+  "chips": [
+   "dd",
+   "cw",
+   ":w"
+  ],
+  "sol": "cwcurrency<Esc>ggdd:w<CR>y"
+ },
+ {
+  "id": "jump-to-line",
+  "n": "115",
+  "chips": [
+   ":42",
+   ":$"
+  ],
+  "sol": ":35<CR>"
+ },
+ {
+  "id": "jump-to-line",
+  "n": "115",
+  "chips": [
+   ":42",
+   ":$"
+  ],
+  "sol": ":14<CR>"
+ },
+ {
+  "id": "jump-to-line",
+  "n": "115",
+  "chips": [
+   ":42",
+   ":$"
+  ],
+  "sol": ":$<CR>"
+ },
+ {
+  "id": "jump-to-line",
+  "n": "115",
+  "chips": [
+   ":42",
+   ":$"
+  ],
+  "sol": ":43<CR>"
+ },
+ {
+  "id": "jump-to-line",
+  "n": "115",
+  "chips": [
+   ":42",
+   ":$"
+  ],
+  "sol": ":22<CR>"
+ },
+ {
+  "id": "jump-to-line",
+  "n": "115",
+  "chips": [
+   ":42",
+   ":$"
+  ],
+  "sol": ":8<CR>"
+ },
+ {
+  "id": "ex-ranges",
+  "n": "116",
+  "chips": [
+   "%",
+   ".",
+   "$"
+  ],
+  "sol": ":.,$d<CR>"
+ },
+ {
+  "id": "ex-ranges",
+  "n": "116",
+  "chips": [
+   "%",
+   ".",
+   "$"
+  ],
+  "sol": ":%><CR>"
+ },
+ {
+  "id": "ex-ranges",
+  "n": "116",
+  "chips": [
+   "%",
+   ".",
+   "$"
+  ],
+  "sol": ":3,7d<CR>"
+ },
+ {
+  "id": "ex-ranges",
+  "n": "116",
+  "chips": [
+   "%",
+   ".",
+   "$"
+  ],
+  "sol": ":2,5j<CR>"
+ },
+ {
+  "id": "ex-ranges",
+  "n": "116",
+  "chips": [
+   "%",
+   ".",
+   "$"
+  ],
+  "sol": ":.,7d<CR>"
+ },
+ {
+  "id": "visual-ranges",
+  "n": "117",
+  "chips": [
+   "'<,'>",
+   "gv"
+  ],
+  "sol": "vip:w retry.ts<CR>"
+ },
+ {
+  "id": "visual-ranges",
+  "n": "117",
+  "chips": [
+   "'<,'>",
+   "gv"
+  ],
+  "sol": "Vjj:w march.csv<CR>"
+ },
+ {
+  "id": "visual-ranges",
+  "n": "117",
+  "chips": [
+   "'<,'>",
+   "gv"
+  ],
+  "sol": "gv:w sleep.ts<CR>"
+ },
+ {
+  "id": "visual-ranges",
+  "n": "117",
+  "chips": [
+   "'<,'>",
+   "gv"
+  ],
+  "sol": "vip:j<CR>"
+ },
+ {
+  "id": "ex-delete-yank",
+  "n": "118",
+  "chips": [
+   ":d",
+   ":y"
+  ],
+  "sol": ":10,15d<CR>"
+ },
+ {
+  "id": "ex-delete-yank",
+  "n": "118",
+  "chips": [
+   ":d",
+   ":y"
+  ],
+  "sol": ":3,4y a<CR>"
+ },
+ {
+  "id": "ex-delete-yank",
+  "n": "118",
+  "chips": [
+   ":d",
+   ":y"
+  ],
+  "sol": ":$d<CR>"
+ },
+ {
+  "id": "ex-delete-yank",
+  "n": "118",
+  "chips": [
+   ":d",
+   ":y"
+  ],
+  "sol": ":1y<CR>p"
+ },
+ {
+  "id": "ex-delete-yank",
+  "n": "118",
+  "chips": [
+   ":d",
+   ":y"
+  ],
+  "sol": ":7d<CR>"
+ },
+ {
+  "id": "ex-move-copy",
+  "n": "119",
+  "chips": [
+   ":m",
+   ":t"
+  ],
+  "sol": ":m0<CR>"
+ },
+ {
+  "id": "ex-move-copy",
+  "n": "119",
+  "chips": [
+   ":m",
+   ":t"
+  ],
+  "sol": ":2t.<CR>"
+ },
+ {
+  "id": "ex-move-copy",
+  "n": "119",
+  "chips": [
+   ":m",
+   ":t"
+  ],
+  "sol": ":2,4m$<CR>"
+ },
+ {
+  "id": "ex-move-copy",
+  "n": "119",
+  "chips": [
+   ":m",
+   ":t"
+  ],
+  "sol": ":m1<CR>"
+ },
+ {
+  "id": "ex-move-copy",
+  "n": "119",
+  "chips": [
+   ":m",
+   ":t"
+  ],
+  "sol": ":4,5t$<CR>"
+ },
+ {
+  "id": "ex-normal",
+  "n": "120",
+  "chips": [
+   ":norm"
+  ],
+  "sol": ":%norm A;<CR>"
+ },
+ {
+  "id": "ex-normal",
+  "n": "120",
+  "chips": [
+   ":norm"
+  ],
+  "sol": "vip:norm I- <CR>"
+ },
+ {
+  "id": "ex-normal",
+  "n": "120",
+  "chips": [
+   ":norm"
+  ],
+  "sol": ":%norm dW<CR>"
+ },
+ {
+  "id": "ex-normal",
+  "n": "120",
+  "chips": [
+   ":norm"
+  ],
+  "sol": ":2,4norm @q<CR>"
+ },
+ {
+  "id": "ex-normal",
+  "n": "120",
+  "chips": [
+   ":norm"
+  ],
+  "sol": "Ireadonly <Esc>:3,4norm .<CR>"
+ },
+ {
+  "id": "repeat-ex",
+  "n": "121",
+  "chips": [
+   "@:",
+   "@@"
+  ],
+  "sol": "@:j@@"
+ },
+ {
+  "id": "repeat-ex",
+  "n": "121",
+  "chips": [
+   "@:",
+   "@@"
+  ],
+  "sol": ":/console/d<CR>@:"
+ },
+ {
+  "id": "repeat-ex",
+  "n": "121",
+  "chips": [
+   "@:",
+   "@@"
+  ],
+  "sol": ":t.<CR>3@:"
+ },
+ {
+  "id": "repeat-ex",
+  "n": "121",
+  "chips": [
+   "@:",
+   "@@"
+  ],
+  "sol": "j@:jj@@"
+ },
+ {
+  "id": "cmdline-word",
+  "n": "122",
+  "chips": [
+   "C-r C-w",
+   "C-r C-a"
+  ],
+  "sol": ":%s/<C-r><C-w>/sum/g<CR>"
+ },
+ {
+  "id": "cmdline-word",
+  "n": "122",
+  "chips": [
+   "C-r C-w",
+   "C-r C-a"
+  ],
+  "sol": ":g/<C-r><C-w>/d<CR>"
+ },
+ {
+  "id": "cmdline-word",
+  "n": "122",
+  "chips": [
+   "C-r C-w",
+   "C-r C-a"
+  ],
+  "sol": ":%s/<C-r><C-a>/cfg.http.retries/g<CR>"
+ },
+ {
+  "id": "cmdline-word",
+  "n": "122",
+  "chips": [
+   "C-r C-w",
+   "C-r C-a"
+  ],
+  "sol": ":s/<C-r><C-w>/username/<CR>"
+ },
+ {
+  "id": "command-window",
+  "n": "123",
+  "chips": [
+   "q:"
+  ],
+  "sol": "q:gg<CR>"
+ },
+ {
+  "id": "command-window",
+  "n": "123",
+  "chips": [
+   "q:"
+  ],
+  "sol": "q:ggfDcwINFO<Esc><CR>"
+ },
+ {
+  "id": "command-window",
+  "n": "123",
+  "chips": [
+   "q:"
+  ],
+  "sol": "q:ggI2,4<Esc><CR>"
+ },
+ {
+  "id": "command-window",
+  "n": "123",
+  "chips": [
+   "q:"
+  ],
+  "sol": "q:4k<CR>"
+ },
+ {
+  "id": "sub-basics",
+  "n": "124",
+  "chips": [
+   ":s"
+  ],
+  "sol": ":s/var/const/<CR>"
+ },
+ {
+  "id": "sub-basics",
+  "n": "124",
+  "chips": [
+   ":s"
+  ],
+  "sol": ":s/instalation/installation/<CR>"
+ },
+ {
+  "id": "sub-basics",
+  "n": "124",
+  "chips": [
+   ":s"
+  ],
+  "sol": ":s/True/False/<CR>"
+ },
+ {
+  "id": "sub-basics",
+  "n": "124",
+  "chips": [
+   ":s"
+  ],
+  "sol": ":s/=/: /<CR>"
+ },
+ {
+  "id": "sub-basics",
+  "n": "124",
+  "chips": [
+   ":s"
+  ],
+  "sol": ":s/'debug', //<CR>"
+ },
+ {
+  "id": "sub-whole-file",
+  "n": "125",
+  "chips": [
+   "%s",
+   "/g"
+  ],
+  "sol": ":%s/api/client/g<CR>"
+ },
+ {
+  "id": "sub-whole-file",
+  "n": "125",
+  "chips": [
+   "%s",
+   "/g"
+  ],
+  "sol": ":%s/;/,/g<CR>"
+ },
+ {
+  "id": "sub-whole-file",
+  "n": "125",
+  "chips": [
+   "%s",
+   "/g"
+  ],
+  "sol": ":%s/http:/https:/<CR>"
+ },
+ {
+  "id": "sub-whole-file",
+  "n": "125",
+  "chips": [
+   "%s",
+   "/g"
+  ],
+  "sol": ":%s/colour/color/g<CR>"
+ },
+ {
+  "id": "sub-confirm",
+  "n": "126",
+  "chips": [
+   "/c"
+  ],
+  "sol": ":%s/item/product/gc<CR>yny"
+ },
+ {
+  "id": "sub-confirm",
+  "n": "126",
+  "chips": [
+   "/c"
+  ],
+  "sol": ":%s/master/main/gc<CR>yyny"
+ },
+ {
+  "id": "sub-confirm",
+  "n": "126",
+  "chips": [
+   "/c"
+  ],
+  "sol": ":%s/print(/log.info(/gc<CR>na"
+ },
+ {
+  "id": "sub-confirm",
+  "n": "126",
+  "chips": [
+   "/c"
+  ],
+  "sol": ":%s/\\[ ]/[x]/gc<CR>yyq"
+ },
+ {
+  "id": "sub-confirm",
+  "n": "126",
+  "chips": [
+   "/c"
+  ],
+  "sol": ":%s/1.2.0/1.3.0/gc<CR>nl"
+ },
+ {
+  "id": "sub-ignore-case",
+  "n": "127",
+  "chips": [
+   "/i",
+   "\\c"
+  ],
+  "sol": ":%s/javascript/JavaScript/gi<CR>"
+ },
+ {
+  "id": "sub-ignore-case",
+  "n": "127",
+  "chips": [
+   "/i",
+   "\\c"
+  ],
+  "sol": ":%s/\\cwarn/WARN/<CR>"
+ },
+ {
+  "id": "sub-ignore-case",
+  "n": "127",
+  "chips": [
+   "/i",
+   "\\c"
+  ],
+  "sol": ":%s/todo:/TODO:/<CR>"
+ },
+ {
+  "id": "sub-ignore-case",
+  "n": "127",
+  "chips": [
+   "/i",
+   "\\c"
+  ],
+  "sol": ":%s/\\Cuser/account/g<CR>"
+ },
+ {
+  "id": "sub-word-boundaries",
+  "n": "128",
+  "chips": [
+   "\\<",
+   "\\>"
+  ],
+  "sol": ":%s/\\<lt>i\\>/idx/g<CR>"
+ },
+ {
+  "id": "sub-word-boundaries",
+  "n": "128",
+  "chips": [
+   "\\<",
+   "\\>"
+  ],
+  "sol": ":%s/\\<lt>id\\>/user_id/g<CR>"
+ },
+ {
+  "id": "sub-word-boundaries",
+  "n": "128",
+  "chips": [
+   "\\<",
+   "\\>"
+  ],
+  "sol": ":%s/\\<lt>map\\>/nmap/g<CR>"
+ },
+ {
+  "id": "sub-word-boundaries",
+  "n": "128",
+  "chips": [
+   "\\<",
+   "\\>"
+  ],
+  "sol": ":%s/Test\\>/Spec/g<CR>"
+ },
+ {
+  "id": "sub-very-magic",
+  "n": "129",
+  "chips": [
+   "\\v"
+  ],
+  "sol": ":%s/\\vcolou?r/color/g<CR>"
+ },
+ {
+  "id": "sub-very-magic",
+  "n": "129",
+  "chips": [
+   "\\v"
+  ],
+  "sol": ":%s/\\v<lt>(var|let)>/const/g<CR>"
+ },
+ {
+  "id": "sub-very-magic",
+  "n": "129",
+  "chips": [
+   "\\v"
+  ],
+  "sol": ":%s/\\v\\s+$//<CR>"
+ },
+ {
+  "id": "sub-very-magic",
+  "n": "129",
+  "chips": [
+   "\\v"
+  ],
+  "sol": ":%s/\\v {2,}/ /g<CR>"
+ },
+ {
+  "id": "sub-capture-groups",
+  "n": "130",
+  "chips": [
+   "()",
+   "\\1"
+  ],
+  "sol": ":%s/\\v(\\w+), (\\w+)/\\2 \\1/<CR>"
+ },
+ {
+  "id": "sub-capture-groups",
+  "n": "130",
+  "chips": [
+   "()",
+   "\\1"
+  ],
+  "sol": ":%s/\\vassert.equal\\((.+), (.+)\\)/expect(\\1).toBe(\\2)/<CR>"
+ },
+ {
+  "id": "sub-capture-groups",
+  "n": "130",
+  "chips": [
+   "()",
+   "\\1"
+  ],
+  "sol": ":%s#\\v(\\d+)-(\\d+)-(\\d+)#\\3/\\2/\\1#<CR>"
+ },
+ {
+  "id": "sub-capture-groups",
+  "n": "130",
+  "chips": [
+   "()",
+   "\\1"
+  ],
+  "sol": ":%s/\\vconst (\\w+).*\\((.*)\\);/import \\1 from \\2;/<CR>"
+ },
+ {
+  "id": "sub-whole-match",
+  "n": "131",
+  "chips": [
+   "&"
+  ],
+  "sol": ":%s/\\d\\+/&px/g<CR>"
+ },
+ {
+  "id": "sub-whole-match",
+  "n": "131",
+  "chips": [
+   "&"
+  ],
+  "sol": ":%s/npm \\w\\+/`&`/g<CR>"
+ },
+ {
+  "id": "sub-whole-match",
+  "n": "131",
+  "chips": [
+   "&"
+  ],
+  "sol": ":%s/[^,]\\+/\"&\"/g<CR>"
+ },
+ {
+  "id": "sub-whole-match",
+  "n": "131",
+  "chips": [
+   "&"
+  ],
+  "sol": ":%s/TODO/**&**/<CR>"
+ },
+ {
+  "id": "sub-case",
+  "n": "132",
+  "chips": [
+   "\\u",
+   "\\U",
+   "\\E"
+  ],
+  "sol": ":%s/\\v_(\\l)/\\u\\1/g<CR>"
+ },
+ {
+  "id": "sub-case",
+  "n": "132",
+  "chips": [
+   "\\u",
+   "\\U",
+   "\\E"
+  ],
+  "sol": ":%s/\\v^\\w+/\\U&/<CR>"
+ },
+ {
+  "id": "sub-case",
+  "n": "132",
+  "chips": [
+   "\\u",
+   "\\U",
+   "\\E"
+  ],
+  "sol": ":%s/\\v\\w+$/\\U&\\E = '&',/<CR>"
+ },
+ {
+  "id": "sub-case",
+  "n": "132",
+  "chips": [
+   "\\u",
+   "\\U",
+   "\\E"
+  ],
+  "sol": ":s/\\v<lt>\\l/\\u&/g<CR>"
+ },
+ {
+  "id": "sub-line-breaks",
+  "n": "133",
+  "chips": [
+   "\\r",
+   "\\n"
+  ],
+  "sol": ":s/:/\\r/g<CR>"
+ },
+ {
+  "id": "sub-line-breaks",
+  "n": "133",
+  "chips": [
+   "\\r",
+   "\\n"
+  ],
+  "sol": ":2,4s/\\n/, /<CR>"
+ },
+ {
+  "id": "sub-line-breaks",
+  "n": "133",
+  "chips": [
+   "\\r",
+   "\\n"
+  ],
+  "sol": ":s/\\. /.\\r/g<CR>"
+ },
+ {
+  "id": "sub-line-breaks",
+  "n": "133",
+  "chips": [
+   "\\r",
+   "\\n"
+  ],
+  "sol": ":%s/\\n\\{3,}/\\r\\r/<CR>"
+ },
+ {
+  "id": "sub-zs-ze",
+  "n": "134",
+  "chips": [
+   "\\zs",
+   "\\ze"
+  ],
+  "sol": ":%s/\"version\": \"\\zs[^\"]*/2.0.0/<CR>"
+ },
+ {
+  "id": "sub-zs-ze",
+  "n": "134",
+  "chips": [
+   "\\zs",
+   "\\ze"
+  ],
+  "sol": ":%s/get\\zeUser/fetch/<CR>"
+ },
+ {
+  "id": "sub-zs-ze",
+  "n": "134",
+  "chips": [
+   "\\zs",
+   "\\ze"
+  ],
+  "sol": ":%s/-\\zs2024/2026/<CR>"
+ },
+ {
+  "id": "sub-zs-ze",
+  "n": "134",
+  "chips": [
+   "\\zs",
+   "\\ze"
+  ],
+  "sol": ":%s/console.\\zslog\\ze(/debug/<CR>"
+ },
+ {
+  "id": "sub-lazy",
+  "n": "135",
+  "chips": [
+   "\\{-}"
+  ],
+  "sol": ":s/<lt>.\\{-}>//g<CR>"
+ },
+ {
+  "id": "sub-lazy",
+  "n": "135",
+  "chips": [
+   "\\{-}"
+  ],
+  "sol": ":%s/^.\\{-}] //<CR>"
+ },
+ {
+  "id": "sub-lazy",
+  "n": "135",
+  "chips": [
+   "\\{-}"
+  ],
+  "sol": ":%s/\\v\\*\\*(.{-})\\*\\*/_\\1_/g<CR>"
+ },
+ {
+  "id": "sub-lazy",
+  "n": "135",
+  "chips": [
+   "\\{-}"
+  ],
+  "sol": ":s/\".\\{-}\"/\"***\"/g<CR>"
+ },
+ {
+  "id": "sub-last-search",
+  "n": "136",
+  "chips": [
+   ":s//"
+  ],
+  "sol": ":%s//buf/g<CR>"
+ },
+ {
+  "id": "sub-last-search",
+  "n": "136",
+  "chips": [
+   ":s//"
+  ],
+  "sol": "*:%s//total/g<CR>"
+ },
+ {
+  "id": "sub-last-search",
+  "n": "136",
+  "chips": [
+   ":s//"
+  ],
+  "sol": "/\\d\\+ms<CR>:%s//`&`/g<CR>"
+ },
+ {
+  "id": "sub-last-search",
+  "n": "136",
+  "chips": [
+   ":s//"
+  ],
+  "sol": ":s//color/g<CR>"
+ },
+ {
+  "id": "sub-repeat",
+  "n": "137",
+  "chips": [
+   "&",
+   "g&"
+  ],
+  "sol": "g&"
+ },
+ {
+  "id": "sub-repeat",
+  "n": "137",
+  "chips": [
+   "&",
+   "g&"
+  ],
+  "sol": "jj&"
+ },
+ {
+  "id": "sub-repeat",
+  "n": "137",
+  "chips": [
+   "&",
+   "g&"
+  ],
+  "sol": "n&n&"
+ },
+ {
+  "id": "sub-repeat",
+  "n": "137",
+  "chips": [
+   "&",
+   "g&"
+  ],
+  "sol": "G&"
+ },
+ {
+  "id": "sub-expressions",
+  "n": "138",
+  "chips": [
+   "\\="
+  ],
+  "sol": ":s/\\d\\+\\ze\"/\\=submatch(0)+1/<CR>"
+ },
+ {
+  "id": "sub-expressions",
+  "n": "138",
+  "chips": [
+   "\\="
+  ],
+  "sol": ":%s/\\d\\+/\\=submatch(0)*2/<CR>"
+ },
+ {
+  "id": "sub-expressions",
+  "n": "138",
+  "chips": [
+   "\\="
+  ],
+  "sol": ":%s/^\\d\\+/\\=line('.')/<CR>"
+ },
+ {
+  "id": "sub-expressions",
+  "n": "138",
+  "chips": [
+   "\\="
+  ],
+  "sol": ":%s/\\d\\+/\\=printf('%02d', submatch(0))/<CR>"
+ },
+ {
+  "id": "project-replace",
+  "n": "139",
+  "chips": [
+   "␣sr"
+  ],
+  "sol": "<Space>srcartTotal<CR>q"
+ },
+ {
+  "id": "project-replace",
+  "n": "139",
+  "chips": [
+   "␣sr"
+  ],
+  "sol": "<Space>srsubtotal<CR>q"
+ },
+ {
+  "id": "project-replace",
+  "n": "139",
+  "chips": [
+   "␣sr"
+  ],
+  "sol": "<Space>srstore<CR>q"
+ },
+ {
+  "id": "sub-boss",
+  "n": "00",
+  "chips": [
+   ":%s"
+  ],
+  "sol": ":%s/\\<lt>var\\>/let/<CR>"
+ },
+ {
+  "id": "sub-boss",
+  "n": "00",
+  "chips": [
+   ":%s"
+  ],
+  "sol": ":%s/\\v_(\\l)/\\u\\1/g<CR>"
+ },
+ {
+  "id": "sub-boss",
+  "n": "00",
+  "chips": [
+   ":%s"
+  ],
+  "sol": ":%s/\\v\"(.{-})\"/'\\1'/g<CR>"
+ },
+ {
+  "id": "global-delete",
+  "n": "140",
+  "chips": [
+   ":g",
+   "/d"
+  ],
+  "sol": ":g/console/d<CR>"
+ },
+ {
+  "id": "global-delete",
+  "n": "140",
+  "chips": [
+   ":g",
+   "/d"
+  ],
+  "sol": ":g/^#/d<CR>"
+ },
+ {
+  "id": "global-delete",
+  "n": "140",
+  "chips": [
+   ":g",
+   "/d"
+  ],
+  "sol": ":g/^$/d<CR>"
+ },
+ {
+  "id": "global-delete",
+  "n": "140",
+  "chips": [
+   ":g",
+   "/d"
+  ],
+  "sol": ":g/DEBUG/d<CR>"
+ },
+ {
+  "id": "global-delete",
+  "n": "140",
+  "chips": [
+   ":g",
+   "/d"
+  ],
+  "sol": ":g/^\\s*--/d<CR>"
+ },
+ {
+  "id": "global-keep",
+  "n": "141",
+  "chips": [
+   ":v",
+   ":g!"
+  ],
+  "sol": ":v/ERROR/d<CR>"
+ },
+ {
+  "id": "global-keep",
+  "n": "141",
+  "chips": [
+   ":v",
+   ":g!"
+  ],
+  "sol": ":2,$v/DE/d<CR>"
+ },
+ {
+  "id": "global-keep",
+  "n": "141",
+  "chips": [
+   ":v",
+   ":g!"
+  ],
+  "sol": ":v/^export/d<CR>"
+ },
+ {
+  "id": "global-keep",
+  "n": "141",
+  "chips": [
+   ":v",
+   ":g!"
+  ],
+  "sol": ":v/\\S/d<CR>"
+ },
+ {
+  "id": "global-normal",
+  "n": "142",
+  "chips": [
+   ":g",
+   "norm"
+  ],
+  "sol": ":g/console/norm gcc<CR>"
+ },
+ {
+  "id": "global-normal",
+  "n": "142",
+  "chips": [
+   ":g",
+   "norm"
+  ],
+  "sol": ":g/@lin/norm f[lrx<CR>"
+ },
+ {
+  "id": "global-normal",
+  "n": "142",
+  "chips": [
+   ":g",
+   "norm"
+  ],
+  "sol": ":g/^## /norm I#<CR>"
+ },
+ {
+  "id": "global-normal",
+  "n": "142",
+  "chips": [
+   ":g",
+   "norm"
+  ],
+  "sol": ":g/ERROR/norm jdd<CR>"
+ },
+ {
+  "id": "global-move",
+  "n": "143",
+  "chips": [
+   ":g/^/m0",
+   "m$",
+   "t$"
+  ],
+  "sol": ":g/^/m0<CR>"
+ },
+ {
+  "id": "global-move",
+  "n": "143",
+  "chips": [
+   ":g/^/m0",
+   "m$",
+   "t$"
+  ],
+  "sol": ":2,$g/^/m1<CR>"
+ },
+ {
+  "id": "global-move",
+  "n": "143",
+  "chips": [
+   ":g/^/m0",
+   "m$",
+   "t$"
+  ],
+  "sol": ":g/TODO/m$<CR>"
+ },
+ {
+  "id": "global-move",
+  "n": "143",
+  "chips": [
+   ":g/^/m0",
+   "m$",
+   "t$"
+  ],
+  "sol": ":g/^export/t$<CR>"
+ },
+ {
+  "id": "ex-sort",
+  "n": "144",
+  "chips": [
+   ":sort",
+   "n",
+   "!",
+   "i"
+  ],
+  "sol": ":sort<CR>"
+ },
+ {
+  "id": "ex-sort",
+  "n": "144",
+  "chips": [
+   ":sort",
+   "n",
+   "!",
+   "i"
+  ],
+  "sol": ":sort n<CR>"
+ },
+ {
+  "id": "ex-sort",
+  "n": "144",
+  "chips": [
+   ":sort",
+   "n",
+   "!",
+   "i"
+  ],
+  "sol": ":sort! n<CR>"
+ },
+ {
+  "id": "ex-sort",
+  "n": "144",
+  "chips": [
+   ":sort",
+   "n",
+   "!",
+   "i"
+  ],
+  "sol": "vi{:sort<CR>"
+ },
+ {
+  "id": "ex-sort",
+  "n": "144",
+  "chips": [
+   ":sort",
+   "n",
+   "!",
+   "i"
+  ],
+  "sol": ":2,$sort i<CR>"
+ },
+ {
+  "id": "sort-unique",
+  "n": "145",
+  "chips": [
+   ":sort u"
+  ],
+  "sol": ":sort u<CR>"
+ },
+ {
+  "id": "sort-unique",
+  "n": "145",
+  "chips": [
+   ":sort u"
+  ],
+  "sol": ":sort nu<CR>"
+ },
+ {
+  "id": "sort-unique",
+  "n": "145",
+  "chips": [
+   ":sort u"
+  ],
+  "sol": ":sort ui<CR>"
+ },
+ {
+  "id": "sort-unique",
+  "n": "145",
+  "chips": [
+   ":sort u"
+  ],
+  "sol": ":5,$sort u<CR>"
+ },
+ {
+  "id": "shell-filters",
+  "n": "146",
+  "chips": [
+   "!",
+   ":%!"
+  ],
+  "sol": ":%!jq .<CR>"
+ },
+ {
+  "id": "shell-filters",
+  "n": "146",
+  "chips": [
+   "!",
+   ":%!"
+  ],
+  "sol": "!ipsort<CR>"
+ },
+ {
+  "id": "shell-filters",
+  "n": "146",
+  "chips": [
+   "!",
+   ":%!"
+  ],
+  "sol": ":%!column -t<CR>"
+ },
+ {
+  "id": "shell-filters",
+  "n": "146",
+  "chips": [
+   "!",
+   ":%!"
+  ],
+  "sol": ":%!awk '{print $3}'<CR>"
+ },
+ {
+  "id": "commenting",
+  "n": "147",
+  "chips": [
+   "gcc",
+   "gc"
+  ],
+  "sol": "gcc"
+ },
+ {
+  "id": "commenting",
+  "n": "147",
+  "chips": [
+   "gcc",
+   "gc"
+  ],
+  "sol": "gcip"
+ },
+ {
+  "id": "commenting",
+  "n": "147",
+  "chips": [
+   "gcc",
+   "gc"
+  ],
+  "sol": "gcgc"
+ },
+ {
+  "id": "commenting",
+  "n": "147",
+  "chips": [
+   "gcc",
+   "gc"
+  ],
+  "sol": "Vjgc"
+ },
+ {
+  "id": "commenting",
+  "n": "147",
+  "chips": [
+   "gcc",
+   "gc"
+  ],
+  "sol": "3gcc"
+ },
+ {
+  "id": "commenting",
+  "n": "147",
+  "chips": [
+   "gcc",
+   "gc"
+  ],
+  "sol": "gcc"
+ },
+ {
+  "id": "diagnostics",
+  "n": "148",
+  "chips": [
+   "[d",
+   "]d"
+  ],
+  "sol": "]d"
+ },
+ {
+  "id": "diagnostics",
+  "n": "148",
+  "chips": [
+   "[d",
+   "]d"
+  ],
+  "sol": "]d"
+ },
+ {
+  "id": "diagnostics",
+  "n": "148",
+  "chips": [
+   "[d",
+   "]d"
+  ],
+  "sol": "[d"
+ },
+ {
+  "id": "diagnostics",
+  "n": "148",
+  "chips": [
+   "[d",
+   "]d"
+  ],
+  "sol": "2]d"
+ },
+ {
+  "id": "diagnostics",
+  "n": "148",
+  "chips": [
+   "[d",
+   "]d"
+  ],
+  "sol": "[d"
+ },
+ {
+  "id": "diagnostics",
+  "n": "148",
+  "chips": [
+   "[d",
+   "]d"
+  ],
+  "sol": "3[d"
+ },
+ {
+  "id": "definition-hover",
+  "n": "149",
+  "chips": [
+   "gd",
+   "K"
+  ],
+  "sol": "gd"
+ },
+ {
+  "id": "definition-hover",
+  "n": "149",
+  "chips": [
+   "gd",
+   "K"
+  ],
+  "sol": "ffK"
+ },
+ {
+  "id": "definition-hover",
+  "n": "149",
+  "chips": [
+   "gd",
+   "K"
+  ],
+  "sol": "gd"
+ },
+ {
+  "id": "definition-hover",
+  "n": "149",
+  "chips": [
+   "gd",
+   "K"
+  ],
+  "sol": "fCK"
+ },
+ {
+  "id": "definition-hover",
+  "n": "149",
+  "chips": [
+   "gd",
+   "K"
+  ],
+  "sol": "gd"
+ },
+ {
+  "id": "definition-hover",
+  "n": "149",
+  "chips": [
+   "gd",
+   "K"
+  ],
+  "sol": "K"
+ },
+ {
+  "id": "references",
+  "n": "150",
+  "chips": [
+   "grr",
+   "gri"
+  ],
+  "sol": "grr]Q"
+ },
+ {
+  "id": "references",
+  "n": "150",
+  "chips": [
+   "grr",
+   "gri"
+  ],
+  "sol": "grr]q"
+ },
+ {
+  "id": "references",
+  "n": "150",
+  "chips": [
+   "grr",
+   "gri"
+  ],
+  "sol": "gri]q"
+ },
+ {
+  "id": "references",
+  "n": "150",
+  "chips": [
+   "grr",
+   "gri"
+  ],
+  "sol": "gri"
+ },
+ {
+  "id": "references",
+  "n": "150",
+  "chips": [
+   "grr",
+   "gri"
+  ],
+  "sol": "gri]Q"
+ },
+ {
+  "id": "lsp-rename",
+  "n": "151",
+  "chips": [
+   "grn"
+  ],
+  "sol": "grn<C-u>daysLate<CR>"
+ },
+ {
+  "id": "lsp-rename",
+  "n": "151",
+  "chips": [
+   "grn"
+  ],
+  "sol": "grnId<CR>"
+ },
+ {
+  "id": "lsp-rename",
+  "n": "151",
+  "chips": [
+   "grn"
+  ],
+  "sol": "grn<BS><BS><CR>"
+ },
+ {
+  "id": "lsp-rename",
+  "n": "151",
+  "chips": [
+   "grn"
+  ],
+  "sol": "grn<C-u>rows<CR>"
+ },
+ {
+  "id": "lsp-rename",
+  "n": "151",
+  "chips": [
+   "grn"
+  ],
+  "sol": "grn<C-u>formatCents<CR>:wa<CR>"
+ },
+ {
+  "id": "code-actions",
+  "n": "152",
+  "chips": [
+   "gra"
+  ],
+  "sol": "]dgra<CR>"
+ },
+ {
+  "id": "code-actions",
+  "n": "152",
+  "chips": [
+   "gra"
+  ],
+  "sol": "gra<CR>"
+ },
+ {
+  "id": "code-actions",
+  "n": "152",
+  "chips": [
+   "gra"
+  ],
+  "sol": "[dgraj<CR>"
+ },
+ {
+  "id": "code-actions",
+  "n": "152",
+  "chips": [
+   "gra"
+  ],
+  "sol": "]dgra<CR>"
+ },
+ {
+  "id": "code-actions",
+  "n": "152",
+  "chips": [
+   "gra"
+  ],
+  "sol": "gra1"
+ },
+ {
+  "id": "blank-lines",
+  "n": "153",
+  "chips": [
+   "[␣",
+   "]␣"
+  ],
+  "sol": "] "
+ },
+ {
+  "id": "blank-lines",
+  "n": "153",
+  "chips": [
+   "[␣",
+   "]␣"
+  ],
+  "sol": "[ "
+ },
+ {
+  "id": "blank-lines",
+  "n": "153",
+  "chips": [
+   "[␣",
+   "]␣"
+  ],
+  "sol": "2[ "
+ },
+ {
+  "id": "blank-lines",
+  "n": "153",
+  "chips": [
+   "[␣",
+   "]␣"
+  ],
+  "sol": "[ ] "
+ },
+ {
+  "id": "blank-lines",
+  "n": "153",
+  "chips": [
+   "[␣",
+   "]␣"
+  ],
+  "sol": "] "
+ },
+ {
+  "id": "next-last-objects",
+  "n": "154",
+  "chips": [
+   "in(",
+   "il\""
+  ],
+  "sol": "cin(render<Esc>"
+ },
+ {
+  "id": "next-last-objects",
+  "n": "154",
+  "chips": [
+   "in(",
+   "il\""
+  ],
+  "sol": "cin(3<Esc>"
+ },
+ {
+  "id": "next-last-objects",
+  "n": "154",
+  "chips": [
+   "in(",
+   "il\""
+  ],
+  "sol": "cil\"Hello<Esc>"
+ },
+ {
+  "id": "next-last-objects",
+  "n": "154",
+  "chips": [
+   "in(",
+   "il\""
+  ],
+  "sol": "cin[k<Esc>"
+ },
+ {
+  "id": "next-last-objects",
+  "n": "154",
+  "chips": [
+   "in(",
+   "il\""
+  ],
+  "sol": "dil("
+ },
+ {
+  "id": "argument-objects",
+  "n": "155",
+  "chips": [
+   "ia",
+   "aa"
+  ],
+  "sol": "daa"
+ },
+ {
+  "id": "argument-objects",
+  "n": "155",
+  "chips": [
+   "ia",
+   "aa"
+  ],
+  "sol": "kfudaa"
+ },
+ {
+  "id": "argument-objects",
+  "n": "155",
+  "chips": [
+   "ia",
+   "aa"
+  ],
+  "sol": "ciasum<Esc>"
+ },
+ {
+  "id": "argument-objects",
+  "n": "155",
+  "chips": [
+   "ia",
+   "aa"
+  ],
+  "sol": "daa"
+ },
+ {
+  "id": "argument-objects",
+  "n": "155",
+  "chips": [
+   "ia",
+   "aa"
+  ],
+  "sol": "cia{ 'n', 'v' }<Esc>"
+ },
+ {
+  "id": "indent-objects",
+  "n": "156",
+  "chips": [
+   "ii",
+   "ai"
+  ],
+  "sol": "ciipass<Esc>"
+ },
+ {
+  "id": "indent-objects",
+  "n": "156",
+  "chips": [
+   "ii",
+   "ai"
+  ],
+  "sol": "dai"
+ },
+ {
+  "id": "indent-objects",
+  "n": "156",
+  "chips": [
+   "ii",
+   "ai"
+  ],
+  "sol": "dai"
+ },
+ {
+  "id": "indent-objects",
+  "n": "156",
+  "chips": [
+   "ii",
+   "ai"
+  ],
+  "sol": "ciireturn !list?.length;<Esc>"
+ },
+ {
+  "id": "indent-objects",
+  "n": "156",
+  "chips": [
+   "ii",
+   "ai"
+  ],
+  "sol": "dii"
+ },
+ {
+  "id": "function-class-objects",
+  "n": "157",
+  "chips": [
+   "if",
+   "af",
+   "ic",
+   "ac"
+  ],
+  "sol": "cifreturn user.role === 'admin';<Esc>"
+ },
+ {
+  "id": "function-class-objects",
+  "n": "157",
+  "chips": [
+   "if",
+   "af",
+   "ic",
+   "ac"
+  ],
+  "sol": "daf"
+ },
+ {
+  "id": "function-class-objects",
+  "n": "157",
+  "chips": [
+   "if",
+   "af",
+   "ic",
+   "ac"
+  ],
+  "sol": "dac"
+ },
+ {
+  "id": "function-class-objects",
+  "n": "157",
+  "chips": [
+   "if",
+   "af",
+   "ic",
+   "ac"
+  ],
+  "sol": "ciclog = console.info;<Esc>"
+ },
+ {
+  "id": "function-class-objects",
+  "n": "157",
+  "chips": [
+   "if",
+   "af",
+   "ic",
+   "ac"
+  ],
+  "sol": "cifM.opts = opts<Esc>"
+ },
+ {
+  "id": "function-class-objects",
+  "n": "157",
+  "chips": [
+   "if",
+   "af",
+   "ic",
+   "ac"
+  ],
+  "sol": "daf"
+ },
+ {
+  "id": "function-motions",
+  "n": "158",
+  "chips": [
+   "]m",
+   "[m"
+  ],
+  "sol": "]m"
+ },
+ {
+  "id": "function-motions",
+  "n": "158",
+  "chips": [
+   "]m",
+   "[m"
+  ],
+  "sol": "]m"
+ },
+ {
+  "id": "function-motions",
+  "n": "158",
+  "chips": [
+   "]m",
+   "[m"
+  ],
+  "sol": "[m"
+ },
+ {
+  "id": "function-motions",
+  "n": "158",
+  "chips": [
+   "]m",
+   "[m"
+  ],
+  "sol": "]m"
+ },
+ {
+  "id": "function-motions",
+  "n": "158",
+  "chips": [
+   "]m",
+   "[m"
+  ],
+  "sol": "2[m"
+ },
+ {
+  "id": "function-motions",
+  "n": "158",
+  "chips": [
+   "]m",
+   "[m"
+  ],
+  "sol": "3]m"
+ },
+ {
+  "id": "flash-jump",
+  "n": "159",
+  "chips": [
+   "s"
+  ],
+  "sol": "scrs"
+ },
+ {
+  "id": "flash-jump",
+  "n": "159",
+  "chips": [
+   "s"
+  ],
+  "sol": "sths"
+ },
+ {
+  "id": "flash-jump",
+  "n": "159",
+  "chips": [
+   "s"
+  ],
+  "sol": "sloa"
+ },
+ {
+  "id": "flash-jump",
+  "n": "159",
+  "chips": [
+   "s"
+  ],
+  "sol": "sinj"
+ },
+ {
+  "id": "flash-jump",
+  "n": "159",
+  "chips": [
+   "s"
+  ],
+  "sol": "sErs"
+ },
+ {
+  "id": "flash-jump",
+  "n": "159",
+  "chips": [
+   "s"
+  ],
+  "sol": "sdbd"
+ },
+ {
+  "id": "flash-motions",
+  "n": "160",
+  "chips": [
+   "d",
+   "s"
+  ],
+  "sol": "dsroa"
+ },
+ {
+  "id": "flash-motions",
+  "n": "160",
+  "chips": [
+   "d",
+   "s"
+  ],
+  "sol": "ds.fa"
+ },
+ {
+  "id": "flash-motions",
+  "n": "160",
+  "chips": [
+   "d",
+   "s"
+  ],
+  "sol": "cs';aplural(count, 'item')<Esc>"
+ },
+ {
+  "id": "flash-motions",
+  "n": "160",
+  "chips": [
+   "d",
+   "s"
+  ],
+  "sol": "dsuss"
+ },
+ {
+  "id": "flash-treesitter",
+  "n": "161",
+  "chips": [
+   "S"
+  ],
+  "sol": "Sdd"
+ },
+ {
+  "id": "flash-treesitter",
+  "n": "161",
+  "chips": [
+   "S"
+  ],
+  "sol": "Sdcreload<Esc>"
+ },
+ {
+  "id": "flash-treesitter",
+  "n": "161",
+  "chips": [
+   "S"
+  ],
+  "sol": "Sdcfalse<Esc>"
+ },
+ {
+  "id": "flash-treesitter",
+  "n": "161",
+  "chips": [
+   "S"
+  ],
+  "sol": "SgVd"
+ },
+ {
+  "id": "add-surroundings",
+  "n": "162",
+  "chips": [
+   "ys"
+  ],
+  "sol": "ysiw\""
+ },
+ {
+  "id": "add-surroundings",
+  "n": "162",
+  "chips": [
+   "ys"
+  ],
+  "sol": "ys3e)"
+ },
+ {
+  "id": "add-surroundings",
+  "n": "162",
+  "chips": [
+   "ys"
+  ],
+  "sol": "yst;]"
+ },
+ {
+  "id": "add-surroundings",
+  "n": "162",
+  "chips": [
+   "ys"
+  ],
+  "sol": "yst){"
+ },
+ {
+  "id": "add-surroundings",
+  "n": "162",
+  "chips": [
+   "ys"
+  ],
+  "sol": "wys2e`"
+ },
+ {
+  "id": "change-surroundings",
+  "n": "163",
+  "chips": [
+   "cs"
+  ],
+  "sol": "cs'\""
+ },
+ {
+  "id": "change-surroundings",
+  "n": "163",
+  "chips": [
+   "cs"
+  ],
+  "sol": "cs\"`"
+ },
+ {
+  "id": "change-surroundings",
+  "n": "163",
+  "chips": [
+   "cs"
+  ],
+  "sol": "cs)]"
+ },
+ {
+  "id": "change-surroundings",
+  "n": "163",
+  "chips": [
+   "cs"
+  ],
+  "sol": "cs()"
+ },
+ {
+  "id": "change-surroundings",
+  "n": "163",
+  "chips": [
+   "cs"
+  ],
+  "sol": "cs[{"
+ },
+ {
+  "id": "delete-surroundings",
+  "n": "164",
+  "chips": [
+   "ds"
+  ],
+  "sol": "ds)"
+ },
+ {
+  "id": "delete-surroundings",
+  "n": "164",
+  "chips": [
+   "ds"
+  ],
+  "sol": "ds\""
+ },
+ {
+  "id": "delete-surroundings",
+  "n": "164",
+  "chips": [
+   "ds"
+  ],
+  "sol": "ds("
+ },
+ {
+  "id": "delete-surroundings",
+  "n": "164",
+  "chips": [
+   "ds"
+  ],
+  "sol": "ds_"
+ },
+ {
+  "id": "delete-surroundings",
+  "n": "164",
+  "chips": [
+   "ds"
+  ],
+  "sol": "dst"
+ },
+ {
+  "id": "delete-surroundings",
+  "n": "164",
+  "chips": [
+   "ds"
+  ],
+  "sol": "dsf"
+ },
+ {
+  "id": "surround-a-line",
+  "n": "165",
+  "chips": [
+   "yss"
+  ],
+  "sol": "yss_"
+ },
+ {
+  "id": "surround-a-line",
+  "n": "165",
+  "chips": [
+   "yss"
+  ],
+  "sol": "yss`"
+ },
+ {
+  "id": "surround-a-line",
+  "n": "165",
+  "chips": [
+   "yss"
+  ],
+  "sol": "yss{"
+ },
+ {
+  "id": "surround-a-line",
+  "n": "165",
+  "chips": [
+   "yss"
+  ],
+  "sol": "jyss{"
+ },
+ {
+  "id": "surround-a-line",
+  "n": "165",
+  "chips": [
+   "yss"
+  ],
+  "sol": "yss*."
+ },
+ {
+  "id": "surround-a-selection",
+  "n": "166",
+  "chips": [
+   "v",
+   "S"
+  ],
+  "sol": "v3eS)"
+ },
+ {
+  "id": "surround-a-selection",
+  "n": "166",
+  "chips": [
+   "v",
+   "S"
+  ],
+  "sol": "vt[S)"
+ },
+ {
+  "id": "surround-a-selection",
+  "n": "166",
+  "chips": [
+   "v",
+   "S"
+  ],
+  "sol": "veeS]"
+ },
+ {
+  "id": "surround-a-selection",
+  "n": "166",
+  "chips": [
+   "v",
+   "S"
+  ],
+  "sol": "VGS}"
+ },
+ {
+  "id": "surround-a-selection",
+  "n": "166",
+  "chips": [
+   "v",
+   "S"
+  ],
+  "sol": "vg_S\""
+ },
+ {
+  "id": "surround-with-tags",
+  "n": "167",
+  "chips": [
+   "cst",
+   "yst"
+  ],
+  "sol": "cststrong<CR>"
+ },
+ {
+  "id": "surround-with-tags",
+  "n": "167",
+  "chips": [
+   "cst",
+   "yst"
+  ],
+  "sol": "jcstsection<CR>"
+ },
+ {
+  "id": "surround-with-tags",
+  "n": "167",
+  "chips": [
+   "cst",
+   "yst"
+  ],
+  "sol": "csth3<CR>"
+ },
+ {
+  "id": "surround-with-tags",
+  "n": "167",
+  "chips": [
+   "cst",
+   "yst"
+  ],
+  "sol": "2jysstli<CR>"
+ },
+ {
+  "id": "surround-with-tags",
+  "n": "167",
+  "chips": [
+   "cst",
+   "yst"
+  ],
+  "sol": "ysiwtem<CR>"
+ },
+ {
+  "id": "surround-with-tags",
+  "n": "167",
+  "chips": [
+   "cst",
+   "yst"
+  ],
+  "sol": "csTa href=\"/docs\"<CR>"
+ },
+ {
+  "id": "insert-delete-word",
+  "n": "168",
+  "chips": [
+   "C-w",
+   "C-u"
+  ],
+  "sol": "<C-w>subtotal<Esc>"
+ },
+ {
+  "id": "insert-delete-word",
+  "n": "168",
+  "chips": [
+   "C-w",
+   "C-u"
+  ],
+  "sol": "<C-w>find_files<Esc>"
+ },
+ {
+  "id": "insert-delete-word",
+  "n": "168",
+  "chips": [
+   "C-w",
+   "C-u"
+  ],
+  "sol": "<C-u>return null<Esc>"
+ },
+ {
+  "id": "insert-delete-word",
+  "n": "168",
+  "chips": [
+   "C-w",
+   "C-u"
+  ],
+  "sol": "<C-w><C-w>email address<Esc>"
+ },
+ {
+  "id": "insert-delete-word",
+  "n": "168",
+  "chips": [
+   "C-w",
+   "C-u"
+  ],
+  "sol": "<C-w>README<Esc>"
+ },
+ {
+  "id": "insert-delete-word",
+  "n": "168",
+  "chips": [
+   "C-w",
+   "C-u"
+  ],
+  "sol": "<C-u>'nvim-telescope/telescope.nvim'<Esc>"
+ },
+ {
+  "id": "insert-one-command",
+  "n": "169",
+  "chips": [
+   "C-o"
+  ],
+  "sol": "<C-o>$;<Esc>"
+ },
+ {
+  "id": "insert-one-command",
+  "n": "169",
+  "chips": [
+   "C-o"
+  ],
+  "sol": "<C-o>dwmsg<Esc>"
+ },
+ {
+  "id": "insert-one-command",
+  "n": "169",
+  "chips": [
+   "C-o"
+  ],
+  "sol": "<C-o>T await <Esc>"
+ },
+ {
+  "id": "insert-one-command",
+  "n": "169",
+  "chips": [
+   "C-o"
+  ],
+  "sol": "<C-o>gUb<Esc>"
+ },
+ {
+  "id": "insert-one-command",
+  "n": "169",
+  "chips": [
+   "C-o"
+  ],
+  "sol": "v2<C-o>dt'<Esc>"
+ },
+ {
+  "id": "completion-menu",
+  "n": "170",
+  "chips": [
+   "C-n",
+   "C-y",
+   "C-e"
+  ],
+  "sol": "<C-n><C-y><Esc>"
+ },
+ {
+  "id": "completion-menu",
+  "n": "170",
+  "chips": [
+   "C-n",
+   "C-y",
+   "C-e"
+  ],
+  "sol": "<C-n><C-n><C-y><Esc>"
+ },
+ {
+  "id": "completion-menu",
+  "n": "170",
+  "chips": [
+   "C-n",
+   "C-y",
+   "C-e"
+  ],
+  "sol": "<C-n><C-e><Esc>"
+ },
+ {
+  "id": "snippets",
+  "n": "171",
+  "chips": [
+   "tab",
+   "S-tab"
+  ],
+  "sol": "<Tab>greet<Tab>name<Tab>return name;<Esc>"
+ },
+ {
+  "id": "snippets",
+  "n": "171",
+  "chips": [
+   "tab",
+   "S-tab"
+  ],
+  "sol": "<Tab>total<Esc>"
+ },
+ {
+  "id": "snippets",
+  "n": "171",
+  "chips": [
+   "tab",
+   "S-tab"
+  ],
+  "sol": "<Tab>item<Tab>items<Tab>item.run();<Esc>"
+ },
+ {
+  "id": "gitsigns-hunks",
+  "n": "172",
+  "chips": [
+   "]h",
+   "[h"
+  ],
+  "sol": "]h"
+ },
+ {
+  "id": "gitsigns-hunks",
+  "n": "172",
+  "chips": [
+   "]h",
+   "[h"
+  ],
+  "sol": "2]h"
+ },
+ {
+  "id": "gitsigns-hunks",
+  "n": "172",
+  "chips": [
+   "]h",
+   "[h"
+  ],
+  "sol": "[h"
+ },
+ {
+  "id": "gitsigns-hunks",
+  "n": "172",
+  "chips": [
+   "]h",
+   "[h"
+  ],
+  "sol": "]h"
+ },
+ {
+  "id": "gitsigns-hunks",
+  "n": "172",
+  "chips": [
+   "]h",
+   "[h"
+  ],
+  "sol": "[c[c"
+ },
+ {
+  "id": "gitsigns-stage-hunk",
+  "n": "173",
+  "chips": [
+   "␣ghs",
+   "␣ghr"
+  ],
+  "sol": "<Space>ghs"
+ },
+ {
+  "id": "gitsigns-stage-hunk",
+  "n": "173",
+  "chips": [
+   "␣ghs",
+   "␣ghr"
+  ],
+  "sol": "[h<Space>ghs"
+ },
+ {
+  "id": "gitsigns-stage-hunk",
+  "n": "173",
+  "chips": [
+   "␣ghs",
+   "␣ghr"
+  ],
+  "sol": "2]h<Space>ghr"
+ },
+ {
+  "id": "gitsigns-stage-hunk",
+  "n": "173",
+  "chips": [
+   "␣ghs",
+   "␣ghr"
+  ],
+  "sol": "]h<Space>ghr"
+ },
+ {
+  "id": "gitsigns-stage-hunk",
+  "n": "173",
+  "chips": [
+   "␣ghs",
+   "␣ghr"
+  ],
+  "sol": "]h<Space>ghs]h<Space>ghr"
+ },
+ {
+  "id": "git-lazygit",
+  "n": "174",
+  "chips": [
+   "␣gg",
+   "q"
+  ],
+  "sol": "<Space>gg"
+ },
+ {
+  "id": "git-lazygit",
+  "n": "174",
+  "chips": [
+   "␣gg",
+   "q"
+  ],
+  "sol": "<Space>ggq"
+ },
+ {
+  "id": "git-lazygit",
+  "n": "174",
+  "chips": [
+   "␣gg",
+   "q"
+  ],
+  "sol": "<Space>ggq"
+ }
+]
