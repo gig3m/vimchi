@@ -206,3 +206,47 @@ describe('the unnamed register follows yanks and deletes, not raw writes', () =>
     expect(reg(v, 'b').text).toBe('Y');
   });
 });
+
+describe('r<Tab> and r<CR>', () => {
+  it.each([
+    // expandtab, sw=2, ts=8, smarttab (nvim default): a tab in the indent is shiftwidth wide
+    ['|  abc', 'r<Tab>', ' |  abc'],
+    ['|    abc', 'llr<Tab>', '   |  abc'],
+    ['|    abc', '4lr<Tab>', '     | bc'],
+    ['|    abc', '3r<Tab>', '     |  abc'],
+    ['|abcdef', '2r<Tab>', '   | cdef'],
+    ['|\tabc', 'lr<Tab>', '\t | bc'],
+    // outside the indent it reaches the next tabstop
+    ['|abcdef', 'lr<Tab>', 'a      | cdef'],
+    ['|abcdef', 'l3r<Tab>', 'a' + ' '.repeat(22) + '|' + ' ef'],
+    ['|ab\tcd', 'lr<Tab>', 'a      | \tcd'],
+    ['|abcdef', 'lr<Tab>.', 'a      | cdef'],
+    // noexpandtab: real tabs, except a partial shiftwidth in the indent
+    ['|abcdef', ':set noet<CR>lr<Tab>', 'a|\tcdef'],
+    ['|abcdef', ':set noet<CR>l2r<Tab>', 'a\t|\tdef'],
+    ['|    abc', ':set noet<CR>r<Tab>', ' |    abc'],
+    // r<CR> replaces [count] characters with ONE line break; without 'autoindent' nothing is stripped
+    ['|  abc', ':set noai<CR>r<CR>', '\n| abc'],
+    ['|  abc', ':set noai<CR>llr<CR>', '  \n|bc'],
+    ['|ab  cd', ':set noai<CR>llr<CR>', 'ab\n| cd'],
+    ['|ab  cd', ':set noai<CR>lllr<CR>', 'ab \n|cd'],
+    ['|abcdef', ':set noai<CR>l3r<CR>', 'a\n|ef'],
+    ['|abcdef', ':set noai<CR>l9r<CR>', 'a|bcdef'],
+    ['|abcdef', ':set noai<CR>lr<CR>.', 'a\n\n|def'],
+    // with 'autoindent' the new line takes the first part's indent and the rest loses its leading blanks
+    ['|  abc', 'r<CR>', '\n|abc'],
+    ['|  abc', 'llr<CR>', '  \n | bc'],
+    ['|    abcdef', '5lr<CR>', '    a\n   | cdef'],
+    ['|    abcdef', '5l2r<CR>', '    a\n   | def'],
+    ['|  ab  cd', '5lr<CR>', '  ab \n | cd'],
+    ['|    abcdef', '5lr<CR>.', '    a\n   \n  | cdef'],
+    // <Esc> cancels, dropping the count
+    ['|abcdef', 'r<Esc>', '|abcdef'],
+    ['|abcdef', '3r<Esc>x', '|bcdef'],
+    // Visual r puts the literal character
+    ['|abcdef', 'lvlr<CR>', 'a|\r\rdef'],
+    ['|abcdef', 'lvlr<Tab>', 'a|\t\tdef'],
+  ])('%j  %s', (doc, keys, want) => {
+    expect(C(doc, keys)).toBe(want);
+  });
+});
