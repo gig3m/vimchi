@@ -71,18 +71,37 @@ export function displayKey(k: Key): string {
   return k;
 }
 
-type KeyEventLike = { key: string; ctrlKey: boolean; altKey: boolean; metaKey: boolean; shiftKey: boolean };
+type KeyEventLike = {
+  key: string; code?: string; ctrlKey: boolean; altKey: boolean; metaKey: boolean; shiftKey: boolean;
+  getModifierState?: (m: string) => boolean;
+};
+
+/** The character printed on the cap for a physical key code, when it is a plain letter or digit. */
+const capOf = (code: string | undefined): string | null => {
+  const m = /^(?:Key([A-Z])|Digit(\d))$/.exec(code ?? '');
+  return m ? (m[1] ?? m[2]).toLowerCase() : null;
+};
 
 /** Translate a DOM keyboard event. Returns null for keys we don't handle. */
 export function keyFromEvent(e: KeyEventLike): Key | null {
   if (e.metaKey) return null;
   const k = e.key;
+  if (k === 'Dead' && e.altKey && !e.ctrlKey && capOf(e.code)) return `<A-${capOf(e.code)}>`;
   if (k === 'Shift' || k === 'Control' || k === 'Alt' || k === 'Meta' || k === 'CapsLock' || k === 'Dead') return null;
   const special: Record<string, Key> = {
     Escape: '<Esc>', Enter: '<CR>', Backspace: '<BS>', Tab: e.shiftKey ? '<S-Tab>' : '<Tab>', Delete: '<Del>',
     ArrowUp: '<Up>', ArrowDown: '<Down>', ArrowLeft: '<Left>', ArrowRight: '<Right>', Home: '<Home>', End: '<End>',
     PageUp: '<PageUp>', PageDown: '<PageDown>',
   };
+  // AltGr (Windows reports Ctrl+Alt; Linux reports AltGraph) and Mac Option produce a printable
+  // character that is not the key's cap: that character is what the learner meant to type.
+  // A printable ASCII character that is not the cap (AltGr `@`, Option `{`) is meant literally;
+  // a non-ASCII or dead result on a lettered cap (Mac Option-w → ∑) is the Alt chord by cap.
+  const cap = capOf(e.code);
+  const altGraph = e.getModifierState?.('AltGraph') === true;
+  const ascii = k.length === 1 && k >= ' ' && k <= '~';
+  if (e.altKey && ascii && (altGraph || k.toLowerCase() !== cap)) return k;
+  if (e.altKey && !e.ctrlKey && cap !== null && !ascii) return `<A-${cap}>`;
   if (e.ctrlKey && !e.altKey) {
     if (k === '[') return '<Esc>';
     if (k === ' ') return '<C-Space>';
