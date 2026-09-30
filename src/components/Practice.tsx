@@ -38,10 +38,19 @@ export function Practice(p: Props) {
   const { lesson } = p;
   const session = useRef<Session>(null as unknown as Session);
   const seedRef = useRef<number | null>(p.seed);
-  if (!session.current || session.current.challenge !== lesson.challenge) session.current = new Session(lesson.challenge, { seed: seedRef.current ?? undefined });
-  const s = session.current;
   const [, rerender] = useReducer((n: number) => n + 1, 0);
   const [finished, setFinished] = useState<Finished | null>(null);
+  // The component stays mounted across lessons (a remount would drop full screen), so a
+  // lesson change resets the per-lesson state here instead of via a React key.
+  const lessonRef = useRef(lesson.id);
+  if (lessonRef.current !== lesson.id) {
+    lessonRef.current = lesson.id;
+    seedRef.current = p.seed;
+    session.current = null as unknown as Session;
+    if (finished) setFinished(null);
+  }
+  if (!session.current || session.current.challenge !== lesson.challenge) session.current = new Session(lesson.challenge, { seed: seedRef.current ?? undefined });
+  const s = session.current;
   const [focused, setFocused] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -57,7 +66,11 @@ export function Practice(p: Props) {
   }, [v.startAt, v.done]);
 
   useEffect(() => {
+    clearNudge(); segCount.current = 0; nudgedEnd.current = -1;
     ref.current?.focus({ preventScroll: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lesson.id]);
+  useEffect(() => {
     const onFs = () => setFullscreen(!!document.fullscreenElement);
     document.addEventListener('fullscreenchange', onFs);
     return () => {

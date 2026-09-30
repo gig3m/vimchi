@@ -56,7 +56,6 @@ export function LessonPage({ lesson, seed, coachLive, runs, isGuest, onRun, onGo
       <div className="practice-note">{lesson.practice(total)}</div>
 
       <Practice
-        key={lesson.id}
         lesson={lesson}
         seed={seed}
         coachLive={coachLive}

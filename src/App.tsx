@@ -88,7 +88,6 @@ export function App() {
             <Profile who={who} sub={profileSub} runs={prog.runs} onGo={go} onSignIn={() => setSignInOpen(true)} />
           ) : (
             <LessonPage
-              key={lesson.id}
               lesson={lesson}
               seed={seed}
               coachLive={settings.coachLive}
