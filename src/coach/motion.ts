@@ -32,8 +32,9 @@ function move(lines: readonly string[], st: State, m: string, count: number): St
       case '0': p = { line: p.line, col: 0 }; w = 0; break;
       case '^': p = { line: p.line, col: firstNonBlank(lines[p.line]) }; w = p.col; break;
       case '$': p = { line: p.line, col: last(p.line) }; w = Infinity; break;
-      case 'G': p = { line: lines.length - 1, col: firstNonBlank(lines[lines.length - 1]) }; w = p.col; break;
-      case 'gg': p = { line: 0, col: firstNonBlank(lines[0]) }; w = p.col; break;
+      // nostartofline (Neovim's default): a line jump keeps the wanted column, clamped like j/k.
+      case 'G': p = { line: lines.length - 1, col: Math.min(w, Math.max(0, lines[lines.length - 1].length - 1)) }; break;
+      case 'gg': p = { line: 0, col: Math.min(w, Math.max(0, lines[0].length - 1)) }; break;
       case '}': { let r = p.line + 1; while (r < lines.length && !isBlank(lines[r])) r++; if (r >= lines.length) { r = lines.length - 1; p = { line: r, col: last(r) }; } else p = { line: r, col: 0 }; w = p.col; break; }
       case '{': { let r = p.line - 1; while (r >= 0 && !isBlank(lines[r])) r--; p = { line: Math.max(0, r), col: 0 }; w = 0; break; }
       case 'ge': case 'gE': { // same-line only, as above

@@ -78,7 +78,7 @@ describe('lsp: diagnostics', () => {
 describe('lsp: hover and definitions', () => {
   it('K opens a hover float at the cursor', () => {
     const vim = setup({ hover: { formatPrice: 'function formatPrice(cents: number): string' } });
-    vim.feedKeys('5GwK');
+    vim.feedKeys('5G^wK');
     expect(vim.floats[0].anchor).toBe('cursor');
     expect(vim.floats[0].lines[0].text).toBe('function formatPrice(cents: number): string');
     vim.feedKeys('<Esc>');
@@ -88,14 +88,14 @@ describe('lsp: hover and definitions', () => {
 
   it('K without hover info says so', () => {
     const vim = setup({});
-    vim.feedKeys('3Gw');
+    vim.feedKeys('3G^w');
     vim.feedKeys('K');
     expect(vim.message?.text).toBe('No information available');
   });
 
   it('gd jumps to a definition in another file, <C-o> comes back', () => {
     const vim = setup();
-    vim.feedKeys('5Gw');
+    vim.feedKeys('5G^w');
     vim.feedKeys('gd');
     expect(vim.buf.name).toBe('src/format.ts');
     expect(vim.cursor).toEqual({ line: 0, col: 16 });
@@ -116,9 +116,9 @@ describe('lsp: hover and definitions', () => {
       name: 'init.lua',
       plugins: [lsp],
     });
-    vim.feedKeys('5Ggd');
+    vim.feedKeys('5G^gd');
     expect(vim.cursor).toEqual({ line: 0, col: 15 });
-    vim.feedKeys('6Gwgd');
+    vim.feedKeys('6G^wgd');
     expect(vim.cursor).toEqual({ line: 2, col: 11 });
   });
 });
@@ -126,7 +126,7 @@ describe('lsp: hover and definitions', () => {
 describe('lsp: references and implementations', () => {
   it('grr fills the quickfix list with every reference and opens it', () => {
     const vim = setup();
-    vim.feedKeys('5Gw');
+    vim.feedKeys('5G^w');
     vim.feedKeys('grr');
     expect(vim.quickfix.items.map(i => `${i.file}:${i.line + 1}:${i.col + 1}`)).toEqual([
       'src/cart.ts:1:10', 'src/cart.ts:5:10', 'src/format.ts:1:17', 'src/order.ts:1:10', 'src/order.ts:2:18',
@@ -162,7 +162,7 @@ describe('lsp: references and implementations', () => {
 describe('lsp: rename', () => {
   it('grn renames across files as one undoable change', () => {
     const vim = setup();
-    vim.feedKeys('5Gw');
+    vim.feedKeys('5G^w');
     vim.feedKeys('grn');
     expect(vim.cmdline?.prompt).toBe('New Name: ');
     expect(vim.cmdline?.text).toBe('formatPrice');

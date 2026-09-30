@@ -148,13 +148,13 @@ export const commandLine: Section = {
         rounds: [
           {
             prompt: 'The yank highlight is on line 35. Go there.',
-            goal: { cursor: { line: 34, col: 4 } },
+            goal: { cursor: { line: 34, col: 0 } },
             solution: ':35<CR>',
           },
           {
             prompt: 'Go to line 14.',
             setup: { cursor: { line: 34, col: 4 } },
-            goal: { cursor: { line: 13, col: 0 } },
+            goal: { cursor: { line: 13, col: 4 } },
             solution: ':14<CR>',
           },
           {
@@ -166,7 +166,7 @@ export const commandLine: Section = {
           {
             prompt: 'The format call is on line 43.',
             setup: { cursor: { line: 5, col: 0 } },
-            goal: { cursor: { line: 42, col: 4 } },
+            goal: { cursor: { line: 42, col: 0 } },
             solution: ':43<CR>',
           },
           {

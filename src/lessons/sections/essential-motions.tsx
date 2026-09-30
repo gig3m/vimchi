@@ -413,11 +413,11 @@ export const essentialMotions: Section = {
         },
         rounds: [
           { prompt: 'Go to the last line.', setup: { cursor: { line: 3, col: 1 } }, goal: { cursor: { line: 32, col: 0 } }, solution: 'G' },
-          { prompt: 'Go to the first line.', setup: { cursor: { line: 31, col: 5 } }, goal: { cursor: { line: 0, col: 0 } }, solution: 'gg' },
+          { prompt: 'Go to the first line.', setup: { cursor: { line: 31, col: 5 } }, goal: { cursor: { line: 0, col: 5 } }, solution: 'gg' },
           { prompt: 'Go to line 25.', setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 24, col: 0 } }, solution: '25G' },
           { prompt: 'Go to line 15.', setup: { cursor: { line: 32, col: 0 } }, goal: { cursor: { line: 14, col: 0 } }, solution: '15G' },
           { prompt: 'Go to line 30.', setup: { cursor: { line: 10, col: 1 } }, goal: { cursor: { line: 29, col: 1 } }, solution: '30gg' },
-          { prompt: 'Go to line 10.', setup: { cursor: { line: 27, col: 2 } }, goal: { cursor: { line: 9, col: 0 } }, solution: '10G' },
+          { prompt: 'Go to line 10.', setup: { cursor: { line: 27, col: 2 } }, goal: { cursor: { line: 9, col: 2 } }, solution: '10G' },
         ],
       },
     },
