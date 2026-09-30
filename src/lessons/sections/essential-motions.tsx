@@ -25,9 +25,6 @@ const retry: Setup = {
   ],
 };
 
-/** retry.ts with every line passed through `f`: the goal of a round that edits the whole file. */
-const retryWith = (f: (l: string) => string) => (retry.text as string[]).map(f);
-
 export const essentialMotions: Section = {
   id: 'essential-motions',
   title: 'Motions Worth Knowing',
@@ -653,18 +650,8 @@ export const essentialMotions: Section = {
             goal: { cursor: { line: 7, col: 44 } },
             solution: 'N',
           },
-          {
-            prompt: 'The first retry waits 200 ms, not 100.',
-            setup: { cursor: { line: 0, col: 0 } },
-            goal: { text: retryWith(l => l.replace('* 100', '* 200')) },
-            solution: '/100<CR>r2',
-          },
-          {
-            prompt: 'Both "fn"s are "job".',
-            setup: { cursor: { line: 0, col: 0 } },
-            goal: { text: retryWith(l => l.replace(/\bfn\b/, 'job')) },
-            solution: '/fn<CR>cwjob<Esc>ncwjob<Esc>',
-          },
+          { goal: { cursor: { line: 10, col: 6 } }, solution: '/cat<CR>' },
+          { goal: { cursor: { line: 7, col: 24 } }, solution: '/attempt<CR>n' },
         ],
       },
     },
@@ -710,18 +697,8 @@ export const essentialMotions: Section = {
           { setup: { cursor: { line: 11, col: 6 } }, goal: { cursor: { line: 0, col: 0 } }, solution: '?import<CR>' },
           { goal: { cursor: { line: 9, col: 13 } }, solution: '?await<CR>n' },
           { setup: { cursor: { line: 7, col: 8 } }, goal: { cursor: { line: 5, col: 3 } }, solution: '?Promise<CR>' },
-          {
-            prompt: 'Retry 5 times, not 3.',
-            setup: { cursor: { line: 15, col: 2 } },
-            goal: { text: retryWith(l => l.replace('retries = 3', 'retries = 5')) },
-            solution: '?3,<CR>r5',
-          },
-          {
-            prompt: 'Call the caught error "e", working up the file.',
-            setup: { cursor: { line: 15, col: 2 } },
-            goal: { text: retryWith(l => l.replace(/\berr\b/, 'e')) },
-            solution: '?err<CR>cwe<Esc>ncwe<Esc>',
-          },
+          { goal: { cursor: { line: 3, col: 12 } }, solution: '?Promise<CR>n' },
+          { goal: { cursor: { line: 0, col: 9 } }, solution: '?sleep<CR>n' },
         ],
       },
     },
@@ -775,18 +752,8 @@ export const essentialMotions: Section = {
           { setup: { cursor: { line: 12, col: 12 } }, goal: { cursor: { line: 0, col: 9 } }, solution: '#' },
           { setup: { cursor: { line: 2, col: 32 } }, goal: { cursor: { line: 3, col: 20 } }, solution: '*' },
           { setup: { cursor: { line: 7, col: 11 } }, goal: { cursor: { line: 7, col: 44 } }, solution: '2*' },
-          {
-            prompt: 'Both "retries" are "max".',
-            setup: { cursor: { line: 4, col: 2 } },
-            goal: { text: retryWith(l => l.replace(/retries/g, 'max')) },
-            solution: '*cwmax<Esc>Ncwmax<Esc>',
-          },
-          {
-            prompt: 'Declare "lastError" as Error, not unknown.',
-            setup: { cursor: { line: 15, col: 8 } },
-            goal: { text: retryWith(l => l.replace('lastError: unknown', 'lastError: Error')) },
-            solution: '2#WcwError<Esc>',
-          },
+          { setup: { cursor: { line: 12, col: 12 } }, goal: { cursor: { line: 0, col: 9 } }, solution: '*' },
+          { setup: { cursor: { line: 7, col: 35 } }, goal: { cursor: { line: 4, col: 2 } }, solution: '#' },
         ],
       },
     },
