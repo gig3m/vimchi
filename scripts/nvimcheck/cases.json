@@ -1,0 +1,23 @@
+[
+  { "id": "undo-col", "src": "codex-bugs #1", "text": "abc", "keys": "lxu" },
+  { "id": "undo-col-followup", "src": "codex-bugs #1", "text": "one two three four\nfive six", "keys": "lxux" },
+  { "id": "redo-col", "src": "codex-bugs #1", "text": "abc", "keys": "lxu<C-r>" },
+  { "id": "count-dw-lines", "src": "codex-bugs #2", "text": "one\ntwo\nthree", "keys": "2dw" },
+  { "id": "count-dw-blank", "src": "codex-bugs #2", "text": "abc\n\ndef", "keys": "2dw" },
+  { "id": "count-diw-lines", "src": "codex-bugs #3", "text": "one\ntwo\nthree", "keys": "2diw" },
+  { "id": "count-diw-fail", "src": "codex-bugs #3", "text": "abc", "keys": "2diw" },
+  { "id": "visual-dollar-d", "src": "codex-bugs #4", "text": "abc\ndef", "keys": "v$d" },
+  { "id": "visual-dollar-y", "src": "codex-bugs #4", "text": "abc\ndef", "keys": "v$y" },
+  { "id": "empty-insert-keeps-redo", "src": "codex-bugs #5", "text": "abc", "keys": "xui<Esc><C-r>" },
+  { "id": "undo-tree-g-", "src": "codex-bugs #6", "text": "abc\ndef", "keys": "xurZg-" },
+  { "id": "visual-line-put-count", "src": "codex-bugs #7", "text": "one\ntwo\nthree", "keys": "yyV2p" },
+  { "id": "block-put-linewise", "src": "codex-bugs #8", "text": "one two\none two", "keys": "yyj<C-v>jlp" },
+  { "id": "let-keeps-unnamed", "src": "codex-bugs #9", "text": "one\ntwo\nthree", "keys": "yy:let @a = \"X\"<CR>p" },
+  { "id": "nosol-G", "src": "codex-bugs #10", "text": "abcdef\n  ghijkl", "cursor": { "line": 0, "col": 3 }, "keys": "G" },
+  { "id": "nosol-ex-line", "src": "codex-bugs #10", "text": "abcdef\n  ghijkl", "cursor": { "line": 0, "col": 3 }, "keys": ":2<CR>" },
+  { "id": "search-history-prefix", "src": "codex-bugs #11", "text": "one two\none two", "keys": "/one<CR>/two<CR>/o<Up><CR>" },
+  { "id": "r-tab", "src": "codex-bugs #12", "text": "  abc", "keys": "r<Tab>" },
+  { "id": "r-cr", "src": "codex-bugs #12", "text": "  abc", "keys": "r<CR>" },
+  { "id": "J-trailing-space", "src": "codex-bugs #13", "text": "one  \n two", "keys": "J" },
+  { "id": "insert-undo-break", "src": "codex-bugs #14", "text": "  abc", "keys": "iX<C-g>uY<Esc>u" }
+]
