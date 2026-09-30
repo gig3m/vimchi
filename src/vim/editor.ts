@@ -679,8 +679,8 @@ export class Vim {
       this.endChange();
       this.clampCursor(false);
     }
-    const f = this.closedFoldAt(this.cursor.line);
-    if (f && this.mode !== 'visual') this.win.cursor = pos(f.start, this.win.cursor.col);
+    // A cursor inside a closed fold keeps its line (G, zM, zc leave it there, as in Neovim); the
+    // fold's row shows it, j / k leave the fold whole and operators take the fold whole.
     this.clampCursor();
     for (const h of this.cursorHooks) h();
     this.scrollToCursor();
@@ -1022,7 +1022,9 @@ export class Vim {
       if (!res) fail();
       if (res.jump) this.pushJump();
       this.applyMotion(res);
-      if (res.openFold || res.jump) this.openFoldsAt(this.cursor.line);
+      // 'foldopen' (Neovim's default): jumps and searches open folds, and so does any sideways
+      // motion ("hor": l, w, f, $ …); j / k and G / gg do not.
+      if (res.openFold ?? (res.jump || !res.linewise)) this.openFoldsAt(this.cursor.line);
       this.dotCapture = null;
       if (this.depth === 0) this.finishCommand(this.visual ? 'visual' : 'motion');
       return;
