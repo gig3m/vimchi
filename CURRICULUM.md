@@ -92,7 +92,7 @@ Survive, then learn the grammar: motions and search, operators, text objects, vi
 |---|---|---|---|
 | 18 | Moving by WORDs | `W` `E` `B` | transform |
 | 19 | Word Ends Backward | `ge` `gE` | transform |
-| 20 | First Character | `^` `_` | transform |
+| 20 | First Character | `^` `_` `g_` `+` | transform |
 | 21 | Find Backward | `F` `T` | transform |
 | 22 | Repeat Find | `;` `,` | transform |
 | 23 | Top & Bottom | `gg` `G` | transform |
