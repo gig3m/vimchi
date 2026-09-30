@@ -454,7 +454,7 @@ export const surround: Section = {
     {
       id: 'surround-with-tags',
       title: 'Surround with Tags',
-      chips: ['srtt', 'sat'],
+      chips: ['srtt', 'saiwt'],
       keyCards: [
         { key: 'srtt', glyph: '<b>→<i>', label: 'tag → tag', sub: 'type the name, then Enter' },
         { key: 'sa…t', glyph: 'x→<b>x', label: 'add a tag' },
@@ -489,7 +489,7 @@ export const surround: Section = {
         title: 'Attributes',
         body: (
           <p>
-            <Code>sat</Code> and <Code>srtt</Code> both accept attributes in the name: <Mono>a href="/"</Mono> gives{' '}
+            <Code>sa…t</Code> and <Code>srtt</Code> both accept attributes in the name: <Mono>a href="/"</Mono> gives{' '}
             <Mono>{'<a href="/">…</a>'}</Mono>. nvim-surround differs here: its <Code>cst</Code> keeps the old
             attributes and you type the tag itself, <Code>{'cst<em>'}</Code>.
           </p>

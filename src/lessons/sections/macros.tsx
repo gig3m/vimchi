@@ -250,11 +250,11 @@ export const macros: Section = {
     {
       id: 'robust-macros',
       title: 'Robust Macros',
-      chips: ['macros'],
+      chips: ['0', 'f', 'A'],
       keyCards: [
         { key: '0', glyph: '|←', label: 'start from a known spot' },
         { key: 'f', glyph: '→x', label: 'move by content', sub: 'not by counting' },
-        { key: 'j', glyph: '↓', label: 'end on the next line' },
+        { key: 'A', glyph: '→|', label: 'append at the end', sub: 'however long the line' },
       ],
       intro: (
         <>
@@ -579,100 +579,6 @@ export const macros: Section = {
             },
             goal: { text: ['DEBUG = True', 'ALLOWED_HOSTS = ["*"]', 'CACHE_TTL = 0'], registers: { c: '02xj' } },
             solution: 'Go<Esc>"cp0a2<Esc>0"cy$ddgg3@c',
-          },
-        ],
-      },
-    },
-    {
-      id: 'macros-over-lines',
-      title: 'Macros over Lines',
-      chips: [':norm @a'],
-      keyCards: [
-        { key: ':norm', glyph: ':n', label: 'run normal keys', sub: 'on every line in a range' },
-        { key: '@a', glyph: '▶', label: 'the macro to run' },
-      ],
-      intro: (
-        <>
-          <p>
-            <Code>:%norm @a</Code> runs macro <Code>a</Code> once on every line, with the cursor at the start of each.
-            Select lines first and <Code>:</Code> fills in the range: <Code>:'&lt;,'&gt;norm @a</Code>.
-          </p>
-          <p>
-            The macro doesn't need a <Code>j</Code>, and a line where it fails doesn't stop the others. That makes it
-            safer than a count when only some lines fit.
-          </p>
-        </>
-      ),
-      practice: total => (
-        <p>
-          Apply the macro to a range of lines with <Code>:norm</Code>. {total} rounds.
-        </p>
-      ),
-      aside: {
-        title: 'No macro needed',
-        body: (
-          <>
-          <p>
-            <Code>:norm</Code> takes keys directly too: <Code>:%norm A;</Code> appends a semicolon to every line. Pair it
-            with <Code>:g</Code> to pick lines by pattern.
-          </p>
-          <BeforeAfter
-            lines={["import { z } from 'zod'", 'const Id = z.string()', 'const n = 1']}
-            cursor={[0, 0]}
-            keys=":%norm A;<CR>"
-          />
-          </>
-        ),
-      },
-      challenge: {
-        kind: 'rounds',
-        base: { name: 'keys.ts' },
-        rounds: [
-          {
-            prompt: 'Register a appends a semicolon. Run it on every line.',
-            setup: {
-              text: ["import { z } from 'zod'", 'const Id = z.string().uuid()', 'const Email = z.string().email()', 'export const User = z.object({ id: Id, email: Email })'],
-              registers: { a: 'A;\x1b' },
-              cursor: { line: 0, col: 0 },
-            },
-            goal: {
-              text: ["import { z } from 'zod';", 'const Id = z.string().uuid();', 'const Email = z.string().email();', 'export const User = z.object({ id: Id, email: Email });'],
-            },
-            solution: ':%norm @a<CR>',
-          },
-          {
-            prompt: 'Record a macro that makes a line a numbered step, then run it on the other lines.',
-            setup: {
-              name: 'deploy.md',
-              text: ['# Deploy', '', 'Tag the release', 'Build the image', 'Push to the registry', 'Roll out to staging', 'Promote to prod'],
-              cursor: { line: 2, col: 0 },
-            },
-            goal: {
-              text: ['# Deploy', '', '1. Tag the release', '1. Build the image', '1. Push to the registry', '1. Roll out to staging', '1. Promote to prod'],
-            },
-            solution: 'qaI1. <Esc>q:4,$norm @a<CR>',
-          },
-          {
-            prompt: 'Register q quotes a line and adds a comma. Select the three hosts and run it.',
-            setup: {
-              name: 'allow.ts',
-              text: ['export const ALLOWED = [', 'example.com', 'api.example.com', 'cdn.example.com', '];'],
-              registers: { q: `I  '\x1bA',\x1b` },
-              cursor: { line: 1, col: 0 },
-            },
-            goal: { text: ['export const ALLOWED = [', "  'example.com',", "  'api.example.com',", "  'cdn.example.com',", '];'] },
-            solution: 'Vjj:norm @q<CR>',
-          },
-          {
-            prompt: 'Register a turns "key = value" into "key: value". Run it on every line; the comments have no "=" and are skipped.',
-            setup: {
-              name: 'settings.toml',
-              text: ['# server', 'host = "0.0.0.0"', 'port = 8080', '# logging', 'level = "info"', 'format = "json"'],
-              registers: { a: '0f=hxr:' },
-              cursor: { line: 0, col: 0 },
-            },
-            goal: { text: ['# server', 'host: "0.0.0.0"', 'port: 8080', '# logging', 'level: "info"', 'format: "json"'] },
-            solution: ':%norm @a<CR>',
           },
         ],
       },

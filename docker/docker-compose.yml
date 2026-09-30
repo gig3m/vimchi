@@ -1,4 +1,5 @@
-# vimchi — browser Vim tutor, https://vimchi.nrsil.io. Start with ./up.sh
+# vimchi — browser Vim tutor, local/staging recipe (the tailnet instance was retired 2026-09-30;
+# production is deploy/do). Start with ./up.sh
 # (injects the GitHub OAuth app credentials from keys); for a code change
 # `./up.sh` again (it rebuilds). No host port: NPM host reaches it as
 # `vimchi:8080` over nginx-proxy-manager_default.

@@ -303,6 +303,9 @@ function motionCritique(session: CoachSession, ctx: Ctx, seg: Segment & { kind: 
     if (probe.mode !== 'normal' || probe.pending.length) { probe.feed('<Esc>'); return null; }
     return err ? null : { pos: { ...probe.cursor }, want: probe.win.want };
   };
+  // In a quickfix or location list only the line matters (<CR> opens its entry), and searching for
+  // the entry's name is how you pick one: a count or a G there is not better, only different.
+  if (vim.buf.kind === 'quickfix' && ranTokens(log, seg.logStart, seg.logEnd).some(t => t === '/' || t === '?')) return null;
   const cands = betterMotions(vim.buf.lines, seg.from, vim.win.want, seg.to, seg.keys.length, ctx.taught, { relativenumber: rnu, prefer: ctx.own, oracle });
   // Reinforce this lesson: a route using its own key is ranked before a cheaper one that does not.
   // A search to a spot on the line you are on is not what a Search lesson teaches: f/t first there.

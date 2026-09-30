@@ -30,7 +30,7 @@ describe('registry', () => {
       'getting-around', 'small-edits', 'next-steps', 'insert-like-a-pro', 'essential-motions', 'screen-movement',
       'basic-operators', 'text-objects', 'visual-mode', 'search', 'indent-case',
       'registers', 'macros',
-      'buffers-files', 'windows-tabs', 'marks-jumps', 'quickfix', 'finding-things', 'file-navigation',
+      'buffers-files', 'windows-tabs', 'marks-jumps', 'quickfix', 'code-navigation', 'finding-things', 'file-navigation',
       'command-line', 'substitute', 'global-commands',
       'neovim-builtins', 'more-text-objects', 'jumping', 'surround', 'insert-power', 'git',
       'challenges',

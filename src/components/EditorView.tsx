@@ -8,6 +8,7 @@ import type { Window } from '../vim/layout';
 import { type Pos, cmpPos } from '../vim/types';
 import { C, colorize } from '../ui/syntax';
 import type { Annotations } from '../lessons/goalDiff';
+import { cellWidths, displayWidth } from './tabs';
 
 export type Overlay = {
   target: Pos | null;
@@ -162,6 +163,7 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
   const insertish = current && (vim.mode === 'insert' || vim.mode === 'replace');
 
   const rowsOut: ReactNode[] = [];
+  const ts = Number(vim.options.tabstop) || 8;
   shown.forEach((l, rowIdx) => {
     pushVirt(l);
     // Insert hints float just above their row. The single pane has headroom for its first row;
@@ -196,6 +198,7 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
     const t = buf.line(l);
     const cols = colorize(t, buf.filetype);
     const chars = t.length ? [...t] : [];
+    const widths = cellWidths(t, ts);
     const cells: ReactNode[] = [];
     const nCells = Math.max(chars.length, insertish && isCurLine ? cur.col + 1 : 0, 1);
     for (let c = conceal.get(l) ?? 0; c < nCells; c++) {
@@ -250,7 +253,7 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
       cells.push(
         <span key={c} className={cls} style={{ color, background: bg, boxShadow: shadow, textDecoration: deco }}
           data-cursor={isCursor || undefined} data-target={(overlay?.target && overlay.target.line === l && overlay.target.col === c) || undefined}>
-          {over ?? (ch === '\t' ? ' '.repeat(Number(vim.options.tabstop) || 8) : ch === '\0' ? '^@' : ch.charCodeAt(0) < 32 ? '^' + String.fromCharCode(ch.charCodeAt(0) + 64) : ch)}
+          {over ?? (ch === '\t' ? ' '.repeat(widths[c] ?? ts) : ch === '\0' ? '^@' : ch.charCodeAt(0) < 32 ? '^' + String.fromCharCode(ch.charCodeAt(0) + 64) : ch)}
           {hint && <span className="hint">{hint}</span>}
         </span>,
       );
@@ -268,7 +271,7 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
         <span className="ev-text">
           {cells}
           {v && <span className="ev-virt" style={{ color: v.color }}>  {v.text}</span>}
-          {overlay?.ann && <AnnMarks ann={overlay.ann} line={l} text={t} next={buf.line(l + 1)} first={l === 0} />}
+          {overlay?.ann && <AnnMarks ann={overlay.ann} line={l} text={t} next={buf.line(l + 1)} first={l === 0} tabstop={ts} />}
         </span>
       </div>,
     );
@@ -473,11 +476,12 @@ function InsertHint({ text }: { text: string }) {
 }
 
 /** Goal annotations drawn over a row: inserted text tags and new-line markers. */
-function AnnMarks({ ann, line, text, next, first }: { ann: Annotations; line: number; text: string; next: string; first: boolean }) {
+function AnnMarks({ ann, line, text, next, first, tabstop }: { ann: Annotations; line: number; text: string; next: string; first: boolean; tabstop: number }) {
   const out: ReactNode[] = [];
   const marker = (after: number, lines: string[], key: string, above: boolean) => {
-    const indent = /^\s*/.exec(lines[0])![0].length;
-    const clear = Math.max(text.length, above ? 0 : next.length, indent) + 2;
+    // Screen columns, not characters: a tab-indented line (Go) starts a tab stop in per tab.
+    const indent = displayWidth(/^\s*/.exec(lines[0])![0], tabstop);
+    const clear = Math.max(displayWidth(text, tabstop), above ? 0 : displayWidth(next, tabstop), indent) + 2;
     out.push(
       <span key={key} className={'ann-newline' + (above ? ' above' : '')} style={{ left: `${indent}ch` }}>
         <span className="ann-dash" style={{ width: `${Math.max(2, clear - indent)}ch` }} />

@@ -319,6 +319,10 @@ export class Vim {
     const e = this.tables.o.get(keyOf(parseKeys(keys)));
     return e && e.type === 'motion' ? e.spec : undefined;
   }
+  /** Every key sequence defined or mapped in a mode (which-key and the keymaps picker read it). */
+  definedKeys(mode: 'n' | 'v' | 'o' = 'n'): Key[][] {
+    return [...this.tables[mode].keys()].map(k => k.split(SEP));
+  }
   /** Open the / or ? prompt (the action registered in commands.ts). */
   openSearchFor(dir: 1 | -1) {
     this.getAction(dir === 1 ? '/' : '?', 'o')!.run({ count: 1, hasCount: false, reg: null, arg: '', keys: dir === 1 ? '/' : '?' });
@@ -472,7 +476,8 @@ export class Vim {
   // ---- folds ---------------------------------------------------------------------
   closedFoldAt(line: number, win = this.win) {
     let best: { start: number; end: number } | null = null;
-    for (const f of win.folds) if (f.closed && line >= f.start && line <= f.end && (!best || f.start < best.start)) best = f;
+    // 'foldminlines' 1: a one-line fold never shows closed.
+    for (const f of win.folds) if (f.closed && f.end > f.start && line >= f.start && line <= f.end && (!best || f.start < best.start)) best = f;
     return best;
   }
   /** Buffer lines shown as screen rows (a closed fold is one row). */
@@ -603,6 +608,7 @@ export class Vim {
   // ---- undo -----------------------------------------------------------------------
   /** Open an undoable change. `at`: where undo/redo return the cursor (an operator's start). */
   beginChange(at?: Pos) {
+    this.buf.checkModifiable();
     if (this.snapshotTaken) {
       if (at) this.buf.setUndoCursor(at);
       return;
@@ -674,8 +680,8 @@ export class Vim {
       this.endChange();
       this.clampCursor(false);
     }
-    const f = this.closedFoldAt(this.cursor.line);
-    if (f && this.mode !== 'visual') this.win.cursor = pos(f.start, this.win.cursor.col);
+    // A cursor inside a closed fold keeps its line (G, zM, zc leave it there, as in Neovim); the
+    // fold's row shows it, j / k leave the fold whole and operators take the fold whole.
     this.clampCursor();
     for (const h of this.cursorHooks) h();
     this.scrollToCursor();
@@ -1017,7 +1023,9 @@ export class Vim {
       if (!res) fail();
       if (res.jump) this.pushJump();
       this.applyMotion(res);
-      if (res.openFold || res.jump) this.openFoldsAt(this.cursor.line);
+      // 'foldopen' (Neovim's default): jumps and searches open folds, and so does any sideways
+      // motion ("hor": l, w, f, $ …); j / k and G / gg do not.
+      if (res.openFold ?? (res.jump || !res.linewise)) this.openFoldsAt(this.cursor.line);
       this.dotCapture = null;
       if (this.depth === 0) this.finishCommand(this.visual ? 'visual' : 'motion');
       return;
@@ -1124,16 +1132,19 @@ export class Vim {
     const t = p.target!;
     if (t.kind === 'self') {
       const start = this.cursor.line;
-      const end = start + count - 1;
+      // The count is in screen lines: a closed fold counts as one.
+      let end = start;
+      for (let i = 1; i < count && end < this.buf.lineCount; i++) end = (this.closedFoldAt(end)?.end ?? end) + 1;
       // Vim runs cc / dd / gcc as `_`: the start is the earlier of the cursor and the target's first non-blank.
       const fnb = pos(Math.min(end, this.buf.lineCount - 1), firstNonBlank(this.line(Math.min(end, this.buf.lineCount - 1))));
       this.opStart = cmpPos(fnb, this.cursor) < 0 ? fnb : { ...this.cursor };
       if (end >= this.buf.lineCount) {
         // Vim's cursor_down(): a count past the end stops at the last line, but fails on it.
-        if (start === this.buf.lineCount - 1) return null;
-        return { start: pos(start, 0), end: pos(this.buf.lineCount - 1, 0), kind: 'line' };
+        if ((this.closedFoldAt(start)?.end ?? start) === this.buf.lineCount - 1) return null;
+        return { start: pos(this.closedFoldAt(start)?.start ?? start, 0), end: pos(this.buf.lineCount - 1, 0), kind: 'line' };
       }
-      return { start: pos(start, 0), end: pos(end, 0), kind: 'line' };
+      // Closed folds at either end are included whole (dd on a fold deletes it).
+      return { start: pos(this.closedFoldAt(start)?.start ?? start, 0), end: pos(this.closedFoldAt(end)?.end ?? end, 0), kind: 'line' };
     }
     if (t.kind !== 'entry') return null;
     const te = t.entry;
@@ -1177,6 +1188,7 @@ export class Vim {
     let start = cur, end = res.pos;
     const backwards = cmpPos(end, start) < 0;
     if (backwards) [start, end] = [end, start];
+    [start, end] = this.includeClosedFolds(start, end, !!res.inclusive || !!res.linewise);
     this.opStart = { ...start };
     if (res.linewise) return this.forceKind({ start: pos(start.line, 0), end: pos(end.line, 0), kind: 'line' }, t.force);
     // nvim's bundled matchit maps o_% through a forced characterwise Visual selection, so d% never
@@ -1185,6 +1197,19 @@ export class Vim {
     // Charwise: o_v, :help exclusive-linewise and :help d apply to every motion.
     if (!res.inclusive && cmpPos(start, end) === 0 && !t.force) return null;
     return this.vimCharwiseRange(start, end, !!res.inclusive, opKeys === 'd', t.force, true);
+  }
+
+  /**
+   * Outside Visual mode Vim includes closed folds whole (do_pending_operator): a start inside one
+   * moves to column 0 of its first line, an end inside one to the end of its last line (for an
+   * exclusive motion only when the end is past column 0).
+   */
+  private includeClosedFolds(start: Pos, end: Pos, inclusiveOrLine: boolean): [Pos, Pos] {
+    const fs = this.closedFoldAt(start.line);
+    if (fs) start = pos(fs.start, 0);
+    const fe = this.closedFoldAt(end.line);
+    if (fe && (end.col > 0 || inclusiveOrLine)) end = pos(fe.end, this.line(fe.end).length);
+    return [start, end];
   }
 
   /** cw/cW: like ce/cE, but a cursor on a word's last character stays put. */
@@ -1447,9 +1472,11 @@ export class Vim {
   // ---- insert mode ---------------------------------------------------------------------
 
   startInsert(kind: string, at: Pos, count = 1, extra: Partial<InsertState> = {}) {
+    this.buf.checkModifiable();
     this.mode = kind === 'R' ? 'replace' : 'insert';
     this.win.cursor = { ...at };
     this.clampCursor(true);
+    this.openFoldsAt(this.cursor.line); // Insert mode opens the folds at the cursor (edit() → foldOpenCursor)
     this.insert = { kind, start: { ...this.cursor }, keys: [], count, pending: '', pendingBuf: '', typed: '', replaced: new Map(), ...extra };
     this.buf.marks.set('[', { ...this.cursor });
   }
@@ -1488,7 +1515,7 @@ export class Vim {
         const t = this.line();
         const rest = t.slice(c.col);
         b.setLine(c.line, t.slice(0, c.col).replace(/[ \t]+$/, (m) => (t.slice(0, c.col).trim() ? '' : m)));
-        b.splice(c.line + 1, 0, [indent + rest.replace(/^[ \t]+/, '')]);
+        b.splice(c.line + 1, 0, [indent + rest.replace(/^[ \t]+/, '')], { split: true });
         this.win.cursor = pos(c.line + 1, indent.length);
         b.recordChange({ ...this.cursor });
         ins.keys.push(key);

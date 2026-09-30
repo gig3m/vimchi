@@ -18,4 +18,5 @@ Tailscale; ufw 80/443 only (SSH over the tailnet); unattended-upgrades with a 09
 - **Server hardening for the public:** per-IP rate limits on `/auth/*` and run writes,
   `VIMCHI_TRUST_PROXY=1` so the client IP comes from Caddy's `X-Forwarded-For`, and a
   20,000-run cap per user (oldest dropped).
-- The tailnet instance on sleepwalker (`vimchi.nrsil.io`) stays as staging.
+- The tailnet instance on sleepwalker (`vimchi.nrsil.io`) was torn down on 2026-09-30; this
+  droplet is the only deployment.

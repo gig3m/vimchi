@@ -357,7 +357,7 @@ export const commandLine: Section = {
     {
       id: 'visual-ranges',
       title: 'Visual Ranges',
-      chips: ["'<,'>", 'gv'],
+      chips: ["'<,'>"],
       keyCards: [
         { key: 'V :', glyph: "'<,'>", label: 'selected lines' },
         { key: "'<", glyph: '⌈', label: 'selection start' },
@@ -817,6 +817,90 @@ export const commandLine: Section = {
       },
     },
     {
+      id: 'macros-over-lines',
+      title: 'Macros over a Range',
+      chips: [':norm @a'],
+      keyCards: [
+        { key: ':norm', glyph: ':n', label: 'run normal keys', sub: 'on every line in a range' },
+        { key: '@a', glyph: '▶', label: 'the macro to run' },
+      ],
+      intro: (
+        <>
+          <p>
+            Record a macro once, then hand it to <Code>:norm</Code>: <Code>:'&lt;,'&gt;norm @a</Code> runs macro{' '}
+            <Code>a</Code> on every selected line, with the cursor at the start of each.
+          </p>
+          <p>
+            The macro needs no <Code>j</Code> to move on, and a line where it fails is skipped instead of ending the
+            run. That makes it safer than <Code>5@a</Code> when only some lines fit.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Record or reuse a macro, then run it over a range with <Code>:norm</Code>. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Pick lines by pattern',
+        body: (
+          <p>
+            Global Commands pairs this with <Code>:g</Code>: <Code>:g/=/norm @a</Code> runs the macro only on lines
+            that contain an <Code>=</Code>, wherever they are in the file.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'keys.ts' },
+        rounds: [
+          {
+            prompt: 'Record a macro that drops the trailing comment, then run it on the rest.',
+            setup: {
+              text: ['const retries = 3 // tries', 'const delayMs = 250', 'const timeoutMs = 5000 // ms', 'const jitter = true'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['const retries = 3', 'const delayMs = 250', 'const timeoutMs = 5000', 'const jitter = true'] },
+            solution: 'qaf/hDq:2,$norm @a<CR>',
+          },
+          {
+            prompt: 'Record a macro that makes a line a numbered step, then run it on the other lines.',
+            setup: {
+              name: 'deploy.md',
+              text: ['# Deploy', '', 'Tag the release', 'Build the image', 'Push to the registry', 'Roll out to staging', 'Promote to prod'],
+              cursor: { line: 2, col: 0 },
+            },
+            goal: {
+              text: ['# Deploy', '', '1. Tag the release', '1. Build the image', '1. Push to the registry', '1. Roll out to staging', '1. Promote to prod'],
+            },
+            solution: 'qaI1. <Esc>q:4,$norm @a<CR>',
+          },
+          {
+            prompt: 'Register q quotes a line and adds a comma. Select the three hosts and run it.',
+            setup: {
+              name: 'allow.ts',
+              text: ['export const ALLOWED = [', 'example.com', 'api.example.com', 'cdn.example.com', '];'],
+              registers: { q: `I  '\x1bA',\x1b` },
+              cursor: { line: 1, col: 0 },
+            },
+            goal: { text: ['export const ALLOWED = [', "  'example.com',", "  'api.example.com',", "  'cdn.example.com',", '];'] },
+            solution: 'Vjj:norm @q<CR>',
+          },
+          {
+            prompt: 'Register a turns "key = value" into "key: value". Run it on every line; the comments have no "=" and are skipped.',
+            setup: {
+              name: 'settings.toml',
+              text: ['# server', 'host = "0.0.0.0"', 'port = 8080', '# logging', 'level = "info"', 'format = "json"'],
+              registers: { a: '0f=hxr:' },
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['# server', 'host: "0.0.0.0"', 'port: 8080', '# logging', 'level: "info"', 'format: "json"'] },
+            solution: ':%norm @a<CR>',
+          },
+        ],
+      },
+    },
+    {
       id: 'repeat-ex',
       title: 'Repeat a Command',
       chips: ['@:', '@@'],
@@ -1143,6 +1227,114 @@ export const commandLine: Section = {
               ],
             },
             solution: 'q:4k<CR>',
+          },
+        ],
+      },
+    },
+    {
+      id: 'set-options',
+      title: 'Options',
+      chips: [':set x', ':set x!', ':set x?'],
+      keyCards: [
+        { key: ':set x', glyph: 'on', label: 'switch on', sub: ':set nox is off' },
+        { key: ':set x!', glyph: '⇄', label: 'toggle' },
+        { key: ':set x?', glyph: '?', label: 'show the value' },
+        { key: ':set x=n', glyph: '=', label: 'set a value' },
+      ],
+      intro: (
+        <>
+          <p>
+            Options change how the editor behaves. <Code>:set rnu</Code> switches one on and <Code>:set nornu</Code>{' '}
+            off; <Code>:set rnu!</Code> flips it; <Code>:set rnu?</Code> shows it. Number options take a value:{' '}
+            <Code>:set sw=4</Code>.
+          </p>
+          <p>
+            Every option has a long and a short name: <Code>relativenumber</Code> is <Code>rnu</Code>,{' '}
+            <Code>ignorecase</Code> is <Code>ic</Code>, <Code>shiftwidth</Code> is <Code>sw</Code>. With{' '}
+            <Code>rnu</Code> on, the gutter shows how far each line is from the cursor, which is the count{' '}
+            <Code>d3j</Code> needs.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Set the option the round names, then finish the edit if there is one. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Keeping an option',
+        body: (
+          <p>
+            <Code>:set</Code> lasts until you quit. To keep an option, put it in your config:{' '}
+            <Code>vim.opt.relativenumber = true</Code>. <Code>:set rnu&</Code> puts one back to its default.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'server.ts', text: SERVER_TS },
+        rounds: [
+          {
+            prompt: 'Turn on relativenumber, then delete updatetime and the two split lines.',
+            setup: { name: 'init.lua', text: INIT_LUA, cursor: { line: 14, col: 0 } },
+            goal: {
+              text: [...INIT_LUA.slice(0, 14), ...INIT_LUA.slice(17)],
+              check: v => v.opt('relativenumber') === true,
+            },
+            solution: ':set rnu<CR>d2j',
+          },
+          {
+            prompt: 'Is wrap on? Show its value.',
+            setup: { cursor: { line: 5, col: 0 }, options: { wrap: true } },
+            goal: { check: v => /^\s*wrap$/.test(v.message?.text ?? '') },
+            solution: ':set wrap?<CR>',
+          },
+          {
+            prompt: 'Wrap is on. Toggle it off.',
+            setup: { cursor: { line: 5, col: 0 }, options: { wrap: true } },
+            goal: { check: v => v.opt('wrap') === false },
+            solution: ':set wrap!<CR>',
+          },
+          {
+            prompt: 'The last search was todo, but the file says TODO. Turn on ignorecase and press n.',
+            setup: {
+              name: 'queue.lua',
+              text: [
+                'local M = {}',
+                '',
+                'function M.push(q, item)',
+                '  table.insert(q, item)',
+                'end',
+                '',
+                'function M.pop(q)',
+                '  -- TODO: return nil when empty',
+                '  return table.remove(q, 1)',
+                'end',
+              ],
+              cursor: { line: 2, col: 9 },
+              search: 'todo',
+            },
+            goal: { cursor: { line: 7, col: 5 }, check: v => v.opt('ignorecase') === true },
+            solution: ':set ic<CR>n',
+          },
+          {
+            prompt: 'Hide the line numbers.',
+            setup: { cursor: { line: 3, col: 6 } },
+            goal: { check: v => v.opt('number') === false },
+            solution: ':set nu!<CR>',
+          },
+          {
+            prompt: 'Set shiftwidth to 4, then indent the return line.',
+            setup: {
+              name: 'sum.lua',
+              text: ['local function sum(xs)', '  local n = 0', 'return n', 'end'],
+              cursor: { line: 2, col: 0 },
+            },
+            goal: {
+              text: ['local function sum(xs)', '  local n = 0', '    return n', 'end'],
+              check: v => v.opt('shiftwidth') === 4,
+            },
+            solution: ':set sw=4<CR>>>',
           },
         ],
       },

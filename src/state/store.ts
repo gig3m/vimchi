@@ -3,7 +3,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { type Account, ApiError, api } from './api';
+import { coachGuest, coachSignedIn, forgetGuestCoach } from './coach';
 import { flushOutbox, loadOutbox, pushOutbox, removeOutbox as removeSent, takeOutbox } from './outbox';
+import { MAX_RUN_TIME, clampRun } from './run';
 
 export type Run = {
   lesson: string;
@@ -16,10 +18,18 @@ export type Run = {
   score: number;
 };
 
+export { MAX_RUN_TIME, clampRun };
+
 type Local = { lesson: string; runs: Run[] };
 const KEY = 'vimchi.v1';
 /** Guest runs go to the account this many at a time (the server caps an import at 5000). */
 const IMPORT_CHUNK = 1000;
+/** Guest runs as import requests: chunked, and clamped, since runs stored before the cap existed can be over it. */
+export function importChunks(runs: Run[]): Run[][] {
+  const out: Run[][] = [];
+  for (let i = 0; i < runs.length; i += IMPORT_CHUNK) out.push(runs.slice(i, i + IMPORT_CHUNK).map(clampRun));
+  return out;
+}
 /** Where progress lived before the rename; read once as a fallback. */
 const OLD_KEY = 'hjkl.v1';
 
@@ -75,6 +85,7 @@ export function useProgress(): Progress {
     if (pending.length) updateLocal(v => ({ ...v, runs: [...v.runs, ...pending] }));
     setAccount(null);
     setServerRuns([]);
+    coachGuest();
     setSyncError('Your session expired. Sign in again; nothing was lost.');
   }, [account, updateLocal]);
 
@@ -103,25 +114,30 @@ export function useProgress(): Progress {
         // Guest runs move to the account in chunks; only the runs that were sent are dropped, so a
         // run finished while the import is in flight is not wiped with them.
         const guest = loadLocal().runs;
+        let imported = true;
         if (guest.length) {
           try {
-            for (let i = 0; i < guest.length; i += IMPORT_CHUNK) {
-              const chunk = guest.slice(i, i + IMPORT_CHUNK);
+            for (const chunk of importChunks(guest)) {
               await api.importRuns(chunk);
               const sent = new Set(chunk.map(r => `${r.lesson}@${r.at}`));
               updateLocal(v => ({ ...v, runs: v.runs.filter(r => !sent.has(`${r.lesson}@${r.at}`)) }));
             }
           } catch {
+            imported = false;
             setSyncError('Could not move guest runs to your account. They are still saved in this browser.');
           }
         }
+        // The guest's coach profile moved with their runs (each carries its events); the account's
+        // profile is read only now, so it includes them.
+        if (imported) forgetGuestCoach();
+        void coachSignedIn();
         const runs = await api.runs().catch(() => [] as Run[]);
         if (!live) return;
         setAccount(me);
         // Anything still unsent counts as the learner's until the server takes it; then send it.
         setServerRuns([...runs, ...loadOutbox(me.login).filter(o => !runs.some(r => r.lesson === o.lesson && r.at === o.at))]);
         void flush(me.login);
-      }
+      } else coachGuest();
       setLoading(false);
     })();
     return () => { live = false; };
@@ -135,7 +151,8 @@ export function useProgress(): Progress {
     return () => { window.removeEventListener('online', onOnline); clearTimeout(retryT.current); };
   }, [account, flush]);
 
-  const addRun = useCallback((run: Run) => {
+  const addRun = useCallback((finished: Run) => {
+    const run = clampRun(finished);
     if (!account) return updateLocal(v => ({ ...v, runs: [...v.runs, run] }));
     setServerRuns(rs => [...rs, run]);
     pushOutbox(account.login, run);
@@ -149,6 +166,7 @@ export function useProgress(): Progress {
     api.signOut().finally(() => {
       setAccount(null);
       setServerRuns([]);
+      coachGuest();
     });
   }, []);
 
