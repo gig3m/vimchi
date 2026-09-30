@@ -7,6 +7,7 @@ import type { RoundsChallenge } from '../../lessons/types';
 import { parseKeys } from '../../vim/keys';
 import { coach } from '../index';
 import { coachable } from '../vocab';
+import { LESSONS } from '../../lessons';
 
 function play(text: string[], keys: string, lessonId = 'insert-mode', cursor = { line: 0, col: 0 }) {
   const c: RoundsChallenge = { kind: 'rounds', base: { text, name: 'a.ts', cursor }, rounds: [{ goal: { text: ['__never__'] }, solution: 'x' }] };
@@ -79,10 +80,30 @@ describe('coach heuristics from the reference audit', () => {
   it('a two-key run beaten by one key is not worth showing', () => {
     expect(play(['abc def', 'ghi jkl'], 'j0x').critiques).toEqual([]); // j0 → w saves 1 on a 2-key run
   });
-  it('never undercuts a key the current SECTION drills', () => {
+  it('never undercuts a key drilled by this lesson or the ones before it in the section', () => {
     // clear-highlights is in the Search section: searching is the point, even if 7j reaches the line.
     const lines = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'leader'];
     expect(play(lines, '/leader<CR>x', 'clear-highlights').critiques).toEqual([]);
+  });
+  it('a j/k/l run in an operator lesson is critiqued: dk drills d and k as an operator, not k as a walk', () => {
+    const r = play(['abc def ghi jkl mno', 'x'], 'kllllllllllllllD', 'delete-lines', { line: 1, col: 0 });
+    expect(r.critiques.some(c => c.you.includes('lll'))).toBe(true);
+  });
+  it('w-spam in the f lesson is told about f', () => {
+    const r = play(['send(order, { retries: 3 });'], 'wwwwwx', 'find-char');
+    expect(r.critiques.some(c => c.better.some(b => /^[ft]/.test(b.keys)))).toBe(true);
+  });
+  it('repeated f, in the ; lesson is told about ; (the target char is an argument, not the drilled key)', () => {
+    const r = play(['a,b,c,d,e,f'], 'f,f,f,f,x', 'repeat-find');
+    expect(r.critiques.some(c => c.better.some(b => b.keys.includes(';')))).toBe(true);
+  });
+  it('the reference line shows solutions whose only "untaught" keys are arguments or typed text', () => {
+    const l = LESSONS['find-char'];
+    const s = new Session(l.challenge as RoundsChallenge);
+    let t = 0;
+    for (let i = 0; i < 80 && !s.roundDone && !s.done; i++) s.key('l', (t += 50)); // walk to the ( instead of f(
+    const r = coach(s, 'find-char');
+    expect(r.reference[0]?.ref).toBe((l.challenge as RoundsChallenge).rounds[0].solution);
   });
   it(':%s// reads the search pattern, so a search is not replaced before it', () => {
     const r = play(['x 12ms', 'y'], '/\\d\\+ms<CR>:%s//ZZ/<CR>', 'sub-last-search');

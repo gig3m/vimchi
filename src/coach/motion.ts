@@ -69,7 +69,7 @@ const keyCost = (m: string, count: number) => (isFind(m) ? 2 + (count - 1) : (co
 /** A good alternative is short; searching deeper only finds long routes nobody would suggest. */
 export const MAX_SEARCH_COST = 10;
 
-export type MotionOpts = { relativenumber?: boolean };
+export type MotionOpts = { relativenumber?: boolean; prefer?: Set<string> };
 
 /** The keyword under or after the cursor on its line, as Vim's * sees it. */
 function wordUnder(l: string, col: number): { text: string; col: number } | null {
@@ -113,9 +113,12 @@ export function betterMotions(lines: readonly string[], from: Pos, want: number,
     const prev = best.get(k) ?? Infinity;
     const hit = same(st.pos, to);
     // A cheaper route to a state wins; equal-cost routes to the TARGET are all kept so ties can be
-    // ranked by family (0 before b, Fc before 6h) rather than by expansion order.
-    if (prev < cost || (prev === cost && !hit)) return;
-    best.set(k, cost);
+    // ranked by family (0 before b, Fc before 6h) rather than by expansion order. A dearer route
+    // to the target that uses a preferred key (the current lesson's own) is kept too, so the coach
+    // can reinforce the lesson instead of only naming the cheapest way.
+    const preferred = hit && !!opts.prefer && uses.some(u => opts.prefer!.has(u));
+    if (!preferred && (prev < cost || (prev === cost && !hit))) return;
+    if (cost <= prev) best.set(k, cost);
     const typed = isFind(m) ? m + ';'.repeat(count - 1) : (count > 1 ? String(count) : '') + m;
     const node: Node = { st, keys: n.keys + typed, cost, uses: new Set([...n.uses, ...uses]), family: n.keys ? n.family : family };
     if (hit) found.push({ keys: node.keys, cost, uses: [...node.uses], family: node.family });
@@ -154,7 +157,7 @@ export function betterMotions(lines: readonly string[], from: Pos, want: number,
       for (const ch of lines[to.line]) {
         if (ch === ' ' || seen.has(ch)) continue;
         seen.add(ch);
-        for (const f of ['f', 't', 'F', 'T']) for (let r = 1; r <= 3; r++) expand(n, f + ch, r, 'find', r > 1 ? [f, ';'] : [f]);
+        for (const f of ['f', 't', 'F', 'T']) for (let r = 1; r <= 4; r++) expand(n, f + ch, r, 'find', r > 1 ? [f, ';'] : [f]);
       }
     }
   }

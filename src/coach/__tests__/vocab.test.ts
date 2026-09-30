@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { LESSONS, ORDER, SECTIONS } from '../../lessons';
-import { COUNTS_TAUGHT_FROM, coachable, taughtBy, tokenize, usesAllowed } from '../vocab';
+import { COUNTS_TAUGHT_FROM, coachable, commandTokens, taughtBy, tokenize, usesAllowed } from '../vocab';
 
 describe('tokenize', () => {
   it.each([
@@ -16,6 +16,15 @@ describe('tokenize', () => {
       for (const t of tokenize(chip)) expect(t, `${l.id}: ${chip}`).toMatch(/^(<[^\s>]+>|[^\s]{1,3})$/);
     }
   });
+});
+
+describe('commandTokens: the command a learner ran, arguments and text stripped', () => {
+  it.each([
+    [['f', '('], ['f']], [['2', 'w'], ['w']], [['"', 'a', 'y', 'y'], ['"', 'yy']], [['c', 'i', '('], ['c', 'i(']],
+    [[':', 'n', 'o', 'h', '<CR>'], [':']], [['/', 'l', 'e', 'a', 'd', 'e', 'r', '<CR>'], ['/']], [['d', 'k'], ['d', 'k']],
+    [['r', 'z'], ['r']], [['m', 'a'], ['m']], [['`', 'a'], ['`']], [['@', 'q'], ['@']], [['3', 'd', 'w'], ['d', 'w']],
+    [['A', ';', '<Esc>'], ['A']], [['c', 'w', 'u', 's', 'e', 'r', '<Esc>'], ['c', 'w']], [['g', 'g'], ['gg']],
+  ] as [string[], string[]][])('%j → %j', (keys, want) => expect(commandTokens(keys)).toEqual(want));
 });
 
 describe('taughtBy', () => {
