@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<rect x="14" y="1" width="36" height="9" rx="3" fill="#bd93f9"/>
+<clipPath id="jarIn"><rect x="12" y="17" width="40" height="42" rx="7"/></clipPath>
+<rect x="12" y="34.6" width="40" height="24.4" fill="#ff5555" clip-path="url(#jarIn)"/>
+<rect x="19" y="37" width="9" height="16" fill="#f8f8f2"/>
+<rect x="10" y="15" width="44" height="46" rx="9" fill="none" stroke="#bd93f9" stroke-width="4"/>
+</svg>

@@ -1,3 +1,5 @@
+<p><img src="public/logo/vimchi-lockup.svg" alt="vimchi" width="224" height="64"></p>
+
 # vimchi
 
 A browser Vim tutor, inspired by vim-hero's short-lesson format — small lessons of 1–4 keys, each with one practice
