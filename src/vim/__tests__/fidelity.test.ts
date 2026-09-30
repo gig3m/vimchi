@@ -248,6 +248,32 @@ describe('<C-o> in insert mode restarts the insert', () => {
   });
 });
 
+describe('a <C-o> command that fails, is cancelled or uses the command line returns to Insert', () => {
+  it.each([
+    ['|x', 'ifoo<C-o>lbar<Esc>', 'fooba|rx'],
+    ['|abc', 'ifoo<C-o>jbar<Esc>', 'fooba|rabc'],
+    ['|abc\ndef', 'Afoo<C-o>:<CR>bar<Esc>', 'abcfooba|r\ndef'],
+    ['|abc def', 'ifoo<C-o>/def<CR>bar<Esc>', 'fooabc ba|rdef'],
+    ['|abc\ndef', 'Afoo<C-o>:s/a/A/<CR>bar<Esc>', 'ba|rAbcfoo\ndef'],
+    ['|abc def', 'ifoo<C-o>/def<Esc>bar<Esc>', 'fooba|rabc def'],
+    ['|abc def', 'ifoo<C-o>:<Esc>bar<Esc>', 'fooba|rabc def'],
+    ['|abc def', 'ifoo<C-o>/zzz<CR>bar<Esc>', 'fooba|rabc def'],
+    ['|abc', 'ifoo<C-o><Esc>bar<Esc>', 'fooba|rabc'],
+    ['|abc', 'ifoo<C-o>d<Esc>bar<Esc>', 'fooba|rabc'],
+    ['|abc', 'ifoo<C-o>Zbar<Esc>', 'fooa|rabc'],
+    // The insert restarts: its own undo step, and . repeats the new part as an i.
+    ['|x', 'ifoo<C-o>lbar<Esc>u', 'foo|x'],
+    ['|abc\ndef', 'Afoo<C-o>:s/a/A/<CR>bar<Esc>u', '|Abcfoo\ndef'],
+    ['|abc\ndef', 'Afoo<C-o>:s/a/A/<CR>bar<Esc>uu', '|abcfoo\ndef'],
+    ['|abc def', 'ifoo<C-o>/def<CR>bar<Esc>u', 'fooabc |def'],
+    ['|abc def', 'ifoo<C-o>/def<CR>bar<Esc>0.', 'ba|rfooabc bardef'],
+    ['|x', 'ifoo<C-o>lbar<Esc>0.', 'ba|rfoobarx'],
+    ['|abc def', 'ifoo<C-o>/zzz<CR>bar<Esc>0.', 'ba|rfoobarabc def'],
+  ])('%j %s', (doc, keys, want) => {
+    expect(C(doc, keys)).toBe(want);
+  });
+});
+
 describe('r<C-v> takes the next character literally, or a code', () => {
   it.each([
     ['r<C-v><Tab>', '\tbc'],
