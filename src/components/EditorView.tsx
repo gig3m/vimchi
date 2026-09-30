@@ -62,7 +62,7 @@ export function EditorView({ vim, focused, overlay, status, note }: Props) {
   const multi = wins.length > 1;
   const rowPx = multi ? 24 : 30;
   const rows = vim.screenRows;
-  const rects = tab.rects(rows, 120);
+  const rects = tab.layoutFor(rows, 120);
   // Keep every window's scroll position valid after layout changes.
   for (const w of wins) if (w !== vim.win) clampTop(vim, w);
   vim.scrollToCursor();

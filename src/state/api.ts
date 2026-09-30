@@ -1,4 +1,5 @@
 import type { Run } from './store';
+import type { CoachFields, CoachProfile } from './coach';
 
 export type Account = { login: string; name: string; avatarUrl: string; created: number };
 
@@ -25,8 +26,13 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
 export const api = {
   me: () => req<Account>('GET', '/api/me'),
   runs: () => req<Run[]>('GET', '/api/runs'),
-  addRun: (run: Run) => req<void>('POST', '/api/runs', run),
-  importRuns: (runs: Run[]) => req<void>('POST', '/api/runs/import', runs),
-  signOut: () => req<void>('POST', '/auth/logout'),
+  /** A run may carry its coach events and key mix (optional; older runs have neither). */
+  addRun: (run: Run & CoachFields) => req<void>('POST', '/api/runs', run),
+  importRuns: (runs: (Run & CoachFields)[]) => req<void>('POST', '/api/runs/import', runs),
+  coachProfile: () => req<CoachProfile>('GET', '/api/coach/profile'),
+  /** Signing out also tells the coach memory to switch to the guest profile. */
+  signOut: () => req<void>('POST', '/auth/logout').finally(() => {
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('vimchi:signed-out'));
+  }),
   loginUrl: (returnTo: string) => '/auth/github/login?return=' + encodeURIComponent(returnTo),
 };

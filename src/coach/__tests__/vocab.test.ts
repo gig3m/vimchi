@@ -68,3 +68,10 @@ describe('coachable', () => {
     expect(Object.keys(LESSONS).length).toBeGreaterThan(0);
   });
 });
+
+describe('warm-up', () => {
+  it('is coachable; taughtBy knows nothing for it (warmUpTaught unions its picks)', () => {
+    expect(coachable('warm-up')).toBe(true);
+    expect(taughtBy('warm-up').size).toBe(0);
+  });
+});

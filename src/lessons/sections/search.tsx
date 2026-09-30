@@ -90,6 +90,7 @@ export const search: Section = {
           </p>
         ),
       },
+      reps: { mutations: ['wrong-word-run'], count: [10, 15], sections: ['search'] },
       challenge: {
         kind: 'rounds',
         showGoal: false,
@@ -221,6 +222,7 @@ export const search: Section = {
           </>
         ),
       },
+      reps: { mutations: ['wrong-word-run'], count: [10, 15], sections: ['search'] },
       challenge: {
         kind: 'rounds',
         showGoal: false,

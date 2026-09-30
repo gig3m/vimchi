@@ -370,6 +370,9 @@ Generated files with many edits at once; the Coach reviews your keys.
 |---|---|---|---|
 | ★ | Fix the File | `f` `x` `r` `i` | generated |
 | ★ | Operators | `d` `c` `dd` `.` | generated |
+| ★ | Objects and Visual | `ci"` `dap` `>ip` `C-v` | generated |
+| ★ | Registers and Macros | `xp` `ddp` `q` `@a` | generated |
+| ★ | Rename and Replace | `*` `cgn` `:s` `:g` | generated |
 
 ## Coach
 
@@ -392,5 +395,5 @@ editor as you type. Every reference solution yields zero critiques (tested).
 | Project | 6 | 33 | 33 |
 | Patterns | 3 | 33 | 32 |
 | Code | 6 | 28 | 28 |
-| Challenges | 1 | 2 | 0 |
-| **Total** | **29** | **181** | **175** |
+| Challenges | 1 | 5 | 0 |
+| **Total** | **29** | **184** | **175** |

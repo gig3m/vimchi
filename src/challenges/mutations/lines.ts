@@ -2,16 +2,16 @@
 import { pick } from '../rng';
 import { type MutationKind, type Site, keyText, words } from './types';
 
-const indentOf = (l: string) => /^\s*/.exec(l)![0];
-const JUNK: Record<string, string[]> = {
+export const indentOf = (l: string) => /^\s*/.exec(l)![0];
+export const JUNK: Record<string, string[]> = {
   ts: ["console.log('here');", '// TODO: remove', 'debugger;'],
   go: ['fmt.Println("here")', '// TODO: remove'],
   lua: ["print('here')", '-- TODO: remove'],
 };
-const langOf = (lines: readonly string[]) => (lines.some(l => /\bfunc\b|:=/.test(l)) ? 'go' : lines.some(l => /\blocal\b|\bend\b/.test(l)) ? 'lua' : 'ts');
+export const langOf = (lines: readonly string[]) => (lines.some(l => /\bfunc\b|:=/.test(l)) ? 'go' : lines.some(l => /\blocal\b|\bend\b/.test(l)) ? 'lua' : 'ts');
 
 /** Non-blank, indented lines: places a junk line can follow. */
-const bodySites = (lines: readonly string[]): Site[] =>
+export const bodySites = (lines: readonly string[]): Site[] =>
   lines.map((l, line) => ({ l, line })).filter(({ l }) => l.trim() && indentOf(l).length > 0).map(({ l, line }) => ({ line, col: 0, len: l.length }));
 
 /** A junk line inserted AFTER the site line → `dd` on it. */
@@ -31,7 +31,7 @@ export const strayLine: MutationKind = {
   repeat: () => true,
 };
 
-const NOISE = ['temp', 'old', 'new', 'extra', 'copy'];
+export const NOISE = ['temp', 'old', 'new', 'extra', 'copy'];
 
 /** An extra word before an identifier → `dw`. */
 export const strayWord: MutationKind = {

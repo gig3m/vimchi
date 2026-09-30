@@ -171,14 +171,27 @@ export class Tab {
     }
   }
 
-  /** Rectangles for every window, in abstract units (rows × cols). */
+  /**
+   * Lay the tab out for a screen of `screenRows` text rows and size every window to match.
+   * A lone window gets all the rows (the view draws its status line outside the pane); split
+   * windows each lose one row to their own status line.
+   */
+  layoutFor(screenRows: number, cols: number): Map<Window, { top: number; left: number; height: number; width: number }> {
+    const multi = this.windows().length > 1;
+    const out = this.rects(multi ? screenRows : screenRows + 1, cols);
+    for (const [w, r] of out) {
+      w.height = Math.max(1, r.height - 1); // minus the status line
+      w.width = r.width;
+    }
+    return out;
+  }
+
+  /** Rectangles for every window, in abstract units (rows × cols). Pure: sizes nothing. */
   rects(rows: number, cols: number): Map<Window, { top: number; left: number; height: number; width: number }> {
     const out = new Map<Window, { top: number; left: number; height: number; width: number }>();
     const walk = (n: LayoutNode, top: number, left: number, h: number, w: number) => {
       if (n.type === 'leaf') {
         out.set(n.win, { top, left, height: h, width: w });
-        n.win.height = Math.max(1, h - 1); // minus the status line
-        n.win.width = w;
         return;
       }
       const total = n.children.reduce((a, c) => a + c.size, 0);

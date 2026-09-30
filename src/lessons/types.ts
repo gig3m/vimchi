@@ -34,6 +34,23 @@ export type Lesson = {
   boss?: boolean;
   /** The skill IS typing (insert-mode editing keys, replace mode): the typed-text budget is 8 characters per round instead of 6. */
   typing?: boolean;
+  /** Generated mini-rounds of this lesson's edit, offered after the authored rounds (`#<id>?reps=<seed>`). */
+  reps?: RepsSpec;
+};
+
+/**
+ * A lesson's Reps: 10–15 generated edits of the lesson's own kind on a corpus file. Built into a
+ * `generated` challenge by src/challenges/reps.ts; runs are saved as `<lesson-id>-reps`.
+ */
+export type RepsSpec = {
+  /** Mutation kind ids (keys of KINDS in src/challenges/mutations). */
+  mutations: string[];
+  /** Inclusive range of edits per run. */
+  count: [number, number];
+  /** Which corpus to draw from (default code). */
+  corpus?: 'code' | 'prose';
+  /** Section ids whose lessons' keys the coach may suggest. */
+  sections: string[];
 };
 
 export type Section = { id: string; title: string; band: 'core' | 'repeat' | 'project' | 'patterns' | 'code' | 'challenges'; lessons: Lesson[] };
@@ -104,6 +121,13 @@ export type GeneratedChallenge = {
   edits: [number, number];
   /** Section ids whose lessons' keys the coach may suggest (curriculum ladder). */
   sections: string[];
+  /** Plugins the editor needs (mini-ai for `daa`, `<ii`, `daf`). */
+  plugins?: string[];
+  /**
+   * Reps: one skill drilled on purpose, so the mix rules are off. No per-kind cap, and two
+   * fixes may be the same edit even without `.` among the skills.
+   */
+  drill?: boolean;
 };
 
 export type Round = {

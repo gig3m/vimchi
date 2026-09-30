@@ -346,8 +346,9 @@ export const essentialMotions: Section = {
       intro: (
         <>
           <p>
-            <Code>gg</Code> jumps to the first line of the file and <Code>G</Code> to the last. Both land on the first
-            non-blank character.
+            <Code>gg</Code> jumps to the first line of the file and <Code>G</Code> to the last. Neovim keeps your
+            column when it can (Vim's <Code>startofline</Code> is off), so from column 5 you land on column 5 of the
+            new line; add <Code>0</Code> or <Code>^</Code> when you want the start of it.
           </p>
           <p>
             With a count they go to that line: <Code>42G</Code> and <Code>42gg</Code> both jump to line 42. Error messages
@@ -412,12 +413,12 @@ export const essentialMotions: Section = {
           ],
         },
         rounds: [
-          { prompt: 'Go to the last line.', setup: { cursor: { line: 3, col: 1 } }, goal: { cursor: { line: 32, col: 0 } }, solution: 'G' },
-          { prompt: 'Go to the first line.', setup: { cursor: { line: 31, col: 5 } }, goal: { cursor: { line: 0, col: 5 } }, solution: 'gg' },
+          { prompt: 'Go to the last line.', setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: { line: 32, col: 0 } }, solution: 'G' },
+          { prompt: 'Go to the first line.', setup: { cursor: { line: 31, col: 0 } }, goal: { cursor: { line: 0, col: 0 } }, solution: 'gg' },
           { prompt: 'Go to line 25.', setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 24, col: 0 } }, solution: '25G' },
           { prompt: 'Go to line 15.', setup: { cursor: { line: 32, col: 0 } }, goal: { cursor: { line: 14, col: 0 } }, solution: '15G' },
-          { prompt: 'Go to line 30.', setup: { cursor: { line: 10, col: 1 } }, goal: { cursor: { line: 29, col: 1 } }, solution: '30gg' },
-          { prompt: 'Go to line 10.', setup: { cursor: { line: 27, col: 2 } }, goal: { cursor: { line: 9, col: 2 } }, solution: '10G' },
+          { prompt: 'Go to line 30 (your column is kept).', setup: { cursor: { line: 10, col: 1 } }, goal: { cursor: { line: 29, col: 1 } }, solution: '30gg' },
+          { prompt: 'Go to line 10 (your column is kept).', setup: { cursor: { line: 27, col: 2 } }, goal: { cursor: { line: 9, col: 2 } }, solution: '10G' },
         ],
       },
     },
@@ -558,7 +559,7 @@ export const essentialMotions: Section = {
           { setup: { cursor: { line: 15, col: 2 } }, goal: { cursor: { line: 7, col: 29 } }, solution: '%' },
           { setup: { cursor: { line: 7, col: 2 } }, goal: { cursor: { line: 15, col: 2 } }, solution: '$%' },
           { setup: { cursor: { line: 2, col: 26 } }, goal: { cursor: { line: 5, col: 0 } }, solution: '%' },
-          { setup: { cursor: { line: 9, col: 8 } }, goal: { cursor: { line: 9, col: 35 } }, solution: 'f(%' },
+          { setup: { cursor: { line: 9, col: 8 } }, goal: { cursor: { line: 9, col: 35 } }, solution: '%' },
         ],
       },
     },

@@ -424,3 +424,26 @@ const minicyan: CorpusFile = {
 
 export const CORPUS: CorpusFile[] = [lcs, quickSelect, stack, query, version1, kmp, util, version, permissions, minicyan];
 export const CORPUS_BY_NAME: Record<string, CorpusFile> = Object.fromEntries(CORPUS.map(f => [f.name, f]));
+
+/**
+ * Same-language corpus files joined into one buffer, blank line between. Object kinds (strings,
+ * calls, functions) have only a handful of sites per file; joined, a language has enough.
+ */
+export const JOINED: CorpusFile[] = ['ts', 'go', 'lua'].map(ext => {
+  const files = CORPUS.filter(f => f.name.endsWith('.' + ext));
+  return { name: `reps.${ext}`, lines: files.flatMap((f, i) => (i ? ['', ...f.lines] : f.lines)), source: files[0].source };
+});
+
+
+/**
+ * Neighbouring same-language files joined in pairs (60–80 lines): room for Challenges 3 and 4,
+ * whose edits span several lines, to fit 10–14 of them.
+ */
+export const PAIRS: CorpusFile[] = ['ts', 'go', 'lua'].flatMap(ext => {
+  const files = CORPUS.filter(f => f.name.endsWith('.' + ext));
+  return files.map((a, i) => {
+    const b = files[(i + 1) % files.length];
+    const base = (f: CorpusFile) => f.name.slice(0, -ext.length - 1);
+    return { name: `${base(a)}-${base(b)}.${ext}`, lines: [...a.lines, '', ...b.lines], source: a.source };
+  });
+});

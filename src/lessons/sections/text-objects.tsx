@@ -199,6 +199,7 @@ export const textObjects: Section = {
           </p>
         ),
       },
+      reps: { mutations: ['wrong-inner-word', 'stray-word-aw'], count: [10, 15], sections: ['text-objects'] },
       challenge: {
         kind: 'rounds',
         base: { name: 'orders.ts' },
@@ -526,6 +527,7 @@ export const textObjects: Section = {
           </p>
         ),
       },
+      reps: { mutations: ['wrong-string-contents'], count: [10, 15], sections: ['text-objects'] },
       challenge: {
         kind: 'rounds',
         base: { name: 'package.json' },
@@ -678,6 +680,7 @@ export const textObjects: Section = {
           </p>
         ),
       },
+      reps: { mutations: ['wrong-args'], count: [10, 15], sections: ['text-objects'] },
       challenge: {
         kind: 'rounds',
         base: { name: 'greet.ts' },

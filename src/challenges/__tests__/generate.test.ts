@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createVim } from '../../lessons/runtime';
 import { parseKeys } from '../../vim/keys';
-import { CORPUS } from '../corpus';
 import { type ChecklistItem, collateral, generate, itemDone } from '../generate';
 import { CHALLENGES } from '../index';
 
@@ -33,13 +32,13 @@ describe.each(CHALLENGES.map(c => [c.id, c] as const))('%s', (_id, ch) => {
   });
   it.each(seeds.slice(0, 40))('seed %d: replaying every fix in order reaches the goal with par keys', seed => {
     const g = generate(c, seed);
-    const vim = createVim({ text: g.start, name: g.file });
-    let keys = 0, shift = 0; // earlier line inserts/removes move later start-text positions
+    const vim = createVim({ text: g.start, name: g.file, plugins: c.plugins });
+    let keys = 0;
     for (const item of g.items) {
-      vim.win.cursor = { line: item.fixAt.line + shift, col: item.fixAt.col };
+      // Earlier fixes (all above this one) moved later start-text lines by the change in length.
+      vim.win.cursor = { line: item.fixAt.line + vim.buf.lines.length - g.start.length, col: item.fixAt.col };
       vim.feedKeys(item.fixKeys);
       keys += parseKeys(item.fixKeys).length;
-      shift += item.kind === 'stray-line' || item.kind === 'line-to-remove' ? -1 : item.kind === 'missing-duplicate-line' ? 1 : 0;
       expect(itemDone(item, vim.buf.lines, g.goal), `${item.kind}: ${item.text}`).toBe(true);
     }
     expect(vim.buf.lines).toEqual(g.goal);
@@ -47,7 +46,7 @@ describe.each(CHALLENGES.map(c => [c.id, c] as const))('%s', (_id, ch) => {
     expect(collateral(g.items, vim.buf.lines, g.goal)).toBe(0);
   });
   it('every corpus file supports the edit range', () => {
-    for (const f of CORPUS) {
+    for (const f of c.corpus) {
       const single = { ...c, corpus: [f] };
       const short = seeds.slice(0, 30).filter(s => generate(single, s).items.length < c.edits[0]);
       expect(short, f.name).toEqual([]);
