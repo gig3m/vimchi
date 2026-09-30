@@ -192,8 +192,10 @@ export function Practice(p: Props) {
       return;
     }
     await el.requestFullscreen?.();
+    // Escape is in the lock so it reaches Vim instead of leaving full screen (Chromium: hold
+    // Esc to leave). Browsers without keyboard lock exit on Esc; Ctrl-[ is the fallback.
     const kb = (navigator as Navigator & { keyboard?: { lock?: (keys: string[]) => Promise<void> } }).keyboard;
-    await kb?.lock?.(['KeyW', 'KeyN', 'KeyT', 'KeyQ', 'Digit6']).catch(() => {});
+    await kb?.lock?.(['Escape', 'KeyW', 'KeyN', 'KeyT', 'KeyQ', 'Digit6']).catch(() => {});
     ref.current?.focus({ preventScroll: true });
   };
 
@@ -233,7 +235,7 @@ export function Practice(p: Props) {
         <div className="ed-title">
           <span className="dots"><span /><span /><span /></span>
           <span className="ed-file">{fileName}</span>
-          <button className="ed-fs" onClick={toggleFullscreen} title="Full screen captures Ctrl-W, Ctrl-N and Ctrl-T" tabIndex={-1}>
+          <button className="ed-fs" onClick={toggleFullscreen} title="Full screen captures Esc, Ctrl-W, Ctrl-N and Ctrl-T (hold Esc, or use the button, to leave)" tabIndex={-1}>
             {fullscreen ? 'exit full screen' : 'full screen'}
           </button>
           <span>{roundLabel}</span>
