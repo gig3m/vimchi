@@ -531,4 +531,7 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 .side-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--fg); cursor: pointer; }
 .side-toggle input { accent-color: var(--purple); }
 .side-toggle-sub { margin-left: auto; font-size: 11px; color: var(--muted); }
+.side-coffee { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--fg); text-decoration: none; }
+.side-coffee:hover { color: var(--yellow, #f1fa8c); }
+.side-coffee-cup { width: 13px; text-align: center; font-size: 12px; }
 .cmdline-msg.coach, .ev-cmdline.coach { color: var(--green); }
