@@ -13,7 +13,7 @@ const PROSE = /^[a-z]+(\.[a-z]+)+$|^[a-z]{4,}$/i;
 const PROSE_WORDS = new Set(['tab', 'norm', 'macros']);
 /** mini.surround on LazyVim's keys: one token each, tried before the two-key gs. */
 const THREE = /^gs[adrfF]/;
-const TWO = /^(dd|yy|cc|cl|gg|ge|gE|g-|g\+|gc|gu|gU|g~|gv|gn|gN|gJ|gJ|gq|gw|gi|gd|gf|gt|gT|gs|gr|ga|g8|g;|g&|zz|zt|zb|zo|zc|za|zM|zR|zf|zj|zk|cs|ds|ys|yS|cx|cr|ZZ|<<|>>|==|\[[a-zA-Z]|\][a-zA-Z]|q:)/;
+const TWO = /^(dd|yy|cc|cl|gg|g_|ge|gE|g-|g\+|gc|gu|gU|g~|gv|gn|gN|gJ|gJ|gq|gw|gi|gd|gf|gt|gT|gs|gr|ga|g8|g;|g&|zz|zt|zb|zo|zc|za|zM|zR|zf|zj|zk|cs|ds|ys|yS|cx|cr|ZZ|<<|>>|==|\[[a-zA-Z]|\][a-zA-Z]|q:)/;
 
 /** Split a chip into engine tokens: operators, motions, text objects, prefixes, specials. */
 export function tokenize(chip: string, opts: { prose?: boolean } = {}): string[] {
