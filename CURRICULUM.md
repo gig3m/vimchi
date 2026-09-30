@@ -252,22 +252,21 @@ Move through a codebase, not a file: buffers, windows, jumps, quickfix, definiti
 | 114 | Definitions & Hover | `gd` `K` | transform |
 | 115 | References | `grr` `gri` | transform |
 | 116 | Document Symbols | `gO` | transform |
-| 117 | Format the File | `␣f` | transform |
 
 ### Pickers
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
+| 117 | Discover Keys | `␣` `␣sk` | transform |
 | 118 | Find Files | `␣sf` `C-n` `C-v` | transform |
 | 119 | Live Grep | `␣sg` | transform |
 | 120 | Grep Word Under Cursor | `␣sw` | transform |
 | 121 | Send to Quickfix | `C-q` | transform |
-| 122 | Discover Keys | `␣` `␣sk` | transform |
 
 ### Explorer
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 123 | Open the Directory | `-` `CR` | transform |
-| 124 | Edit a Directory | `dd` `cw` `:w` | transform |
+| 122 | Open the Directory | `-` `CR` | transform |
+| 123 | Edit a Directory | `dd` `cw` `:w` | transform |
 
 ## Patterns
 
@@ -276,49 +275,49 @@ Edit at scale: the command line, substitute, global commands, project replace.
 ### Command Line
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 125 | Jump to Line | `:42` | transform |
-| 126 | Ranges | `%` `.` `$` | transform |
-| 127 | Visual Ranges | `'<,'>` | transform |
-| 128 | Delete & Yank Lines | `:d` `:y` | transform |
-| 129 | Move & Copy Lines | `:m` `:t` | transform |
-| 130 | Normal over a Range | `:norm` | transform |
-| 131 | Macros over a Range | `:norm @a` | transform |
-| 132 | Repeat a Command | `@:` `@@` | transform |
-| 133 | Insert Word Under Cursor | `C-r C-w` `C-r C-a` | transform |
-| 134 | Command Window | `q:` | transform |
-| 135 | Options | `:set x` `:set x!` `:set x?` | transform |
+| 124 | Jump to Line | `:42` | transform |
+| 125 | Ranges | `%` `.` `$` | transform |
+| 126 | Visual Ranges | `'<,'>` | transform |
+| 127 | Delete & Yank Lines | `:d` `:y` | transform |
+| 128 | Move & Copy Lines | `:m` `:t` | transform |
+| 129 | Normal over a Range | `:norm` | transform |
+| 130 | Macros over a Range | `:norm @a` | transform |
+| 131 | Repeat a Command | `@:` `@@` | transform |
+| 132 | Insert Word Under Cursor | `C-r C-w` `C-r C-a` | transform |
+| 133 | Command Window | `q:` | transform |
+| 134 | Options | `:set x` `:set x!` `:set x?` | transform |
 
 ### Substitute
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 136 | Substitute | `:s` | transform |
-| 137 | Whole File | `%s` `/g` | transform |
-| 138 | Confirm Each | `/c` | transform |
-| 139 | Ignoring Case | `/i` `\c` | transform |
-| 140 | Word Boundaries | `\<` `\>` | transform |
-| 141 | Very Magic | `\v` | transform |
-| 142 | Capture Groups | `()` `\1` | transform |
-| 143 | The Whole Match | `&` | transform |
-| 144 | Case in Replacements | `\u` `\U` `\E` | transform |
-| 145 | Line Breaks | `\r` `\n` | transform |
-| 146 | Trimming a Match | `\zs` `\ze` | transform |
-| 147 | Lazy Matches | `\{-}` | transform |
-| 148 | Reuse the Last Search | `:s//` | transform |
-| 149 | Repeat Substitute | `&` `g&` | transform |
-| 150 | Expressions | `\=` | transform |
-| 151 | Project Replace | `␣sr` | transform |
+| 135 | Substitute | `:s` | transform |
+| 136 | Whole File | `%s` `/g` | transform |
+| 137 | Confirm Each | `/c` | transform |
+| 138 | Ignoring Case | `/i` `\c` | transform |
+| 139 | Word Boundaries | `\<` `\>` | transform |
+| 140 | Very Magic | `\v` | transform |
+| 141 | Capture Groups | `()` `\1` | transform |
+| 142 | The Whole Match | `&` | transform |
+| 143 | Case in Replacements | `\u` `\U` `\E` | transform |
+| 144 | Line Breaks | `\r` `\n` | transform |
+| 145 | Trimming a Match | `\zs` `\ze` | transform |
+| 146 | Lazy Matches | `\{-}` | transform |
+| 147 | Reuse the Last Search | `:s//` | transform |
+| 148 | Repeat Substitute | `&` `g&` | transform |
+| 149 | Expressions | `\=` | transform |
+| 150 | Project Replace | `␣sr` | transform |
 | ★ | Rename & Reformat | `:%s` | transform |
 
 ### Global Commands
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 152 | Delete Matching Lines | `:g` `/d` | transform |
-| 153 | Keep Matching Lines | `:v` `:g!` | transform |
-| 154 | Global Normal | `:g` `norm` | transform |
-| 155 | Reverse Lines | `:g/^/m0` `m$` `t$` | transform |
-| 156 | Sorting | `:sort` `n` `!` `i` | transform |
-| 157 | Unique Sort | `:sort u` | transform |
-| 158 | Shell Filters | `!` `:%!` | transform |
+| 151 | Delete Matching Lines | `:g` `/d` | transform |
+| 152 | Keep Matching Lines | `:v` `:g!` | transform |
+| 153 | Global Normal | `:g` `norm` | transform |
+| 154 | Reverse Lines | `:g/^/m0` `m$` `t$` | transform |
+| 155 | Sorting | `:sort` `n` `!` `i` | transform |
+| 156 | Unique Sort | `:sort u` | transform |
+| 157 | Shell Filters | `!` `:%!` | transform |
 
 ## Code
 
@@ -327,9 +326,10 @@ What a starter config adds: LSP edits, richer text objects, flash, surround, com
 ### Neovim Built-ins
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 159 | Commenting | `gcc` `gc` | transform |
-| 160 | Rename | `grn` | transform |
-| 161 | Code Actions | `gra` | transform |
+| 158 | Commenting | `gcc` `gc` | transform |
+| 159 | Rename | `grn` | transform |
+| 160 | Code Actions | `gra` | transform |
+| 161 | Format the File | `␣f` | transform |
 
 ### More Text Objects
 | # | Lesson | Keys | Challenge |
@@ -404,8 +404,8 @@ editor as you type. Every reference solution yields zero critiques (tested).
 |---|---|---|---|
 | Core | 11 | 73 | 71 |
 | Repeat | 2 | 15 | 14 |
-| Project | 7 | 39 | 39 |
+| Project | 7 | 38 | 38 |
 | Patterns | 3 | 35 | 34 |
-| Code | 6 | 25 | 25 |
+| Code | 6 | 26 | 26 |
 | Challenges | 1 | 5 | 0 |
 | **Total** | **30** | **192** | **183** |
