@@ -506,6 +506,8 @@ export function installCommands(vim: Vim) {
   const A = (keys: string, run: (c: ActionCtx) => void, opts: { change?: boolean; arg?: 'char' | 'char2'; modes?: ('n' | 'v' | 'o')[] } = {}) =>
     V.defineAction(keys, { run, change: opts.change, arg: opts.arg }, opts.modes ?? ['n']);
   const runOp = (keys: string, r: Range, c: ActionCtx) => {
+    // Undo returns to the start of the operated text (column 0 for whole lines), as in Vim.
+    V.buf.setUndoCursor(r.kind === 'line' ? pos(r.start.line, 0) : pos(r.start.line, r.kind === 'block' ? Math.min(r.start.col, r.end.col) : r.start.col));
     V.getOperator(keys)!.run(r, { reg: c.reg, count: c.count, hasCount: c.hasCount, visual: null, keys });
   };
   const charRange = (count: number, back = false): Range | null => {
@@ -518,7 +520,14 @@ export function installCommands(vim: Vim) {
     return { start: { ...p }, end: pos(p.line, Math.min(t.length - 1, p.col + count - 1)), kind: 'char' };
   };
 
-  A('x', c => { const r = charRange(c.count); if (!r) fail(); runOp('d', r, c); }, { change: true });
+  A('x', c => {
+    const r = charRange(c.count);
+    if (!r) {
+      if (!ln()) V.buf.markEdited(); // Vim saves undo for x on an empty line: the redo branch goes
+      fail();
+    }
+    runOp('d', r, c);
+  }, { change: true });
   A('<Del>', c => { const r = charRange(c.count); if (!r) fail(); runOp('d', r, c); }, { change: true });
   A('X', c => { const r = charRange(c.count, true); if (!r) fail(); runOp('d', r, c); }, { change: true });
   A('D', c => {
@@ -673,7 +682,7 @@ export function installCommands(vim: Vim) {
   // ---- undo ---------------------------------------------------------------------------------------------
   A('u', c => {
     for (let i = 0; i < c.count; i++) {
-      const p = V.buf.undo(cur());
+      const p = V.buf.undo(cur(), V.win.want);
       if (!p) {
         if (i === 0) V.msg('Already at oldest change');
         break;
@@ -685,7 +694,7 @@ export function installCommands(vim: Vim) {
   });
   A('<C-r>', c => {
     for (let i = 0; i < c.count; i++) {
-      const p = V.buf.redo(cur());
+      const p = V.buf.redo(cur(), V.win.want);
       if (!p) {
         if (i === 0) V.msg('Already at newest change');
         break;
@@ -695,6 +704,19 @@ export function installCommands(vim: Vim) {
     }
     V.emit('redo');
   });
+  // g- / g+: step through every text state in time order, across undo branches.
+  const undoTime = (dir: -1 | 1) => (c: ActionCtx) => {
+    const p = V.buf.undoTime(dir * c.count, cur(), V.win.want);
+    if (!p) {
+      V.msg(dir < 0 ? 'Already at oldest change' : 'Already at newest change');
+      return;
+    }
+    V.setCursor(p);
+    V.clampCursor(false);
+    V.emit(dir < 0 ? 'undo' : 'redo');
+  };
+  A('g-', undoTime(-1));
+  A('g+', undoTime(1));
   A('U', () => {
     const lu = V.buf.lineUndo;
     if (!lu || lu.line >= V.buf.lineCount) return;
