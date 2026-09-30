@@ -5,7 +5,8 @@ import { Sidebar } from './components/Sidebar';
 import { SignIn } from './components/SignIn';
 import type { Who } from './components/Avatar';
 import { COUNTED, LESSONS, ORDER } from './lessons';
-import { lessonIdFromHash, seedFromHash } from './state/seed';
+import { repsRunId } from './challenges/reps';
+import { lessonIdFromHash, newSeed, repsFromHash, repsHref, seedFromHash } from './state/seed';
 import { useSettings } from './state/settings';
 import { useProgress } from './state/store';
 
@@ -21,6 +22,8 @@ export function App() {
   const [view, setView] = useState<'lesson' | 'profile'>('lesson');
   // A generated challenge's seed from the URL (`#id?seed=N`); null means a fresh random one.
   const [seed, setSeed] = useState<number | null>(() => seedFromHash(location.hash));
+  // Reps mode (`#id?reps=N`): the lesson's generated Reps on seed N.
+  const [reps, setReps] = useState<number | null>(() => repsFromHash(location.hash));
   const [signInOpen, setSignInOpen] = useState(false);
   const main = useRef<HTMLElement>(null);
 
@@ -29,6 +32,7 @@ export function App() {
     setView('lesson');
     prog.setLesson(id);
     setSeed(null);
+    setReps(null);
     if (location.hash !== '#' + id) history.pushState(null, '', '#' + id);
     main.current?.scrollTo(0, 0);
   };
@@ -37,6 +41,7 @@ export function App() {
     const onHash = () => {
       const id = lessonFromHash();
       setSeed(seedFromHash(location.hash));
+      setReps(repsFromHash(location.hash));
       if (id) {
         setLessonId(id);
         setView('lesson');
@@ -51,6 +56,8 @@ export function App() {
     main.current?.scrollTo(0, 0);
   };
   const closeSignIn = useCallback(() => setSignInOpen(false), []);
+  /** A lesson's Reps on a fresh seed (the hash change routes it). */
+  const goReps = (id: string) => { location.hash = repsHref(id, newSeed()); };
 
   const runsOf = (id: string) => prog.runs.filter(r => r.lesson === id);
   const acct = prog.account;
@@ -85,13 +92,15 @@ export function App() {
         <div className="page">
           {prog.syncError && <p className="sync-err">{prog.syncError}</p>}
           {view === 'profile' ? (
-            <Profile who={who} sub={profileSub} runs={prog.runs} onGo={go} onSignIn={() => setSignInOpen(true)} />
+            <Profile who={who} sub={profileSub} runs={prog.runs} onGo={go} onReps={goReps} onSignIn={() => setSignInOpen(true)} />
           ) : (
             <LessonPage
               lesson={lesson}
               seed={seed}
+              reps={reps}
               coachLive={settings.coachLive}
               runs={runsOf(lesson.id)}
+              repsRuns={runsOf(repsRunId(lesson.id))}
               isGuest={!acct}
               onRun={prog.addRun}
               onGo={go}

@@ -558,7 +558,7 @@ export const essentialMotions: Section = {
           { setup: { cursor: { line: 15, col: 2 } }, goal: { cursor: { line: 7, col: 29 } }, solution: '%' },
           { setup: { cursor: { line: 7, col: 2 } }, goal: { cursor: { line: 15, col: 2 } }, solution: '$%' },
           { setup: { cursor: { line: 2, col: 26 } }, goal: { cursor: { line: 5, col: 0 } }, solution: '%' },
-          { setup: { cursor: { line: 9, col: 8 } }, goal: { cursor: { line: 9, col: 35 } }, solution: 'f(%' },
+          { setup: { cursor: { line: 9, col: 8 } }, goal: { cursor: { line: 9, col: 35 } }, solution: '%' },
         ],
       },
     },

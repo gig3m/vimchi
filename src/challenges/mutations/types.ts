@@ -6,8 +6,13 @@ export type Site = { line: number; col: number; len: number };
 export type Mutation = {
   kind: string;
   site: Site;
-  /** Lines replacing original line site.line: 0 (removed), 1 (changed) or 2 (line inserted after). */
+  /**
+   * Lines replacing the `span` original lines from site.line: fewer (removed), as many
+   * (changed) or more (lines inserted after the first).
+   */
   lines: string[];
+  /** Original lines replaced, from site.line (default 1). */
+  span?: number;
   /** Cursor in the MUTATED file, relative to site.line, from which fixKeys restores the original. */
   fixAt: { dline: number; col: number };
   /** Vim keys (parseKeys notation) that restore the original from fixAt. Motion-free. */
@@ -29,11 +34,15 @@ export type MutationKind = {
    * generator replays the first member's draws at the others.
    */
   repeat?(lines: readonly string[], a: Site, b: Site): boolean;
+  /** Chance a pick of this kind becomes a repeated group (default REPEAT_P); runs use 1. */
+  repeatP?: number;
+  /** Plugins the fix needs (the editor and the tests enable them). */
+  plugins?: string[];
 };
 
-/** The mutated file: original with line site.line replaced by m.lines. */
+/** The mutated file: original with lines site.line .. site.line + span - 1 replaced by m.lines. */
 export function applyMutation(lines: readonly string[], m: Mutation): string[] {
-  return [...lines.slice(0, m.site.line), ...m.lines, ...lines.slice(m.site.line + 1)];
+  return [...lines.slice(0, m.site.line), ...m.lines, ...lines.slice(m.site.line + (m.span ?? 1))];
 }
 
 /** Word-ish tokens with their columns. */

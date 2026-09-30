@@ -1,12 +1,20 @@
+import { lessonOfRepsRun, repsRunId } from '../challenges/reps';
 import { COUNTED, LESSONS, ORDER } from '../lessons';
 import { fmtMin, fmtS } from '../state/format';
 import type { Run } from '../state/store';
 import { Avatar, type Who } from './Avatar';
 import { Bars } from './Bars';
 
-type Props = { who: Who; sub: string; runs: Run[]; onGo: (id: string) => void; onSignIn: () => void };
+type Props = { who: Who; sub: string; runs: Run[]; onGo: (id: string) => void; onReps: (id: string) => void; onSignIn: () => void };
 
-export function Profile({ who, sub, runs, onGo, onSignIn }: Props) {
+/** A run's title: the lesson's, or "<Title> reps" for a Reps run (saved as `<id>-reps`). */
+export function runTitle(runId: string): string {
+  if (LESSONS[runId]) return LESSONS[runId].title;
+  const of = lessonOfRepsRun(runId);
+  return of && LESSONS[of] ? `${LESSONS[of].title} reps` : runId;
+}
+
+export function Profile({ who, sub, runs, onGo, onReps, onSignIn }: Props) {
   const runsOf = (id: string) => runs.filter(r => r.lesson === id);
   const done = COUNTED.filter(l => runsOf(l.id).length).length;
   const last10 = runs.slice(-10);
@@ -36,10 +44,13 @@ export function Profile({ who, sub, runs, onGo, onSignIn }: Props) {
       </div>
       <div className="ls-rows">
         {!done && <p className="empty">No lessons finished yet.</p>}
-        {ORDER.filter(l => runsOf(l.id).length).map(l => {
+        {ORDER.flatMap(l => [
+          { id: l.id, title: l.title, open: () => onGo(l.id) },
+          { id: repsRunId(l.id), title: `${l.title} reps`, open: () => onReps(l.id) },
+        ]).filter(r => runsOf(r.id).length).map(l => {
           const rs = runsOf(l.id);
           return (
-            <button key={l.id} className="ls-grid ls-row" onClick={() => onGo(l.id)}>
+            <button key={l.id} className="ls-grid ls-row" onClick={l.open}>
               <span className="t">{l.title}</span>
               <span>{rs.length}</span>
               <span className="b">{rs.length ? Math.max(...rs.map(r => r.score)) : '–'}</span>
@@ -61,7 +72,7 @@ export function Profile({ who, sub, runs, onGo, onSignIn }: Props) {
                   {d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })},{' '}
                   {d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
                 </span>
-                <span className="t">{LESSONS[r.lesson]?.title ?? r.lesson}</span>
+                <span className="t">{runTitle(r.lesson)}</span>
                 <span className="tm">{fmtS(r.time)}</span>
                 <span className="s">{r.score}</span>
               </div>

@@ -10,8 +10,8 @@ const SEEDS = [1, 2, 3, 4, 5];
 describe.each(Object.values(KINDS).map(k => [k.id, k] as const))('mutation %s', (_id, kind) => {
   // Not every kind fits every file (a colour table has no removable statement; most real
   // code has no near-duplicate pair), so sites are required corpus-wide, not per file.
-  it('has candidate sites in at least 4 corpus files', () => {
-    expect(CORPUS.filter(f => kind.sites(f.lines).length > 0).length).toBeGreaterThanOrEqual(4);
+  it('has candidate sites in at least 4 corpus files (2 for the function-body kind; Reps join files)', () => {
+    expect(CORPUS.filter(f => kind.sites(f.lines).length > 0).length).toBeGreaterThanOrEqual(kind.id === 'fn-body-dedented' ? 2 : 4);
   });
   for (const f of CORPUS) {
     const sites = kind.sites(f.lines);
@@ -25,11 +25,11 @@ describe.each(Object.values(KINDS).map(k => [k.id, k] as const))('mutation %s', 
         expect(after.join('\n')).not.toBe(f.lines.join('\n'));
         // rule 1: only the site's line(s) differ
         for (let i = 0; i < site.line; i++) expect(after[i]).toBe(f.lines[i]);
-        expect(after.slice(site.line + m.lines.length)).toEqual(f.lines.slice(site.line + 1));
+        expect(after.slice(site.line + m.lines.length)).toEqual(f.lines.slice(site.line + (m.span ?? 1)));
         expect(m.checklist.length).toBeGreaterThan(3);
         expect(m.parMs).toBeGreaterThan(0);
         // rule 2: the reference fix restores the original from fixAt
-        const vim = createVim({ text: after, name: f.name });
+        const vim = createVim({ text: after, name: f.name, plugins: kind.plugins });
         vim.win.cursor = { line: site.line + m.fixAt.dline, col: m.fixAt.col };
         vim.feedKeys(m.fixKeys);
         expect(vim.mode).toBe('normal');

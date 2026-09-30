@@ -356,6 +356,7 @@ export const nextSteps: Section = {
           </p>
         ),
       },
+      reps: { mutations: ['wrong-word-run'], count: [10, 15], sections: ['next-steps'] },
       challenge: {
         kind: 'rounds',
         base: { name: 'user.ts' },
