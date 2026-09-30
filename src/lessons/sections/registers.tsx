@@ -669,7 +669,7 @@ export const registers: Section = {
               },
             },
             goal: { text: ['export async function loadUser(id: string) {', '  return api.get(`/users/${id}`);', '}'] },
-            solution: 'w"-P',
+            solution: '"-P',
           },
           {
             prompt: 'Delete the "old" line, then put the benchmark task deleted earlier back at the end.',

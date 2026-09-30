@@ -166,7 +166,7 @@ export const git: Section = {
           { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: { line: 13, col: 0 } }, solution: '2]h' },
           { setup: { cursor: { line: 17, col: 4 } }, goal: { cursor: { line: 13, col: 0 } }, solution: '[h' },
           { setup: { cursor: { line: 13, col: 8 } }, goal: { cursor: { line: 0, col: 0 } }, solution: ']h' },
-          { setup: { cursor: { line: 10, col: 4 } }, goal: { cursor: { line: 0, col: 0 } }, solution: '[h[h' },
+          { setup: { cursor: { line: 10, col: 4 } }, goal: { cursor: { line: 0, col: 0 } }, solution: '2[h' },
         ],
       },
     },

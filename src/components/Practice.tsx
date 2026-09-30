@@ -68,7 +68,7 @@ export function Practice(p: Props) {
 
   useEffect(() => {
     clearTimeout(advanceT.current); // a round tick from the previous lesson must not advance this one
-    clearNudge(); segCount.current = 0; nudgedEnd.current = -1; nudgedUnit.current = -1;
+    clearNudge(); nudgedEnd.current = -1; nudgedUnit.current = -1;
     ref.current?.focus({ preventScroll: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lesson.id]);
@@ -86,7 +86,6 @@ export function Practice(p: Props) {
   // Live nudge: one line under the editor when a just-closed segment has a better way.
   const [nudge, setNudge] = useState<string | null>(null);
   const nudgeT = useRef<number>(undefined);
-  const segCount = useRef(0);
   const clearNudge = () => { clearTimeout(nudgeT.current); setNudge(null); };
   const showNudge = (c: Critique) => {
     const b = c.better[0];
@@ -102,7 +101,6 @@ export function Practice(p: Props) {
     if (!p.coachLive || !coachable(lesson.id)) return;
     const log = s.log();
     const segs = segment(log);
-    segCount.current = segs.length;
     if (!segs.length) return;
     const unitStart = s.currentUnitStart();
     const unit = log[log.length - 1].unit;
@@ -123,7 +121,7 @@ export function Practice(p: Props) {
   const restart = () => {
     session.current = new Session(lesson.challenge, { seed: s.view().seed ?? undefined });
     setFinished(null);
-    clearNudge(); segCount.current = 0; nudgedEnd.current = -1; nudgedUnit.current = -1;
+    clearNudge(); nudgedEnd.current = -1; nudgedUnit.current = -1;
     rerender();
     ref.current?.focus({ preventScroll: true });
   };
@@ -132,7 +130,7 @@ export function Practice(p: Props) {
     seedRef.current = null;
     session.current = new Session(lesson.challenge);
     setFinished(null);
-    clearNudge(); segCount.current = 0; nudgedEnd.current = -1; nudgedUnit.current = -1;
+    clearNudge(); nudgedEnd.current = -1; nudgedUnit.current = -1;
     if (location.hash.includes('?')) history.replaceState(null, '', '#' + lesson.id);
     rerender();
     ref.current?.focus({ preventScroll: true });
@@ -177,9 +175,9 @@ export function Practice(p: Props) {
     clearTimeout(advanceT.current);
     const flash = s.key(key, now);
     if (flash) p.onFlash(flash);
-    liveCoach(s.roundDone || s.done);
+    if (!s.vim?.message) liveCoach(s.roundDone || s.done); // a hint never competes with Vim's own message
     // The round's closing hint stays through the advance (it names keys, not text); the 4 s timer clears it.
-    if (s.roundDone) advanceT.current = window.setTimeout(() => { s.advance(); segCount.current = segment(s.log()).length; rerender(); }, 450);
+    if (s.roundDone) advanceT.current = window.setTimeout(() => { s.advance(); rerender(); }, 450);
     if (s.done && !wasDone) { complete(now); clearNudge(); }
     rerender();
   };

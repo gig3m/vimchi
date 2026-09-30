@@ -71,23 +71,28 @@ export function useProgress(): Progress {
 
   /** The session is gone: back to guest mode, and any unsent runs join the guest list so the next sign-in imports them. */
   const sessionExpired = useCallback(() => {
-    const pending = takeOutbox();
+    const pending = account ? takeOutbox(account.login) : [];
     if (pending.length) updateLocal(v => ({ ...v, runs: [...v.runs, ...pending] }));
     setAccount(null);
     setServerRuns([]);
     setSyncError('Your session expired. Sign in again; nothing was lost.');
-  }, [updateLocal]);
+  }, [account, updateLocal]);
 
-  /** Send whatever is waiting in the outbox; on 429 come back after Retry-After. */
+  /** Send whatever is waiting in the account's outbox; on 429 come back after Retry-After. One flush at a time. */
   const retryT = useRef<number>(undefined);
-  const flush = useCallback(async () => {
+  const flushing = useRef(false);
+  const flush = useCallback(async (login = account?.login) => {
+    if (!login || flushing.current) return;
+    flushing.current = true;
     clearTimeout(retryT.current);
-    const r = await flushOutbox(api.addRun);
-    if (r.status === 'unauthorized') return sessionExpired();
-    if (r.status === 'ok') return setSyncError('');
-    setSyncError('Could not save to the server yet. Saved in this browser; retrying.');
-    retryT.current = window.setTimeout(flush, Math.max(5, r.retryAfter) * 1000);
-  }, [sessionExpired]);
+    try {
+      const r = await flushOutbox(login, api.addRun);
+      if (r.status === 'unauthorized') return sessionExpired();
+      if (r.status === 'ok') return setSyncError('');
+      setSyncError('Could not save to the server yet. Saved in this browser; retrying.');
+      retryT.current = window.setTimeout(() => void flush(login), Math.max(5, r.retryAfter) * 1000);
+    } finally { flushing.current = false; }
+  }, [account, sessionExpired]);
 
   useEffect(() => {
     let live = true;
@@ -110,16 +115,17 @@ export function useProgress(): Progress {
             setSyncError('Could not move guest runs to your account. They are still saved in this browser.');
           }
         }
-        await flushOutbox(api.addRun).catch(() => undefined);
         const runs = await api.runs().catch(() => [] as Run[]);
         if (!live) return;
         setAccount(me);
-        // Anything still unsent counts as the learner's until the server takes it.
-        setServerRuns([...runs, ...loadOutbox().filter(o => !runs.some(r => r.lesson === o.lesson && r.at === o.at))]);
+        // Anything still unsent counts as the learner's until the server takes it; then send it.
+        setServerRuns([...runs, ...loadOutbox(me.login).filter(o => !runs.some(r => r.lesson === o.lesson && r.at === o.at))]);
+        void flush(me.login);
       }
       setLoading(false);
     })();
     return () => { live = false; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updateLocal]);
 
   useEffect(() => {
@@ -132,9 +138,9 @@ export function useProgress(): Progress {
   const addRun = useCallback((run: Run) => {
     if (!account) return updateLocal(v => ({ ...v, runs: [...v.runs, run] }));
     setServerRuns(rs => [...rs, run]);
-    pushOutbox(run);
+    pushOutbox(account.login, run);
     api.addRun(run).then(
-      () => { removeSent(run); void flush(); },
+      () => { removeSent(account.login, run); void flush(); },
       (e: unknown) => { if (e instanceof ApiError && e.status === 401) sessionExpired(); else void flush(); },
     );
   }, [account, updateLocal, flush, sessionExpired]);
