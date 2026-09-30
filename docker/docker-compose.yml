@@ -16,6 +16,7 @@ services:
       TZ: America/Chicago
       VIMCHI_BASE_URL: https://vimchi.nrsil.io
       VIMCHI_SECURE_COOKIES: "1"
+      VIMCHI_TRUST_PROXY: "1"   # behind NPM: the client is the last X-Forwarded-For hop
       # Optional: without them the server runs and /auth/github/login is 503.
       GITHUB_CLIENT_ID: ${VIMCHI_GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${VIMCHI_GITHUB_CLIENT_SECRET:-}
