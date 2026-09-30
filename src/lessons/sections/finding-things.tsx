@@ -435,7 +435,8 @@ export const findingThings: Section = {
           </p>
           <p>
             Use it when there is more than one hit to visit: grep for a name, <Code>C-q</Code>, then walk the list with{' '}
-            <Code>]q</Code> or <Code>CR</Code>, or change them all with <Code>:cdo</Code>.
+            <Code>]q</Code> or <Code>CR</Code>. Later, the Substitute section changes them all at once with{' '}
+            <Code>:cdo</Code>.
           </p>
         </>
       ),

@@ -307,7 +307,7 @@ export const globalCommands: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Comment out every console.log line. gcc comments out a line.',
+            prompt: 'Comment out every console.log line: put "// " before its text.',
             setup: {
               name: 'sync.ts',
               text: [
@@ -330,7 +330,7 @@ export const globalCommands: Section = {
                 '}',
               ],
             },
-            solution: ':g/console/norm gcc<CR>',
+            solution: ':g/console/norm I// <CR>',
           },
           {
             prompt: 'Change "[ ]" to "[x]" on every line with @lin.',
