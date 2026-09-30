@@ -387,6 +387,11 @@ export const insertLikeAPro: Section = {
             <Code>S</Code> and <Code>cc</Code> do the same thing. You'll meet <Code>cc</Code> again in Change Lines,
             alongside <Code>C</Code>.
           </p>
+          <p>
+            Both starters later rebind these keys: LazyVim gives <Code>s</Code> and <Code>S</Code> to flash.nvim
+            (label jumps), kickstart gives <Code>s</Code> to mini.surround. <Code>cl</Code> and <Code>cc</Code> are the
+            spellings that survive, so they are worth knowing too.
+          </p>
         ),
       },
       challenge: {
