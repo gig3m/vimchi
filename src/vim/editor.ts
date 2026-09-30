@@ -712,12 +712,15 @@ export class Vim {
     this.pending.push(key);
     if (this.depth === 0) this.cmdKeys.push(key);
     this.dotCapture?.keys.push(key);
-    if (key === '<Esc>' && this.pending.length > 1) {
+    const res = this.parse(this.pending, this.visual ? 'v' : 'n');
+    // <Esc> cancels a pending command, unless the keys before it already were one (`s` with a
+    // plugin's `sa` mapped): then it runs and the <Esc> is handled after it, as after 'timeoutlen'.
+    const completesBefore = res !== 'incomplete' && res !== 'invalid' && res.rest?.length === 1 && res.rest[0] === '<Esc>';
+    if (key === '<Esc>' && this.pending.length > 1 && !completesBefore) {
       this.pending = [];
       if (this.depth === 0) this.finishCommand('other'); // a cancelled command is not part of the next one
       return;
     }
-    const res = this.parse(this.pending, this.visual ? 'v' : 'n');
     if (res === 'incomplete') return;
     const keys = this.pending;
     this.pending = [];
@@ -735,7 +738,7 @@ export class Vim {
       this.dotCapture?.keys.splice(-rest.length);
     }
     this.execute(res, keys.slice(0, keys.length - rest.length));
-    for (const k of rest) this.feed(k);
+    for (const k of rest) this.handleKey(k); // same depth and bookkeeping as the key that arrived
     if (this.oneShot && this.mode === 'normal' && this.insert) {
       this.oneShot = false;
       this.mode = 'insert';

@@ -25,6 +25,14 @@ const C = (doc: string, keys: string) => {
 };
 
 describe('motions', () => {
+  it(':N keeps the wanted column with nostartofline', () => {
+    const v = run('abcdefghi\nab\nabcdefghijk', '');
+    v.win.cursor = { line: 1, col: 1 }; v.win.want = 8;
+    v.feedKeys(':2<CR>j');
+    expect(v.cursor).toEqual({ line: 2, col: 8 });
+    v.feedKeys('$:2<CR>j');
+    expect(v.cursor).toEqual({ line: 2, col: 10 });
+  });
   it.each([
     ['|foo bar baz', 'w', 'foo |bar baz'],
     ['|foo bar baz', '2w', 'foo bar |baz'],
@@ -60,6 +68,12 @@ describe('motions', () => {
     ['abcdef\n  gh|ijkl\nx', ':1<CR>', 'abcd|ef\n  ghijkl\nx'],
     ['abcdefgh|i\nab', 'G', 'abcdefghi\na|b'],
     ['abc|def\n  ghijkl', ':set startofline<CR>G', 'abcdef\n  |ghijkl'],
+    // …and so do the linewise operators and page scrolls.
+    ['abcdef\n  gh|ijkl\n  mnopqr', 'dd', 'abcdef\n  mn|opqr'],
+    ['abcdef\n  gh|ijkl', '>>', 'abcdef\n    |ghijkl'],
+    ['abcdef\n    gh|ijkl', '<<', 'abcdef\n  ghij|kl'],
+    ['abc|def\nghijkl', 'Vj>', '  a|bcdef\n  ghijkl'],
+    ['abcdef\n  gh|ijkl\n  mnopqr', ':set sol<CR>dd', 'abcdef\n  |mnopqr'],
     ['abc|def\n  ghijkl', ':set sol<CR>:2<CR>', 'abcdef\n  |ghijkl'],
     ['|abc\nd', 'jk', '|abc\nd'],
     ['ab|c\nd\nefg', 'jj', 'abc\nd\nef|g'],

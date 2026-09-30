@@ -104,4 +104,13 @@ describe('mini.surround keys (kickstart default)', () => {
   it('a lone s still substitutes once a non-surround key follows', () => {
     expect(run('abc', 1, 'sX<Esc>').buf.text()).toBe('aXc');
   });
+  it('the re-fed key is recorded once in a macro and replays', () => {
+    const v = run('abc\nabc', 1, 'qasX<Esc>jq');
+    expect(v.registers.get('a')?.text).toBe('sX\x1bj');
+    v.feedKeys('0l@a');
+    expect(v.buf.lines).toEqual(['aXc', 'aXc']);
+  });
+  it('s<Esc> substitutes then leaves insert, like Neovim', () => {
+    expect(run('abc', 1, 's<Esc>').buf.text()).toBe('ac');
+  });
 });

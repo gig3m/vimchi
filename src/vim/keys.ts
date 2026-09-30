@@ -86,7 +86,6 @@ const capOf = (code: string | undefined): string | null => {
 export function keyFromEvent(e: KeyEventLike): Key | null {
   if (e.metaKey) return null;
   const k = e.key;
-  if (k === 'Dead' && e.altKey && !e.ctrlKey && capOf(e.code)) return `<A-${capOf(e.code)}>`;
   if (k === 'Shift' || k === 'Control' || k === 'Alt' || k === 'Meta' || k === 'CapsLock' || k === 'Dead') return null;
   const special: Record<string, Key> = {
     Escape: '<Esc>', Enter: '<CR>', Backspace: '<BS>', Tab: e.shiftKey ? '<S-Tab>' : '<Tab>', Delete: '<Del>',
@@ -95,13 +94,19 @@ export function keyFromEvent(e: KeyEventLike): Key | null {
   };
   // AltGr (Windows reports Ctrl+Alt; Linux reports AltGraph) and Mac Option produce a printable
   // character that is not the key's cap: that character is what the learner meant to type.
-  // A printable ASCII character that is not the cap (AltGr `@`, Option `{`) is meant literally;
-  // a non-ASCII or dead result on a lettered cap (Mac Option-w → ∑) is the Alt chord by cap.
-  const cap = capOf(e.code);
-  const altGraph = e.getModifierState?.('AltGraph') === true;
-  const ascii = k.length === 1 && k >= ' ' && k <= '~';
-  if (e.altKey && ascii && (altGraph || k.toLowerCase() !== cap)) return k;
-  if (e.altKey && !e.ctrlKey && cap !== null && !ascii) return `<A-${cap}>`;
+  // With Alt held: an ASCII symbol (AltGr `@`, Option `{`) is meant literally; an ASCII letter or
+  // digit is the Alt chord on that letter, whatever physical key produced it (AZERTY, Dvorak);
+  // a non-ASCII result on a lettered cap (Mac Option-w → ∑) is the chord by cap.
+  if (e.altKey && k.length === 1) {
+    const altGraph = e.getModifierState?.('AltGraph') === true;
+    const alnum = /^[A-Za-z0-9]$/.test(k);
+    const ascii = k >= ' ' && k <= '~';
+    if (ascii && (altGraph || !alnum)) return k;
+    if (e.ctrlKey && !ascii) return k;                    // AltGr letters outside ASCII (ł, ß) are themselves
+    if (!e.ctrlKey && alnum) return `<A-${k.toLowerCase()}>`;
+    const cap = capOf(e.code);
+    if (!e.ctrlKey && !ascii && cap !== null) return `<A-${cap}>`;
+  }
   if (e.ctrlKey && !e.altKey) {
     if (k === '[') return '<Esc>';
     if (k === ' ') return '<C-Space>';

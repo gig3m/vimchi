@@ -111,7 +111,7 @@ export function runEx(vim: Vim, input: string) {
       const l = Math.max(0, Math.min(range.end, vim.buf.lineCount - 1));
       // 'startofline' off (Neovim's default) keeps the column, like G.
       if (vim.options.startofline) vim.setCursor(pos(l, firstNonBlank(vim.line(l))));
-      else { vim.setCursor(pos(l, Math.min(vim.win.want, Math.max(0, vim.line(l).length - 1)))); vim.win.want = Math.max(vim.win.want, vim.cursor.col); }
+      else vim.setCursor(pos(l, Math.min(vim.win.want, Math.max(0, vim.line(l).length - 1))), vim.win.want);
       vim.openFoldsAt(l);
       return;
     }

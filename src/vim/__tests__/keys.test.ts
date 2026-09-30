@@ -26,7 +26,18 @@ describe('keyFromEvent on non-US layouts', () => {
   it('Mac Option on a letter that produces a symbol still maps to the stand-in by code', () => {
     // Option-w on a US Mac yields ∑; the stand-in must come from the physical key.
     expect(keyFromEvent(ev({ key: '∑', code: 'KeyW', altKey: true }))).toBe('<A-w>');
-    expect(keyFromEvent(ev({ key: 'Dead', code: 'KeyN', altKey: true }))).toBe('<A-n>');
+  });
+  it('AltGr producing a non-ASCII letter (Polish ł) is that letter', () => {
+    expect(keyFromEvent(ev({ key: 'ł', code: 'KeyL', ctrlKey: true, altKey: true }))).toBe('ł');
+  });
+  it('a dead key is ignored (Option-n is dead on every Mac layout; the ~ arrives composed)', () => {
+    expect(keyFromEvent(ev({ key: 'Dead', code: 'KeyN', altKey: true }))).toBeNull();
+  });
+  it('the stand-in follows the produced letter, not the US cap: AZERTY and Dvorak', () => {
+    expect(keyFromEvent(ev({ key: 'w', code: 'KeyZ', altKey: true }))).toBe('<A-w>');   // AZERTY Alt+W
+    expect(keyFromEvent(ev({ key: 'q', code: 'KeyA', altKey: true }))).toBe('<A-q>');   // AZERTY Alt+Q
+    expect(keyFromEvent(ev({ key: 'w', code: 'Comma', altKey: true }))).toBe('<A-w>');  // Dvorak Alt+w
+    expect(keyFromEvent(ev({ key: 'n', code: 'KeyL', altKey: true }))).toBe('<A-n>');   // Dvorak Alt+n
   });
   it('unchanged: plain keys, ctrl chords, specials', () => {
     expect(keyFromEvent(ev({ key: 'w', code: 'KeyW' }))).toBe('w');
