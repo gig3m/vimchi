@@ -954,7 +954,7 @@ export const registers: Section = {
         body: (
           <p>
             On the command line, <Code>C-r C-w</Code> inserts the word under the cursor without yanking it first.
-            The Command Line section drills it; with Substitute it becomes the classic rename.
+            The Substitute section drills it, where it becomes the classic rename.
           </p>
         ),
       },

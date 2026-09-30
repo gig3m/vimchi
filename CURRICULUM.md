@@ -283,27 +283,27 @@ Edit at scale: the command line, substitute, global commands, project replace.
 | 129 | Normal over a Range | `:norm` | transform |
 | 130 | Macros over a Range | `:norm @a` | transform |
 | 131 | Repeat a Command | `@:` `@@` | transform |
-| 132 | Insert Word Under Cursor | `C-r C-w` `C-r C-a` | transform |
-| 133 | Command Window | `q:` | transform |
-| 134 | Options | `:set x` `:set x!` `:set x?` | transform |
+| 132 | Command Window | `q:` | transform |
+| 133 | Options | `:set x` `:set x!` `:set x?` | transform |
 
 ### Substitute
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 135 | Pattern Atoms | `^` `$` `.` `\s` | transform |
-| 136 | Substitute | `:s` | transform |
-| 137 | Whole File | `%s` `/g` | transform |
-| 138 | Confirm Each | `/c` | transform |
-| 139 | Ignoring Case | `/i` `\c` | transform |
-| 140 | Word Boundaries | `\<` `\>` | transform |
-| 141 | Very Magic | `\v` | transform |
-| 142 | Capture Groups | `()` `\1` | transform |
-| 143 | The Whole Match | `&` | transform |
-| 144 | Case in Replacements | `\u` `\U` `\E` | transform |
-| 145 | Line Breaks | `\r` `\n` | transform |
-| 146 | Trimming a Match | `\zs` `\ze` | transform |
-| 147 | Lazy Matches | `\{-}` | transform |
-| 148 | Reuse the Last Search | `:s//` | transform |
+| 134 | Pattern Atoms | `^` `$` `.` `\s` | transform |
+| 135 | Substitute | `:s` | transform |
+| 136 | Whole File | `%s` `/g` | transform |
+| 137 | Confirm Each | `/c` | transform |
+| 138 | Ignoring Case | `/i` `\c` | transform |
+| 139 | Word Boundaries | `\<` `\>` | transform |
+| 140 | Very Magic | `\v` | transform |
+| 141 | Capture Groups | `()` `\1` | transform |
+| 142 | The Whole Match | `&` | transform |
+| 143 | Case in Replacements | `\u` `\U` `\E` | transform |
+| 144 | Line Breaks | `\r` `\n` | transform |
+| 145 | Trimming a Match | `\zs` `\ze` | transform |
+| 146 | Lazy Matches | `\{-}` | transform |
+| 147 | Reuse the Last Search | `:s//` | transform |
+| 148 | Insert Word Under Cursor | `C-r C-w` `C-r C-a` | transform |
 | 149 | Repeat Substitute | `&` `g&` | transform |
 | 150 | Expressions | `\=` | transform |
 | 151 | Project Replace | `␣sr` | transform |
