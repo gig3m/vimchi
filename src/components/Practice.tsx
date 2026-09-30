@@ -7,7 +7,7 @@ import type { Run } from '../state/store';
 import { C, colorize } from '../ui/syntax';
 import { keyFromEvent } from '../vim/keys';
 import { EditorView } from './EditorView';
-import { resultsShortcut } from './shortcuts';
+import { resultsShortcut, tabToBrowser } from './shortcuts';
 import { Checklist } from './Checklist';
 import { Results } from './Results';
 import { newSeed, repsHref, seedHref } from '../state/seed';
@@ -204,6 +204,9 @@ export function Practice(p: Props) {
       else if (action === 'warm-up-again') p.onNewWarmUp?.();
       else if (action === 'next') p.onNext();
       else if (action === 'stats') p.onStats();
+      else if (action === 'scroll-down' || action === 'scroll-up') {
+        frame.current?.querySelector('.better-ways')?.scrollBy({ top: action === 'scroll-down' ? 60 : -60 });
+      }
       return;
     }
     const now = Date.now();
@@ -219,12 +222,14 @@ export function Practice(p: Props) {
   };
 
   const onKeyDown = (e: KeyboardEvent) => {
+    // Results: a focused button, link or the Better ways list (reached with Tab) keeps its own keys.
+    if (s.done && e.target !== e.currentTarget) return;
     let key = keyFromEvent(e.nativeEvent);
     if (!key) return;
     if (STAND_INS[key]) key = STAND_INS[key];
     const vim = s.vim;
-    const wantsTab = vim && (vim.mode === 'insert' || vim.mode === 'cmdline' || vim.modal);
-    if ((key === '<Tab>' || key === '<S-Tab>') && !wantsTab && !s.done && s.challenge.kind !== 'quiz') return;
+    const vimWantsTab = !!vim && (vim.mode === 'insert' || vim.mode === 'cmdline' || !!vim.modal);
+    if (tabToBrowser(key, { vimWantsTab, done: s.done, quiz: s.challenge.kind === 'quiz' })) return;
     e.preventDefault();
     e.stopPropagation();
     handle(key);
@@ -270,6 +275,8 @@ export function Practice(p: Props) {
 
   return (
     <div ref={frame} className={'practice' + (fullscreen ? ' fullscreen' : '')}>
+      {/* Touch screens only (CSS): the editor is a focusable div, so no on-screen keyboard comes up. */}
+      <p className="touch-note">Practice needs a hardware keyboard: the on-screen keyboard of a phone or tablet does not open here.</p>
       <div
         ref={ref}
         tabIndex={0}

@@ -14,6 +14,8 @@ type Props = {
   who: Who;
   userSub: string;
   onLesson: (id: string) => void;
+  /** The logo: the first lesson (a real link, so it leaves Profile and the Warm-up). */
+  homeHref: string;
   onProfile: () => void;
   onSignIn: () => void;
   onSignOut: () => void;
@@ -70,7 +72,7 @@ export function Sidebar(p: Props) {
     <aside className="side">
       <div className="side-scroll">
         <div className="side-head">
-          <a className="brand" href="#" aria-label="vimchi home"><img src="/logo/vimchi-lockup.svg" alt="vimchi" /></a>
+          <a className="brand" href={p.homeHref} aria-label="vimchi home"><img src="/logo/vimchi-lockup.svg" alt="vimchi" /></a>
           <span className="side-count">{p.completedText}</span>
         </div>
         <div className="wu-side">

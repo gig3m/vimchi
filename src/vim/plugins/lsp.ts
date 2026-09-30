@@ -9,7 +9,7 @@
 //
 // Keys: [d ]d [D ]D (diagnostics), <C-w>d (diagnostic float), K (hover),
 // gd and <C-]> (definition), grr (references → quickfix), gri
-// (implementations), grn (rename), gra (code actions).
+// (implementations), grn (rename), gra (code actions), gO (document symbols → location list).
 // Definitions and references are found textually across the project's files
 // and open buffers.
 
@@ -138,6 +138,67 @@ function toQuickfix(vim: Vim, locs: Loc[], title: string) {
   const items: QfItem[] = locs.map(l => ({ file: l.file, line: l.pos.line, col: l.pos.col, text: l.text }));
   vim.quickfix = { items, idx: 0, title };
   vim.ex('copen');
+}
+
+// ---- document symbols (gO) ------------------------------------------------------------------------------
+
+/**
+ * The symbols a server reports for a buffer, flattened in document order the way Neovim's
+ * symbols_to_items does: each at its name (the selectionRange), text "[Kind] name". TypeScript:
+ * classes, interfaces, enums, functions at any depth, methods and properties of classes and
+ * interfaces, top-level const/let/var. Lua: functions and top-level locals.
+ */
+export function documentSymbols(buf: Buffer): QfItem[] {
+  const out: QfItem[] = [];
+  const add = (line: number, name: string, kind: string, from = 0) =>
+    out.push({ file: buf.name, line, col: buf.line(line).indexOf(name, from), text: `[${kind}] ${name}` });
+  if (/\.lua$/.test(buf.name)) {
+    buf.lines.forEach((t, l) => {
+      let m: RegExpExecArray | null;
+      if ((m = /^\s*(?:local\s+)?function\s+([\w.:]+)/.exec(t))) add(l, m[1], 'Function');
+      else if ((m = /^local\s+(\w+)\s*=/.exec(t))) add(l, m[1], 'Variable');
+    });
+    return out;
+  }
+  let depth = 0;
+  /** Depth of the body of each open class / interface. */
+  const containers: { depth: number; kind: 'class' | 'interface' }[] = [];
+  buf.lines.forEach((t, l) => {
+    const inBody = containers.length && containers[containers.length - 1].depth === depth ? containers[containers.length - 1].kind : null;
+    let m: RegExpExecArray | null;
+    let opens: 'class' | 'interface' | null = null;
+    if ((m = /^\s*(?:export\s+)?(?:default\s+)?(?:abstract\s+)?class\s+(\w+)/.exec(t))) { add(l, m[1], 'Class', t.indexOf('class')); opens = 'class'; }
+    else if ((m = /^\s*(?:export\s+)?interface\s+(\w+)/.exec(t))) { add(l, m[1], 'Interface', t.indexOf('interface')); opens = 'interface'; }
+    else if ((m = /^\s*(?:export\s+)?(?:const\s+)?enum\s+(\w+)/.exec(t))) add(l, m[1], 'Enum', t.indexOf('enum'));
+    else if ((m = /^\s*(?:export\s+)?(?:default\s+)?(?:async\s+)?function\s*\*?\s*(\w+)/.exec(t))) add(l, m[1], 'Function', t.indexOf('function'));
+    else if (depth === 0 && (m = /^(?:export\s+)?(const|let|var)\s+(\w+)/.exec(t))) add(l, m[2], m[1] === 'const' ? 'Constant' : 'Variable', m[0].length - m[2].length);
+    else if (inBody && (m = /^\s*(?:(?:public|private|protected|static|readonly|async|override|get|set)\s+)*(\w+)\s*(\??)\s*(\(|:|=|<)/.exec(t))) {
+      const name = m[1];
+      if (!/^(if|for|while|switch|return|catch)$/.test(name)) {
+        const kind = name === 'constructor' ? 'Constructor' : m[3] === '(' || m[3] === '<' ? 'Method' : 'Property';
+        add(l, name, kind);
+      }
+    }
+    const code = t.replace(/(["'`])(?:\\.|(?!\1).)*\1/g, '""').replace(/\/\/.*$/, '');
+    for (const ch of code) {
+      if (ch === '{') {
+        depth++;
+        if (opens) { containers.push({ depth, kind: opens }); opens = null; }
+      } else if (ch === '}') {
+        if (containers.length && containers[containers.length - 1].depth === depth) containers.pop();
+        depth = Math.max(0, depth - 1);
+      }
+    }
+  });
+  return out;
+}
+
+/** gO: the document's symbols in the location list, opened (vim.lsp.buf.document_symbol()). */
+function documentSymbol(vim: Vim) {
+  const items = documentSymbols(vim.buf);
+  if (!items.length) return vim.msg('No document symbols found');
+  vim.win.loclist = { items, idx: 0 };
+  vim.ex('lopen');
 }
 
 // ---- floats ------------------------------------------------------------------------------------------------
@@ -300,6 +361,8 @@ export const lsp: Plugin = {
     });
 
     vim.defineAction('gra', { run: () => codeActions(vim) }, ['n', 'v']);
+
+    vim.defineAction('gO', { run: () => documentSymbol(vim) });
 
     vim.decorators.push((buf): Decoration | null => {
       const ds = diagsIn(vim, buf.name);

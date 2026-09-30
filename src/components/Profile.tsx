@@ -1,6 +1,7 @@
 import { lessonOfRepsRun, repsRunId } from '../challenges/reps';
 import { COUNTED, LESSONS, ORDER } from '../lessons';
 import { fmtMin, fmtS } from '../state/format';
+import { WARMUP_ROUTE } from '../state/seed';
 import type { Run } from '../state/store';
 import { Avatar, type Who } from './Avatar';
 import { Bars } from './Bars';
@@ -9,9 +10,10 @@ import { type CoachProfile, mixShare, topRecurring, useCoachProfile } from '../s
 
 type Props = { who: Who; sub: string; runs: Run[]; onGo: (id: string) => void; onReps: (id: string) => void; onSignIn: () => void };
 
-/** A run's title: the lesson's, or "<Title> reps" for a Reps run (saved as `<id>-reps`). */
+/** A run's title: the lesson's, "Warm-up", or "<Title> reps" for a Reps run (saved as `<id>-reps`). */
 export function runTitle(runId: string): string {
   if (LESSONS[runId]) return LESSONS[runId].title;
+  if (runId === WARMUP_ROUTE) return 'Warm-up';
   const of = lessonOfRepsRun(runId);
   return of && LESSONS[of] ? `${LESSONS[of].title} reps` : runId;
 }

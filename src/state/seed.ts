@@ -26,4 +26,22 @@ export const newSeed = () => Math.floor(Math.random() * 0x100000000);
 /** The Warm-up's route id (also the lesson id its runs are saved under). */
 export const WARMUP_ROUTE = 'warm-up';
 export const isWarmUpHash = (hash: string) => lessonIdFromHash(hash) === WARMUP_ROUTE;
+/** Profile has its own URL, so Back from it returns to where the learner was. */
+export const PROFILE_HREF = '#profile';
+
+export type Route = {
+  view: 'lesson' | 'profile' | 'warm-up';
+  /** The lesson a lesson route names; null = the app picks one (the last lesson, or the first). */
+  id: string | null;
+  /** False for an empty or unknown hash: the app should replace it with the page it shows. */
+  canonical: boolean;
+};
+/** What a hash shows: a lesson (`#id`, `#id?seed=N`, `#id?reps=N`), the Warm-up, or Profile. */
+export function routeFromHash(hash: string, isLesson: (id: string) => boolean): Route {
+  const id = lessonIdFromHash(hash);
+  if (id === WARMUP_ROUTE) return { view: 'warm-up', id: null, canonical: true };
+  if ('#' + id === PROFILE_HREF) return { view: 'profile', id: null, canonical: true };
+  if (id && isLesson(id)) return { view: 'lesson', id, canonical: true };
+  return { view: 'lesson', id: null, canonical: false };
+}
 export const warmUpHref = (seed?: number) => (seed == null ? `#${WARMUP_ROUTE}` : seedHref(WARMUP_ROUTE, seed));

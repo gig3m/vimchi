@@ -39,7 +39,7 @@ export const fileNavigation: Section = {
         title: 'Tree explorers',
         body: (
           <p>
-            LazyVim's default is neo-tree on <Code>Space e</Code>; kickstart ships none (netrw's <Code>:Explore</Code>
+            LazyVim's file explorer (snacks.explorer) is on <Code>Space e</Code>; kickstart ships none (netrw's <Code>:Explore</Code>
             is built in). The idea is the same: a directory you move through. oil's twist is that the listing is a
             buffer you edit and <Code>:w</Code>; its README maps it to <Code>-</Code>, replacing a rarely used motion.
           </p>

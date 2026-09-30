@@ -596,3 +596,31 @@ describe('plugin hooks', () => {
     expect(v.cursor.col).toBe(4);
   });
 });
+
+describe(':set forms (Neovim 0.12)', () => {
+  const make = () => new Vim({ text: 'abcd', name: 'a.txt' });
+  it.each([
+    ['set nosw', 'E474: Invalid argument: nosw'],
+    ['set invsw', 'E474: Invalid argument: invsw'],
+    ['set sw!', 'E488: Trailing characters: sw!'],
+  ])(':%s is an error on a number option', (cmd, msg) => {
+    const vim = make();
+    vim.feedKeys(`:${cmd}<CR>`);
+    expect(vim.message?.text).toBe(msg);
+    expect(vim.opt('shiftwidth')).toBe(2);
+  });
+  it(':set after :setlocal changes the window too', () => {
+    const vim = make();
+    vim.feedKeys(':setlocal nonu<CR>:set nu<CR>');
+    expect(vim.opt('number')).toBe(true);
+    vim.feedKeys(':setlocal nonu<CR>');
+    expect(vim.opt('number')).toBe(false);
+  });
+  it(':earlier 0 does nothing; :earlier is :earlier 1', () => {
+    const vim = make();
+    vim.feedKeys('xxxu:earlier 0<CR>');
+    expect(vim.buf.text()).toBe('cd');
+    vim.feedKeys(':earlier<CR>');
+    expect(vim.buf.text()).toBe('bcd');
+  });
+});
