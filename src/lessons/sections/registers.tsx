@@ -1123,7 +1123,7 @@ export const registers: Section = {
               cursor: { line: 3, col: 0 },
             },
             goal: { text: ['export const upload = {', '  maxBytes: 26214400, // 25 MB', "  types: ['image/png', 'image/jpeg'],", '};'] },
-            solution: '2kf0s<C-r>=25*1024*1024<CR><Esc>',
+            solution: '2kf0cl<C-r>=25*1024*1024<CR><Esc>',
           },
           {
             prompt: 'Underline the 23-character heading with "=" signs.',
@@ -1143,7 +1143,7 @@ export const registers: Section = {
               cursor: { line: 2, col: 2 },
             },
             goal: { text: ['{', '  "sku": "MUG-01",', '  "qty": 3,', '  "price": 4.99,', '  "total": 14.97', '}'] },
-            solution: "2j$s<C-r>=printf('%.2f', 3 * 4.99)<CR><Esc>",
+            solution: "2j$cl<C-r>=printf('%.2f', 3 * 4.99)<CR><Esc>",
           },
         ],
       },

@@ -25,7 +25,6 @@ const ROWS: [lesson: string, round: number, typed: string, expert: string][] = [
   ['delete-words', 1, 'jjwww' + 'x'.repeat(7), 'dw'],
   ['counts-operators', 0, 'w' + 'x'.repeat(14), 'd2w'], // audit: kw…; the round now starts on line 0
   ['text-objects-quotes', 3, 'jjf"l' + 'x'.repeat(14), 'di"'],
-  ['substitute', 0, 'xi===<Esc>', 's===<Esc>'],
   ['change-lines', 1, 'jj^C}<Esc>', 'cc}<Esc>'], // audit: ^Creturn sum; — the round's line is now `}`
   ['counts-operators', 0, 'wdwdw', 'd2w'], // audit: kwdwdw
   ['word-objects', 0, 'jfLbcworders<Esc>', 'ciworders<Esc>'],

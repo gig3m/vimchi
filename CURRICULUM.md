@@ -84,7 +84,7 @@ Survive, then learn the grammar: motions and search, operators, text objects, vi
 | 13 | Insert at Line Ends | `I` `A` | transform |
 | 14 | Opening New Lines | `o` `O` | transform |
 | 15 | Blank Lines | `[␣` `]␣` | transform |
-| 16 | Substitute Characters | `s` `S` | transform |
+| 16 | Change in Place | `cl` `cc` | transform |
 | 17 | Replace Mode | `R` | transform |
 
 ### Motions Worth Knowing

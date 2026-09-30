@@ -354,46 +354,41 @@ export const insertLikeAPro: Section = {
     },
     {
       id: 'substitute',
-      title: 'Substitute Characters',
-      chips: ['s', 'S'],
+      title: 'Change in Place',
+      chips: ['cl', 'cc'],
       keyCards: [
-        { key: 's', glyph: 'x→…', label: 'substitute character' },
-        { key: 'S', glyph: '⎯→…', label: 'substitute line' },
+        { key: 'cl', glyph: 'x→…', label: 'change one character', sub: 'a count changes more' },
+        { key: 'cc', glyph: '⎯→…', label: 'change the whole line', sub: 'keeps the indent' },
       ],
       intro: (
         <>
           <p>
-            <Code>s</Code> deletes the character under the cursor and starts insert mode, so one character becomes
-            whatever you type. <Code>S</Code> clears the whole line, keeping its indentation, and starts insert mode.
+            <Code>cl</Code> deletes the character under the cursor and starts insert mode, so one character becomes
+            whatever you type. <Code>cc</Code> clears the whole line, keeping its indentation, and starts insert mode.
           </p>
           <p>
-            Use <Code>r</Code> when one character becomes one character. Use <Code>s</Code> when it becomes several, and{' '}
-            <Code>S</Code> when the line needs rewriting from scratch.
+            Use <Code>r</Code> when one character becomes one character. Use <Code>cl</Code> when it becomes several,
+            and <Code>cc</Code> when the line needs rewriting from scratch. Both are your first taste of{' '}
+            <Code>c</Code>, the change operator; the general form comes in First Operators.
           </p>
-          <BeforeAfter lines={['if (a = b) run();']} cursor={6} keys="s===<Esc>" />
-          <BeforeAfter lines={['  console.log(x);']} cursor={8} keys="Sreturn x;<Esc>" />
+          <BeforeAfter lines={['if (a = b) run();']} cursor={6} keys="cl===<Esc>" />
+          <BeforeAfter lines={['  console.log(x);']} cursor={8} keys="ccreturn x;<Esc>" />
         </>
       ),
       practice: total => (
         <p>
-          Fix each line with <Code>s</Code> or <Code>S</Code>. A count before <Code>s</Code> replaces that many
+          Fix each line with <Code>cl</Code> or <Code>cc</Code>. A count before <Code>cl</Code> changes that many
           characters. {total} rounds.
         </p>
       ),
       aside: {
-        title: 'S and cc',
+        title: 's and S',
         body: (
-          <>
           <p>
-            <Code>S</Code> and <Code>cc</Code> do the same thing. You'll meet <Code>cc</Code> again in Change Lines,
-            alongside <Code>C</Code>.
+            Standard Vim spells these <Code>s</Code> and <Code>S</Code>, and they would work here. The tutor teaches
+            the long spellings because both starters take the short ones away: LazyVim rebinds <Code>s</Code> and{' '}
+            <Code>S</Code> to flash.nvim's label jumps, and kickstart gives <Code>s</Code> to mini.surround.
           </p>
-          <p>
-            Both starters later rebind these keys: LazyVim gives <Code>s</Code> and <Code>S</Code> to flash.nvim
-            (label jumps), kickstart gives <Code>s</Code> to mini.surround. <Code>cl</Code> and <Code>cc</Code> are the
-            spellings that survive, so they are worth knowing too.
-          </p>
-          </>
         ),
       },
       challenge: {
@@ -407,7 +402,7 @@ export const insertLikeAPro: Section = {
               cursor: { line: 1, col: 16 },
             },
             goal: { text: ['function authorize(user: User) {', '  if (user.role === ADMIN) grant(user);', '  else deny(user);', '}'] },
-            solution: 's===<Esc>',
+            solution: 'cl===<Esc>',
           },
           {
             prompt: 'Spell out "&".',
@@ -417,13 +412,13 @@ export const insertLikeAPro: Section = {
               cursor: { line: 0, col: 0 },
             },
             goal: { text: ['## Steps', '- Heat the oil in a pan.', '- Season with salt and pepper.', '- Serve warm.'] },
-            solution: 'jjf&sand<Esc>',
+            solution: 'jjf&cland<Esc>',
           },
           {
             prompt: 'Number the list: 1., 2., 3.',
             setup: { name: 'TODO.md', text: ['* Write', '* Test', '* Ship'], cursor: { line: 0, col: 0 } },
             goal: { text: ['1. Write', '2. Test', '3. Ship'] },
-            solution: 's1.<Esc>j0s2.<Esc>j0s3.<Esc>',
+            solution: 'cl1.<Esc>j0cl2.<Esc>j0cl3.<Esc>',
           },
           {
             prompt: 'Change "14px" to "1rem".',
@@ -435,7 +430,7 @@ export const insertLikeAPro: Section = {
             goal: {
               text: ['export const body = {', "  fontFamily: 'Inter, sans-serif',", "  fontSize: '1rem',", '  lineHeight: 1.5,', '};'],
             },
-            solution: 'j4s1rem<Esc>',
+            solution: 'j4cl1rem<Esc>',
           },
           {
             prompt: 'The stray print should be the "end" of the if.',
@@ -445,7 +440,7 @@ export const insertLikeAPro: Section = {
               cursor: { line: 0, col: 3 },
             },
             goal: { text: ['if ok then', '  run()', 'end', 'return ok'] },
-            solution: 'jjSend<Esc>',
+            solution: 'jjccend<Esc>',
           },
           {
             prompt: 'Rewrite the TODO step as "2. Tag".',
@@ -455,7 +450,7 @@ export const insertLikeAPro: Section = {
               cursor: { line: 1, col: 4 },
             },
             goal: { text: ['1. Build the image.', '2. Tag', '3. Restart the service.'] },
-            solution: 'S2. Tag<Esc>',
+            solution: 'cc2. Tag<Esc>',
           },
         ],
       },
