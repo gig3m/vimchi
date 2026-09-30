@@ -176,9 +176,9 @@ button.nav-item:hover { background: var(--hover); }
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   background: rgba(30, 31, 41, .55); cursor: pointer;
 }
-.focus-hint span { padding: 10px 18px; background: var(--bg); border: 1px solid var(--sel); border-radius: 8px; font-size: 13px; color: var(--fg); max-width: calc(100% - 32px); text-align: center; }
+.focus-hint span { padding: 10px 18px; background: var(--bg); border: 1px solid var(--sel); border-radius: 8px; font-size: 13px; color: var(--fg); }
 /* Touch screens: the editor is a focusable div, so no on-screen keyboard comes up. */
-.touch-note { display: none; margin-top: 6px; font-size: 12px; color: var(--orange); }
+.touch-note { display: none; margin: 0 0 10px; padding: 8px 12px; border: 1px solid var(--orange); border-radius: 6px; font-size: 13px; color: var(--orange); }
 @media (hover: none) and (pointer: coarse) { .touch-note { display: block; } }
 
 /* ---------- results ---------- */
@@ -317,6 +317,7 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 /* ---------- practice frame ---------- */
 .practice.fullscreen { background: var(--bg); padding: 24px; display: flex; align-items: center; justify-content: center; }
 .practice.fullscreen .editor { width: min(1100px, 100%); }
+.practice.fullscreen .touch-note { display: none; }
 .ed-fs {
   font-family: var(--mono); font-size: 11px; color: var(--muted); background: transparent; border: 1px solid var(--sel);
   border-radius: 5px; padding: 1px 8px; cursor: pointer;
@@ -477,9 +478,15 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 .ann-tag-line { display: block; }
 /* Insert hint: a zero-width anchor between two cells, a dotted line marking the boundary,
    and the text to type floating above it (below on the first row, which the pane would clip). */
-.ann-ins { position: relative; display: inline; pointer-events: none; --ann-lead: 9px; }
+.ann-ins { position: relative; display: inline; pointer-events: none; --ann-lead: 5px; }
 .ann-ins-line { position: absolute; z-index: 1; left: -1px; top: calc(-1 * var(--ann-lead)); bottom: -3px; border-left: 2px dotted var(--green); }
-.ann-ins .ann-tag { position: absolute; z-index: 2; bottom: calc(100% + var(--ann-lead)); left: 0; --ann-shift: 0px; transform: translateX(calc(-50% + var(--ann-shift))); }
+/* The tag overlaps the row above, so it must not read as buffer text there ("export as[e]c" looks
+   like a typo): a small filled pill, sitting low in the gap between the rows. */
+.ann-ins .ann-tag {
+  position: absolute; z-index: 2; bottom: calc(100% + var(--ann-lead)); left: 0; --ann-shift: 0px; transform: translateX(calc(-50% + var(--ann-shift)));
+  padding: 0 4px; font-size: 11px; line-height: 14px; font-weight: 700; color: #1e1f29; background: var(--green); border-color: var(--green); border-radius: 8px;
+  box-shadow: 0 0 0 2px var(--bg-editor);
+}
 
 
 /* ---------- cursor stays visible over marks ---------- */
