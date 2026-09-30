@@ -13,8 +13,10 @@ function mk() {
 }
 const signs = (vim: Vim) => {
   const d = vim.decorators.map(f => f(vim.buf, vim.win)).find(Boolean)!;
-  return [...d.signs!].map(([l, s]) => `${l}${s.text}`);
+  return [...d.signs!].sort((x, y) => x[0] - y[0]).map(([l, s]) => `${l}${s.text}`);
 };
+
+const color = (vim: Vim, line: number) => vim.decorators.map(f => f(vim.buf, vim.win)).find(Boolean)!.signs!.get(line)?.color;
 
 describe('gitsigns', () => {
   it('puts signs in the sign column', () => {
@@ -37,7 +39,25 @@ describe('gitsigns', () => {
     const vim = mk();
     vim.feedKeys(']c]c hs');
     expect(gitState(vim).index['x.txt']).toBe(['a', 'b', 'c', 'd', 'X', 'e', 'f', 'g', 'h'].join('\n') + '\n');
-    expect(signs(vim)).toEqual(['1┃', '6_']);
+    // gitsigns keeps a staged hunk's sign, dimmed (signs_staged_enable, on by default).
+    expect(signs(vim)).toEqual(['1┃', '4┃', '6_']);
+    expect(color(vim, 4)).not.toBe(color(vim, 1));
+    expect(color(vim, 4)).not.toBe(color(mk(), 4));
+  });
+
+  it('a staged sign sits on the buffer line, past unstaged lines added above it', () => {
+    const vim = mk();
+    vim.feedKeys('G[c hs');
+    expect(gitState(vim).index['x.txt']).toBe(['a', 'b', 'c', 'd', 'e', 'f', 'h'].join('\n') + '\n');
+    expect(signs(vim)).toEqual(['1┃', '4┃', '6_']);
+    expect(color(vim, 6)).not.toBe(color(mk(), 6));
+    expect(color(vim, 4)).toBe(color(mk(), 4));
+  });
+
+  it(']c skips staged hunks, like nav_hunk', () => {
+    const vim = mk();
+    vim.feedKeys(']c]c hsgg]c]c');
+    expect(vim.cursor.line).toBe(6);
   });
 
   it('<leader>hr resets it, and u undoes that', () => {
