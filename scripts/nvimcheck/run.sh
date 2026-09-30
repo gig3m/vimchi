@@ -16,8 +16,12 @@ cd "$(dirname "$0")/../.."
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 OUT="$tmp/rounds.json" npx vitest run scripts/nvimcheck/export.test.ts >/dev/null
+# A hang (a key sequence Neovim waits on) must fail the run, not stall it.
+status=0
 ROUNDS="$tmp/rounds.json" OUT="$tmp/report.txt" SANDBOX="$tmp/sandbox" \
-  nvim --clean --headless -c "luafile scripts/nvimcheck/check.lua" >/dev/null 2>&1
+  timeout 300 nvim --clean --headless -c "luafile scripts/nvimcheck/check.lua" >/dev/null 2>&1 || status=$?
+if [ "$status" = 124 ]; then echo "nvimcheck: Neovim did not finish within 300s (hung?)" >&2; exit 1; fi
+if [ ! -s "$tmp/report.txt" ]; then echo "nvimcheck: Neovim exited ($status) without writing a report" >&2; exit 1; fi
 cat "$tmp/report.txt"
 head -1 "$tmp/report.txt" | grep -q ' bad 0$'
 if [ "${NVIMCHECK_STRICT:-1}" != 0 ]; then
