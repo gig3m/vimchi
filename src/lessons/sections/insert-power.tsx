@@ -3,14 +3,17 @@ import { BeforeAfter } from '../../components/diagrams';
 import type { Vim } from '../../vim/editor';
 import type { Section, Setup } from '../types';
 
-/** A round that starts in insert mode. `‸` marks where the cursor sits. */
-const typing = (text: string | string[]): Setup => {
+/** A round that starts in insert mode. `‸` marks where the cursor sits; `then` is typed before the round begins. */
+const typing = (text: string | string[], then?: string): Setup => {
   const lines = Array.isArray(text) ? text : [text];
   const line = lines.findIndex(l => l.includes('‸'));
   const col = lines[line].indexOf('‸');
   return {
     text: lines.map(l => l.replace('‸', '')),
-    init: (vim: Vim) => vim.startInsert('i', { line, col }),
+    init: (vim: Vim) => {
+      vim.startInsert('i', { line, col });
+      if (then) vim.feedKeys(then);
+    },
   };
 }
 
@@ -22,6 +25,7 @@ export const insertPower: Section = {
     {
       id: 'insert-delete-word',
       title: 'Deleting While Typing',
+      typing: true,
       chips: ['C-w', 'C-u'],
       keyCards: [
         { key: 'C-w', glyph: '←w', glyphColor: 'var(--red)', label: 'delete word back' },
@@ -71,11 +75,11 @@ export const insertPower: Section = {
         base: { name: 'cart.ts' },
         rounds: [
           {
-            prompt: 'You typed "totl". Make it "subtotal".',
+            prompt: 'You typed "totl". Make it "sum".',
             setup: {
               ...typing([
                 'export function summary(lines: Line[]) {',
-                '  const subtotal = total(lines);',
+                '  const sum = total(lines);',
                 '  return formatPrice(totl‸);',
                 '}',
               ]),
@@ -83,45 +87,35 @@ export const insertPower: Section = {
             goal: {
               text: [
                 'export function summary(lines: Line[]) {',
-                '  const subtotal = total(lines);',
-                '  return formatPrice(subtotal);',
+                '  const sum = total(lines);',
+                '  return formatPrice(sum);',
                 '}',
               ],
             },
-            solution: '<C-w>subtotal<Esc>',
+            solution: '<C-w>sum<Esc>',
           },
           {
-            prompt: 'Fix "find_fils".',
+            prompt: 'Fix "nubmer".',
             setup: {
-              name: 'telescope.lua',
-              ...typing([
-                "local builtin = require('telescope.builtin')",
-                "map('n', '<leader>ff', builtin.find_fils‸)",
-                "map('n', '<leader>fg', builtin.live_grep)",
-              ]),
+              name: 'options.lua',
+              ...typing(['local opt = vim.opt', 'opt.nubmer‸ = true', 'opt.wrap = false']),
             },
-            goal: {
-              text: [
-                "local builtin = require('telescope.builtin')",
-                "map('n', '<leader>ff', builtin.find_files)",
-                "map('n', '<leader>fg', builtin.live_grep)",
-              ],
-            },
-            solution: '<C-w>find_files<Esc>',
+            goal: { text: ['local opt = vim.opt', 'opt.number = true', 'opt.wrap = false'] },
+            solution: '<C-w>number<Esc>',
           },
           {
-            prompt: 'Nothing on this line is right. Start it over.',
-            setup: { ...typing(['function unwrap(value: string | null) {', '  retrun nul‸;', '}']) },
-            goal: { text: ['function unwrap(value: string | null) {', '  return null;', '}'] },
-            solution: '<C-u>return null<Esc>',
+            prompt: 'Nothing before the cursor is right. Start over: return v.',
+            setup: { ...typing(['function unwrap(v: string | null) {', '  retrun nul‸;', '}']) },
+            goal: { text: ['function unwrap(v: string | null) {', '  return v;', '}'] },
+            solution: '<C-u>return v<Esc>',
           },
           {
-            prompt: 'Two typos in a row: make it "email address".',
+            prompt: 'Two typos in a row: make it "bad email".',
             setup: {
               ...typing([
                 'export function validate(input: string) {',
                 "  if (!input.includes('@')) {",
-                "    throw new Error('Invalid emial adress‸');",
+                "    throw new Error('bad emial adress‸');",
                 '  }',
                 '}',
               ]),
@@ -130,12 +124,12 @@ export const insertPower: Section = {
               text: [
                 'export function validate(input: string) {',
                 "  if (!input.includes('@')) {",
-                "    throw new Error('Invalid email address');",
+                "    throw new Error('bad email');",
                 '  }',
                 '}',
               ],
             },
-            solution: '<C-w><C-w>email address<Esc>',
+            solution: '<C-w><C-w>email<Esc>',
           },
           {
             prompt: 'Change the last word to "README".',
@@ -147,13 +141,13 @@ export const insertPower: Section = {
             solution: '<C-w>README<Esc>',
           },
           {
-            prompt: 'Retype this one from the indent.',
+            prompt: 'Both words before the cursor are wrong. Retype them from the indent.',
             setup: {
-              name: 'plugins.lua',
-              ...typing(['return {', "  'nvim-telescop/telscope.nvm'‸,", "  'nvim-lua/plenary.nvim',", '}']),
+              name: 'safe.lua',
+              ...typing(['local function try(fn)', '  lcoal ko‸ = pcall(fn)', '  return ok', 'end']),
             },
-            goal: { text: ['return {', "  'nvim-telescope/telescope.nvim',", "  'nvim-lua/plenary.nvim',", '}'] },
-            solution: "<C-u>'nvim-telescope/telescope.nvim'<Esc>",
+            goal: { text: ['local function try(fn)', '  local ok = pcall(fn)', '  return ok', 'end'] },
+            solution: '<C-u>local ok<Esc>',
           },
         ],
       },
@@ -321,6 +315,7 @@ export const insertPower: Section = {
     {
       id: 'snippets',
       title: 'Snippets',
+      typing: true,
       chips: ['tab', 'S-tab'],
       keyCards: [
         { key: 'tab', glyph: '⇥', label: 'expand / next field' },
@@ -342,8 +337,8 @@ export const insertPower: Section = {
       ),
       practice: total => (
         <p>
-          Each round starts in insert mode after a trigger. Expand it and fill its fields, then <Code>esc</Code>.{' '}
-          {total} rounds.
+          Each round starts in insert mode, after a trigger or inside a snippet already expanded. Fill the fields,
+          then <Code>esc</Code>. {total} rounds.
         </p>
       ),
       aside: {
@@ -361,10 +356,10 @@ export const insertPower: Section = {
         base: { name: 'util.ts', plugins: ['snippets'] },
         rounds: [
           {
-            prompt: 'Expand fn into function greet(name) { return name; }.',
-            setup: typing(['// greeting helper', '', 'fn‸']),
-            goal: { text: ['// greeting helper', '', 'function greet(name) {', '  return name;', '}'] },
-            solution: '<Tab>greet<Tab>name<Tab>return name;<Esc>',
+            prompt: 'Expand if: the condition is ok, the body go().',
+            setup: typing(['const ok = ready();', '', 'if‸']),
+            goal: { text: ['const ok = ready();', '', 'if (ok) {', '  go()', '}'] },
+            solution: '<Tab>ok<Tab>go()<Esc>',
           },
           {
             prompt: 'Expand log to print total.',
@@ -373,10 +368,17 @@ export const insertPower: Section = {
             solution: '<Tab>total<Esc>',
           },
           {
-            prompt: 'Expand for over items as item, with the body item.run().',
-            setup: typing(['const items = load();', '', 'for‸']),
-            goal: { text: ['const items = load();', '', 'for (const item of items) {', '  item.run();', '}'] },
-            solution: '<Tab>item<Tab>items<Tab>item.run();<Esc>',
+            prompt: 'You skipped the name. Go back two fields and call it id.',
+            // Expanded with the name left empty, params and body filled: the cursor sits in the body.
+            setup: typing(['// identity', '', 'fn‸'], '<Tab><Tab>a<Tab>return a;'),
+            goal: { text: ['// identity', '', 'function id(a) {', '  return a;', '}'] },
+            solution: '<S-Tab><S-Tab>id<Esc>',
+          },
+          {
+            prompt: 'You are in the loop body. Expand log there to print x.',
+            setup: typing(['const xs = load();', '', 'for‸'], '<Tab>x<Tab>xs<Tab>'),
+            goal: { text: ['const xs = load();', '', 'for (const x of xs) {', '  console.log(x);', '}'] },
+            solution: 'log<Tab>x<Esc>',
           },
         ],
       },

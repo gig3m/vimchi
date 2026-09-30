@@ -420,13 +420,13 @@ export const nextSteps: Section = {
             solution: "kf'lcwgreen<Esc>",
           },
           {
-            prompt: 'Rename "fetchData" to "loadOrders".',
+            prompt: 'Rename "fetchData" to "load".',
             setup: {
               text: ['async function refresh() {', '  const orders = fetchData();', '  render(orders);', '}'],
               cursor: { line: 1, col: 2 },
             },
-            goal: { text: ['async function refresh() {', '  const orders = loadOrders();', '  render(orders);', '}'] },
-            solution: '3wcwloadOrders<Esc>',
+            goal: { text: ['async function refresh() {', '  const orders = load();', '  render(orders);', '}'] },
+            solution: '3wcwload<Esc>',
           },
           {
             prompt: 'Change "false" to "true".',

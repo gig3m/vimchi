@@ -9,7 +9,7 @@ const intros: Record<string, { intro: Lesson['intro']; aside: Lesson['aside'] }>
       <>
         <p>
           Everything from the first five sections, together. A real file with a dozen small mistakes: typos,
-          a wrong digit, an identifier with one letter off. The list beside the editor says what each one
+          a wrong digit, an identifier with one letter off. The list above the editor (beside it in full screen) says what each one
           is; you decide how to get there and which key fixes it.
         </p>
         <p>

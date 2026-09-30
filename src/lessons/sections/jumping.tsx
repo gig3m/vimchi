@@ -120,15 +120,21 @@ export const jumping: Section = {
           },
           {
             prompt: 'Delete the filter step, backwards from .map.',
-            setup: { text: ['const names = users', '  .filter(u => u.active)', '  .map(u => u.name);'], cursor: { line: 2, col: 2 } },
-            goal: { text: ['const names = users', '  .map(u => u.name);'] },
+            setup: {
+              text: ['const names = users.filter(u => u.active).map(u => u.name);', '', 'export { names };'],
+              cursor: { line: 0, col: 41 },
+            },
+            goal: { text: ['const names = users.map(u => u.name);', '', 'export { names };'] },
             solution: 'ds.fa',
           },
           {
-            prompt: 'Replace the ternary with plural(count, \'item\').',
-            setup: { text: ['const label = count === 1', "  ? 'item'", "  : 'items';"], cursor: { line: 0, col: 14 } },
-            goal: { text: "const label = plural(count, 'item');" },
-            solution: "cs';aplural(count, 'item')<Esc>",
+            prompt: 'Replace the whole ternary with noun.',
+            setup: {
+              text: ['const noun = nouns[count];', 'const label = count === 1', "  ? 'item'", "  : 'items';"],
+              cursor: { line: 1, col: 14 },
+            },
+            goal: { text: ['const noun = nouns[count];', 'const label = noun;'] },
+            solution: "cs';anoun<Esc>",
           },
           {
             prompt: 'Drop useEffect and useMemo.',

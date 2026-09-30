@@ -40,7 +40,8 @@ export const visualMode: Section = {
       ),
       practice: total => (
         <p>
-          Select the text the goal no longer has, then press <Code>d</Code>. {total} rounds.
+          Select the text the goal no longer has, then press <Code>d</Code>. Where the edit repeats,{' '}
+          <Code>.</Code> redoes it on as many characters from the cursor. {total} rounds.
         </p>
       ),
       aside: {
@@ -57,11 +58,12 @@ export const visualMode: Section = {
         base: { name: 'app.ts' },
         rounds: [
           {
-            prompt: 'Drop the "debug" label from the log call.',
+            prompt: 'Drop the "debug" label from both log calls.',
             setup: {
               text: [
                 'async function load(user: User) {',
                 "  console.log('debug', user.id);",
+                "  console.log('debug', user.name);",
                 '  return api.get(user.id);',
                 '}',
               ],
@@ -71,11 +73,12 @@ export const visualMode: Section = {
               text: [
                 'async function load(user: User) {',
                 '  console.log(user.id);',
+                '  console.log(user.name);',
                 '  return api.get(user.id);',
                 '}',
               ],
             },
-            solution: 'vf d',
+            solution: 'vf dj.',
           },
           {
             prompt: 'Delete the trailing comment on the timeout.',
@@ -95,25 +98,27 @@ export const visualMode: Section = {
             solution: 'jj$vT,d',
           },
           {
-            prompt: 'Remove ".map(String)", dot included.',
+            prompt: 'Remove both ".map(String)"s, dot included.',
             setup: {
               text: [
-                'function tagList(items: unknown[]) {',
-                "  const tags = items.filter(Boolean).map(String).join(', ');",
-                '  return tags;',
+                'function tags(xs: unknown[]) {',
+                '  const a = xs.map(String).join();',
+                '  const b = xs.map(String).sort();',
+                '  return [a, b];',
                 '}',
               ],
-              cursor: { line: 1, col: 37 },
+              cursor: { line: 1, col: 15 },
             },
             goal: {
               text: [
-                'function tagList(items: unknown[]) {',
-                "  const tags = items.filter(Boolean).join(', ');",
-                '  return tags;',
+                'function tags(xs: unknown[]) {',
+                '  const a = xs.join();',
+                '  const b = xs.sort();',
+                '  return [a, b];',
                 '}',
               ],
             },
-            solution: 'vf)ohd',
+            solution: 'vf)ohdj.',
           },
           {
             prompt: 'Keep only the first name.',
@@ -192,29 +197,31 @@ export const visualMode: Section = {
         base: { name: 'server.ts' },
         rounds: [
           {
-            prompt: 'Delete the three debug lines.',
+            prompt: 'Delete both pairs of debug lines.',
             setup: {
               text: [
                 'app.get("/health", (req, res) => {',
                 '  console.log(req.url);',
                 '  console.log(req.headers);',
-                '  console.log(req.query);',
                 '  res.send("ok");',
+                '  console.log(res.statusCode);',
+                '  console.log(Date.now());',
                 '});',
               ],
               cursor: { line: 1, col: 2 },
             },
             goal: { text: ['app.get("/health", (req, res) => {', '  res.send("ok");', '});'] },
-            solution: 'Vjjd',
+            solution: 'Vjdj.',
           },
           {
-            prompt: 'Join the import list onto one line.',
+            prompt: 'Join the hand-wrapped paragraph, down to the end of the file.',
             setup: {
-              text: ['import {', 'useEffect,', 'useState,', '} from "react";'],
-              cursor: { line: 0, col: 0 },
+              name: 'notes.md',
+              text: ['# Notes', '', 'This note', 'was wrapped', 'by hand, so', 'it reads', 'badly.'],
+              cursor: { line: 2, col: 0 },
             },
-            goal: { text: 'import { useEffect, useState, } from "react";' },
-            solution: 'VjjjJ',
+            goal: { text: ['# Notes', '', 'This note was wrapped by hand, so it reads badly.'] },
+            solution: 'VGJ',
           },
           {
             prompt: 'Delete the whole retry block, from the cursor up.',
@@ -251,6 +258,26 @@ export const visualMode: Section = {
             },
             goal: { text: ['app.use(auth);', 'app.use("/api", router);', 'app.listen(3000);'] },
             solution: 'Vjp',
+          },
+          {
+            prompt: 'Delete both blocks of three TODO lines.',
+            setup: {
+              name: 'release.md',
+              text: [
+                '# Release',
+                'TODO: changelog',
+                'TODO: screenshots',
+                'TODO: tag',
+                '- Faster startup',
+                'TODO: docs',
+                'TODO: blog',
+                'TODO: tweet',
+                '- Smaller bundle',
+              ],
+              cursor: { line: 1, col: 0 },
+            },
+            goal: { text: ['# Release', '- Faster startup', '- Smaller bundle'] },
+            solution: 'Vjjdj.',
           },
         ],
       },
@@ -292,14 +319,22 @@ export const visualMode: Section = {
         base: { name: 'list.lua' },
         rounds: [
           {
-            prompt: 'You just selected the two "old" entries. Delete them.',
+            prompt: 'You just selected the first two "old" entries. Delete them, then the other two.',
             setup: {
-              text: ['local plugins = {', '  "old/one",', '  "old/two",', '  "folke/lazy.nvim",', '}'],
+              text: [
+                'local plugins = {',
+                '  "old/one",',
+                '  "old/two",',
+                '  "folke/lazy.nvim",',
+                '  "old/three",',
+                '  "old/four",',
+                '}',
+              ],
               cursor: { line: 0, col: 0 },
               init: vim => vim.feedKeys('jVj<Esc>G'),
             },
             goal: { text: ['local plugins = {', '  "folke/lazy.nvim",', '}'] },
-            solution: 'gvd',
+            solution: 'gvdj.',
           },
           {
             prompt: 'Yank the two calls for later, then reselect them and delete them.',
@@ -312,26 +347,28 @@ export const visualMode: Section = {
             solution: 'Vjygvd',
           },
           {
-            prompt: 'You selected "timeout" a moment ago. Change it to "timeoutMs".',
+            prompt: 'You selected "timeout" a moment ago. Change it to "delay".',
             setup: {
               name: 'client.ts',
               text: ['const client = createClient({', '  timeout: 3000,', '});'],
               cursor: { line: 1, col: 2 },
               init: vim => vim.feedKeys('ve<Esc>gg'),
             },
-            goal: { text: ['const client = createClient({', '  timeoutMs: 3000,', '});'] },
-            solution: 'gvctimeoutMs<Esc>',
+            goal: { text: ['const client = createClient({', '  delay: 3000,', '});'] },
+            solution: 'gvcdelay<Esc>',
           },
           {
-            prompt: 'You last selected the hand-wrapped paragraph. Join it.',
+            prompt: 'You last selected the first hand-wrapped paragraph. Join it, then the second.',
             setup: {
               name: 'notes.md',
-              text: ['This paragraph was', 'wrapped by hand and', 'reads badly.', '', '## Next'],
+              text: ['This paragraph was', 'wrapped by hand and', 'reads badly.', '', 'So was this', 'one, three', 'lines long.'],
               cursor: { line: 0, col: 0 },
               init: vim => vim.feedKeys('Vjj<Esc>G'),
             },
-            goal: { text: ['This paragraph was wrapped by hand and reads badly.', '', '## Next'] },
-            solution: 'gvJ',
+            goal: {
+              text: ['This paragraph was wrapped by hand and reads badly.', '', 'So was this one, three lines long.'],
+            },
+            solution: 'gvJjj.',
           },
         ],
       },
@@ -406,28 +443,31 @@ export const visualMode: Section = {
             solution: 'v2f d',
           },
           {
-            prompt: 'Copy "order.customer.id" into the empty argument.',
+            prompt: 'Copy "order.id" into both empty arguments.',
             setup: {
-              text: ['const id = order.customer.id;', "analytics.track('checkout', );", 'sendReceipt(order);'],
+              text: ['const id = order.id;', "track('buy', );", "track('pay', );"],
               cursor: { line: 0, col: 11 },
             },
-            goal: {
-              text: [
-                'const id = order.customer.id;',
-                "analytics.track('checkout', order.customer.id);",
-                'sendReceipt(order);',
-              ],
-            },
-            solution: 'vt;yjf)P',
+            goal: { text: ['const id = order.id;', "track('buy', order.id);", "track('pay', order.id);"] },
+            solution: 'vt;yjf)Pjh.',
           },
           {
-            prompt: 'Replace the loop with a single return.',
+            prompt: 'Stub the function body out with todo().',
             setup: {
-              text: ['let total = 0;', 'for (const x of xs) total += x;', 'return total;'],
-              cursor: { line: 0, col: 0 },
+              text: ['function total(xs) {', '  let t = 0;', '  for (const x of xs) t += x;', '  return t;', '}'],
+              cursor: { line: 1, col: 2 },
             },
-            goal: { text: 'return sum(xs);' },
-            solution: 'Vjjcreturn sum(xs);<Esc>',
+            goal: { text: ['function total(xs) {', '  todo()', '}'] },
+            solution: 'Vjjctodo()<Esc>',
+          },
+          {
+            prompt: 'Turn every flag from "yes" to "no".',
+            setup: {
+              text: ['const flags = {', '  beta: "yes",', '  dark: "yes",', '  sync: "yes",', '};'],
+              cursor: { line: 1, col: 9 },
+            },
+            goal: { text: ['const flags = {', '  beta: "no",', '  dark: "no",', '  sync: "no",', '};'] },
+            solution: 'vi"cno<Esc>jh.jh.',
           },
           {
             prompt: 'Copy port and host into the test config.',
@@ -494,23 +534,25 @@ export const visualMode: Section = {
         base: { name: 'vars.ts' },
         rounds: [
           {
-            prompt: 'Uncomment the three lines.',
+            prompt: 'Uncomment both pairs of lines.',
             setup: {
-              text: ['// const a = 1;', '// const b = 2;', '// const c = 3;'],
+              text: ['// const a = 1;', '// const b = 2;', 'run(a, b);', '// const c = 3;', '// const d = 4;'],
               cursor: { line: 0, col: 0 },
             },
-            goal: { text: ['const a = 1;', 'const b = 2;', 'const c = 3;'] },
-            solution: '<C-v>jjlld',
+            goal: { text: ['const a = 1;', 'const b = 2;', 'run(a, b);', 'const c = 3;', 'const d = 4;'] },
+            solution: '<C-v>jlld3j.',
           },
           {
-            prompt: 'Tick every box.',
+            prompt: 'Tick every box in both lists.',
             setup: {
               name: 'todo.md',
-              text: ['- [ ] write tests', '- [ ] update docs', '- [ ] tag release'],
-              cursor: { line: 0, col: 3 },
+              text: ['## Today', '- [ ] write tests', '- [ ] update docs', '## Later', '- [ ] tag release', '- [ ] blog'],
+              cursor: { line: 1, col: 3 },
             },
-            goal: { text: ['- [x] write tests', '- [x] update docs', '- [x] tag release'] },
-            solution: '<C-v>jjrx',
+            goal: {
+              text: ['## Today', '- [x] write tests', '- [x] update docs', '## Later', '- [x] tag release', '- [x] blog'],
+            },
+            solution: '<C-v>jrx3j.',
           },
           {
             prompt: 'Change every "var" to "let".',
@@ -594,10 +636,10 @@ export const visualMode: Section = {
         base: { name: 'list.md' },
         rounds: [
           {
-            prompt: 'Turn the lines into a bullet list.',
-            setup: { text: ['## Groceries', '', 'Milk', 'Eggs', 'Bread'], cursor: { line: 0, col: 0 } },
-            goal: { text: ['## Groceries', '', '- Milk', '- Eggs', '- Bread'] },
-            solution: '2j<C-v>jjI- <Esc>',
+            prompt: 'Turn both groups into bullet lists.',
+            setup: { text: ['## Groceries', 'Milk', 'Eggs', '', 'Soap', 'Tape'], cursor: { line: 1, col: 0 } },
+            goal: { text: ['## Groceries', '- Milk', '- Eggs', '', '- Soap', '- Tape'] },
+            solution: '<C-v>jI- <Esc>}j.',
           },
           {
             prompt: 'Make the three globals local.',
@@ -612,20 +654,20 @@ export const visualMode: Section = {
             solution: '<C-v>kkIlocal <Esc>',
           },
           {
-            prompt: 'Add "-outline" after each size.',
+            prompt: 'Add "-alt" after each size.',
             setup: { name: 'buttons.css', text: ['.btn-sm {}', '.btn-md {}', '.btn-lg {}'], cursor: { line: 0, col: 6 } },
-            goal: { text: ['.btn-sm-outline {}', '.btn-md-outline {}', '.btn-lg-outline {}'] },
-            solution: '<C-v>jjA-outline<Esc>',
+            goal: { text: ['.btn-sm-alt {}', '.btn-md-alt {}', '.btn-lg-alt {}'] },
+            solution: '<C-v>jjA-alt<Esc>',
           },
           {
-            prompt: 'End every statement with a semicolon.',
+            prompt: 'End every statement in both pairs with a semicolon.',
             setup: {
               name: 'setup.ts',
-              text: ["const app = express()", 'app.use(cors())', 'app.listen(3000)'],
+              text: ['const app = express()', 'app.use(cors())', '// then', 'app.use(auth)', 'app.listen(3000)'],
               cursor: { line: 0, col: 0 },
             },
-            goal: { text: ['const app = express();', 'app.use(cors());', 'app.listen(3000);'] },
-            solution: '<C-v>jj$A;<Esc>',
+            goal: { text: ['const app = express();', 'app.use(cors());', '// then', 'app.use(auth);', 'app.listen(3000);'] },
+            solution: '<C-v>j$A;<Esc>3j.',
           },
           {
             prompt: 'Add a comma after the first two items.',
@@ -696,7 +738,7 @@ export const visualMode: Section = {
             solution: 'vi(i(capp<Esc>',
           },
           {
-            prompt: 'Replace the whole "(isAdmin || isOwner)" group with canEdit(user).',
+            prompt: 'Replace the whole "(isAdmin || isOwner)" group with staff.',
             setup: {
               text: [
                 'function canSave(user: User) {',
@@ -711,14 +753,14 @@ export const visualMode: Section = {
             goal: {
               text: [
                 'function canSave(user: User) {',
-                '  if (isReady(user) && canEdit(user)) {',
+                '  if (isReady(user) && staff) {',
                 '    return true;',
                 '  }',
                 '  return false;',
                 '}',
               ],
             },
-            solution: 'va(a(ccanEdit(user)<Esc>',
+            solution: 'va(a(cstaff<Esc>',
           },
           {
             prompt: 'Log "body" instead of the whole expression.',
@@ -744,27 +786,27 @@ export const visualMode: Section = {
             solution: 'vi(i(i(cbody<Esc>',
           },
           {
-            prompt: 'Empty the grid, keeping the outer brackets.',
+            prompt: 'Empty all three grids, keeping the outer brackets.',
             setup: {
-              text: ['const size = 2;', 'const grid = [[1, 2], [3, 4]];', 'export { size, grid };'],
-              cursor: { line: 1, col: 23 },
+              text: ['const a = [[1, 2], [3, 4]];', 'const b = [[5, 6], [7, 8]];', 'const c = [[9, 0], [1, 2]];'],
+              cursor: { line: 0, col: 14 },
             },
-            goal: { text: ['const size = 2;', 'const grid = [];', 'export { size, grid };'] },
-            solution: 'vi[i[d',
+            goal: { text: ['const a = [];', 'const b = [];', 'const c = [];'] },
+            solution: 'vi[i[dj.j.',
           },
           {
-            prompt: 'Replace the whole config object with {}.',
+            prompt: 'Replace both whole config objects with {}.',
             setup: {
               text: [
                 "import { start } from './server';",
-                '',
-                'const config = { server: { port: 8080 }, debug: true };',
-                'start(config);',
+                'const dev = { srv: { port: 80 }, log: true };',
+                'const prd = { srv: { port: 81 }, log: null };',
+                'start(dev, prd);',
               ],
-              cursor: { line: 2, col: 33 },
+              cursor: { line: 1, col: 27 },
             },
-            goal: { text: ["import { start } from './server';", '', 'const config = {};', 'start(config);'] },
-            solution: 'va{a{c{}<Esc>',
+            goal: { text: ["import { start } from './server';", 'const dev = {};', 'const prd = {};', 'start(dev, prd);'] },
+            solution: 'va{a{c{}<Esc>jh.',
           },
         ],
       },
