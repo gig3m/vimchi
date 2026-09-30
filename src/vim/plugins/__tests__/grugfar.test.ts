@@ -19,6 +19,15 @@ describe('grug-far style project replace', () => {
     v.feed('q');
     expect(v.floats.some(x => x.id === 'grug-far')).toBe(false);
   });
+  it('replaces inside an open buffer with unsaved edits, and u undoes it', () => {
+    const v = vim();
+    v.feedKeys('oid();<Esc>');                          // unsaved edit in a.ts
+    v.feedKeys('ggw<Space>srkey<CR>q');
+    expect(v.buf.lines).toEqual(['const key = 1;', 'key();', 'const identity = key;']);
+    expect(v.fs.read('a.ts')).toBe('const key = 1;\nkey();\nconst identity = key;\n');
+    v.feed('u');
+    expect(v.buf.lines).toEqual(['const id = 1;', 'id();', 'const identity = id;']);
+  });
   it('asks for the search word when the cursor is not on one', () => {
     const v = vim();
     v.feedKeys('$'); // on ";"

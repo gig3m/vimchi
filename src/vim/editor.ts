@@ -217,7 +217,7 @@ export class Vim {
 
   private tables: Record<'n' | 'v' | 'o', Table> = { n: new Map(), v: new Map(), o: new Map() };
   private prefixes: Record<'n' | 'v' | 'o', Set<string>> = { n: new Set(), v: new Set(), o: new Set() };
-  private insertMaps = new Map<string, (vim: Vim) => void>();
+  private insertMaps = new Map<string, (vim: Vim) => void | boolean>();
   exCommands = new Map<string, { min: number; run: (args: ExArgs) => void }>();
   private depth = 0;
   private snapshotTaken = false;
@@ -290,7 +290,8 @@ export class Vim {
     const k = parseKeys(lhs).flatMap(x => (x === '<leader>' ? [this.leader] : [x]));
     for (const m of modes) this.tables[m].delete(keyOf(k));
   }
-  mapInsert(lhs: string, fn: (vim: Vim) => void) {
+  /** Map a key in insert mode. Returning `false` falls through to the key's normal handling. */
+  mapInsert(lhs: string, fn: (vim: Vim) => void | boolean) {
     this.insertMaps.set(lhs, fn);
   }
   defineEx(name: string, min: number, run: (args: ExArgs) => void) {
@@ -1277,7 +1278,7 @@ export class Vim {
     const ins = this.insert!;
     if (ins.pending) return this.insertPending(key);
     const mapped = this.insertMaps.get(key);
-    if (mapped) return mapped(this);
+    if (mapped && mapped(this) !== false) return;
     if (ins.completion && !['<C-n>', '<C-p>', '<C-y>', '<C-e>', '<Down>', '<Up>'].includes(key)) ins.completion = undefined;
     const b = this.buf, c = this.win.cursor;
     const typeChar = (ch: string) => {

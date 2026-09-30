@@ -8,14 +8,19 @@ function replaceEverywhere(vim: Vim, word: string, repl: string) {
   const re = new RegExp(`\\b${escapeRe(word)}\\b`, 'g');
   let n = 0, files = 0;
   for (const path of vim.fs.list()) {
-    const text = vim.fs.read(path);
+    // An open buffer is the truth for its file (it may hold unsaved edits); the disk copy otherwise.
+    const buf = vim.findBuffer(path);
+    const text = buf ? buf.lines.join('\n') + '\n' : vim.fs.read(path);
     if (text == null) continue;
     const count = (text.match(re) ?? []).length;
     if (!count) continue;
     n += count; files++;
     const next = text.replace(re, repl);
-    const buf = vim.findBuffer(path);
-    if (buf) buf.lines = next.replace(/\n$/, '').split('\n');
+    if (buf) {
+      if (buf === vim.buf) vim.beginChange();
+      else buf.snapshot({ line: 0, col: 0 });
+      buf.lines = next.replace(/\n$/, '').split('\n');
+    }
     vim.fs.write(path, next);
   }
   const float: Float = {
