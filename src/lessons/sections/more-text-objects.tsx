@@ -1,5 +1,6 @@
 import { Code, Mono } from '../../components/Code';
 import { PluginObjects } from '../../components/pluginDiagrams';
+import type { Vim } from '../../vim/editor';
 import type { Section } from '../types';
 
 const users = [
@@ -481,6 +482,130 @@ export const moreTextObjects: Section = {
           { setup: { cursor: { line: 1, col: 0 } }, goal: { cursor: { line: 17, col: 2 } }, solution: '3]m' },
         ],
       },
+    },
+    {
+      id: 'toggle-folds',
+      title: 'Folds',
+      chips: ['za', 'zR', 'zM'],
+      keyCards: [
+        { key: 'za', glyph: '▸▾', label: 'toggle this fold' },
+        { key: 'zR', glyph: '▾▾', label: 'open all folds' },
+        { key: 'zM', glyph: '▸▸', label: 'close all folds' },
+      ],
+      intro: (
+        <>
+          <p>
+            A closed fold hides a block behind one row: <Mono>+-- 4 lines: function retryDelay…</Mono>. <Code>za</Code>{' '}
+            toggles the fold under the cursor, opening it if it is closed and closing it if it is open.{' '}
+            <Code>zR</Code> opens every fold in the window and <Code>zM</Code> closes them all.
+          </p>
+          <p>
+            <Code>zM</Code> turns a long file into its outline. <Code>j</Code> and <Code>k</Code> step over a closed
+            fold as one line, so move to the function you want and <Code>za</Code> it open. An operator takes a closed
+            fold whole: <Code>dd</Code> on one deletes every line in it.
+          </p>
+        </>
+      ),
+      practice: total => <p>Open, close or edit through the folds as the prompt asks. {total} rounds.</p>,
+      aside: {
+        title: 'Where folds come from',
+        body: (
+          <p>
+            LazyVim folds by treesitter, so every function and block is a fold; stock Neovim and kickstart start with
+            none, and <Code>zf</Code> makes one by hand. <Code>zo</Code> and <Code>zc</Code> open or close just one
+            fold, and <Code>zj</Code> / <Code>zk</Code> move to the next or previous fold.
+          </p>
+        ),
+      },
+      challenge: (() => {
+        const orders = [
+          "import { db } from './db';",
+          '',
+          'export async function listOrders(userId: string) {',
+          '  const rows = await db.orders.find({ userId });',
+          '  return rows.map(toOrder);',
+          '}',
+          '',
+          'export async function cancelOrder(id: string) {',
+          '  const order = await db.orders.get(id);',
+          "  if (order.status === 'shipped') {",
+          "    throw new Error('already shipped');",
+          '  }',
+          "  await db.orders.update(id, { status: 'cancelled' });",
+          '}',
+          '',
+          'function retryDelay(attempt: number) {',
+          '  const base = 250;',
+          '  return base * 2 ** attempt;',
+          '}',
+        ];
+        const folds = (closed: boolean) => [
+          { start: 2, end: 5, closed },
+          { start: 7, end: 13, closed },
+          { start: 9, end: 11, closed },
+          { start: 15, end: 18, closed },
+        ];
+        /** Is the fold that starts on the line containing `needle` closed? */
+        const closedAt = (vim: Vim, needle: string) => {
+          const line = vim.lines.findIndex(l => l.includes(needle));
+          const f = vim.win.folds.find(x => x.start === line);
+          return !!f && f.closed && vim.closedFoldAt(line) !== null;
+        };
+        const allClosed = (vim: Vim) => vim.win.folds.every(f => f.closed);
+        const allOpen = (vim: Vim) => vim.win.folds.every(f => !f.closed);
+        const edit = (from: string, to: string) => orders.map(l => l.replace(from, to));
+        return {
+          kind: 'rounds',
+          base: { name: 'orders.ts', text: orders, folds: folds(true) },
+          rounds: [
+            {
+              prompt: 'The base delay is folded away in retryDelay. Open it and make 250 into 500.',
+              setup: { cursor: { line: 0, col: 0 } },
+              goal: { text: edit('base = 250', 'base = 500') },
+              solution: 'Gzakkf2cw500<Esc>',
+            },
+            {
+              prompt: 'Close every fold, so the file reads as an outline.',
+              setup: { folds: folds(false), cursor: { line: 12, col: 2 } },
+              goal: { check: allClosed },
+              solution: 'zM',
+            },
+            {
+              prompt: 'Open every fold.',
+              setup: { cursor: { line: 7, col: 0 } },
+              goal: { check: allOpen },
+              solution: 'zR',
+            },
+            {
+              prompt: 'cancelOrder hides a folded if block. Open both, then remove "already " from the error.',
+              setup: { cursor: { line: 7, col: 0 } },
+              goal: { text: edit("Error('already shipped')", "Error('shipped')") },
+              solution: 'zajjzajfadw',
+            },
+            {
+              prompt: 'Fold everything, then open only listOrders and delete its return line.',
+              setup: { folds: folds(false), cursor: { line: 12, col: 2 } },
+              goal: {
+                text: orders.filter(l => !l.includes('return rows')),
+                check: vim => closedAt(vim, 'cancelOrder') && closedAt(vim, 'retryDelay') && !closedAt(vim, 'listOrders'),
+              },
+              solution: 'zMgg2jza2jdd',
+            },
+            {
+              prompt: 'You are done with retryDelay. Close its fold.',
+              setup: { folds: folds(false), cursor: { line: 17, col: 2 } },
+              goal: { check: vim => closedAt(vim, 'retryDelay') && !closedAt(vim, 'cancelOrder') },
+              solution: 'za',
+            },
+            {
+              prompt: 'Without opening a fold, copy the whole listOrders function to the end of the file.',
+              setup: { cursor: { line: 0, col: 0 } },
+              goal: { text: [...orders, ...orders.slice(2, 6)] },
+              solution: '2jyyGp',
+            },
+          ],
+        };
+      })(),
     },
   ],
 };

@@ -1,5 +1,5 @@
 // telescope.nvim with kickstart's keymaps (<leader>sf find_files, sg live_grep, sw grep the word
-// under the cursor) plus the README's <leader>ff/fg/fb aliases,
+// under the cursor, sh help_tags, sk keymaps, <leader><leader> buffers, <leader>/ this buffer's lines) plus the README's <leader>ff/fg/fb aliases,
 // <leader>fg live_grep, <leader>fb buffers (and :Telescope {picker}). A
 // centered float with a prompt, results (fzy-style fuzzy match, best first,
 // ties alphabetical) and a preview. The prompt starts in insert mode:
@@ -13,6 +13,7 @@ import type { Float, Plugin, Vim } from '../editor';
 import type { Key } from '../keys';
 import type { QfItem, Window } from '../layout';
 import { pos } from '../types';
+import { descOf, showKeys } from './keymap-descs';
 
 // ---- fzy scoring ---------------------------------------------------------------------------------
 
@@ -63,7 +64,11 @@ export function fzy(needle: string, hay: string): number | null {
 
 // ---- pickers ---------------------------------------------------------------------------------------------
 
-type Entry = { display: string; ordinal: string; path: string; line?: number; col?: number; text?: string; buf?: Buffer };
+export type Entry = {
+  display: string; ordinal: string; path: string; line?: number; col?: number; text?: string; buf?: Buffer;
+  /** Run instead of opening a file (keymaps, help tags). */
+  run?: () => void;
+};
 
 type Picker = {
   title: string;
@@ -135,6 +140,7 @@ function open(vim: Vim, p: Picker, how: 'edit' | 'split' | 'vsplit' | 'tab') {
   const e = p.results[p.sel];
   close(vim, p);
   if (!e) return;
+  if (e.run) return e.run();
   vim.pushJump();
   if (how === 'split') vim.splitWindow('col');
   if (how === 'vsplit') vim.splitWindow('row');
@@ -239,7 +245,7 @@ function handleKey(vim: Vim, p: Picker, key: Key): void {
   }
 }
 
-function startPicker(vim: Vim, title: string, src: { entries?: Entry[]; find?: (prompt: string) => Entry[] }, initial = '') {
+export function startPicker(vim: Vim, title: string, src: { entries?: Entry[]; find?: (prompt: string) => Entry[] }, initial = '') {
   if (vim.modal) return;
   const float: Float = { id: 'telescope', title, anchor: 'center', width: 110, lines: [] };
   const p: Picker = {
@@ -307,6 +313,43 @@ export function buffers(vim: Vim) {
   startPicker(vim, 'Buffers', { entries });
 }
 
+/** Help tags (a sample of Neovim's): <CR> runs :help on the tag. */
+export const HELP_TAGS = [
+  'quickref', 'motion.txt', 'word-motions', 'text-objects', 'operator', 'change.txt', 'undo-tree', 'registers',
+  'visual-mode', 'pattern', 'search-commands', ':substitute', ':global', 'quickfix', 'location-list',
+  'windows.txt', 'buffers', 'folding', 'fold-commands', 'za', 'zR', 'zM', 'lsp', 'lsp-defaults', 'gO',
+  'vim.lsp.buf.format()', 'diagnostic.txt', 'options', "'relativenumber'", "'ignorecase'", 'mapleader',
+  'lua-guide', 'vim.keymap.set()', 'which-key.nvim', 'telescope.nvim', 'conform.nvim',
+];
+
+export function helpTags(vim: Vim) {
+  const entries = HELP_TAGS.map(t => ({ display: t, ordinal: t, path: '', run: () => vim.ex(`help ${t}`) }));
+  startPicker(vim, 'Help', { entries });
+}
+
+/** Every normal-mode key with a description; <CR> runs it, as Telescope's keymaps picker does. */
+export function keymaps(vim: Vim) {
+  const defs = vim.definedKeys('n').filter(k => descOf(vim, k));
+  const width = Math.max(...defs.map(k => showKeys(k).length));
+  const entries = defs
+    .map(k => ({ lhs: showKeys(k), desc: descOf(vim, k)!, keys: k }))
+    .sort((a, b) => (a.lhs < b.lhs ? -1 : a.lhs > b.lhs ? 1 : 0))
+    .map(m => ({
+      display: `n  ${m.lhs.padEnd(width)}  ${m.desc}`, ordinal: `${m.lhs} ${m.desc}`, path: '',
+      run: () => vim.runKeys(m.keys),
+    }));
+  startPicker(vim, 'Key Maps', { entries });
+}
+
+/** Fuzzy find lines of the current buffer (kickstart's <leader>/). */
+export function currentBufferFuzzy(vim: Vim) {
+  const b = vim.buf;
+  const entries = b.lines
+    .map((t, l) => ({ display: `${String(l + 1).padStart(3)}  ${t.trim()}`, ordinal: t, path: b.name, line: l, col: 0, text: t.trim(), buf: b }))
+    .filter(e => e.ordinal.trim());
+  startPicker(vim, 'Current Buffer Fuzzy', { entries });
+}
+
 export const telescope: Plugin = {
   name: 'telescope',
   setup: vim => {
@@ -315,11 +358,17 @@ export const telescope: Plugin = {
     for (const k of ['<leader>fg', '<leader>sg']) vim.map(['n'], k, () => liveGrep(vim));
     vim.map(['n'], '<leader>sw', () => grepWord(vim));
     vim.map(['n'], '<leader>fb', () => buffers(vim));
+    vim.map(['n'], '<leader><leader>', () => buffers(vim));
+    vim.map(['n'], '<leader>sh', () => helpTags(vim));
+    vim.map(['n'], '<leader>sk', () => keymaps(vim));
+    vim.map(['n'], '<leader>/', () => currentBufferFuzzy(vim));
     vim.defineEx('Telescope', 3, a => {
-      const pickers: Record<string, (v: Vim) => void> = { find_files: findFiles, live_grep: liveGrep, buffers };
+      const pickers: Record<string, (v: Vim) => void> = {
+        find_files: findFiles, live_grep: liveGrep, buffers, help_tags: helpTags, keymaps, current_buffer_fuzzy_find: currentBufferFuzzy,
+      };
       const fn = pickers[a.arg.trim()];
       if (!fn) {
-        vim.msg(`telescope: the tutor has find_files, live_grep and buffers`, 'warn');
+        vim.msg(`telescope: the tutor has ${Object.keys(pickers).join(', ')}`, 'warn');
         return;
       }
       fn(vim);

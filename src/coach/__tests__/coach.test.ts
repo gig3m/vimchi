@@ -77,6 +77,18 @@ describe('coach', () => {
 });
 
 describe('coach heuristics from the reference audit', () => {
+  it('a search in a location list is not critiqued (only the line counts there); a j-run still is', () => {
+    const text = ['function a() {}', 'function b() {}', 'function c() {}', 'function d() {}', 'function e() {}', 'function refund() {}'];
+    const run = (keys: string) => {
+      const c: RoundsChallenge = { kind: 'rounds', base: { text, name: 'a.ts', plugins: ['lsp'] }, rounds: [{ goal: { text: ['__never__'] }, solution: 'x' }] };
+      const s = new Session(c);
+      let t = 0;
+      for (const k of parseKeys(keys)) s.key(k, (t += 50));
+      return coach(s, 'document-symbols').critiques;
+    };
+    expect(run('gO/refund<CR><CR>')).toEqual([]);
+    expect(run('gOjjjjj<CR>').some(c => c.you === 'jjjjj')).toBe(true);
+  });
   it('a two-key run beaten by one key is not worth showing', () => {
     expect(play(['abc def', 'ghi jkl'], 'j0x').critiques).toEqual([]); // j0 → w saves 1 on a 2-key run
   });
