@@ -126,7 +126,7 @@ type InsertState = {
   /** Original line texts for replace mode backspacing. */
   replaced?: Map<string, string>;
   /** Pending multi-key input: <C-r>, <C-v>, <C-k>, <C-x>, <C-o>. */
-  pending: '' | 'ctrl-r' | 'ctrl-v' | 'ctrl-k' | 'ctrl-x';
+  pending: '' | 'ctrl-r' | 'ctrl-v' | 'ctrl-k' | 'ctrl-x' | 'ctrl-g';
   pendingBuf: string;
   /** Text typed so far (for ". and <C-a>). */
   typed: string;
@@ -584,13 +584,30 @@ export class Vim {
   }
 
   // ---- undo -----------------------------------------------------------------------
-  beginChange() {
-    if (this.snapshotTaken) return;
-    this.buf.snapshot(this.cursor);
+  /** Open an undoable change. `at`: where undo/redo return the cursor (an operator's start). */
+  beginChange(at?: Pos) {
+    if (this.snapshotTaken) {
+      if (at) this.buf.setUndoCursor(at);
+      return;
+    }
+    this.buf.snapshot(this.cursor, () => this.cursor);
+    if (at) this.buf.setUndoCursor(at);
     if (!this.buf.lineUndo || this.buf.lineUndo.line !== this.cursor.line) {
       this.buf.lineUndo = { line: this.cursor.line, text: this.line() };
     }
     this.snapshotTaken = true;
+  }
+  /**
+   * Where Vim's undo remembers an operator's cursor: the start of the operated text; for a
+   * linewise motion the column the cursor had there, for a linewise text object, c or a case
+   * operator column 0.
+   */
+  private opUndoCursor(p: Parsed, r: Range): Pos {
+    if (r.kind === 'char') return r.start;
+    if (r.kind === 'block') return pos(r.start.line, Math.min(r.start.col, r.end.col));
+    const col0 = (p.target?.kind === 'entry' && p.target.entry.type === 'object') || /^(c|g[uU~?]|~)$/.test((p.opStr ?? '').split(SEP).join(''));
+    if (col0) return pos(r.start.line, 0);
+    return pos(r.start.line, r.start.line === this.cursor.line ? this.cursor.col : this.win.want);
   }
   private endChange() {
     if (this.snapshotTaken) this.buf.dropSnapshotIfUnchanged();
@@ -968,7 +985,7 @@ export class Vim {
 
     if (e.type === 'action') {
       const change = !!e.spec.change;
-      if (change) this.beginChange();
+      if (change) this.beginChange(this.visual ? (this.visual.kind === 'V' ? pos(this.visualRange().start.line, 0) : this.visualRange().start) : undefined);
       const shape = this.visual ? this.visualShape() : undefined;
       e.spec.run({ count, hasCount, reg: p.reg, arg: p.arg, keys: cmdStr });
       if (change) this.finishDot(p, keys, shape);
@@ -1008,7 +1025,7 @@ export class Vim {
         }
         r = this.forceKind(r, target.force);
         this.win.cursor = { ...start };
-        if (op.change) this.beginChange();
+        if (op.change) this.beginChange(this.opUndoCursor(p, r));
         op.run(r, { ...ctx, keys: cmdStr });
         if (op.change) this.finishDot(p, keys);
         if (this.depth === 0) this.finishCommand(this.mode === 'insert' ? 'insert' : op.change ? 'operator' : 'other');
@@ -1028,7 +1045,7 @@ export class Vim {
       if (!r) fail();
       range = r;
     }
-    if (op.change) this.beginChange();
+    if (op.change) this.beginChange(this.visual || dotVisual ? undefined : this.opUndoCursor(p, range));
     (this as { opArgument?: string }).opArgument = p.arg;
     op.run(range, { ...ctx, keys: cmdStr + (p.arg ? `\u0000${p.arg}` : '') });
     if (op.change) this.finishDot(p, keys, dotVisual);
@@ -1396,6 +1413,7 @@ export class Vim {
       case '<C-q>': ins.pending = 'ctrl-v'; ins.pendingBuf = ''; ins.keys.push(key); return;
       case '<C-k>': ins.pending = 'ctrl-k'; ins.pendingBuf = ''; ins.keys.push(key); return;
       case '<C-x>': ins.pending = 'ctrl-x'; ins.keys.push(key); return;
+      case '<C-g>': ins.pending = 'ctrl-g'; ins.keys.push(key); return;
       case '<C-a>': for (const ch of this.lastInserted) typeChar(ch === '\n' ? '\n' : ch); return;
       case '<C-e>':
       case '<C-y>': {
@@ -1447,6 +1465,16 @@ export class Vim {
     const kind = ins.pending;
     if (key === '<Esc>' && kind !== 'ctrl-v') {
       ins.pending = '';
+      return;
+    }
+    if (kind === 'ctrl-g') {
+      ins.pending = '';
+      // <C-g>u: close the undo block so far and start a new one here. A dot repeat replays
+      // the whole insert as one change, as in Vim.
+      if (key === 'u' && this.snapshotTaken && !this.dotReplaying) {
+        this.buf.dropSnapshotIfUnchanged();
+        this.buf.snapshot(this.cursor, () => this.cursor);
+      }
       return;
     }
     if (kind === 'ctrl-r') {

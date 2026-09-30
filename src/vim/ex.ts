@@ -371,6 +371,7 @@ function substitute(vim: Vim, a: ExArgs, mode: 's' | '&' | '~' = 's') {
     vim.msg(`${subs} match${subs === 1 ? '' : 'es'} on ${changedLines.size} line${changedLines.size === 1 ? '' : 's'}`);
     return;
   }
+  vim.buf.setUndoCursor(pos(Math.min(...changedLines), 0), true); // undo returns to the first substituted line
   vim.buf.recordChange(pos(lastLine, 0));
   vim.setCursor(pos(lastLine, firstNonBlank(vim.line(lastLine))));
   if (subs > 2 || changedLines.size > 2) vim.msg(`${subs} substitution${subs === 1 ? '' : 's'} on ${changedLines.size} line${changedLines.size === 1 ? '' : 's'}`);
@@ -901,7 +902,7 @@ const COMMANDS: Record<string, Cmd> = {
     run: (v, a) => {
       const { reg, count } = regAndCount(a);
       const r = withCount(v, a, count);
-      v.beginChange();
+      v.beginChange(pos(r.start, v.cursor.col));
       const val = v.deleteRange({ start: pos(r.start, 0), end: pos(r.end, 0), kind: 'line' });
       v.registers.delete(reg, val);
       const l = Math.min(r.start, v.buf.lineCount - 1);
