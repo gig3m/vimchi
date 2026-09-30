@@ -42,12 +42,13 @@ export function tokenize(chip: string): string[] {
 
 /** Commands whose next key is an argument (a character, mark, register or macro name), not a command. */
 const ARG_HEADS = new Set(['f', 'F', 't', 'T', 'r', 'm', '`', "'", 'q', '@']);
-const ENTERS_TEXT = new Set([':', '/', '?']);
+/** Modes in which a key is text (or a prompt answer), not a command. */
+export const TEXT_MODES = new Set(['insert', 'replace', 'cmdline', 'confirm', 'prompt']);
 
 /**
- * The command tokens of one completed command, as the learner ran it: leading count and
- * register prefix handled, the argument of f/t/r/m/`/'/q/@ dropped, cmdline and inserted text
- * dropped, so `f(` → f, `"ayy` → " yy, `cwuser<Esc>` → c w, `/leader<CR>` → /.
+ * The command tokens of one completed command from its NON-TEXT keys (the caller drops keys fed
+ * in insert/replace/cmdline mode): leading count and register prefix handled, the argument of
+ * f/t/r/m/`/'/q/@ dropped, so `f(` → f, `"ayy` → " yy, `cw` → c w, `<C-v>jj` → <C-v> j j.
  */
 export function commandTokens(keys: readonly string[]): string[] {
   let i = 0;
@@ -59,13 +60,12 @@ export function commandTokens(keys: readonly string[]): string[] {
   for (; i < keys.length; i++) {
     const k = keys[i];
     rest.push(k);
-    if (ENTERS_TEXT.has(k)) break;                                                        // cmdline text follows
     const prev = rest[rest.length - 2];
-    if (ARG_HEADS.has(k) && !/^[ia]$/.test(prev ?? '')) break;                             // an argument follows (it/at keep their t)
-    if (rest.length === 1 && /^[iaAIoOsSCR]$/.test(k)) break;                             // insert command: text follows
-    if (rest[0] === 'c' && rest.length >= 2 && (/^[ia]$/.test(prev) || (rest.length === 2 && /^[wWeEbB$0^lhjkc]$/.test(k)))) break; // change: text follows
+    if (ARG_HEADS.has(k) && !/^[ia]$/.test(prev ?? '')) break; // an argument follows (it/at keep their t)
   }
-  return [...out, ...tokenize(rest.join(''))];
+  // Special keys (<C-v>, <Esc>) are their own chips; plain keys run together so gg/ge/ciw tokenize as units.
+  const text = rest.map(k => (k.length > 1 ? ` ${k} ` : k)).join('');
+  return [...out, ...tokenize(text)];
 }
 
 const cache = new Map<string, Set<string>>();
@@ -75,7 +75,8 @@ export function taughtBy(lessonId: string): Set<string> {
   if (hit) return hit;
   const lesson = LESSONS[lessonId];
   const set = new Set<string>();
-  const add = (id: string) => { const l = LESSONS[id]; for (const c of [...l.chips, ...l.keyCards.map(k => k.key)]) for (const t of tokenize(c)) set.add(t); };
+  const OPERATOR_OF: Record<string, string> = { '>>': '>', '<<': '<', '==': '=' };
+  const add = (id: string) => { const l = LESSONS[id]; for (const c of [...l.chips, ...l.keyCards.map(k => k.key)]) for (const t of tokenize(c)) { set.add(t); if (OPERATOR_OF[t]) set.add(OPERATOR_OF[t]); } };
   if (lesson?.challenge.kind === 'generated') {
     for (const sid of lesson.challenge.sections) for (const l of SECTIONS.find(s => s.id === sid)?.lessons ?? []) add(l.id);
     set.add('COUNT');

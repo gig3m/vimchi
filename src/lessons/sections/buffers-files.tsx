@@ -378,10 +378,10 @@ export const buffersFiles: Section = {
             solution: ':e src/config.ts<CR><C-^>',
           },
           {
-            prompt: 'Follow the import with gf, then flip back.',
+            prompt: 'Open the imported src/db.ts, then flip back.',
             setup: { open: 'src/routes/notes.ts', cursor: { line: 1, col: 20 } },
             goal: { buffer: 'src/routes/notes.ts', check: vim => vim.win.alt?.name === 'src/db.ts' },
-            solution: 'gf<C-^>',
+            solution: ':e src/db.ts<CR><C-^>',
           },
           {
             prompt: 'Edit buffer 4 (db.ts) with a count.',

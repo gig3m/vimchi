@@ -143,7 +143,7 @@ export const basicOperators: Section = {
             solution: "jf'c$`Hello, ${name}`;<Esc>",
           },
           {
-            prompt: 'Copy "await " with yw, then put it before getPosts with P.',
+            prompt: 'Copy "await " with yw. (Putting it back comes in Copy/Paste Lines.)',
             setup: {
               text: [
                 'async function load(id: string) {',
@@ -154,16 +154,8 @@ export const basicOperators: Section = {
               ],
               cursor: { line: 0, col: 0 },
             },
-            goal: {
-              text: [
-                'async function load(id: string) {',
-                '  const user = await getUser(id);',
-                '  const posts = await getPosts(id);',
-                '  return { user, posts };',
-                '}',
-              ],
-            },
-            solution: 'jfaywjlP',
+            goal: { registers: { '"': 'await ' } },
+            solution: 'jfayw',
           },
         ],
       },

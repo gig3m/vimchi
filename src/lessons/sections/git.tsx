@@ -166,7 +166,7 @@ export const git: Section = {
           { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: { line: 13, col: 0 } }, solution: '2]h' },
           { setup: { cursor: { line: 17, col: 4 } }, goal: { cursor: { line: 13, col: 0 } }, solution: '[h' },
           { setup: { cursor: { line: 13, col: 8 } }, goal: { cursor: { line: 0, col: 0 } }, solution: ']h' },
-          { setup: { cursor: { line: 10, col: 4 } }, goal: { cursor: { line: 0, col: 0 } }, solution: '[c[c' },
+          { setup: { cursor: { line: 10, col: 4 } }, goal: { cursor: { line: 0, col: 0 } }, solution: '[h[h' },
         ],
       },
     },
@@ -185,7 +185,7 @@ export const git: Section = {
             <Code>Space ghr</Code> resets the hunk, putting back what the index has.
           </p>
           <p>
-            Pair them with <Code>]c</Code>: walk the hunks, stage the ones that belong in this commit and reset the
+            Pair them with <Code>]h</Code>: walk the hunks, stage the ones that belong in this commit and reset the
             debugging you forgot about. A reset is an ordinary change, so <Code>u</Code> brings it back.
           </p>
         </>

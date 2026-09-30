@@ -10,7 +10,7 @@ export const textObjects: Section = {
     {
       id: 'intro-text-objects',
       title: 'Intro to Text Objects',
-      chips: ['i', 'a'],
+      chips: ['iw', 'aw', 'i"', 'i('],
       keyCards: [
         { key: 'i', glyph: '[x]', label: 'inner', sub: 'just the thing' },
         { key: 'a', glyph: '[ x ]', label: 'around', sub: 'plus space or pair' },

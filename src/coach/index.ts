@@ -1,12 +1,12 @@
 // "How would a better Vim user have done that?" over a session's key log.
 import { LESSONS, sectionOf } from '../lessons';
 import { createVim, solutionKeys } from '../lessons/runtime';
-import type { Challenge } from '../lessons/types';
+import type { Challenge, Setup } from '../lessons/types';
 import { betterMotions } from './motion';
 import { type SessionLike, sameOutcome, stateBefore, stateNeeds } from './replay';
 import { RULES, type Suggestion, WHY, keyCount } from './rules';
 import { type Segment, segment } from './segment';
-import { coachable, commandTokens, taughtBy, tokenize, usesAllowed } from './vocab';
+import { TEXT_MODES, coachable, commandTokens, taughtBy, tokenize, usesAllowed } from './vocab';
 
 export type { Suggestion };
 export type Critique = { unit: number; you: string; better: Suggestion[]; logStart: number; logEnd: number };
@@ -41,17 +41,25 @@ function recordingSpans(segs: Segment[], log: { boundary: boolean }[]): Set<numb
   return out;
 }
 
-/** The commands a reference solution runs, replayed on the round's setup: typed text and arguments are not "keys". */
-function referenceTokens(session: CoachSession, unit: number, sol: string): string[] {
-  const vim = createVim(session.setupFor(unit));
+/** The commands a solution runs on a setup, replayed through the engine: typed text and arguments are not "keys". */
+export function solutionCommands(setup: Setup, sol: string): string[] {
+  const vim = createVim(setup);
   const out: string[] = [];
   let last = vim.lastCommand;
+  let keys: string[] = [];
   for (const k of solutionKeys(sol)) {
+    const text = TEXT_MODES.has(vim.mode) || !!vim.modal;
     vim.feed(k);
-    if (vim.lastCommand && vim.lastCommand !== last) { last = vim.lastCommand; if (!last.error) out.push(...commandTokens(last.keys)); }
+    if (!text) keys.push(k);
+    if (vim.lastCommand && vim.lastCommand !== last) {
+      last = vim.lastCommand;
+      if (!last.error && last.kind !== 'modal') out.push(...commandTokens(keys));
+      keys = [];
+    }
   }
   return out;
 }
+const referenceTokens = (session: CoachSession, unit: number, sol: string) => solutionCommands(session.setupFor(unit), sol);
 
 /** The one-line live hint for a critique. */
 export const nudgeText = (c: Critique) => `${c.better[0].keys} does that in ${keyCount(c.better[0].keys)}`;
@@ -76,7 +84,16 @@ export function coachSegment(session: CoachSession, lessonId: string, seg: Segme
   const upTo = lesson.challenge.kind === 'generated' ? [lesson] : (() => { const ls = sectionOf(lessonId).lessons; return ls.slice(0, ls.findIndex(l => l.id === lessonId) + 1); })();
   const drilled = new Set(upTo.flatMap(l => l.chips.flatMap(tokenize)));
   const log = session.log();
-  const ranTokens = (seg: Segment) => { const t: string[] = []; for (let k = seg.logStart; k <= seg.logEnd; k++) { const c = log[k].command; if (c) t.push(...commandTokens(c.keys)); } return t; };
+  const ranTokens = (seg: Segment) => {
+    const t: string[] = [];
+    let keys: string[] = [];
+    for (let k = seg.logStart; k <= seg.logEnd; k++) {
+      const e = log[k];
+      if (!TEXT_MODES.has(e.before.mode)) keys.push(e.key);
+      if (e.command) { if (e.command.kind !== 'modal') t.push(...commandTokens(keys)); keys = []; }
+    }
+    return t;
+  };
   /** A suggestion undercuts when it drops a drilled command the learner ran; a shorter search pattern
    * for a search the learner already made is a nitpick, not a better way. */
   const undercuts = (seg: Segment, sug: Suggestion) => {
