@@ -25,6 +25,7 @@ describe('commandTokens: the command a learner ran, arguments and text stripped'
     [['r', 'z'], ['r']], [['m', 'a'], ['m']], [['`', 'a'], ['`']], [['@', 'q'], ['@']], [['3', 'd', 'w'], ['d', 'w']],
     [['A'], ['A']], [['c', 'w'], ['c', 'w']], [['g', 'g'], ['gg']], [['<C-v>', 'j', 'j'], ['<C-v>', 'j', 'j']],
     [['g', '<C-a>'], ['g', '<C-a>']], [['c', 'i', 'w'], ['c', 'iw']], [['<C-w>', 'l'], ['<C-w>', 'l']],
+    [['s', 'a', 'i', 'w', '"'], ['sa', 'iw']], [['s', 'd', ')'], ['sd']], [['s', 'r', "'", '"'], ['sr']], [['s', 'f', ')'], ['sf']], [['s', 'a', ')'], ['sa']],
   ] as [string[], string[]][])('%j → %j', (keys, want) => expect(commandTokens(keys)).toEqual(want));
 });
 

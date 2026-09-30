@@ -82,7 +82,7 @@ export function coachSegment(session: CoachSession, lessonId: string, seg: Segme
   // `k` in a `dk` chip is an operator motion, not a walk, and an `f,` target is not the `,` chip.
   const lesson = LESSONS[lessonId];
   const upTo = lesson.challenge.kind === 'generated' ? [lesson] : (() => { const ls = sectionOf(lessonId).lessons; return ls.slice(0, ls.findIndex(l => l.id === lessonId) + 1); })();
-  const drilled = new Set(upTo.flatMap(l => l.chips.flatMap(tokenize)));
+  const drilled = new Set(upTo.flatMap(l => l.chips.flatMap(c => tokenize(c))));
   const log = session.log();
   const ranTokens = (seg: Segment) => {
     const t: string[] = [];
@@ -129,7 +129,7 @@ export function coachSegment(session: CoachSession, lessonId: string, seg: Segme
     const vim = stateBefore(session, seg.logStart);
     const rnu = !!((vim.win as { opts?: { relativenumber?: boolean } }).opts?.relativenumber ?? vim.options.relativenumber);
     // Reinforce this lesson: a route using its own key is kept and ranked before a cheaper one that does not.
-    const own = new Set(lesson.chips.flatMap(tokenize));
+    const own = new Set(lesson.chips.flatMap(c => tokenize(c)));
     const cands = betterMotions(vim.buf.lines, seg.from, vim.win.want, seg.to, seg.keys.length, taught, { relativenumber: rnu, prefer: own });
     const reinforces = (c: { uses: string[] }) => c.uses.some(u => own.has(u));
     cands.sort((a, b) => Number(reinforces(b)) - Number(reinforces(a)) || a.cost - b.cost);

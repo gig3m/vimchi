@@ -729,7 +729,13 @@ export class Vim {
       }
       fail();
     }
-    this.execute(res, keys);
+    const rest = res.rest ?? [];
+    if (rest.length) {
+      if (this.depth === 0) this.cmdKeys.splice(-rest.length);
+      this.dotCapture?.keys.splice(-rest.length);
+    }
+    this.execute(res, keys.slice(0, keys.length - rest.length));
+    for (const k of rest) this.feed(k);
     if (this.oneShot && this.mode === 'normal' && this.insert) {
       this.oneShot = false;
       this.mode = 'insert';
@@ -811,8 +817,9 @@ export class Vim {
       } else arg = takeArg(akind);
       if (arg === 'incomplete') return 'incomplete';
       if (arg === null) return 'invalid';
-      if (j < keys.length) return 'invalid';
-      return { ...base, entry: e, arg, count2: null, target: null };
+      // Keys past the command came from a prefix ambiguity (`s` vs a plugin's `sa`): the command
+      // runs and the rest is fed again, as Vim does after 'timeoutlen'.
+      return { ...base, entry: e, arg, count2: null, target: null, rest: j < keys.length ? keys.slice(j) : undefined };
     }
     if (e.type === 'object') {
       if (mode !== 'v') return 'invalid';
@@ -1948,6 +1955,8 @@ type Parsed = {
   arg: string;
   opStr?: string;
   end?: number;
+  /** Keys after the command that belong to the next one (prefix ambiguity); fed again after it runs. */
+  rest?: Key[];
   target: null | { kind: 'self' } | { kind: 'entry'; entry: Entry; keys: Key[]; arg: string; force: VisualKind | null } | { kind: 'search'; dir: 1 | -1; force: VisualKind | null; pick?: MotionSpec['pick']; keys?: Key[]; typed?: Key[] };
 };
 
