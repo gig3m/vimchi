@@ -13,7 +13,7 @@ import { type QfItem, Tab, Window } from './layout';
 import { type Compiled, PatternError, compile } from './regex';
 import { type RegKind, type RegValue, Registers, isValidRegister } from './registers';
 import { firstNonBlank, indentOf, lastCol } from './text';
-import type { TextObject } from './textobjects';
+import type { ObjectCtx, TextObject } from './textobjects';
 import {
   DEFAULT_OPTIONS, type Message, type Mode, type Options, type Pos, type Range, type VisualKind,
   VimError, cmpPos, fail, maxPos, minPos, pos,
@@ -973,8 +973,13 @@ export class Vim {
       // Visual mode: extend the selection to the object.
       const v = this.visual!;
       const [s, en] = this.visualBounds();
-      const r = e.obj({ lines: this.lines, cur: this.cursor, count, visual: cmpPos(s, en) === 0 ? null : { start: s, end: en } }, e.inner);
-      if (!r) fail();
+      const octx: ObjectCtx = { lines: this.lines, cur: this.cursor, count, visual: cmpPos(s, en) === 0 ? null : { start: s, end: en } };
+      const r = e.obj(octx, e.inner);
+      if (!r) {
+        // Vim moves the cursor while searching and leaves it there on failure.
+        if (octx.stop) { this.win.cursor = { ...octx.stop }; this.clampCursor(false); this.win.want = this.cursor.col; }
+        fail();
+      }
       if (r.kind === 'line' && v.kind === 'v') v.kind = 'V';
       if (r.kind === 'char' && v.kind === 'V' && r.start.line === r.end.line) v.kind = 'v';
       v.anchor = r.start;
@@ -1018,14 +1023,13 @@ export class Vim {
         let a = start, b = res.pos;
         const back = cmpPos(b, a) < 0;
         if (back) [a, b] = [b, a];
-        let r: Range;
-        if (res.linewise) r = { start: pos(a.line, 0), end: pos(b.line, 0), kind: 'line' };
-        else if (res.inclusive) r = { start: a, end: b, kind: 'char' };
+        let r: Range | null;
+        if (res.linewise) r = this.forceKind({ start: pos(a.line, 0), end: pos(b.line, 0), kind: 'line' }, target.force);
         else {
-          if (cmpPos(a, b) === 0) fail();
-          r = { start: a, end: b.col > 0 ? pos(b.line, b.col - 1) : pos(b.line - 1, this.line(b.line - 1).length), kind: 'char' };
+          if (!res.inclusive && cmpPos(a, b) === 0 && !target.force) fail();
+          r = this.vimCharwiseRange(a, b, !!res.inclusive, cmdStr === 'd', target.force, true);
         }
-        r = this.forceKind(r, target.force);
+        if (!r) fail();
         this.win.cursor = { ...start };
         if (op.change) this.beginChange(this.opUndoCursor(p, r));
         op.run(r, { ...ctx, keys: cmdStr });
@@ -1075,8 +1079,13 @@ export class Vim {
     const te = t.entry;
     const cur = { ...this.cursor };
     if (te.type === 'object') {
-      const r = te.obj({ lines: this.lines, cur, count, visual: null }, te.inner);
-      if (!r) return null;
+      const octx: ObjectCtx = { lines: this.lines, cur, count, visual: null };
+      const r = te.obj(octx, te.inner);
+      if (!r) {
+        // Vim moves the cursor while searching and leaves it there on failure.
+        if (octx.stop) { this.win.cursor = { ...octx.stop }; this.clampCursor(false); this.win.want = this.cursor.col; }
+        return null;
+      }
       // Word objects report Vim's inclusive flag; apply the charwise operator rules.
       if ('inclusive' in r && typeof r.inclusive === 'boolean') {
         return this.vimCharwiseRange(r.start, r.end, r.inclusive, keysToString(p.cmdKeys) === 'd', t.force, true);
@@ -1107,19 +1116,9 @@ export class Vim {
     const backwards = cmpPos(end, start) < 0;
     if (backwards) [start, end] = [end, start];
     if (res.linewise) return this.forceKind({ start: pos(start.line, 0), end: pos(end.line, 0), kind: 'line' }, t.force);
-    if (res.inclusive) return this.forceKind({ start, end, kind: 'char' }, t.force);
-    // Exclusive motion.
-    if (cmpPos(start, end) === 0) return t.force ? this.forceKind({ start, end, kind: 'char' }, t.force) : null;
-    if (end.col === 0 && end.line > start.line && !t.force) {
-      // Exclusive-to-linewise rule (:help exclusive-linewise).
-      const prevLen = this.line(end.line - 1).length;
-      if (start.col <= firstNonBlank(this.line(start.line)) && this.line(start.line).slice(0, start.col).trim() === '') {
-        return { start: pos(start.line, 0), end: pos(end.line - 1, 0), kind: 'line' };
-      }
-      return { start, end: pos(end.line - 1, Math.max(0, prevLen)), kind: 'char' };
-    }
-    end = end.col > 0 ? pos(end.line, end.col - 1) : pos(end.line - 1, this.line(end.line - 1).length);
-    return this.forceKind({ start, end, kind: 'char' }, t.force);
+    // Charwise: o_v, :help exclusive-linewise and :help d apply to every motion.
+    if (!res.inclusive && cmpPos(start, end) === 0 && !t.force) return null;
+    return this.vimCharwiseRange(start, end, !!res.inclusive, opKeys === 'd', t.force, true);
   }
 
   /** cw/cW: like ce/cE, but a cursor on a word's last character stays put. */
