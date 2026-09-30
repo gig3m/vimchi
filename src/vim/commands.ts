@@ -1197,11 +1197,6 @@ function installVisual(V: Vim, h: {
   A('g<C-a>', incr(1, true), true);
   A('g<C-x>', incr(-1, true), true);
 
-  A('$', () => {
-    V.win.cursor = pos(V.cursor.line, Math.max(0, ln().length - 1));
-    V.win.want = Infinity;
-    if (V.visual!.kind === '<C-v>') V.visual!.toEol = true;
-  });
   A('gq', c => asOp('gq')(c), true);
   void h.swapCase; void h.rot13; void h.putValue; void keysToRegister; void registerToKeys;
 }
