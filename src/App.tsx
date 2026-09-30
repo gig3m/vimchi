@@ -101,6 +101,14 @@ export function App() {
           )}
         </div>
       </main>
+      <a className="coffee" href="https://buymeacoffee.com/kylearrington" target="_blank" rel="noopener noreferrer" aria-label="Buy me a coffee">
+        <span className="coffee-tip">buy me a coffee</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M4 9h12v6a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V9z" />
+          <path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16" />
+          <path d="M8 3.5c0 1 .8 1.2.8 2.2S8 6.8 8 7.5M11.5 3.5c0 1 .8 1.2.8 2.2s-.8 1.1-.8 1.8" />
+        </svg>
+      </a>
       {signInOpen && <SignIn guestRuns={acct ? 0 : prog.runs.length} onClose={closeSignIn} />}
     </div>
   );
