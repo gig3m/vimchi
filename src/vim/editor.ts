@@ -13,7 +13,7 @@ import { type QfItem, Tab, Window } from './layout';
 import { type Compiled, PatternError, compile } from './regex';
 import { type RegKind, type RegValue, Registers, isValidRegister } from './registers';
 import { firstNonBlank, indentOf, lastCol } from './text';
-import type { TextObject } from './textobjects';
+import type { ObjectCtx, TextObject } from './textobjects';
 import {
   DEFAULT_OPTIONS, type Message, type Mode, type Options, type Pos, type Range, type VisualKind,
   VimError, cmpPos, fail, maxPos, minPos, pos,
@@ -110,6 +110,8 @@ type Cmdline = {
   onSubmit?: (text: string) => void;
   onCancel?: () => void;
   histIdx: number;
+  /** While browsing history: the text before the cursor when <Up>/<Down> began. */
+  histPrefix?: string | null;
   /** Waiting for a register name after <C-r>. */
   ctrlR: boolean;
   /** Search state to restore on cancel (incsearch). */
@@ -122,18 +124,25 @@ type InsertState = {
   keys: Key[];
   count: number;
   /** Visual block insert: lines and column to replicate into on <Esc>. */
-  block?: { first: number; last: number; col: number; append: boolean; toEol: boolean };
+  /** left: the block's left column, where Vim puts the cursor after a block I / A (not c). */
+  block?: { first: number; last: number; col: number; append: boolean; toEol: boolean; left?: number };
   /** Original line texts for replace mode backspacing. */
   replaced?: Map<string, string>;
   /** Pending multi-key input: <C-r>, <C-v>, <C-k>, <C-x>, <C-o>. */
-  pending: '' | 'ctrl-r' | 'ctrl-v' | 'ctrl-k' | 'ctrl-x';
+  pending: '' | 'ctrl-r' | 'ctrl-v' | 'ctrl-k' | 'ctrl-x' | 'ctrl-g';
   pendingBuf: string;
   /** Text typed so far (for ". and <C-a>). */
   typed: string;
   completion?: { items: string[]; idx: number; startCol: number; line: number; orig: string };
+  /** Moved by <C-g>j / <C-g>k and nothing typed since: the next edit restarts the insert. */
+  arrowed?: boolean;
   /** Came from <C-o>: return here after one command. */
 };
 
+/** Commands the coach counts as undo: u, <C-r>, the time-travel g- / g+, and U. */
+const UNDO_KEYS = new Set(['u', '<C-r>', 'g-', 'g+', 'U']);
+/** Insert keys that do not end an arrow move (they neither type nor delete). */
+const ARROW_KEEPS = new Set(['<Esc>', '<C-c>', '<C-g>', '<C-o>', '<Left>', '<Right>', '<Up>', '<Down>', '<Home>', '<End>']);
 export type CommandKind = 'motion' | 'operator' | 'action' | 'insert' | 'visual' | 'cmdline' | 'modal' | 'undo' | 'other';
 export type LastCommand = { keys: Key[]; kind: CommandKind; error: boolean };
 
@@ -514,8 +523,16 @@ export class Vim {
     if (r.kind === 'block') {
       const [c1, c2] = [Math.min(r.start.col, r.end.col), Math.max(r.start.col, r.end.col)];
       const parts: string[] = [];
-      for (let l = r.start.line; l <= r.end.line; l++) parts.push(L[l].slice(c1, r.toEol ? undefined : c2 + 1));
-      return { text: parts.join('\n'), kind: 'block' };
+      // block_prep(): a line that ends before the block starts yields blanks as wide as the block
+      // ($: up to the longest line's end, plus one).
+      let right = r.toEol ? 0 : c2;
+      if (r.toEol) for (let l = r.start.line; l <= r.end.line; l++) right = Math.max(right, L[l].length);
+      for (let l = r.start.line; l <= r.end.line; l++) {
+        parts.push(L[l].length < c1 ? ' '.repeat(right - c1 + 1) : L[l].slice(c1, r.toEol ? undefined : c2 + 1));
+      }
+      // op_yank(): y_width = end_vcol - start_vcol, one less for a $ block.
+      const width = r.toEol ? Math.max(1, right - c1 > 0 ? right - c1 : right - c1 + 1) : c2 - c1 + 1;
+      return { text: parts.join('\n'), kind: 'block', width };
     }
     const { start, end } = r;
     if (start.line === end.line) return { text: L[start.line].slice(start.col, end.col + 1) + (end.col >= L[end.line].length && end.line < L.length - 1 ? '\n' : ''), kind: 'char' };
@@ -584,13 +601,30 @@ export class Vim {
   }
 
   // ---- undo -----------------------------------------------------------------------
-  beginChange() {
-    if (this.snapshotTaken) return;
-    this.buf.snapshot(this.cursor);
+  /** Open an undoable change. `at`: where undo/redo return the cursor (an operator's start). */
+  beginChange(at?: Pos) {
+    if (this.snapshotTaken) {
+      if (at) this.buf.setUndoCursor(at);
+      return;
+    }
+    this.buf.snapshot(this.cursor, () => this.cursor);
+    if (at) this.buf.setUndoCursor(at);
     if (!this.buf.lineUndo || this.buf.lineUndo.line !== this.cursor.line) {
       this.buf.lineUndo = { line: this.cursor.line, text: this.line() };
     }
     this.snapshotTaken = true;
+  }
+  /**
+   * Where Vim's undo remembers an operator's cursor: the start of the operated text; for a
+   * linewise motion the column the cursor had there, for a linewise text object, c or a case
+   * operator column 0.
+   */
+  private opUndoCursor(p: Parsed, r: Range): Pos {
+    if (r.kind === 'char') return r.start;
+    if (r.kind === 'block') return pos(r.start.line, Math.min(r.start.col, r.end.col));
+    const col0 = (p.target?.kind === 'entry' && p.target.entry.type === 'object') || /^(c|g[uU~?]|~)$/.test((p.opStr ?? '').split(SEP).join(''));
+    if (col0) return pos(r.start.line, 0);
+    return pos(r.start.line, r.start.line === this.cursor.line ? this.cursor.col : this.win.want);
   }
   private endChange() {
     if (this.snapshotTaken) this.buf.dropSnapshotIfUnchanged();
@@ -651,7 +685,8 @@ export class Vim {
 
   private resetAfterError(e: VimError) {
     this.pending = [];
-    this.dotCapture = null;
+    // A failed <C-o> command has already resumed the insert, which records a fresh repeat.
+    if (this.mode !== 'insert' && this.mode !== 'replace') this.dotCapture = null;
     if (e.message) this.msg(e.message, 'error');
     if (this.mode === 'visual' && !this.visual) this.mode = 'normal';
     this.emit('error');
@@ -684,7 +719,11 @@ export class Vim {
       case 'cmdline':
         if (this.dotCapture && (this.cmdline?.type === '=' || this.pendingSearchOp)) this.dotCapture.keys.push(key);
         if (this.depth === 0) this.cmdKeys.push(key);
-        return this.cmdlineKey(key);
+        try {
+          return this.cmdlineKey(key);
+        } finally {
+          if (this.mode !== 'cmdline') this.resumeOneShot(); // a :, / or ? typed after <C-o>
+        }
       default:
         return this.normalKey(key);
     }
@@ -716,33 +755,59 @@ export class Vim {
     // <Esc> cancels a pending command, unless the keys before it already were one (`s` with a
     // plugin's `sa` mapped): then it runs and the <Esc> is handled after it, as after 'timeoutlen'.
     const completesBefore = res !== 'incomplete' && res !== 'invalid' && res.rest?.length === 1 && res.rest[0] === '<Esc>';
-    if (key === '<Esc>' && this.pending.length > 1 && !completesBefore) {
+    // A command that takes the <Esc> as its own argument (r<C-v><Esc>) is not cancelled by it.
+    const takesEsc = res !== 'incomplete' && res !== 'invalid' && !res.rest?.length;
+    if (key === '<Esc>' && this.pending.length > 1 && !completesBefore && !takesEsc) {
       this.pending = [];
       if (this.depth === 0) this.finishCommand('other'); // a cancelled command is not part of the next one
+      this.resumeOneShot();
       return;
     }
     if (res === 'incomplete') return;
     const keys = this.pending;
     this.pending = [];
-    if (res === 'invalid') {
-      if (keys.length === 1 && keys[0] === '<Esc>') {
-        if (this.visual) this.exitVisual();
-        if (this.depth === 0) this.finishCommand('other');
-        return;
+    // After a <C-o> command Insert resumes however the command ended: done, cancelled or failed.
+    // One that opened the command line resumes when that line is submitted or cancelled.
+    try {
+      if (res === 'invalid') {
+        if (keys.length === 1 && keys[0] === '<Esc>') {
+          if (this.visual) this.exitVisual();
+          if (this.depth === 0) this.finishCommand('other');
+          return;
+        }
+        fail();
       }
-      fail();
+      const rest = res.rest ?? [];
+      if (rest.length) {
+        if (this.depth === 0) this.cmdKeys.splice(-rest.length);
+        this.dotCapture?.keys.splice(-rest.length);
+      }
+      this.execute(res, keys.slice(0, keys.length - rest.length));
+      for (const k of rest) this.handleKey(k); // same depth and bookkeeping as the key that arrived
+    } finally {
+      this.resumeOneShot();
     }
-    const rest = res.rest ?? [];
-    if (rest.length) {
-      if (this.depth === 0) this.cmdKeys.splice(-rest.length);
-      this.dotCapture?.keys.splice(-rest.length);
-    }
-    this.execute(res, keys.slice(0, keys.length - rest.length));
-    for (const k of rest) this.handleKey(k); // same depth and bookkeeping as the key that arrived
+  }
+
+  /** Back to Insert after the one Normal command a <C-o> allowed, if it has ended. */
+  private resumeOneShot() {
     if (this.oneShot && this.mode === 'normal' && this.insert) {
       this.oneShot = false;
+      if (!this.dotReplaying) {
+        // Vim restarts the insert (restart_edit): typing resumes as a new undo step, a count is
+        // dropped, and . repeats only what is typed from here on, as an `i`.
+        this.endChange();
+        this.beginChange();
+        Object.assign(this.insert, { count: 1, typed: '', kind: 'i', block: undefined, arrowed: false });
+        this.pendingDot = { reg: null, count: null, body: ['i'], insert: [] };
+        this.dotCapture = { keys: [], replaying: false };
+      }
       this.mode = 'insert';
-      if (this.win.want === Infinity) this.win.cursor.col = this.line().length;
+      // edit(): back past the end of the line when the <C-o> started there (same line) or
+      // curswant lies beyond the cursor (<C-o>$), and the cursor is on the last character.
+      const c = this.win.cursor;
+      if ((this.oneShotEolLine === c.line || this.win.want > c.col) && c.col === this.line().length - 1) c.col++;
+      this.oneShotEolLine = -1;
       this.clampCursor(true);
     }
   }
@@ -802,6 +867,14 @@ export class Vim {
 
     const takeArg = (kind: 'char' | 'char2' | undefined): string | 'incomplete' | null => {
       if (!kind) return '';
+      // r<C-v>{char}: the character literally (a real tab, a ^M that does not split the line),
+      // or a code: <C-v>065, <C-v>x41, <C-v>o101, <C-v>u00e9.
+      if (kind === 'char' && (keys[j] === '<C-v>' || keys[j] === '<C-q>') && keysToString(cmdKeys) === 'r') {
+        const lit = literalChar(keys, j + 1);
+        if (lit === 'incomplete') return 'incomplete';
+        j = lit.end;
+        return lit.ch;
+      }
       const need = kind === 'char2' ? 2 : 1;
       if (keys.length < j + need) return 'incomplete';
       const a = keys.slice(j, j + need);
@@ -954,8 +1027,13 @@ export class Vim {
       // Visual mode: extend the selection to the object.
       const v = this.visual!;
       const [s, en] = this.visualBounds();
-      const r = e.obj({ lines: this.lines, cur: this.cursor, count, visual: cmpPos(s, en) === 0 ? null : { start: s, end: en } }, e.inner);
-      if (!r) fail();
+      const octx: ObjectCtx = { lines: this.lines, cur: this.cursor, count, visual: cmpPos(s, en) === 0 ? null : { start: s, end: en } };
+      const r = e.obj(octx, e.inner);
+      if (!r) {
+        // Vim moves the cursor while searching and leaves it there on failure.
+        if (octx.stop) { this.win.cursor = { ...octx.stop }; this.clampCursor(false); this.win.want = this.cursor.col; }
+        fail();
+      }
       if (r.kind === 'line' && v.kind === 'v') v.kind = 'V';
       if (r.kind === 'char' && v.kind === 'V' && r.start.line === r.end.line) v.kind = 'v';
       v.anchor = r.start;
@@ -968,14 +1046,14 @@ export class Vim {
 
     if (e.type === 'action') {
       const change = !!e.spec.change;
-      if (change) this.beginChange();
+      if (change) this.beginChange(this.visual ? (this.visual.kind === 'V' ? pos(this.visualRange().start.line, 0) : this.visualRange().start) : undefined);
       const shape = this.visual ? this.visualShape() : undefined;
       e.spec.run({ count, hasCount, reg: p.reg, arg: p.arg, keys: cmdStr });
       if (change) this.finishDot(p, keys, shape);
       else if (this.mode !== 'insert') this.dotCapture = null;
       if (this.depth === 0) {
         if (this.mode === 'cmdline') this.lastCommand = null; // completes on <CR>
-        else this.finishCommand(cmdStr === 'u' || cmdStr === '<C-r>' ? 'undo' : this.mode === 'insert' || this.mode === 'replace' ? 'insert' : this.visual ? 'visual' : change ? 'action' : 'other');
+        else this.finishCommand(UNDO_KEYS.has(cmdStr) ? 'undo' : this.mode === 'insert' || this.mode === 'replace' ? 'insert' : this.visual ? 'visual' : change ? 'action' : 'other');
       }
       return;
     }
@@ -988,6 +1066,7 @@ export class Vim {
     if (this.visual) {
       range = this.visualRange();
       dotVisual = this.visualShape();
+      this.opStart = range.kind === 'line' ? pos(range.start.line, 0) : range.kind === 'block' ? pos(range.start.line, Math.min(range.start.col, range.end.col)) : { ...range.start };
       this.exitVisual();
       this.win.cursor = { ...range.start };
       if (range.kind === 'block') this.win.cursor.col = Math.min(range.start.col, range.end.col);
@@ -999,16 +1078,16 @@ export class Vim {
         let a = start, b = res.pos;
         const back = cmpPos(b, a) < 0;
         if (back) [a, b] = [b, a];
-        let r: Range;
-        if (res.linewise) r = { start: pos(a.line, 0), end: pos(b.line, 0), kind: 'line' };
-        else if (res.inclusive) r = { start: a, end: b, kind: 'char' };
+        this.opStart = { ...a };
+        let r: Range | null;
+        if (res.linewise) r = this.forceKind({ start: pos(a.line, 0), end: pos(b.line, 0), kind: 'line' }, target.force);
         else {
-          if (cmpPos(a, b) === 0) fail();
-          r = { start: a, end: b.col > 0 ? pos(b.line, b.col - 1) : pos(b.line - 1, this.line(b.line - 1).length), kind: 'char' };
+          if (!res.inclusive && cmpPos(a, b) === 0 && !target.force) fail();
+          r = this.vimCharwiseRange(a, b, !!res.inclusive, cmdStr === 'd', target.force, true);
         }
-        r = this.forceKind(r, target.force);
+        if (!r) fail();
         this.win.cursor = { ...start };
-        if (op.change) this.beginChange();
+        if (op.change) this.beginChange(this.opUndoCursor(p, r));
         op.run(r, { ...ctx, keys: cmdStr });
         if (op.change) this.finishDot(p, keys);
         if (this.depth === 0) this.finishCommand(this.mode === 'insert' ? 'insert' : op.change ? 'operator' : 'other');
@@ -1028,7 +1107,7 @@ export class Vim {
       if (!r) fail();
       range = r;
     }
-    if (op.change) this.beginChange();
+    if (op.change) this.beginChange(this.visual || dotVisual ? undefined : this.opUndoCursor(p, range));
     (this as { opArgument?: string }).opArgument = p.arg;
     op.run(range, { ...ctx, keys: cmdStr + (p.arg ? `\u0000${p.arg}` : '') });
     if (op.change) this.finishDot(p, keys, dotVisual);
@@ -1038,26 +1117,41 @@ export class Vim {
 
   /** Argument read after the motion for operators with argAfter. */
   opArgument = '';
+  /** Where Vim's operator starts (oap->start) before a linewise range drops the column. */
+  opStart: Pos = pos(0, 0);
 
   private operatorRange(p: Parsed, count: number, hasCount: boolean): Range | null {
     const t = p.target!;
     if (t.kind === 'self') {
       const start = this.cursor.line;
       const end = start + count - 1;
+      // Vim runs cc / dd / gcc as `_`: the start is the earlier of the cursor and the target's first non-blank.
+      const fnb = pos(Math.min(end, this.buf.lineCount - 1), firstNonBlank(this.line(Math.min(end, this.buf.lineCount - 1))));
+      this.opStart = cmpPos(fnb, this.cursor) < 0 ? fnb : { ...this.cursor };
       if (end >= this.buf.lineCount) {
-        if (start === this.buf.lineCount - 1 || count > 1) {
-          return { start: pos(start, 0), end: pos(this.buf.lineCount - 1, 0), kind: 'line' };
-        }
-        return null;
+        // Vim's cursor_down(): a count past the end stops at the last line, but fails on it.
+        if (start === this.buf.lineCount - 1) return null;
+        return { start: pos(start, 0), end: pos(this.buf.lineCount - 1, 0), kind: 'line' };
       }
       return { start: pos(start, 0), end: pos(end, 0), kind: 'line' };
     }
     if (t.kind !== 'entry') return null;
     const te = t.entry;
     const cur = { ...this.cursor };
+    this.opStart = { ...cur };
     if (te.type === 'object') {
-      const r = te.obj({ lines: this.lines, cur, count, visual: null }, te.inner);
-      if (!r) return null;
+      const octx: ObjectCtx = { lines: this.lines, cur, count, visual: null };
+      const r = te.obj(octx, te.inner);
+      if (!r) {
+        // Vim moves the cursor while searching and leaves it there on failure.
+        if (octx.stop) { this.win.cursor = { ...octx.stop }; this.clampCursor(false); this.win.want = this.cursor.col; }
+        return null;
+      }
+      this.opStart = cmpPos(r.start, r.end) <= 0 ? { ...r.start } : { ...r.end };
+      // Word objects report Vim's inclusive flag; apply the charwise operator rules.
+      if ('inclusive' in r && typeof r.inclusive === 'boolean') {
+        return this.vimCharwiseRange(r.start, r.end, r.inclusive, keysToString(p.cmdKeys) === 'd', t.force, true);
+      }
       return this.forceKind(r, t.force);
     }
     if (te.type === 'map') {
@@ -1076,37 +1170,21 @@ export class Vim {
         if (res0) return this.forceKind({ start: cur, end: res0, kind: 'char' }, t.force);
       }
     }
+    if (mkeys === 'w' || mkeys === 'W') return this.operatorWordRange(mkeys === 'W', count, opKeys === 'd', t.force);
     const res = spec.run({ count, hasCount, arg: t.arg, op: opKeys, visual: false });
     if (!res) return null;
     if (res.jump) this.pushJump(cur);
     let start = cur, end = res.pos;
     const backwards = cmpPos(end, start) < 0;
     if (backwards) [start, end] = [end, start];
+    this.opStart = { ...start };
     if (res.linewise) return this.forceKind({ start: pos(start.line, 0), end: pos(end.line, 0), kind: 'line' }, t.force);
-    if (res.inclusive) return this.forceKind({ start, end, kind: 'char' }, t.force);
-    // Exclusive motion.
-    if ((mkeys === 'w' || mkeys === 'W') && !backwards && end.line > start.line) {
-      // dw on the last word of a line stops at the end of that line.
-      let l = end.line - 1;
-      while (l > start.line && this.line(l).trim() === '') l--;
-      if (l === start.line || end.col === 0 || this.line(end.line).slice(0, end.col).trim() === '') {
-        const t2 = this.line(l);
-        end = pos(l, t2.length - 1);
-        if (end.col < 0 || (l === start.line && end.col < start.col)) return this.forceKind({ start, end: pos(start.line, Math.max(start.col, t2.length) - 1), kind: 'char' }, t.force);
-        return this.forceKind({ start, end, kind: 'char' }, t.force);
-      }
-    }
-    if (cmpPos(start, end) === 0) return t.force ? this.forceKind({ start, end, kind: 'char' }, t.force) : null;
-    if (end.col === 0 && end.line > start.line && !t.force) {
-      // Exclusive-to-linewise rule (:help exclusive-linewise).
-      const prevLen = this.line(end.line - 1).length;
-      if (start.col <= firstNonBlank(this.line(start.line)) && this.line(start.line).slice(0, start.col).trim() === '') {
-        return { start: pos(start.line, 0), end: pos(end.line - 1, 0), kind: 'line' };
-      }
-      return { start, end: pos(end.line - 1, Math.max(0, prevLen)), kind: 'char' };
-    }
-    end = end.col > 0 ? pos(end.line, end.col - 1) : pos(end.line - 1, this.line(end.line - 1).length);
-    return this.forceKind({ start, end, kind: 'char' }, t.force);
+    // nvim's bundled matchit maps o_% through a forced characterwise Visual selection, so d% never
+    // turns linewise (d/)/e from the same place does).
+    if (mkeys === '%' && !hasCount && !t.force && res.inclusive) return { start, end, kind: 'char' };
+    // Charwise: o_v, :help exclusive-linewise and :help d apply to every motion.
+    if (!res.inclusive && cmpPos(start, end) === 0 && !t.force) return null;
+    return this.vimCharwiseRange(start, end, !!res.inclusive, opKeys === 'd', t.force, true);
   }
 
   /** cw/cW: like ce/cE, but a cursor on a word's last character stays put. */
@@ -1123,13 +1201,97 @@ export class Vim {
         if (n === 0 && k !== 0 && cls(line[p.col + 1]) !== k) continue;
         this.win.cursor = p;
         const r = e.spec.run({ count: 1, hasCount: false, arg: '', op: 'c', visual: false });
-        if (!r) return null;
+        if (!r) {
+          // Out of words: Vim's end_word() fails past the last one, and the
+          // operator still runs to the buffer's last character.
+          const last = this.buf.lineCount - 1;
+          return pos(last, Math.max(0, this.line(last).length - 1));
+        }
         p = r.pos;
       }
     } finally {
       this.win.cursor = save;
     }
     return p;
+  }
+
+  /**
+   * w / W under an operator, after Vim's fwd_word(count, eol = TRUE) and
+   * adjust_cursor(): the last word stops at its line's end (so dw never joins
+   * lines) and running out of words ends at the end of the buffer. Then the
+   * exclusive-linewise rule and d's own linewise rule (:help d).
+   */
+  private operatorWordRange(big: boolean, count: number, isDelete: boolean, force: VisualKind | null): Range | null {
+    const L = this.lines, last = L.length - 1;
+    const start = { ...this.cursor };
+    const cls = (q: Pos) => {
+      const ch = L[q.line][q.col];
+      return ch === undefined || ch === ' ' || ch === '\t' ? 0 : big || /[\wÀ-￿]/.test(ch) ? 2 : 1;
+    };
+    let p = { ...start };
+    // inc_cursor(): 0 same line, 2 onto the line's end, 1 next line, -1 end of buffer.
+    const inc = () => {
+      const len = L[p.line].length;
+      if (p.col < len) { p = pos(p.line, p.col + 1); return p.col < len ? 0 : 2; }
+      if (p.line < last) { p = pos(p.line + 1, 0); return 1; }
+      return -1;
+    };
+    words: for (let n = count - 1; n >= 0; n--) {
+      const sclass = cls(p);
+      const lastLine = p.line === last;
+      let i = inc();
+      if (i === -1 || (i >= 1 && lastLine)) break; // no more words
+      if (i >= 1 && n === 0) break; // started on the last char of the line
+      if (sclass !== 0) {
+        while (cls(p) === sclass) {
+          i = inc();
+          if (i === -1 || (i >= 1 && n === 0)) break words;
+        }
+      }
+      while (cls(p) === 0) {
+        if (p.col === 0 && L[p.line].length === 0) break; // an empty line is a word
+        i = inc();
+        if (i === -1 || (i >= 1 && n === 0)) break words;
+      }
+    }
+    let inclusive = false;
+    if (cmpPos(start, p) < 0 && p.col > 0 && p.col >= L[p.line].length) {
+      p = pos(p.line, p.col - 1);
+      inclusive = true;
+    }
+    return this.vimCharwiseRange(start, p, inclusive, isDelete, force, false);
+  }
+
+  /**
+   * Turn a charwise operator region in Vim's terms (end position plus an
+   * inclusive flag) into a Range: o_v / o_V / o_CTRL-V, the exclusive-linewise
+   * rule, d's linewise rule (:help d), and an end on a line's NUL. An empty
+   * region is null, or (allowEmpty) a zero-width range the operator can run on.
+   */
+  private vimCharwiseRange(start: Pos, end: Pos, inclusive: boolean, isDelete: boolean, force: VisualKind | null, allowEmpty: boolean): Range | null {
+    const L = this.lines;
+    let p = end;
+    if (force === 'V' || force === '<C-v>') return this.forceKind({ start, end: p, kind: 'char' }, force);
+    if (force === 'v') inclusive = !inclusive;
+    const inIndent = /^[ \t]*$/.test(L[start.line].slice(0, start.col));
+    if (!inclusive && p.col === 0 && p.line > start.line) {
+      // :help exclusive-linewise
+      if (inIndent) return { start: pos(start.line, 0), end: pos(p.line - 1, 0), kind: 'line' };
+      const len = L[p.line - 1].length;
+      p = pos(p.line - 1, Math.max(0, len - 1));
+      inclusive = len > 0;
+    }
+    // :help d — a multi-line delete from the indent to a line's end is linewise.
+    if (isDelete && !force && p.line > start.line && inIndent && /^[ \t]*$/.test(L[p.line].slice(p.col + (inclusive ? 1 : 0)))) {
+      return { start: pos(start.line, 0), end: pos(p.line, 0), kind: 'line' };
+    }
+    // Inclusive of a line's NUL covers nothing more than exclusive of it.
+    if (inclusive && p.col >= L[p.line].length) { inclusive = false; p = pos(p.line, L[p.line].length); }
+    if (!inclusive) {
+      if (cmpPos(start, p) >= 0) return allowEmpty ? { start, end: pos(start.line, start.col - 1), kind: 'char' } : null;
+      p = p.col > 0 ? pos(p.line, p.col - 1) : pos(p.line - 1, L[p.line - 1].length);
+    }
+    return { start, end: p, kind: 'char' };
   }
 
   private forceKind(r: Range, force: VisualKind | null): Range {
@@ -1144,10 +1306,15 @@ export class Vim {
     const cur = this.win.cursor;
     cur.line = Math.max(0, Math.min(res.pos.line, this.buf.lineCount - 1));
     cur.col = res.pos.col;
-    this.clampCursor(this.mode === 'visual' && this.visual?.kind !== 'v' ? false : this.mode === 'visual');
-    if (this.visual) cur.col = Math.min(cur.col, Math.max(0, this.line().length - (this.line().length ? 1 : 0)));
+    // Visual may sit on the end-of-line, like Vim's coladvance() while Visual is active (charwise: the newline).
+    this.clampCursor(this.mode === 'visual');
     if (res.want !== undefined) this.win.want = res.want;
     else if (!res.keepWant) this.win.want = cur.col;
+    // Like Vim's coladvance(MAXCOL): charwise Visual after $ lands on the end-of-line.
+    if (this.visual?.kind === 'v') {
+      this.visual.toEol = this.win.want === Infinity;
+      if (this.visual.toEol) cur.col = this.line().length;
+    }
     if (this.visual?.kind === '<C-v>') this.visual.toEol = res.want === Infinity;
   }
 
@@ -1178,6 +1345,8 @@ export class Vim {
   private pendingDot: LastChange | null = null;
   /** <C-o> in insert mode: run one normal command, then return to insert. */
   private oneShot = false;
+  /** The line <C-o> was typed on when the cursor was past its end, else -1. */
+  private oneShotEolLine = -1;
 
   /** Repeat the last change (.). */
   repeatChange(count: number | null) {
@@ -1198,6 +1367,7 @@ export class Vim {
       this.mode = 'visual';
       const endLine = Math.min(this.buf.lineCount - 1, cur.line + c.visual.lines);
       this.win.cursor = pos(endLine, c.visual.kind === 'V' ? cur.col : c.visual.lines ? c.visual.cols + (c.visual.kind === 'v' ? 0 : cur.col) : cur.col + c.visual.cols);
+      if (c.visual.kind === 'v' && c.visual.toEol) this.win.cursor.col = this.line(endLine).length; // a v$ change repeats to the end-of-line
       this.dotReplaying = true;
       try {
         this.runKeys([...keys, ...c.body, ...c.insert]);
@@ -1262,8 +1432,8 @@ export class Vim {
       const c1 = Math.min(v.anchor.col, this.cursor.col), c2 = Math.max(v.anchor.col, this.cursor.col);
       return { start: pos(s.line, c1), end: pos(e.line, c2), kind: 'block', toEol: v.toEol };
     }
-    const endLen = this.line(e.line).length;
-    return { start: s, end: pos(e.line, Math.min(e.col, Math.max(0, endLen - 1)) + (endLen === 0 ? 0 : 0)), kind: 'char' };
+    // An end on the end-of-line (col == length) takes the newline.
+    return { start: { ...s }, end: pos(e.line, Math.min(e.col, this.line(e.line).length)), kind: 'char' }; // copy: s may alias the cursor
   }
 
   reselectVisual() {
@@ -1287,6 +1457,7 @@ export class Vim {
   private insertKey(key: Key): void {
     const ins = this.insert!;
     if (ins.pending) return this.insertPending(key);
+    if (ins.arrowed && !ARROW_KEEPS.has(key)) this.restartAfterArrow(key);
     const mapped = this.insertMaps.get(key);
     if (mapped && mapped(this) !== false) return;
     if (ins.completion && !['<C-n>', '<C-p>', '<C-y>', '<C-e>', '<Down>', '<Up>'].includes(key)) ins.completion = undefined;
@@ -1361,22 +1532,30 @@ export class Vim {
         typeChar(this.opt('expandtab') ? ' '.repeat(sw - (c.col % sw)) : '\t');
         return;
       }
+      // Neovim maps both to <C-g>u first (default-mappings), so each is its own undo step. Like
+      // <BS> they stop at the insert start (Vim's Insstart_orig, which <C-g>u leaves alone) unless
+      // they begin there; deleting past it moves it.
       case '<C-w>': {
+        this.insertUndoBreak();
         const t = this.line();
         const before = t.slice(0, c.col);
         const m = /(\w+|[^\w\s]+)?\s*$/.exec(before)!;
-        const cut = m[0].length || (c.col > 0 ? 1 : 0);
+        let cut = m[0].length || (c.col > 0 ? 1 : 0);
         if (cut === 0 && c.line > 0) return this.insertKey('<BS>');
+        if (ins.start.line === c.line && ins.start.col < c.col) cut = Math.min(cut, c.col - ins.start.col);
         b.setLine(c.line, before.slice(0, before.length - cut) + t.slice(c.col));
         c.col -= cut;
+        if (ins.start.line === c.line && c.col < ins.start.col) ins.start = { ...c };
         ins.keys.push(key);
         return;
       }
       case '<C-u>': {
+        this.insertUndoBreak();
         const t = this.line();
         const stop = ins.start.line === c.line && ins.start.col < c.col ? ins.start.col : indentOf(t).length < c.col ? indentOf(t).length : 0;
         b.setLine(c.line, t.slice(0, stop) + t.slice(c.col));
         c.col = stop;
+        if (ins.start.line === c.line && c.col < ins.start.col) ins.start = { ...c };
         ins.keys.push(key);
         return;
       }
@@ -1396,6 +1575,7 @@ export class Vim {
       case '<C-q>': ins.pending = 'ctrl-v'; ins.pendingBuf = ''; ins.keys.push(key); return;
       case '<C-k>': ins.pending = 'ctrl-k'; ins.pendingBuf = ''; ins.keys.push(key); return;
       case '<C-x>': ins.pending = 'ctrl-x'; ins.keys.push(key); return;
+      case '<C-g>': ins.pending = 'ctrl-g'; ins.keys.push(key); return;
       case '<C-a>': for (const ch of this.lastInserted) typeChar(ch === '\n' ? '\n' : ch); return;
       case '<C-e>':
       case '<C-y>': {
@@ -1430,6 +1610,10 @@ export class Vim {
         ins.keys.push(key);
         this.oneShot = true;
         this.mode = 'normal';
+        this.win.want = c.col; // curswant follows the typing (it may sit past the end of the line)
+        this.oneShotEolLine = c.col >= this.line().length ? c.line : -1;
+        // Like leaving insert: what was typed so far is its own undo step.
+        if (!this.dotReplaying) this.endChange();
         return;
       case '<Left>': if (c.col > 0) c.col--; ins.start = { ...c }; return;
       case '<Right>': if (c.col < this.line().length) c.col++; ins.start = { ...c }; return;
@@ -1441,12 +1625,64 @@ export class Vim {
     // Unknown special keys are ignored in insert mode.
   }
 
+  /**
+   * An arrow-style move in Insert (Vim's start_arrow): what was typed so far is one finished
+   * change, for undo and for . (a count is dropped). The insert restarts, as an i, only when
+   * something is typed next (stop_arrow); leaving straight away keeps the change so far for .
+   */
+  private insertLineArrow(dir: 1 | -1) {
+    const ins = this.insert!, c = this.win.cursor;
+    const line = c.line + dir;
+    if (line < 0 || line >= this.buf.lineCount) return;
+    if (!ins.arrowed && !this.dotReplaying) {
+      if (this.pendingDot && this.dotCapture) {
+        // The capture ends in this <C-g> and its key: the change repeats as if <Esc> came here.
+        this.lastChange = { ...this.pendingDot, insert: [...this.dotCapture.keys.slice(0, -2), '<Esc>'] };
+      }
+      this.pendingDot = null;
+      this.dotCapture = null;
+      this.endChange();
+    }
+    Object.assign(ins, { arrowed: true, count: 1, block: undefined });
+    this.win.cursor = pos(line, Math.min(ins.start.col, this.line(line).length));
+  }
+
+  /** The first edit after an arrow move: a new undo step, repeated by . as an i. */
+  private restartAfterArrow(key: Key) {
+    const ins = this.insert!;
+    if (!this.dotReplaying) {
+      this.beginChange();
+      this.pendingDot = { reg: null, count: null, body: [this.mode === 'replace' ? 'R' : 'i'], insert: [] };
+      this.dotCapture = { keys: [key], replaying: false };
+    }
+    Object.assign(ins, { arrowed: false, typed: '', kind: this.mode === 'replace' ? 'R' : 'i', start: { ...this.cursor } });
+  }
+
+  /** <C-g>u: close the undo block so far and start a new one here. */
+  private insertUndoBreak() {
+    if (this.snapshotTaken && !this.dotReplaying) {
+      this.buf.dropSnapshotIfUnchanged();
+      this.buf.snapshot(this.cursor, () => this.cursor);
+    }
+  }
+
   private insertPending(key: Key) {
     const ins = this.insert!;
     ins.keys.push(key);
     const kind = ins.pending;
     if (key === '<Esc>' && kind !== 'ctrl-v') {
       ins.pending = '';
+      return;
+    }
+    if (kind === 'ctrl-g') {
+      ins.pending = '';
+      // <C-g>u: close the undo block so far and start a new one here. A dot repeat replays
+      // the whole insert as one change, as in Vim.
+      if (key === 'u') this.insertUndoBreak();
+      // <C-g>j / <C-g>k: to the column the insert started in, a line down / up. Other keys
+      // are swallowed with the <C-g>, as in Vim.
+      const dir = ['j', '<C-j>', '<Down>'].includes(key) ? 1 : ['k', '<C-k>', '<Up>'].includes(key) ? -1 : 0;
+      if (dir) this.insertLineArrow(dir);
       return;
     }
     if (kind === 'ctrl-r') {
@@ -1606,8 +1842,10 @@ export class Vim {
       }
       ins.typed = typed;
     }
+    let blockStart: Pos | null = null;
     if (ins.block && ins.typed && !ins.typed.includes('\n')) {
-      const { first, last, col, append, toEol } = ins.block;
+      const { first, last, col, append, toEol, left } = ins.block;
+      if (left !== undefined) blockStart = pos(first, left);
       for (let l = first + 1; l <= last; l++) {
         const t = this.line(l);
         if (append && toEol) this.buf.setLine(l, t + ins.typed);
@@ -1622,7 +1860,8 @@ export class Vim {
     this.buf.marks.set(']', pos(this.cursor.line, Math.max(0, this.cursor.col - 1)));
     this.insert = null;
     this.mode = 'normal';
-    if (this.cursor.col > 0) this.win.cursor.col--;
+    if (blockStart) this.win.cursor = blockStart; // op_insert(): back to the block's top-left
+    else if (this.cursor.col > 0) this.win.cursor.col--;
     this.clampCursor(false);
     this.win.want = this.cursor.col;
     if (this.pendingDot && this.dotCapture) {
@@ -1648,6 +1887,7 @@ export class Vim {
 
   private cmdlineKey(key: Key) {
     const cl = this.cmdline!;
+    if (key !== '<Up>' && key !== '<Down>') cl.histPrefix = null;
     if (cl.ctrlR) {
       cl.ctrlR = false;
       let ins = '';
@@ -1716,12 +1956,17 @@ export class Vim {
       case '<Up>':
       case '<Down>': {
         if (cl.type === 'input' || cl.type === '=') return;
+        // Vim keeps the text typed before the first <Up>/<Down> as a prefix:
+        // only entries starting with it are visited, and stepping past the
+        // newest one brings the typed text back. No match leaves everything.
         const d = key === '<Up>' ? -1 : 1;
+        const prefix = cl.histPrefix ?? cl.text.slice(0, cl.cursor);
         let i = cl.histIdx + d;
-        while (i >= 0 && i < hist.length && !hist[i].startsWith(cl.text.slice(0, cl.cursor === cl.text.length ? 0 : cl.cursor))) i += d;
-        if (i < 0) return;
-        cl.histIdx = Math.min(i, hist.length);
-        cl.text = hist[cl.histIdx] ?? '';
+        while (i >= 0 && i < hist.length && !hist[i].startsWith(prefix)) i += d;
+        if (i < 0 || i > hist.length || (i === hist.length && cl.histIdx >= hist.length)) return;
+        cl.histPrefix = prefix;
+        cl.histIdx = i;
+        cl.text = i === hist.length ? prefix : hist[i];
         cl.cursor = cl.text.length;
         return this.incsearch();
       }
@@ -2013,6 +2258,35 @@ function parseOffset(off: string): { type: 'none' | 'line' | 'e' | 's'; n: numbe
 }
 
 /** Store keys in a register the way Vim does: control keys become control characters. */
+/**
+ * The character a <C-v> prefix produces from keys[i...], after Vim's get_literal(): x / o / u / U
+ * switch to hex, octal or Unicode (at any point), digits accumulate up to their limit, and the
+ * first other key ends the code. With no digit that key itself is the character; after digits it
+ * is consumed with them (what the headless nvim oracle shows).
+ */
+export function literalChar(keys: Key[], i: number): { ch: string; end: number } | 'incomplete' {
+  let hex = false, octal = false, unicode = '', cc = 0, n = 0, j = i;
+  let last: Key | null = null;
+  while (last === null) {
+    const k = keys[j];
+    if (k === undefined) return 'incomplete';
+    j++;
+    if (k === 'x' || k === 'X') hex = true;
+    else if (k === 'o' || k === 'O') octal = true;
+    else if (k === 'u' || k === 'U') unicode = k;
+    else {
+      const d = hex || unicode ? /^[0-9a-fA-F]$/ : octal ? /^[0-7]$/ : /^[0-9]$/;
+      if (!d.test(k)) { last = k; break; }
+      cc = cc * (hex || unicode ? 16 : octal ? 8 : 10) + parseInt(k, 16);
+      n++;
+      if (cc > 255 && !unicode) cc = 255;
+      if (n >= (hex ? 2 : unicode === 'u' ? 4 : unicode === 'U' ? 8 : 3)) break;
+    }
+  }
+  if (n === 0) return { ch: keysToRegister([last!]), end: j };
+  return { ch: String.fromCodePoint(Math.min(cc || 10, 0x10ffff)), end: j };
+}
+
 export function keysToRegister(keys: Key[]): string {
   return keys.map(k => {
     if (k.length === 1) return k;

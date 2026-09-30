@@ -1,7 +1,7 @@
 // Built-in text objects. Each returns an inclusive Range or null.
 
 import { findClose, findOpen, sentenceStarts, unmatchedOpen } from './motions';
-import { BLANK, charClass, isBlank } from './text';
+import { charClass, isBlank } from './text';
 import { type Pos, type Range, cmpPos, pos } from './types';
 
 type Lines = readonly string[];
@@ -12,53 +12,168 @@ export type ObjectCtx = {
   count: number;
   /** Current visual selection, if any, so repeated objects can grow it. */
   visual: { start: Pos; end: Pos } | null;
+  /** Set by an object that fails part-way: where Vim leaves the cursor (it moves while searching). */
+  stop?: Pos;
 };
 
 export type TextObject = (ctx: ObjectCtx, inner: boolean) => Range | null;
 
 // ---- words ---------------------------------------------------------------------
 
+/**
+ * A word object's range as Vim leaves it: `end` is the cursor, and
+ * `inclusive` false means the object stopped just past a line break (end at
+ * column 0), so the operator applies Vim's exclusive rules. In Visual mode
+ * `start` is the new anchor and may lie after `end` when growing backwards.
+ */
+export type WordRange = Range & { inclusive: boolean };
+
+/**
+ * iw / aw / iW / aW: a port of Vim's current_word(). Counts cross line
+ * boundaries (a line break is not a word, an empty line is), and a count
+ * that cannot be satisfied fails.
+ */
 function word(big: boolean): TextObject {
-  return ({ lines, cur, count, visual }, inner) => {
-    const t = lines[cur.line];
-    if (t.length === 0) return inner ? { start: cur, end: cur, kind: 'char' } : null;
-    const cls = (c: number) => (c < 0 || c >= t.length ? -1 : charClass(t[c], big));
-    const runEnd = (c: number) => { const k = cls(c); while (c + 1 < t.length && cls(c + 1) === k) c++; return c; };
-    const runStart = (c: number) => { const k = cls(c); while (c > 0 && cls(c - 1) === k) c--; return c; };
-
-    let startCol = visual && cmpPos(visual.start, visual.end) !== 0 ? visual.start.col : runStart(Math.min(cur.col, t.length - 1));
-    let endCol = visual && cmpPos(visual.start, visual.end) !== 0 ? visual.end.col : startCol - 1;
-    const growing = !!visual && cmpPos(visual.start, visual.end) !== 0;
-
-    for (let n = 0; n < count; n++) {
-      const from = growing || n > 0 ? endCol + 1 : startCol;
-      if (from >= t.length) {
-        if (n === 0) return null;
-        break;
-      }
-      if (inner) {
-        endCol = runEnd(from);
-      } else {
-        const onBlank = cls(from) === BLANK;
-        if (onBlank) {
-          // Blank then word.
-          let e = runEnd(from);
-          if (e + 1 < t.length) e = runEnd(e + 1);
-          endCol = e;
-        } else {
-          let e = runEnd(from);
-          if (e + 1 < t.length && cls(e + 1) === BLANK) e = runEnd(e + 1);
-          else if (n === 0 && !growing) {
-            // No trailing blank: take leading blank instead.
-            let s = startCol;
-            while (s > 0 && isBlank(t[s - 1])) s--;
-            if (s > 0 || isBlank(t[0])) startCol = s;
-          }
-          endCol = e;
+  return (ctx, inner): WordRange | null => {
+    const { lines: L, cur, count, visual } = ctx;
+    const include = !inner;
+    const last = L.length - 1;
+    let c: Pos = pos(cur.line, Math.min(cur.col, Math.max(0, L[cur.line].length - 1)));
+    // Character class under the cursor; blanks and line ends are 0.
+    const stop = () => { ctx.stop = { ...c }; return null; };
+    const cls = () => charClass(L[c.line][c.col], big);
+    // inc(): 0 same line, 2 onto the line's end, 1 next line, -1 end of buffer.
+    const inc = () => {
+      const len = L[c.line].length;
+      if (c.col < len) { c = pos(c.line, c.col + 1); return c.col < len ? 0 : 2; }
+      if (c.line < last) { c = pos(c.line + 1, 0); return 1; }
+      return -1;
+    };
+    // dec(): 0 same line, 1 onto the previous line's end, -1 start of buffer.
+    const dec = () => {
+      if (c.col > 0) { c = pos(c.line, c.col - 1); return 0; }
+      if (c.line > 0) { c = pos(c.line - 1, L[c.line - 1].length); return 1; }
+      return -1;
+    };
+    // incl() / decl() step over a line end.
+    const incl = () => { let r = inc(); if (r >= 1 && c.col) r = inc(); return r; };
+    const decl = () => { let r = dec(); if (r === 1 && c.col) r = dec(); return r; };
+    const oneleft = () => { if (c.col === 0) return false; c = pos(c.line, c.col - 1); return true; };
+    const emptyLine = () => c.col === 0 && L[c.line].length === 0;
+    const backInLine = () => {
+      const s = cls();
+      while (c.col > 0) { dec(); if (cls() !== s) { inc(); break; } }
+    };
+    /** Skip characters of class k; true when the buffer ran out. */
+    const skip = (k: number, fwd: boolean) => { while (cls() === k) if ((fwd ? inc() : dec()) === -1) return true; return false; };
+    const endWord = (stop: boolean): boolean => {
+      const s = cls();
+      if (inc() === -1) return false;
+      if (cls() === s && s !== 0) {
+        if (skip(s, true)) return false;
+      } else if (!stop || s === 0) {
+        while (cls() === 0) {
+          if (emptyLine()) return true;
+          if (inc() === -1) return false;
         }
+        if (skip(cls(), true)) return false;
       }
+      dec();
+      return true;
+    };
+    const fwdWord = (): boolean => {
+      const s = cls();
+      const lastLine = c.line === last;
+      let i = inc();
+      if (i === -1 || (i >= 1 && lastLine)) return false;
+      if (i >= 1) return true;
+      if (s !== 0) while (cls() === s) { i = inc(); if (i !== 0) return true; }
+      while (cls() === 0) {
+        if (emptyLine()) break;
+        i = inc();
+        if (i !== 0) return true;
+      }
+      return true;
+    };
+    const bckWord = (): boolean => {
+      const s = cls();
+      if (dec() === -1) return false;
+      if (s === cls() || s === 0) {
+        while (cls() === 0) {
+          if (emptyLine()) return true;
+          if (dec() === -1) return true;
+        }
+        if (skip(cls(), false)) return true;
+      }
+      inc();
+      return true;
+    };
+    const bckendWord = (): boolean => {
+      const s = cls();
+      let i = dec();
+      if (i === -1) return false;
+      if (i === 1) return true;
+      if (s !== 0) while (cls() === s) { i = dec(); if (i !== 0) return true; }
+      while (cls() === 0) {
+        if (emptyLine()) break;
+        i = dec();
+        if (i !== 0) return true;
+      }
+      return true;
+    };
+
+    // Visual mode with more than one character selected: grow from the cursor.
+    let anchor: Pos | null = visual ? (cmpPos(cur, visual.start) === 0 ? visual.end : visual.start) : null;
+    if (anchor) c = { ...cur };
+    let start: Pos;
+    let inclusive = true, includeWhite = false;
+    let n = count;
+    if (!anchor) {
+      backInLine();
+      start = { ...c };
+      if ((cls() === 0) === include) {
+        if (!endWord(true)) return stop();
+      } else {
+        fwdWord();
+        if (c.col === 0) decl();
+        else oneleft();
+        if (include) includeWhite = true;
+      }
+      if (visual) anchor = start;
+      n--;
+    } else start = anchor;
+    while (n > 0) {
+      inclusive = true;
+      if (anchor && cmpPos(c, anchor) < 0) {
+        if (decl() === -1) return stop();
+        if (include !== (cls() !== 0)) {
+          if (!bckWord()) return stop();
+        } else {
+          if (!bckendWord()) return stop();
+          incl();
+        }
+      } else {
+        if (incl() === -1) return stop();
+        if (include !== (cls() === 0)) {
+          if (!fwdWord() && n > 1) return stop();
+          // Just past a line break: don't take the next line's first character.
+          if (!oneleft()) inclusive = false;
+        } else if (!endWord(true)) return stop();
+      }
+      n--;
     }
-    return { start: pos(cur.line, startCol), end: pos(cur.line, endCol), kind: 'char' };
+    if (includeWhite && (cls() !== 0 || (c.col === 0 && !inclusive))) {
+      // No white space after the word: take the white space before it
+      // instead, but never the indent.
+      const end = c;
+      c = { ...start };
+      if (oneleft()) {
+        backInLine();
+        if (cls() === 0 && c.col > 0) start = { ...c };
+      }
+      c = end;
+    }
+    return { start, end: c, kind: 'char', inclusive };
   };
 }
 

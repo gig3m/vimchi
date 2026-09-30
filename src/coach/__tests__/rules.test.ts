@@ -41,6 +41,11 @@ describe('former rules, found by the idiom search', () => {
     expect(suggest(['a', 'b', 'c', 'd'], 'dddddd')?.keys).toBe('3dd');
     expect(suggest(['a', 'b', 'c', 'd'], 'dddd')?.keys).not.toBe('2dd');
   });
+  it('whole lines are never taught as a word motion, though d3w on one-word lines is linewise in Neovim', () => {
+    expect(suggest(['one', 'two', 'three', 'four'], 'dddddd')?.keys).toBe('3dd');
+    expect(suggest(['foo', 'bar', 'baz', 'qux'], 'ddddjdd')?.keys).toBe('dj');
+    expect(suggest(['debugger;', "console.log('here');", '// TODO: remove', 'keep();'], 'dddddd')?.keys).toBe('3dd');
+  });
   it('dot-repeat needs saves ≥ 2', () => {
     expect(suggest(['foo a foo b'], 'cwbar<Esc>wwcwbar<Esc>')?.keys).toBe('cwbar<Esc>ww.');
     expect(suggest(['ab ab'], 'xwx')?.pattern).not.toBe('dot');

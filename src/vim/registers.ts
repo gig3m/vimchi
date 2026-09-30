@@ -3,7 +3,8 @@
 // read-only ones (. : / %) which the editor fills in.
 
 export type RegKind = 'char' | 'line' | 'block';
-export type RegValue = { text: string; kind: RegKind };
+/** width: a block's width for put (Vim's y_width + 1); the longest line when absent. */
+export type RegValue = { text: string; kind: RegKind; width?: number };
 
 const EMPTY: RegValue = { text: '', kind: 'char' };
 
@@ -36,10 +37,18 @@ export class Registers {
     return order.map(n => [n, this.get(n)] as [string, RegValue]).filter(([, v]) => v.text !== '');
   }
 
-  /** Explicit write (e.g. :let @a = ... or recording a macro). */
+  /**
+   * Raw write (:let @a = ..., recording a macro, lesson setup). Like Neovim this leaves the unnamed
+   * register alone, except a write to "" itself, which lands in "0 and points "" there.
+   */
   set(name: string, value: RegValue) {
     if (name === '_') return;
     if (name === '*') name = '+';
+    if (name === '"') {
+      this.regs.set('0', value);
+      this.unnamedFrom = '0';
+      return;
+    }
     if (/[A-Z]/.test(name)) {
       const low = name.toLowerCase();
       const cur = this.regs.get(low);
@@ -49,19 +58,17 @@ export class Registers {
           : cur.text + value.text;
         this.regs.set(low, { text, kind: cur.kind === 'line' || value.kind === 'line' ? 'line' : cur.kind });
       } else this.regs.set(low, value);
-      this.unnamedFrom = low;
       return;
     }
     this.regs.set(name, value);
-    this.unnamedFrom = name;
   }
 
-  /** Store a yank. */
+  /** Store a yank. A yank into a named register also points "" at it. */
   yank(name: string | null, value: RegValue) {
     if (name === '_') return;
     if (name && name !== '"') {
       this.set(name, value);
-      if (name === '+' || name === '*') this.unnamedFrom = '+';
+      this.unnamedFrom = name === '*' ? '+' : name.toLowerCase();
       return;
     }
     this.regs.set('0', value);
@@ -75,7 +82,7 @@ export class Registers {
       this.set(name, value);
       // Vim also shifts "1 for named multi-line deletes.
       if (value.kind === 'line' || value.text.includes('\n')) this.shift(value);
-      this.unnamedFrom = name.toLowerCase();
+      this.unnamedFrom = name === '*' ? '+' : name.toLowerCase();
       return;
     }
     if (value.kind === 'line' || value.text.includes('\n') || forceNumbered) {
