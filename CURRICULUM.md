@@ -344,7 +344,7 @@ What a starter config adds: LSP, richer text objects, flash, surround, completio
 | 165 | Delete Surroundings | `sd` | transform |
 | 166 | Find a Surrounding | `sf` `sF` | transform |
 | 167 | Surround a Selection | `v` `sa` | transform |
-| 168 | Surround with Tags | `srt` `sat` | transform |
+| 168 | Surround with Tags | `srtt` `sat` | transform |
 
 ### Insert Mode Power
 | # | Lesson | Keys | Challenge |

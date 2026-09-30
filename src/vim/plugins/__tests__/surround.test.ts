@@ -83,15 +83,28 @@ describe('mini.surround keys (kickstart default)', () => {
     ['[delete ar*ound me!]', 10, 'sd]', 'delete around me!'],
     ['remove <b>HTML t*ags</b>', 15, 'sdt', 'remove HTML tags'],
     ["'change quot*es'", 12, `sr'"`, '"change quotes"'],
-    ['<b>or tag* types</b>', 9, 'srth1<CR>', '<h1>or tag types</h1>'],
+    ['<b>or tag* types</b>', 9, 'srtth1<CR>', '<h1>or tag types</h1>'],                 // sr: input id, output id, then the name
+    ['<div class="c">tag* types</div>', 18, 'srttp<CR>', '<p>tag types</p>'],            // mini replaces the whole tag, attributes included
     ['delete(functi*on calls)', 13, 'sdf', 'function calls'],
     ['tag *word here', 4, 'saiwtem<CR>', 'tag <em>word</em> here'],
+    ['tag *word here', 4, 'saiwta href="/"<CR>', 'tag <a href="/">word</a> here'],
   ])('%s  %s', (text, _col, keys, want) => {
     expect(run(text.replace('*', ''), text.indexOf('*'), keys as string).buf.text()).toBe(want);
   });
-  it('sa surrounds a visual selection; V puts the pair on its own lines', () => {
+  it('sa surrounds a visual selection; a V selection is treated as characters (respect_selection_type off)', () => {
     expect(run('hello world', 0, 'vesa)').buf.text()).toBe('(hello) world');
-    expect(run('  x = 1', 2, 'Vsa{').buf.lines).toEqual(['  {', '    x = 1', '  }']);
+    expect(run('a\nb\nc', 0, 'Vjsa}').buf.lines).toEqual(['{a', 'b}', 'c']);
+  });
+  it('sd and sr only act on a pair around the cursor (search_method cover)', () => {
+    expect(run('x = (a)', 0, 'sd)').buf.text()).toBe('x = (a)');
+    expect(run("x = 'a'", 0, `sr'"`).buf.text()).toBe("x = 'a'");
+    expect(run('x = (a)', 5, 'sd)').buf.text()).toBe('x = a');
+  });
+  it('b means any bracket for sd, sr and sf; q any quote', () => {
+    expect(run('f[a]', 2, 'sdb').buf.text()).toBe('fa');
+    expect(run('f{a}', 2, 'srb)').buf.text()).toBe('f(a)');
+    expect(run("f('a')", 3, 'sdq').buf.text()).toBe('f(a)');
+    expect(run('f{a}', 2, 'sfb').cursor).toEqual({ line: 0, col: 3 });
   });
   it('sf and sF jump to the right and left delimiter of the surrounding', () => {
     const v = run('call(a, (b), c)', 6, 'sf)');

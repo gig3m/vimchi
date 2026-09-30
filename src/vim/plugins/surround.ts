@@ -133,11 +133,20 @@ function findCall(lines: readonly string[], cur: Pos): Found | null {
 
 const size = (f: Found) => (f.r[1].line - f.l[0].line) * 10000 + f.r[1].col - f.l[0].col;
 
-export function findSurrounding(lines: readonly string[], cur: Pos, key: string): Found | null {
-  const k = ALIAS[key] ?? key;
-  if (k === 'q' || k === 's') {
+export type FindOpts = { coverOnly?: boolean; anyBracket?: boolean };
+
+const covers = (f: Found, cur: Pos) => cmpPos(f.l[0], cur) <= 0 && cmpPos(cur, f.r[1]) < 0;
+
+export function findSurrounding(lines: readonly string[], cur: Pos, key: string, opts: FindOpts = {}): Found | null {
+  const found = findAny(lines, cur, key, opts);
+  return found && opts.coverOnly && !covers(found, cur) ? null : found;
+}
+
+function findAny(lines: readonly string[], cur: Pos, key: string, opts: FindOpts): Found | null {
+  const k = opts.anyBracket && key === 'b' ? 'b' : ALIAS[key] ?? key;
+  if (k === 'q' || k === 's' || k === 'b') {
     // Any quote (q) or any surrounding (s): the closest one around the cursor, else the next one.
-    const keys = k === 'q' ? QUOTES : [')', ']', '}', '>', ...QUOTES];
+    const keys = k === 'q' ? QUOTES : k === 'b' ? [')', ']', '}'] : [')', ']', '}', '>', ...QUOTES];
     const all = keys.map(c => (c in CLOSE ? findBracket(lines, cur, c) : findQuote(lines, cur, c))).filter((f): f is Found => !!f);
     const covering = all.filter(f => cmpPos(f.l[0], cur) <= 0 && cmpPos(cur, f.r[1]) < 0).sort((a, b) => size(a) - size(b));
     return covering[0] ?? all.sort((a, b) => cmpPos(a.l[0], b.l[0]))[0] ?? null;
@@ -256,32 +265,45 @@ export const surround: Plugin = {
     // mini.surround: the same operations under s-prefixed keys. A lone `s` still substitutes: the
     // engine runs it when the next key is not a/d/r/f/F.
     vim.defineOperator('sa', { change: true, argAfter: 'surround', run: add(false) }, ['n']);
-    vim.defineOperator('sa', {
-      change: true, argAfter: 'surround',
-      run: (r, c) => addAround(vim, r, addPair(vim.opArgument), c.visual === 'V'),
-    }, ['v']);
-    const del = {
+    // mini's default respect_selection_type = false: a V selection is surrounded as characters.
+    vim.defineOperator('sa', { change: true, argAfter: 'surround', run: r => addAround(vim, r, addPair(vim.opArgument), false) }, ['v']);
+    // mini searches only around the cursor (search_method 'cover'); its `b` is any bracket.
+    const MINI: FindOpts = { coverOnly: true, anyBracket: true };
+    const del = (opts: FindOpts) => ({
       arg: 'char' as const, change: true,
       run: (c: { arg: string }) => {
-        const f = findSurrounding(vim.lines, vim.cursor, c.arg);
+        const f = findSurrounding(vim.lines, vim.cursor, c.arg, opts);
         if (!f) fail();
         replaceFound(vim, f, null);
       },
-    };
-    vim.defineAction('ds', del);
-    vim.defineAction('sd', del);
+    });
+    vim.defineAction('ds', del({}));
+    vim.defineAction('sd', del(MINI));
     const jump = (side: 'l' | 'r') => ({
       arg: 'char' as const,
       run: (c: { arg: string }) => {
-        const f = findSurrounding(vim.lines, vim.cursor, c.arg);
+        const f = findSurrounding(vim.lines, vim.cursor, c.arg, { anyBracket: true });
         if (!f) fail();
         vim.setCursor(side === 'r' ? f.r[0] : f.l[0]);
       },
     });
     vim.defineAction('sf', jump('r'));
     vim.defineAction('sF', jump('l'));
+    // sr{input}{output}: the output is read like sa's character, so `t` and `f` prompt for a name
+    // and the whole tag is replaced (mini keeps no attributes; type them again if you want them).
+    for (const t of TARGETS) {
+      if (t === 'T') continue;
+      vim.defineAction(`sr${t === '<' ? '<lt>' : t}`, {
+        arg: 'surround', change: true,
+        run: c => {
+          const f = findSurrounding(vim.lines, vim.cursor, t, MINI);
+          if (!f) fail();
+          replaceFound(vim, f, addPair(c.arg));
+        },
+      });
+    }
 
-    for (const t of TARGETS) for (const prefix of ['cs', 'sr']) {
+    for (const t of TARGETS) for (const prefix of ['cs']) {
       const tag = t === 't' || t === 'T';
       vim.defineAction(`${prefix}${t === '<' ? '<lt>' : t}`, {
         arg: tag || t === 'f' ? 'tag' : 'surround',

@@ -70,6 +70,10 @@ counted `dw`/`diw` across lines, visual `$` dropping the newline, an empty inser
 (Vim's `startofline`) where Neovim keeps the column, which makes six reference cursor goals wrong in
 real Neovim.
 
+## Status
+
+- 2026-09-30: P0 (items 1–7) and both owner decisions shipped on branch `p0` and merged; a fresh Opus review of the branch found no Critical items, and its six Important findings were fixed before the merge (re-feed via handleKey, layout-aware Alt rule, mini.surround fidelity: `srtt`, charwise `V`, cover-only search, `b` any bracket; outbox keyed by account; `nostartofline` for linewise operators and page scrolls; the `gv` round judged by `"0`).
+
 ## Ranked work list
 
 Ordered by learner effect per unit of work. Effort: S = under an hour, M = a session, L = days.

@@ -370,8 +370,8 @@ export const surround: Section = {
             to select than to describe with one motion.
           </p>
           <p>
-            With a linewise selection (<Code>V</Code>), the pair goes on lines of its own above and below, and the
-            lines between are indented.
+            A linewise selection (<Code>V</Code>) is wrapped as characters: the pair lands at the start of the first
+            line and the end of the last. For a pair on lines of its own, select and wrap, then break the lines.
           </p>
           <Edits
             plugins={['surround']}
@@ -421,9 +421,9 @@ export const surround: Section = {
             solution: 'veesa]',
           },
           {
-            prompt: 'Wrap all three settings in an object.',
+            prompt: 'Wrap all three settings in braces.',
             setup: { name: '.prettierrc.json', text: ['"semi": false,', '"singleQuote": true,', '"printWidth": 60'], cursor: { line: 0, col: 0 } },
-            goal: { text: ['{', '  "semi": false,', '  "singleQuote": true,', '  "printWidth": 60', '}'] },
+            goal: { text: ['{"semi": false,', '"singleQuote": true,', '"printWidth": 60}'] },
             solution: 'VGsa}',
           },
           {
@@ -438,17 +438,18 @@ export const surround: Section = {
     {
       id: 'surround-with-tags',
       title: 'Surround with Tags',
-      chips: ['srt', 'sat'],
+      chips: ['srtt', 'sat'],
       keyCards: [
-        { key: 'srt', glyph: '<b>→<i>', label: 'replace a tag', sub: 'type the name, then Enter' },
+        { key: 'srtt', glyph: '<b>→<i>', label: 'tag → tag', sub: 'type the name, then Enter' },
         { key: 'sa…t', glyph: 'x→<b>x', label: 'add a tag' },
       ],
       intro: (
         <>
           <p>
-            <Code>t</Code> means an HTML or JSX tag. <Code>srt</Code> asks for a new tag name: type it and press{' '}
-            <Code>Enter</Code>. The attributes stay, so <Mono>{'<div class="card">'}</Mono> can become{' '}
-            <Mono>{'<section class="card">'}</Mono>.
+            <Code>t</Code> means an HTML or JSX tag. <Code>sr</Code> takes the old pair and then the new one, so a
+            tag swap is <Code>srtt</Code>: replace a tag with a tag. It asks for the new name: type it and press{' '}
+            <Code>Enter</Code>. The whole opening tag is replaced, attributes included, so type them again if you want
+            them kept.
           </p>
           <p>
             To add a tag, use <Code>t</Code> as the character after <Code>sa</Code>, in normal or visual mode. You can type attributes too: <Mono>a href="/"</Mono>.
@@ -457,7 +458,7 @@ export const surround: Section = {
             plugins={['surround']}
             name="diagram.tsx"
             rows={[
-              { keys: 'srth3<CR>', label: 'srt‹h3›⏎', text: '<h2>Settings</h2>', cursor: 6 },
+              { keys: 'srtth3<CR>', label: 'srtt‹h3›⏎', text: '<h2>Settings</h2>', cursor: 6 },
               { keys: 'saiwtem<CR>', label: 'saiwt‹em›⏎', text: 'never expire', cursor: 2 },
             ]}
           />
@@ -469,11 +470,12 @@ export const surround: Section = {
         </p>
       ),
       aside: {
-        title: 't and T',
+        title: 'Attributes',
         body: (
           <p>
-            <Code>srT</Code> replaces the whole opening tag, attributes included. In vim-surround you type the tag
-            itself instead: <Code>{'cst<em>'}</Code>; mini.surround asks for the name.
+            <Code>sat</Code> and <Code>srtt</Code> both accept attributes in the name: <Mono>a href="/"</Mono> gives{' '}
+            <Mono>{'<a href="/">…</a>'}</Mono>. nvim-surround differs here: its <Code>cst</Code> keeps the old
+            attributes and you type the tag itself, <Code>{'cst<em>'}</Code>.
           </p>
         ),
       },
@@ -485,19 +487,19 @@ export const surround: Section = {
             prompt: 'Use <strong> instead of <b>.',
             setup: { text: ['<div className="alert">', '  <b>Warning:</b> this cannot be undone.', '</div>'], cursor: { line: 1, col: 6 } },
             goal: { text: ['<div className="alert">', '  <strong>Warning:</strong> this cannot be undone.', '</div>'] },
-            solution: 'srtstrong<CR>',
+            solution: 'srttstrong<CR>',
           },
           {
-            prompt: 'Make the card a <section>, keeping its class.',
+            prompt: 'Make the card a <section> with the same className.',
             setup: { text: ['<div className="card">', '  <h2>{title}</h2>', '</div>'], cursor: { line: 1, col: 6 } },
             goal: { text: ['<section className="card">', '  <h2>{title}</h2>', '</section>'] },
-            solution: 'jsrtsection<CR>',
+            solution: 'jsrttsection className="card"<CR>',
           },
           {
             prompt: 'Demote the heading to <h3>.',
             setup: { text: ['<section>', '  <h2>Settings</h2>', '  <Toggle label="Dark mode" />', '</section>'], cursor: { line: 1, col: 8 } },
             goal: { text: ['<section>', '  <h3>Settings</h3>', '  <Toggle label="Dark mode" />', '</section>'] },
-            solution: 'srth3<CR>',
+            solution: 'srtth3<CR>',
           },
           {
             prompt: 'Make the item a list entry.',
@@ -515,7 +517,7 @@ export const surround: Section = {
             prompt: 'Replace the whole <span> with a link to /docs.',
             setup: { text: ['<footer>', '  <span class="muted">Read the docs</span>', '</footer>'], cursor: { line: 1, col: 24 } },
             goal: { text: ['<footer>', '  <a href="/docs">Read the docs</a>', '</footer>'] },
-            solution: 'srTa href="/docs"<CR>',
+            solution: 'srtta href="/docs"<CR>',
           },
         ],
       },
