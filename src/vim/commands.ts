@@ -279,15 +279,15 @@ export function installCommands(vim: Vim) {
   }
 
   // ---- fold motions ---------------------------------------------------------------------------
-  M('zj', () => {
+  M('zj', c => {
     const l = cur().line;
-    const starts = V.win.folds.map(f => f.start).filter(s => s > l).sort((a, b) => a - b);
-    return starts.length ? { pos: pos(starts[0], 0), linewise: true } : null;
+    const starts = [...new Set(V.win.folds.map(f => f.start).filter(s => s > l))].sort((a, b) => a - b);
+    return starts.length ? { pos: pos(starts[Math.min(c.count, starts.length) - 1], 0), linewise: true } : null;
   });
-  M('zk', () => {
+  M('zk', c => {
     const l = cur().line;
-    const ends = V.win.folds.map(f => f.end).filter(e => e < l).sort((a, b) => b - a);
-    return ends.length ? { pos: pos(ends[0], 0), linewise: true } : null;
+    const ends = [...new Set(V.win.folds.map(f => f.end).filter(e => e < l))].sort((a, b) => b - a);
+    return ends.length ? { pos: pos(ends[Math.min(c.count, ends.length) - 1], 0), linewise: true } : null;
   });
   M('[z', () => {
     const f = V.win.folds.filter(f => f.start <= cur().line && cur().line <= f.end).sort((a, b) => b.start - a.start)[0];
@@ -532,6 +532,9 @@ export function installCommands(vim: Vim) {
   };
 
   A('x', c => {
+    // x is dl, and an operator takes a closed fold whole: the fold's lines go, linewise.
+    const f = V.closedFoldAt(cur().line);
+    if (f) return runOp('d', { start: pos(f.start, 0), end: pos(f.end, 0), kind: 'line' }, c);
     const r = charRange(c.count);
     if (!r) {
       if (!ln()) V.buf.markEdited(); // Vim saves undo for x on an empty line: the redo branch goes

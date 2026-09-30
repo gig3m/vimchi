@@ -40,6 +40,8 @@ export class Buffer {
   localPrefixes: Record<'n' | 'v' | 'o', Set<string>> = { n: new Set(), v: new Set(), o: new Set() };
   /** For U: the line being edited and its text before the edits started. */
   lineUndo: { line: number; text: string } | null = null;
+  /** Windows that have shown this buffer; their folds follow line insertions and deletions. */
+  foldHolders = new Set<{ buf: Buffer; folds: FoldRange[] }>();
 
   constructor(name: string, text: string | string[], opts: { kind?: BufferKind; filetype?: string } = {}) {
     this.name = name;
@@ -64,11 +66,21 @@ export class Buffer {
 
   // ---- editing -----------------------------------------------------------
 
-  /** Replace `count` lines starting at `start` with `repl`, shifting marks. */
-  splice(start: number, count: number, repl: string[]) {
+  /**
+   * Replace `count` lines starting at `start` with `repl`, shifting marks and folds. `split`: the
+   * new line comes from splitting line start - 1 in Insert mode, which keeps it in that line's fold.
+   */
+  splice(start: number, count: number, repl: string[], opts: { split?: boolean } = {}) {
     if (count || repl.length) this.markEdited();
     this.lines.splice(start, count, ...repl);
     if (!this.lines.length) this.lines = [''];
+    if (count !== repl.length) {
+      for (const w of this.foldHolders) {
+        // The first lines are changed in place (J replaces its line, then deletes the rest).
+        const same = Math.min(count, repl.length);
+        if (w.buf === this && w.folds.length) w.folds = adjustFolds(w.folds, start + same, count - same, repl.length - same, !!opts.split);
+      }
+    }
     const delta = repl.length - count;
     if (delta !== 0) {
       for (const [k, p] of this.marks) {
@@ -296,6 +308,44 @@ export class Buffer {
 
 function sameLines(a: string[], b: string[]) {
   return a.length === b.length && a.every((l, i) => l === b[i]);
+}
+
+type FoldRange = { start: number; end: number; closed: boolean };
+
+/**
+ * Manual folds after `count` lines at `start` are replaced by `added` lines (Vim's foldMarkAdjust,
+ * checked against Neovim): folds inside deleted lines go, folds that overlap them shrink, folds below
+ * move. An inserted line moves a fold that starts at or below it and grows one that contains the
+ * line above it, except the line just past a fold's end, which joins it only when split off in
+ * Insert mode (`A<CR>` on the last line grows the fold, `o` does not).
+ */
+export function adjustFolds(folds: FoldRange[], start: number, count: number, added: number, split = false): FoldRange[] {
+  let out = folds;
+  if (count) {
+    const a = start, b = start + count - 1;
+    out = out.filter(f => {
+      if (f.end < a) return true;
+      if (f.start > b) {
+        f.start -= count;
+        f.end -= count;
+        return true;
+      }
+      if (f.start >= a && f.end <= b) return false;
+      const s = Math.min(f.start, a), e = f.end > b ? f.end - count : a - 1;
+      f.start = s;
+      f.end = e;
+      return e >= s;
+    });
+  }
+  if (added) {
+    for (const f of out) {
+      if (f.start >= start) {
+        f.start += added;
+        f.end += added;
+      } else if (f.end >= start || (split && f.end === start - 1)) f.end += added;
+    }
+  }
+  return out;
 }
 
 export function splitText(text: string): string[] {
