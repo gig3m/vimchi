@@ -49,7 +49,7 @@ export const insertLikeAPro: Section = {
         base: { name: 'server.ts' },
         rounds: [
           {
-            prompt: 'Add the missing semicolon.',
+            prompt: 'Add ";" to the end of the "const port" line.',
             setup: {
               text: [
                 "import express from 'express';",
@@ -72,7 +72,7 @@ export const insertLikeAPro: Section = {
             solution: 'A;<Esc>',
           },
           {
-            prompt: 'Export the function.',
+            prompt: 'Put "export " in front of "function parseToken".',
             setup: {
               text: [
                 'type Token = { sub: string; exp: number };',
@@ -95,7 +95,7 @@ export const insertLikeAPro: Section = {
             solution: 'Iexport <Esc>',
           },
           {
-            prompt: 'Comment out the option.',
+            prompt: 'Put "-- " in front of the relativenumber line.',
             setup: {
               name: 'init.lua',
               text: ['vim.opt.number = true', '  vim.opt.relativenumber = true', 'vim.opt.signcolumn = "yes"'],
@@ -105,7 +105,7 @@ export const insertLikeAPro: Section = {
             solution: 'I-- <Esc>',
           },
           {
-            prompt: 'Add the trailing comma.',
+            prompt: 'Add a comma to the end of the "private" line.',
             setup: {
               name: 'package.json',
               text: ['{', '  "name": "vimchi",', '  "private": true', '  "type": "module"', '}'],
@@ -115,7 +115,7 @@ export const insertLikeAPro: Section = {
             solution: 'A,<Esc>',
           },
           {
-            prompt: 'Make the line a second-level heading.',
+            prompt: 'Put "## " in front of "Installation".',
             setup: {
               name: 'README.md',
               text: ['# vimchi', '', 'Installation', '', 'Run `npm install`, then `npm run dev`.'],
@@ -125,7 +125,7 @@ export const insertLikeAPro: Section = {
             solution: 'I## <Esc>',
           },
           {
-            prompt: 'Return the result and end the statement.',
+            prompt: 'Put "return " before "items", and ";" at the end of that line.',
             setup: {
               text: ['function visibleRows(items: Item[]) {', '  items.filter(isVisible).map(toRow)', '}'],
               cursor: { line: 1, col: 12 },
@@ -136,7 +136,7 @@ export const insertLikeAPro: Section = {
             solution: 'Ireturn <Esc>A;<Esc>',
           },
           {
-            prompt: 'Comment out both options.',
+            prompt: 'Put "-- " in front of the wrap and mouse lines.',
             setup: {
               name: 'init.lua',
               text: ['vim.opt.number = true', 'vim.opt.wrap = false', 'vim.opt.mouse = "a"', 'vim.opt.tabstop = 2'],
@@ -189,7 +189,7 @@ export const insertLikeAPro: Section = {
         base: { name: 'user.ts' },
         rounds: [
           {
-            prompt: 'Put a blank line between the two functions.',
+            prompt: 'Put a blank line after the first "}".',
             setup: {
               name: 'nums.ts',
               text: ['function one() {', '  return 1;', '}', 'function two() {', '  return 2;', '}'],
@@ -199,7 +199,7 @@ export const insertLikeAPro: Section = {
             solution: 'jo<Esc>',
           },
           {
-            prompt: 'Give the heading a blank line above and below.',
+            prompt: 'Give "## Usage" a blank line above and below.',
             setup: {
               name: 'README.md',
               text: ['# vimchi', 'A browser Vim tutor.', '## Usage', 'Run npm run dev.'],
@@ -209,7 +209,7 @@ export const insertLikeAPro: Section = {
             solution: 'O<Esc>jo<Esc>',
           },
           {
-            prompt: 'Close the table with "}" above the return.',
+            prompt: 'Add a line "}" above "return M".',
             setup: {
               name: 'mod.lua',
               text: ['local M = {', '  x = 1,', '  y = 2,', 'return M'],
@@ -219,7 +219,7 @@ export const insertLikeAPro: Section = {
             solution: 'jjO}<Esc>',
           },
           {
-            prompt: 'Add a blank line after the imports.',
+            prompt: 'Add a blank line below the import line.',
             setup: {
               text: ["import { db } from './db';", 'export async function listUsers() {', '  return db.user.findMany();', '}'],
               cursor: { line: 1, col: 3 },
@@ -237,7 +237,7 @@ export const insertLikeAPro: Section = {
             solution: 'oid: 1,<Esc>',
           },
           {
-            prompt: 'Put a blank line after each of the first two functions.',
+            prompt: 'Put a blank line under "function a() {}" and "function b() {}".',
             setup: {
               name: 'noop.ts',
               text: ['function a() {}', 'function b() {}', 'function c() {}'],
@@ -297,7 +297,7 @@ export const insertLikeAPro: Section = {
         base: { name: 'utils.ts' },
         rounds: [
           {
-            prompt: 'Separate the two functions.',
+            prompt: 'Add a blank line below the "}" the cursor is on.',
             setup: {
               text: ['export function clamp(n: number, lo: number, hi: number) {', '  return Math.min(hi, Math.max(lo, n));', '}', 'export function lerp(a: number, b: number, t: number) {', '  return a + (b - a) * t;', '}'],
               cursor: { line: 2, col: 0 },
@@ -308,7 +308,7 @@ export const insertLikeAPro: Section = {
             solution: '] ',
           },
           {
-            prompt: 'Give the heading room above it.',
+            prompt: 'Add a blank line above "## Usage".',
             setup: {
               name: 'README.md',
               text: ['Run `npm install` first.', '## Usage', '', 'Start the server with `npm run dev`.'],
@@ -318,7 +318,7 @@ export const insertLikeAPro: Section = {
             solution: '[ ',
           },
           {
-            prompt: 'PEP 8 wants two blank lines before a top-level def.',
+            prompt: 'Add two blank lines above "def circumference" (PEP 8 style).',
             setup: {
               name: 'shapes.py',
               text: ['def area(r):', '    return 3.14159 * r * r', 'def circumference(r):', '    return 2 * 3.14159 * r'],
@@ -328,7 +328,7 @@ export const insertLikeAPro: Section = {
             solution: '2[ ',
           },
           {
-            prompt: 'Put a blank line on both sides of the rule.',
+            prompt: 'Put a blank line above and below "---".',
             setup: {
               name: 'CHANGELOG.md',
               text: ['- Fixed the login redirect.', '---', '## 1.4.0'],
@@ -338,7 +338,7 @@ export const insertLikeAPro: Section = {
             solution: '[ ] ',
           },
           {
-            prompt: 'Split the keymaps from the options.',
+            prompt: 'Add a blank line between the vim.opt and vim.keymap lines.',
             setup: {
               name: 'init.lua',
               text: ['vim.opt.number = true', 'vim.opt.relativenumber = true', "vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')", "vim.keymap.set('n', '<leader>w', '<cmd>write<CR>')"],
@@ -385,9 +385,9 @@ export const insertLikeAPro: Section = {
         title: 's and S',
         body: (
           <p>
-            Standard Vim spells these <Code>s</Code> and <Code>S</Code>, and they would work here. The tutor teaches
-            the long spellings because both starters take the short ones away: LazyVim rebinds <Code>s</Code> and{' '}
-            <Code>S</Code> to flash.nvim's label jumps, and kickstart gives <Code>s</Code> to mini.surround.
+            Standard Vim spells these <Code>s</Code> and <Code>S</Code>. The tutor teaches the long spellings
+            because the starters take the short ones away: LazyVim rebinds <Code>s</Code> and <Code>S</Code> to
+            flash.nvim's jumps, as every lesson here does, and kickstart gives <Code>s</Code> to mini.surround.
           </p>
         ),
       },
@@ -396,7 +396,7 @@ export const insertLikeAPro: Section = {
         base: { name: 'check.ts' },
         rounds: [
           {
-            prompt: 'Turn the assignment into a strict comparison.',
+            prompt: 'Change the "=" in "user.role = ADMIN" to "===".',
             setup: {
               text: ['function authorize(user: User) {', '  if (user.role = ADMIN) grant(user);', '  else deny(user);', '}'],
               cursor: { line: 1, col: 16 },
@@ -405,7 +405,7 @@ export const insertLikeAPro: Section = {
             solution: 'cl===<Esc>',
           },
           {
-            prompt: 'Spell out "&".',
+            prompt: 'Change "&" to "and".',
             setup: {
               name: 'recipe.md',
               text: ['## Steps', '- Heat the oil in a pan.', '- Season with salt & pepper.', '- Serve warm.'],
@@ -415,7 +415,7 @@ export const insertLikeAPro: Section = {
             solution: 'jjf&cland<Esc>',
           },
           {
-            prompt: 'Number the list: 1., 2., 3.',
+            prompt: 'Replace the three "*" with "1.", "2." and "3.".',
             setup: { name: 'TODO.md', text: ['* Write', '* Test', '* Ship'], cursor: { line: 0, col: 0 } },
             goal: { text: ['1. Write', '2. Test', '3. Ship'] },
             solution: 'cl1.<Esc>j0cl2.<Esc>j0cl3.<Esc>',
@@ -433,7 +433,7 @@ export const insertLikeAPro: Section = {
             solution: 'j4cl1rem<Esc>',
           },
           {
-            prompt: 'The stray print should be the "end" of the if.',
+            prompt: 'Replace the whole print line with "end".',
             setup: {
               name: 'check.lua',
               text: ['if ok then', '  run()', "print('x')", 'return ok'],
@@ -493,13 +493,13 @@ export const insertLikeAPro: Section = {
         base: { name: 'config.json' },
         rounds: [
           {
-            prompt: 'Bump the version to 2.0.0.',
+            prompt: 'Change "1.4.2" to "2.0.0".',
             setup: { text: ['{', '  "name": "vimchi",', '  "version": "1.4.2"', '}'], cursor: { line: 2, col: 2 } },
             goal: { text: ['{', '  "name": "vimchi",', '  "version": "2.0.0"', '}'] },
             solution: 'f1R2.0.0<Esc>',
           },
           {
-            prompt: 'Change the colour to #1e90ff.',
+            prompt: 'Change "#ff8800" to "#1e90ff".',
             setup: {
               name: 'button.css',
               text: ['.btn-primary {', '  color: #ff8800;', '  padding: 4px 12px;', '}'],
@@ -509,7 +509,7 @@ export const insertLikeAPro: Section = {
             solution: 'jf#lR1e90ff<Esc>',
           },
           {
-            prompt: 'Move the meeting to 14:45.',
+            prompt: 'Change "09:30" to "14:45".',
             setup: {
               name: 'standup.ts',
               text: ['const standup = {', "  day: 'Mon',", "  at: '09:30',", '};'],
@@ -519,13 +519,13 @@ export const insertLikeAPro: Section = {
             solution: '2jf0R14:45<Esc>',
           },
           {
-            prompt: 'Set the expiry to 06/2027.',
+            prompt: 'Change "12/2025" to "06/2027".',
             setup: { text: ['{', '  "card": "visa",', '  "expires": "12/2025"', '}'], cursor: { line: 2, col: 2 } },
             goal: { text: ['{', '  "card": "visa",', '  "expires": "06/2027"', '}'] },
             solution: 'f1R06/2027<Esc>',
           },
           {
-            prompt: 'Mark the task DONE.',
+            prompt: 'Overwrite "TODO" with "DONE".',
             setup: {
               name: 'notes.ts',
               text: ['// TODO', 'export const retries = 3;', 'export const timeoutMs = 5_000;'],
@@ -535,7 +535,7 @@ export const insertLikeAPro: Section = {
             solution: 'RDONE<Esc>',
           },
           {
-            prompt: 'Bump both packages to 2.0.',
+            prompt: 'Change "1.4" and "1.7" to "2.0".',
             setup: {
               name: 'versions.json',
               text: ['{', '  "engine": "1.4",', '  "cli": "1.7"', '}'],

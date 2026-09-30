@@ -51,7 +51,7 @@ export const search: Section = {
         title: 'Include the match',
         body: (
           <p>
-            Search motions stop before the match. Add an end offset to eat it too: <Code>d/foo/e</Code> deletes through
+            Search motions stop before the match. Add an end offset (Search Offsets, two lessons on) to take it too: <Code>d/foo/e</Code> deletes through
             the last letter of <Mono>foo</Mono>.
           </p>
         ),
@@ -76,7 +76,7 @@ export const search: Section = {
             solution: 'd/Then<CR>',
           },
           {
-            prompt: 'Drop the admin check, up to the next "user".',
+            prompt: 'Delete from the cursor up to the second "user" on the line.',
             setup: {
               text: [
                 'function canEdit(user: User) {',
@@ -101,7 +101,7 @@ export const search: Section = {
             solution: 'd/user<CR>',
           },
           {
-            prompt: 'Replace each expression before " AS" with NULL.',
+            prompt: 'Change the text before " AS" on both lines to "NULL".',
             setup: {
               name: 'users.sql',
               text: ['SELECT', "  first_name || ' ' || last_name AS name,", "  street || ' ' || city AS addr", 'FROM users;'],
@@ -111,7 +111,7 @@ export const search: Section = {
             solution: 'c/ AS<CR>NULL<Esc>j^.',
           },
           {
-            prompt: 'Delete each type annotation, up to " =".',
+            prompt: 'On all three lines, delete from ":" up to " =".',
             setup: {
               text: ['const a: Map<string, number> = new Map();', 'const b: Set<string> = new Set();', 'const c: string[] = [];'],
               cursor: { line: 0, col: 7 },
@@ -120,7 +120,7 @@ export const search: Section = {
             solution: 'd/ =<CR>j.j.',
           },
           {
-            prompt: 'Delete the outdated section, up to "## Usage".',
+            prompt: 'Delete from "## Install (old)" up to "## Usage".',
             setup: {
               name: 'README.md',
               text: ['# vimchi', '', '## Install (old)', '', 'Download the zip.', '', '## Usage', '', 'Run vimchi.'],
@@ -144,8 +144,8 @@ export const search: Section = {
       intro: (
         <>
           <p>
-            <Code>gn</Code> is a text object for the next search match. <Code>cgn</Code> changes it,{' '}
-            <Code>dgn</Code> deletes it, <Code>gUgn</Code> uppercases it.
+            <Code>gn</Code> is a text object for the next search match. <Code>cgn</Code> changes it and{' '}
+            <Code>dgn</Code> deletes it.
           </p>
           <p>
             The payoff is <Code>.</Code>: it repeats the change on the <em>next</em> match, no <Code>n</Code> needed.
@@ -167,7 +167,7 @@ export const search: Section = {
         title: 'A safer :s',
         body: (
           <p>
-            Unlike <Code>:%s</Code>, you see each change as it happens and can stop early. To leave one match alone, move
+            Unlike a substitute (<Code>:%s</Code>, in the Patterns band), you see each change as it happens and can stop early. To leave one match alone, move
             past it before pressing <Code>.</Code> again.
           </p>
         ),
@@ -197,7 +197,7 @@ export const search: Section = {
             solution: 'cgnlog<Esc>..',
           },
           {
-            prompt: 'Delete every " !important".',
+            prompt: 'The last search was " !important". Delete every match.',
             setup: {
               name: 'overrides.css',
               text: ['.btn { color: red !important; }', '.nav { margin: 0 !important; }', '.card { padding: 8px !important; }'],
@@ -208,7 +208,7 @@ export const search: Section = {
             solution: 'dgn..',
           },
           {
-            prompt: 'Change every "todo" to "TODO" (gU comes later; cgn does it now).',
+            prompt: 'The last search was "todo". Change each one to "TODO".',
             setup: {
               name: 'plan.md',
               text: ['- todo: write tests', '- todo: update docs', '- done: tag release', '- todo: announce'],
@@ -275,7 +275,7 @@ export const search: Section = {
         base: { ...options, cursor: { line: 0, col: 0 } },
         rounds: [
           { goal: { cursor: { line: 4, col: 10 } }, solution: '/tabstop/e<CR>' },
-          { prompt: 'Land on the shiftwidth value.', goal: { cursor: { line: 5, col: 17 } }, solution: '/shiftwidth = /e+1<CR>' },
+          { prompt: 'Land on the "2" after "shiftwidth =".', goal: { cursor: { line: 5, col: 17 } }, solution: '/shiftwidth = /e+1<CR>' },
           { goal: { cursor: { line: 8, col: 0 } }, solution: '/keymap/+1<CR>' },
           { goal: { cursor: { line: 3, col: 0 } }, solution: '/tabstop/-1<CR>' },
           {
@@ -285,7 +285,7 @@ export const search: Section = {
             solution: '//e<CR>',
           },
           {
-            prompt: 'Every "opts" is "opt".',
+            prompt: 'Change every "opts" to "opt".',
             setup: {
               text: ['local opts = { noremap = true }', "map('n', 'j', 'gj', opts)", "map('n', 'k', 'gk', opts)"],
             },
@@ -293,7 +293,7 @@ export const search: Section = {
             solution: '/opts/e<CR>xn.n.',
           },
           {
-            prompt: 'The three options are nil.',
+            prompt: 'Change "true", "false" and "2" to "nil".',
             setup: {
               text: ['local opt = vim.opt', 'opt.number = true', 'opt.wrap = false', 'opt.tabstop = 2'],
               cursor: { line: 1, col: 0 },
@@ -375,7 +375,7 @@ export const search: Section = {
             solution: '/true<CR>cwfalse<Esc>n.<C-l>',
           },
           {
-            prompt: "Make both keymaps visual-mode ('v'), then clear with :noh.",
+            prompt: "Change both 'n' to 'v', then clear with :noh.",
             goal: {
               text: (options.text as string[]).map(l => l.replace("'n'", "'v'")),
               check: vim => !vim.hlActive,

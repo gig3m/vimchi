@@ -115,7 +115,7 @@ export const jumping: Section = {
         base: { name: 'user.ts', plugins: ['flash'] },
         rounds: [
           {
-            prompt: 'Delete the role field, backwards from email.',
+            prompt: "Delete \"role: 'admin', \" backwards from email.",
             setup: {
               text: ['const user = {', '  id: 1,', "  name: 'Ada', role: 'admin', email: 'ada@example.com',", '};'],
               cursor: { line: 2, col: 30 },
@@ -124,7 +124,7 @@ export const jumping: Section = {
             solution: 'dsroa',
           },
           {
-            prompt: 'Delete the filter step, backwards from .map.',
+            prompt: 'Delete .filter(u => u.active), backwards from .map.',
             setup: {
               text: ['const names = users.filter(u => u.active).map(u => u.name);', '', 'export { names };'],
               cursor: { line: 0, col: 41 },
@@ -133,7 +133,7 @@ export const jumping: Section = {
             solution: 'ds.fa',
           },
           {
-            prompt: 'Replace the whole ternary with noun.',
+            prompt: 'Change everything between "label = " and the final ";" to noun.',
             setup: {
               text: ['const noun = nouns[count];', 'const label = count === 1', "  ? 'item'", "  : 'items';"],
               cursor: { line: 1, col: 14 },
@@ -162,8 +162,8 @@ export const jumping: Section = {
       intro: (
         <>
           <p>
-            <Code>S</Code> labels the syntax nodes around the cursor: the word, the call it's in, the argument list,
-            the statement, the block, the function. The same label sits at both ends of each node. Type one and that
+            Treesitter reads code as nested pieces called nodes. <Code>S</Code> labels the nodes around the cursor:
+            the word, the call it's in, the argument list, the statement, the block, the function. The same label sits at both ends of each node. Type one and that
             node is selected in visual mode.
           </p>
           <p>
@@ -181,7 +181,7 @@ export const jumping: Section = {
         title: 'Incremental selection',
         body: (
           <p>
-            nvim-treesitter's incremental selection grows a selection one node at a time; flash's labels skip the
+            Incremental selection (built into Neovim 0.12) grows a selection one node at a time; flash's labels skip the
             stepping. The labels start at the innermost node and go outward: <Mono>a</Mono>, <Mono>s</Mono>,{' '}
             <Mono>d</Mono>… This <Code>S</Code> is LazyVim's; in kickstart, with no flash, <Code>S</Code> is still
             Vim's <Code>cc</Code>.
@@ -193,7 +193,7 @@ export const jumping: Section = {
         base: { name: 'app.ts', plugins: ['flash'] },
         rounds: [
           {
-            prompt: 'Delete the argument of sum().',
+            prompt: 'Empty the parentheses of sum().',
             setup: {
               text: ['export function checkout(items: Item[]) {', '  const total = sum(items.map(price));', '  return charge(total);', '}'],
               cursor: { line: 1, col: 31 },
@@ -202,19 +202,19 @@ export const jumping: Section = {
             solution: 'Sdd',
           },
           {
-            prompt: 'Pass reload as the callback.',
+            prompt: 'Replace "() => refresh(true)" with reload.',
             setup: { text: ['function scheduleRefresh() {', '  setTimeout(() => refresh(true), 1000);', '}'], cursor: { line: 1, col: 19 } },
             goal: { text: ['function scheduleRefresh() {', '  setTimeout(reload, 1000);', '}'] },
             solution: 'Sdcreload<Esc>',
           },
           {
-            prompt: 'Turn retries off: replace the object with false.',
+            prompt: 'Replace "{ count: 3, delay: 500 }" with false.',
             setup: { text: ['const config = {', '  retry: { count: 3, delay: 500 },', '  cache: true,', '};'], cursor: { line: 1, col: 11 } },
             goal: { text: ['const config = {', '  retry: false,', '  cache: true,', '};'] },
             solution: 'Sdcfalse<Esc>',
           },
           {
-            prompt: 'Remove the whole if block.',
+            prompt: 'Delete the three lines of the if block.',
             setup: { text: ['function save() {', '  if (dirty) {', '    write();', '  }', '  close();', '}'], cursor: { line: 2, col: 4 } },
             goal: { text: ['function save() {', '  close();', '}'] },
             solution: 'SgVd',

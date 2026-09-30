@@ -180,8 +180,8 @@ export const marksJumps: Section = {
       title: 'Operating to Marks',
       chips: ["d'a", 'y`a'],
       keyCards: [
-        { key: "d'a", glyph: '⚑↕', label: 'lines to mark', sub: 'linewise' },
-        { key: 'y`a', glyph: '⚑↔', label: 'chars to mark', sub: 'exclusive' },
+        { key: "d'a", glyph: '⚑↕', label: 'lines to mark', sub: 'whole lines' },
+        { key: 'y`a', glyph: '⚑↔', label: 'chars to mark', sub: 'exact spots' },
       ],
       intro: (
         <>
@@ -210,8 +210,8 @@ export const marksJumps: Section = {
         title: 'Marks in ranges',
         body: (
           <p>
-            Ex commands take marks as addresses: <Code>:'a,.d</Code> is the same delete as <Code>d'a</Code>, and{' '}
-            <Code>:'a,'bs/foo/bar/</Code> substitutes between two marks.
+            Coming up in Command Line: Ex commands take marks as line numbers, so <Code>:'a,.d</Code> is the same
+            delete as <Code>d'a</Code>, and <Code>:'a,'bs/foo/bar/</Code> substitutes between two marks.
           </p>
         ),
       },
@@ -220,7 +220,7 @@ export const marksJumps: Section = {
         base: { name: 'render.ts' },
         rounds: [
           {
-            prompt: 'Delete the old implementation, from mark a down to the cursor line.',
+            prompt: 'Delete every line from mark a, on "// old implementation", down to the cursor line.',
             setup: {
               text: [
                 'export function renderList(items: string[]) {',
@@ -239,7 +239,7 @@ export const marksJumps: Section = {
             solution: "d'a",
           },
           {
-            prompt: 'Yank from mark a to the cursor and put it inside the log call.',
+            prompt: 'Yank from mark a to the cursor, then put it inside the empty console.log().',
             setup: {
               text: [
                 'function greet(first: string, last: string) {',
@@ -288,7 +288,7 @@ export const marksJumps: Section = {
             solution: ">'a",
           },
           {
-            prompt: 'Delete the legacy arguments, from mark a up to the cursor.',
+            prompt: 'Delete from mark a, the comma after "cols", up to the cursor.',
             setup: {
               name: 'report.py',
               text: [
@@ -311,7 +311,7 @@ export const marksJumps: Section = {
             solution: 'd`a',
           },
           {
-            prompt: 'Copy the checklist, mark a to the cursor line, to the end of the file.',
+            prompt: 'Copy the lines from mark a to the cursor line to the end of the file.',
             setup: {
               name: 'RELEASING.md',
               text: [
@@ -463,7 +463,7 @@ export const marksJumps: Section = {
         base: { name: 'http.ts' },
         rounds: [
           {
-            prompt: 'You left mid-line to check the import. The throw ends (res.status);',
+            prompt: 'You left insert mode mid-line and went to the top. Finish the line with "status);".',
             setup: {
               text: [
                 "import { HttpError } from './errors';",
@@ -491,7 +491,7 @@ export const marksJumps: Section = {
             solution: 'gistatus);<Esc>',
           },
           {
-            prompt: 'The number you just typed reads 30_000.',
+            prompt: 'You just typed 30000 and moved away. Make it 30_000.',
             setup: {
               text: [
                 'export const client = createClient({',
@@ -543,7 +543,7 @@ export const marksJumps: Section = {
             solution: "'.A // ms<Esc>",
           },
           {
-            prompt: 'You jumped to the top to check the title. The sentence ends "in your browser tab."',
+            prompt: 'You left insert mode mid-sentence and went to the top. Make it end "in your browser tab."',
             setup: {
               name: 'README.md',
               text: [
@@ -627,7 +627,7 @@ export const marksJumps: Section = {
         base: { name: 'cart.ts', text: SHOP },
         rounds: [
           {
-            prompt: 'You yanked the arguments of formatPrice. Jump to the end of them.',
+            prompt: 'You yanked the text inside formatPrice( ). Jump to the end of it.',
             setup: { cursor: { line: 8, col: 22 }, init: history('yi(') },
             goal: { cursor: { line: 8, col: 38 } },
             solution: '`]',
@@ -643,7 +643,7 @@ export const marksJumps: Section = {
             solution: '`]',
           },
           {
-            prompt: 'You replaced 5000 with an expression. Jump to its first character.',
+            prompt: 'You changed 5000 to "FREE_MIN * 2". Jump to its first character.',
             setup: { cursor: { line: 5, col: 27 }, init: history('ciwFREE_MIN * 2<Esc>') },
             goal: { cursor: { line: 5, col: 27 } },
             solution: '`[',
@@ -751,8 +751,8 @@ export const marksJumps: Section = {
             <Code>C-i</Code> walks forward again. It's the back and forward buttons of a browser.
           </p>
           <p>
-            Unlike <Code>``</Code>, it goes more than one step, and it crosses files: <Code>gd</Code> into a definition,
-            then <Code>C-o</Code> brings you home.
+            Unlike <Code>``</Code>, it goes more than one step, and it crosses files: <Code>gf</Code> into another
+            file, then <Code>C-o</Code> brings you home.
           </p>
         </>
       ),
@@ -767,7 +767,7 @@ export const marksJumps: Section = {
         body: (
           <p>
             <Code>:jumps</Code> prints the list with a <Code>&gt;</Code> at your place in it. Counts work too:{' '}
-            <Code>3C-o</Code> goes back three jumps at once.
+            <Code>3 C-o</Code> goes back three jumps at once.
           </p>
         ),
       },
@@ -783,7 +783,7 @@ export const marksJumps: Section = {
             solution: '<C-o>',
           },
           {
-            prompt: 'Go back two jumps.',
+            prompt: 'You searched, then pressed G. Go back two jumps.',
             setup: { cursor: { line: 1, col: 9 }, init: history('/users<CR>G') },
             goal: { cursor: { line: 1, col: 9 } },
             solution: '<C-o><C-o>',
@@ -801,7 +801,7 @@ export const marksJumps: Section = {
             solution: '3<C-o>',
           },
           {
-            prompt: 'Go back to where the search landed.',
+            prompt: 'You searched for "res.json", then pressed G. Go back to where the search landed.',
             setup: { cursor: { line: 0, col: 0 }, init: history("/res.json<CR>G") },
             goal: { cursor: { line: 11, col: 2 } },
             solution: '<C-o>',

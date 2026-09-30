@@ -64,7 +64,7 @@ export function Results({ result: R, prevBestTime, prevBestScore, nextTitle, onR
           <div className="res-label">Personal best</div>
           <div className="res-big">{fmtS(prevBestTime == null ? R.elapsed : Math.min(prevBestTime, R.elapsed))}</div>
           <div className={'res-note' + (newBestTime ? ' good' : '')}>
-            {prevBestTime == null ? 'First run' : newBestTime ? 'New personal best' : `+${fmtS(R.elapsed - prevBestTime)} off your best`}
+            {prevBestTime == null ? 'First run' : newBestTime ? 'New personal best' : `${fmtS(R.elapsed - prevBestTime)} behind your best`}
           </div>
         </div>
         <div>

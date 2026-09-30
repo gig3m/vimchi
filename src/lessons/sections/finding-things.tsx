@@ -189,19 +189,19 @@ export const findingThings: Section = {
             solution: '<Space><Space>',
           },
           {
-            prompt: 'Jump to the app.listen line with the key that fuzzy-searches this buffer.',
+            prompt: 'Jump to the "app.listen" line with the key that fuzzy-searches this buffer.',
             setup: { cursor: { line: 0, col: 0 } },
             goal: { buffer: 'src/app.ts', check: cursorAt(at(SHOP, 'src/app.ts', 'app.listen')) },
             solution: '<Space>/listen<CR>',
           },
           {
-            prompt: 'Search the keymaps for "word" and run it, then open the first hit: formatCents.',
+            prompt: 'The cursor is on formatCents. Search the keymaps for "word", run it, and open the first hit.',
             setup: { open: 'src/routes/invoices.ts', cursor: at(SHOP, 'src/routes/invoices.ts', 'formatCents') },
             goal: { buffer: 'src/lib/money.ts', check: cursorAt(at(SHOP, 'src/lib/money.ts', 'formatCents')) },
             solution: '<Space>skword<CR><CR>',
           },
           {
-            prompt: 'Search the keymaps for "grep" and use it to find where TAX_RATE is set.',
+            prompt: 'Search the keymaps for "grep", then use it to find "TAX_RATE =" and jump there.',
             setup: { open: 'README.md' },
             goal: { buffer: 'src/lib/money.ts', check: cursorAt(at(SHOP, 'src/lib/money.ts', 'TAX_RATE =')) },
             solution: '<Space>skgrep<CR>TAX_RATE =<CR>',
@@ -227,7 +227,8 @@ export const findingThings: Section = {
             the best match. <Code>C-n</Code> and <Code>C-p</Code> move down and up the list.
           </p>
           <p>
-            <Code>C-v</Code> opens the file in a vertical split and <Code>C-x</Code> in a horizontal one. Typing{' '}
+            <Code>C-v</Code> opens the file in a side-by-side split, like <Code>:vs</Code>, and <Code>C-x</Code> in
+            one above the other, like <Code>:sp</Code>. Typing{' '}
             <Code>money</Code> is quicker than remembering that the file lives in <Code>src/lib/</Code>.
           </p>
         </>
@@ -259,7 +260,7 @@ export const findingThings: Section = {
             solution: '<Space>sfmoney<CR>',
           },
           {
-            prompt: 'Open the customers route.',
+            prompt: 'Open src/routes/customers.ts.',
             goal: { buffer: 'src/routes/customers.ts' },
             solution: '<Space>sfcust<CR>',
           },
@@ -275,12 +276,12 @@ export const findingThings: Section = {
             solution: '<Space>sfmoney<C-n><CR>',
           },
           {
-            prompt: 'Open dates.ts in a vertical split.',
+            prompt: 'Open dates.ts in a side-by-side split.',
             goal: { buffer: 'src/lib/dates.ts', check: windows(2) },
             solution: '<Space>sfdates<C-v>',
           },
           {
-            prompt: 'Open the logger in a horizontal split.',
+            prompt: 'Open src/lib/logger.ts in a split, one above the other.',
             setup: { open: 'src/routes/invoices.ts' },
             goal: { buffer: 'src/lib/logger.ts', check: windows(2) },
             solution: '<Space>sflog<C-x>',
@@ -310,7 +311,7 @@ export const findingThings: Section = {
       ),
       practice: total => (
         <p>
-          Grep for the code the prompt describes and jump to it. (In the browser, <Code>Alt-n</Code> stands in for <Code>C-n</Code>.) {total} rounds.
+          Grep for the text the prompt names and jump to it. (In the browser, <Code>Alt-n</Code> stands in for <Code>C-n</Code>.) {total} rounds.
         </p>
       ),
       aside: {
@@ -328,17 +329,17 @@ export const findingThings: Section = {
         base: { files: SHOP, open: 'src/app.ts', plugins: ['telescope'] },
         rounds: [
           {
-            prompt: 'Jump to where TAX_RATE is defined.',
+            prompt: 'Jump to the line with "TAX_RATE =".',
             goal: { buffer: 'src/lib/money.ts', check: cursorAt(at(SHOP, 'src/lib/money.ts', 'TAX_RATE =')) },
             solution: '<Space>sgTAX_RATE =<CR>',
           },
           {
-            prompt: 'Jump to the handler for POST /invoices.',
+            prompt: 'Jump to the "invoices.post" line.',
             goal: { buffer: 'src/routes/invoices.ts', check: cursorAt(at(SHOP, 'src/routes/invoices.ts', 'invoices.post')) },
             solution: '<Space>sginvoices.post<CR>',
           },
           {
-            prompt: 'Find where the port is read from the environment.',
+            prompt: 'Jump to "env.PORT".',
             setup: { open: 'README.md' },
             goal: { buffer: 'src/app.ts', check: cursorAt(at(SHOP, 'src/app.ts', 'env.PORT')) },
             solution: '<Space>sgenv.PORT<CR>',
@@ -349,7 +350,7 @@ export const findingThings: Section = {
             solution: '<Space>sgtodo<C-n><CR>',
           },
           {
-            prompt: 'Jump to the definition of createLogger.',
+            prompt: 'Jump to the line with "function createLogger".',
             goal: { buffer: 'src/lib/logger.ts', check: cursorAt(at(SHOP, 'src/lib/logger.ts', 'function createLogger')) },
             solution: '<Space>sgfunction createL<CR>',
           },
@@ -361,7 +362,7 @@ export const findingThings: Section = {
       title: 'Grep Word Under Cursor',
       chips: ['␣sw'],
       keyCards: [
-        { key: '␣sw', glyph: '⌕w', label: 'grep this word', sub: 'kickstart' },
+        { key: '␣sw', glyph: '⌕w', label: 'grep this word', sub: 'kickstart & LazyVim' },
         { key: 'CR', glyph: '⏎', label: 'open the match' },
       ],
       intro: (
@@ -369,7 +370,7 @@ export const findingThings: Section = {
           <p>
             <Code>Space sw</Code> opens live grep with the word under the cursor already typed, so every use in the
             project is one key away. It is the picker form of <Code>*</Code>: where <Code>*</Code> finds the next use in
-            this file, <Code>sw</Code> lists every use in every file.
+            this file, <Code>Space sw</Code> lists every use in every file.
           </p>
           <p>
             The first result is usually the line you are on. <Code>C-n</Code> steps to the others, and the preview
@@ -398,19 +399,19 @@ export const findingThings: Section = {
         base: { files: SHOP, open: 'src/app.ts', plugins: ['telescope'] },
         rounds: [
           {
-            prompt: 'From the import of createLogger, jump to its definition.',
+            prompt: 'The cursor is on createLogger. List its uses and open the one in src/lib/logger.ts.',
             setup: { cursor: at(SHOP, 'src/app.ts', 'createLogger') },
             goal: { buffer: 'src/lib/logger.ts', check: cursorAt(at(SHOP, 'src/lib/logger.ts', 'createLogger')) },
             solution: '<Space>sw<C-n><C-n><CR>',
           },
           {
-            prompt: 'From the import of formatCents, jump to its definition (hits list by file, so it comes first).',
+            prompt: 'The cursor is on formatCents. Open its use in src/lib/money.ts, the first hit.',
             setup: { open: 'src/routes/invoices.ts', cursor: at(SHOP, 'src/routes/invoices.ts', 'formatCents') },
             goal: { buffer: 'src/lib/money.ts', check: cursorAt(at(SHOP, 'src/lib/money.ts', 'formatCents')) },
             solution: '<Space>sw<CR>',
           },
           {
-            prompt: 'From the test, jump to the definition of addTax.',
+            prompt: 'The cursor is on addTax. Open its use in src/lib/money.ts.',
             setup: { open: 'test/money.test.ts', cursor: at(SHOP, 'test/money.test.ts', 'addTax') },
             goal: { buffer: 'src/lib/money.ts', check: cursorAt(at(SHOP, 'src/lib/money.ts', 'addTax(cents')) },
             solution: '<Space>sw<CR>',
@@ -473,7 +474,7 @@ export const findingThings: Section = {
             solution: '<Space>sgformatCents<C-q>j<CR>',
           },
           {
-            prompt: 'List the console calls and jump to the last one.',
+            prompt: 'List every "console" and jump to the last entry.',
             goal: { buffer: 'src/lib/logger.ts', check: cursorAt(at(SHOP, 'src/lib/logger.ts', 'console.error')) },
             solution: '<Space>sgconsole<C-q>G<CR>',
           },

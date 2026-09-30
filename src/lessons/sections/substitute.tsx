@@ -20,7 +20,7 @@ export const substitute: Section = {
         <>
           <p>
             <Code>:s/old/new/</Code> replaces the first match of <Code>old</Code> on the cursor's line with{' '}
-            <Code>new</Code>. The pattern is a Vim regex; the replacement is plain text.
+            <Code>new</Code>. The pattern works like a <Code>/</Code> search; the replacement is plain text.
           </p>
           <p>
             It fixes a line without moving along it, and every bulk edit in this section starts from it. Leave the
@@ -89,7 +89,7 @@ export const substitute: Section = {
             solution: ':s/tal/tall/<CR>',
           },
           {
-            prompt: 'Turn debug mode off.',
+            prompt: 'Change DEBUG from True to False.',
             setup: {
               name: 'settings.py',
               text: ['SECRET_KEY = env("SECRET_KEY")', 'DEBUG = True', 'ALLOWED_HOSTS = ["localhost"]', 'USE_TZ = True'],
@@ -99,7 +99,7 @@ export const substitute: Section = {
             solution: ':s/True/False/<CR>',
           },
           {
-            prompt: 'Turn the first "=" into ": " (YAML style). The one in the URL stays.',
+            prompt: 'Turn the first "=" on the cursor line into ": ". The one in the URL stays.',
             setup: {
               name: 'config.yml',
               text: ['APP_NAME: billing', 'DATABASE_URL=postgres://db:5432/app?sslmode=require', 'LOG_LEVEL: info'],
@@ -109,7 +109,7 @@ export const substitute: Section = {
             solution: ':s/=/: /<CR>',
           },
           {
-            prompt: "Delete the 'debug' label from the log call.",
+            prompt: "Delete \"'debug', \" from the cursor line.",
             setup: {
               name: 'checkout.ts',
               text: ['const total = cart.total();', "console.log('debug', total);", 'return total;'],
@@ -201,7 +201,7 @@ export const substitute: Section = {
             solution: ':%s/;/,/g<CR>',
           },
           {
-            prompt: 'Switch every link to https.',
+            prompt: 'Change every "http:" to "https:".',
             setup: {
               name: 'links.md',
               text: [
@@ -284,7 +284,7 @@ export const substitute: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Rename the variable "item" to "product". Leave the message text alone.',
+            prompt: 'Change every "item" to "product", except the one inside quotes.',
             setup: {
               name: 'cart.ts',
               text: ['const item = cart.first();', "toast('Removed item from cart');", "track('remove', item.id);"],
@@ -293,7 +293,7 @@ export const substitute: Section = {
             solution: ':%s/item/product/gc<CR>yny',
           },
           {
-            prompt: 'Rename master to main, except in the comment.',
+            prompt: 'Change every "master" to "main", except on the "#" line.',
             setup: {
               name: 'deploy.sh',
               text: ['git checkout master', 'git pull origin master', '# master was renamed in March', 'git push origin master'],
@@ -325,7 +325,7 @@ export const substitute: Section = {
             solution: ':%s/print(/log.info(/gc<CR>na',
           },
           {
-            prompt: 'Tick off the first two tasks only.',
+            prompt: 'Change "[ ]" to "[x]" on the first two lines only. In a pattern, write "[" as "\\[".',
             setup: {
               name: 'TODO.md',
               text: ['- [ ] Write the migration', '- [ ] Add an index on email', '- [ ] Backfill old rows'],
@@ -334,7 +334,7 @@ export const substitute: Section = {
             solution: ':%s/\\[ ]/[x]/gc<CR>yyq',
           },
           {
-            prompt: 'Bump the package version to 1.3.0, not the dependency.',
+            prompt: 'Change the second "1.2.0", on the "version" line, to "1.3.0".',
             setup: {
               name: 'package.json',
               text: [
@@ -402,7 +402,7 @@ export const substitute: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Spell JSON in capitals throughout.',
+            prompt: 'Change every "json", in any case, to "JSON".',
             setup: {
               name: 'notes.md',
               text: ['## Why json', 'Json parses anywhere.', 'Most of our jSON is config now.'],
@@ -411,7 +411,7 @@ export const substitute: Section = {
             solution: ':%s/json/JSON/gi<CR>',
           },
           {
-            prompt: 'Make every log level uppercase.',
+            prompt: 'Change every "warn", in any case, to "WARN".',
             setup: {
               name: 'app.log',
               text: ['09:14:02 Warn disk at 81%', '09:14:07 warn retrying upload', '09:15:30 WARN queue is backing up'],
@@ -430,7 +430,7 @@ export const substitute: Section = {
             solution: ':%s/todo:/TODO:/<CR>',
           },
           {
-            prompt: 'smartcase is on. Rename the variable "user" to "account", but not the type "User".',
+            prompt: 'smartcase is on. Change every lowercase "user" to "account"; "User" stays.',
             setup: {
               name: 'session.ts',
               text: ['const user: User = await load();', 'if (!user) throw new Error("no user");', 'return user;'],
@@ -489,7 +489,7 @@ export const substitute: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Rename the loop variable "i" to "idx".',
+            prompt: 'Change every "i" that stands alone as a word to "idx".',
             setup: {
               name: 'render.js',
               text: ['for (let i = 0; i < items.length; i++) {', '  if (items[i].hidden) continue;', '  draw(items[i]);', '}'],
@@ -500,7 +500,7 @@ export const substitute: Section = {
             solution: ':%s/\\<lt>i\\>/idx/g<CR>',
           },
           {
-            prompt: 'Rename "id" to "user_id".',
+            prompt: 'Change the word "id" to "user_id". "valid" stays.',
             setup: {
               name: 'users.py',
               text: ['def load(id):', '    valid = id is not None', '    return db.get(id) if valid else None'],
@@ -509,7 +509,7 @@ export const substitute: Section = {
             solution: ':%s/\\<lt>id\\>/user_id/g<CR>',
           },
           {
-            prompt: 'Rename the local "map" to "nmap". Leave keymap and mapleader alone.',
+            prompt: 'Change the word "map" to "nmap". Leave keymap and mapleader alone.',
             setup: {
               name: 'keymaps.lua',
               text: [
@@ -530,7 +530,7 @@ export const substitute: Section = {
             solution: ':%s/\\<lt>map\\>/nmap/g<CR>',
           },
           {
-            prompt: 'Rename test classes ending in "Test" to end in "Spec". TestHelpers stays.',
+            prompt: 'Change every word ending in "Test" to end in "Spec". TestHelpers stays.',
             setup: {
               name: 'suite.kt',
               text: ['class LoginTest : TestHelpers()', 'class CartTest : TestHelpers()', 'val all = listOf(LoginTest, CartTest)'],
@@ -557,7 +557,8 @@ export const substitute: Section = {
             <Code>_</Code> is special, much like a JavaScript regex.
           </p>
           <p>
-            Reach for it when a pattern has groups, alternation or counts; it removes most of the backslashes. In{' '}
+            Reach for it when a pattern has groups <Code>( )</Code>, either-or <Code>|</Code>, or repeats like{' '}
+            <Code>+</Code> and <Code>{'{2,}'}</Code>; it removes most of the backslashes. In{' '}
             <Code>\v</Code> mode the word boundaries are plain <Code>{'<'}</Code> and <Code>{'>'}</Code>.
           </p>
         </>
@@ -581,7 +582,7 @@ export const substitute: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Spell it "color" everywhere, with one optional "u".',
+            prompt: 'Change every "colour" to "color", using u? for the optional u.',
             setup: {
               name: 'tokens.css',
               text: ['/* Base colour tokens */', ':root {', '  --text-color: #222;', '  --bg-colour: #fff;', '}'],
@@ -590,7 +591,7 @@ export const substitute: Section = {
             solution: ':%s/\\vcolou?r/color/g<CR>',
           },
           {
-            prompt: 'Replace every var and let with const. Don\'t touch "variant".',
+            prompt: 'Change every word "var" or "let" to "const". "variant" stays.',
             setup: {
               name: 'theme.js',
               text: ["var base = '/api';", 'let retries = 3;', 'const timeout = 5000;', "let variant = 'dark';"],
@@ -599,7 +600,7 @@ export const substitute: Section = {
             solution: ':%s/\\v<lt>(var|let)>/const/g<CR>',
           },
           {
-            prompt: 'Strip trailing whitespace.',
+            prompt: 'Delete the spaces and tabs at the end of every line. \\s is a space or tab; $ is the line end.',
             setup: {
               name: 'main.py',
               text: ['import sys   ', '', 'def main():  ', '    return 0\t'],
@@ -608,7 +609,7 @@ export const substitute: Section = {
             solution: ':%s/\\v\\s+$//<CR>',
           },
           {
-            prompt: 'Squeeze every run of two or more spaces down to one.',
+            prompt: 'Replace every run of two or more spaces with one space.',
             setup: {
               name: 'post.md',
               text: ['## Releasing', '', 'Save the file.  Then run the tests.   Then ship it.', 'Nothing else  to do.'],
@@ -634,8 +635,9 @@ export const substitute: Section = {
             group matched, <Code>\2</Code> the second, up to <Code>\9</Code>.
           </p>
           <p>
-            That lets you move pieces around: swap arguments, reorder a date, turn one syntax into another. Use{' '}
-            <Code>\v</Code> so the groups are plain <Code>( )</Code>.
+            That lets you move pieces around: swap two values, reorder a date. Use <Code>\v</Code> so the groups are
+            plain <Code>( )</Code>. In patterns, <Code>\d</Code> matches a digit and <Code>\w</Code> a letter, digit
+            or <Code>_</Code>.
           </p>
           <BeforeAfter
             lines={['resize(800, 600);', 'resize(1024, 768);']}
@@ -670,7 +672,7 @@ export const substitute: Section = {
             solution: ':%s/\\v(\\w+), (\\w+)/\\2 \\1/<CR>',
           },
           {
-            prompt: 'Put the value second in each eq(): eq(count, 3).',
+            prompt: 'Swap the two values in each eq(): eq(3, count) becomes eq(count, 3).',
             setup: {
               name: 'cart.test.ts',
               text: ['eq(3, count);', 'eq(0, errors);', 'eq(1, pages);'],
@@ -679,7 +681,7 @@ export const substitute: Section = {
             solution: ':%s/\\v(\\d), (\\w+)/\\2, \\1/<CR>',
           },
           {
-            prompt: 'Reformat the dates from 03/15 (US) to 15/03.',
+            prompt: 'Swap the two numbers in each date: 03/15 becomes 15/03.',
             setup: {
               name: 'payments.csv',
               text: ['date,amount', '03/15,120.00', '04/01,89.90', '04/22,15.00'],
@@ -688,7 +690,7 @@ export const substitute: Section = {
             solution: ':%s#\\v(\\d+)/(\\d+)#\\2/\\1#<CR>',
           },
           {
-            prompt: 'Turn the Python 2 prints into print() calls.',
+            prompt: 'Wrap what follows each "print " in parentheses: print(total). .* matches the rest of a line.',
             setup: {
               name: 'report.py',
               text: ['#!/usr/bin/python2', 'print total', 'print "done"'],
@@ -708,7 +710,7 @@ export const substitute: Section = {
         <>
           <p>
             In the replacement, <Code>&</Code> stands for everything the pattern matched. <Code>:s/\d\+/&px/</Code>{' '}
-            turns <Code>16</Code> into <Code>16px</Code>.
+            turns <Code>16</Code> into <Code>16px</Code>; <Code>\d\+</Code> is one or more digits.
           </p>
           <p>
             It's the quickest way to wrap or decorate text without capturing anything: quotes, backticks, units. For
@@ -747,7 +749,7 @@ export const substitute: Section = {
             solution: ':%s/\\d\\+/&px/g<CR>',
           },
           {
-            prompt: 'Wrap each npm command in backticks.',
+            prompt: 'Wrap "npm install" and "npm test" in backticks. \\w\\+ matches one word.',
             setup: {
               name: 'CONTRIBUTING.md',
               text: ['## Setup', '', 'Run npm install, then npm test before you push.'],
@@ -756,13 +758,13 @@ export const substitute: Section = {
             solution: ':%s/npm \\w\\+/`&`/g<CR>',
           },
           {
-            prompt: 'Quote every field.',
+            prompt: 'Put double quotes around each value between commas. [^,]\\+ matches a run of non-commas.',
             setup: { name: 'contacts.csv', text: ['name,city', 'Ada,London', 'Grace,New York'], cursor: { line: 2, col: 4 } },
             goal: { text: ['"name","city"', '"Ada","London"', '"Grace","New York"'] },
             solution: ':%s/[^,]\\+/"&"/g<CR>',
           },
           {
-            prompt: 'Make every TODO bold.',
+            prompt: 'Put ** on both sides of every TODO.',
             setup: { name: 'plan.md', text: ['- TODO: pick a host', '- Buy the domain', '- TODO: set up DNS'] },
             goal: { text: ['- **TODO**: pick a host', '- Buy the domain', '- **TODO**: set up DNS'] },
             solution: ':%s/TODO/**&**/<CR>',
@@ -819,7 +821,7 @@ export const substitute: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Convert snake_case names to camelCase.',
+            prompt: 'Remove each "_" in a name and uppercase the letter after it: first_name becomes firstName.',
             setup: {
               name: 'profile.js',
               text: [
@@ -841,13 +843,13 @@ export const substitute: Section = {
             solution: ':%s/\\v_(\\l)/\\u\\1/g<CR>',
           },
           {
-            prompt: 'Uppercase every key.',
+            prompt: 'Uppercase the name before "=" on every line.',
             setup: { name: '.env', text: ['db_host=localhost', 'db_port=5432', 'api_key=dev-123'] },
             goal: { text: ['DB_HOST=localhost', 'DB_PORT=5432', 'API_KEY=dev-123'] },
             solution: ':%s/\\v^\\w+/\\U&/<CR>',
           },
           {
-            prompt: "Turn each name into a member: PENDING = 'pending',",
+            prompt: "Turn each indented word into a line like PENDING = 'pending',.",
             setup: {
               name: 'status.ts',
               text: ['enum Status {', '  pending', '  active', '  archived', '}'],
@@ -858,7 +860,7 @@ export const substitute: Section = {
             solution: ":%s/\\v\\w+$/\\U&\\E = '&',/<CR>",
           },
           {
-            prompt: 'Capitalise every word of the heading.',
+            prompt: 'Capitalise the first letter of every word on the heading line.',
             setup: {
               name: 'guide.md',
               text: ['## getting started with lua', '', 'Neovim runs init.lua on startup.'],
@@ -916,7 +918,7 @@ export const substitute: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Put each directory of the PATH on its own line.',
+            prompt: 'Split the cursor line at each ":", so each path gets its own line.',
             setup: {
               name: 'path.txt',
               text: ['# PATH on the CI runner', '', '/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin', '# checked weekly'],
@@ -928,13 +930,13 @@ export const substitute: Section = {
             solution: ':s/:/\\r/g<CR>',
           },
           {
-            prompt: 'Join the ids into one comma-separated line. Leave the last line alone, or its newline gets a comma too.',
+            prompt: 'Join the four numbers into one line with ", " between them. Run it on lines 2 to 4 only.',
             setup: { name: 'ids.sql', text: ['-- ids from the refund export', '1042', '1043', '1057', '1101'], cursor: { line: 4, col: 0 } },
             goal: { text: ['-- ids from the refund export', '1042, 1043, 1057, 1101'] },
             solution: ':2,4s/\\n/, /<CR>',
           },
           {
-            prompt: 'Start each sentence on a new line.',
+            prompt: 'Break the cursor line after each ". ", one sentence per line. Write the dot as "\\.".',
             setup: {
               name: 'intro.md',
               text: ['# Modes', '', 'Vim has modes. Normal moves. Insert types. Visual selects.', '', 'Esc gets you back.'],
@@ -946,7 +948,7 @@ export const substitute: Section = {
             solution: ':s/\\. /.\\r/g<CR>',
           },
           {
-            prompt: 'Collapse the runs of blank lines to a single blank line.',
+            prompt: 'Squeeze each run of blank lines down to one blank line. A run is three or more \\n in a row.',
             setup: {
               name: 'notes.md',
               text: ['# Notes', '', '', '', 'First idea.', '', '', 'Second idea.'],
@@ -1010,7 +1012,7 @@ export const substitute: Section = {
             solution: ':%s/timeout = \\zs3/10/<CR>',
           },
           {
-            prompt: 'Change the "get" prefix to "fetch", only on User functions.',
+            prompt: 'Change "get" to "fetch" only where "User" follows it.',
             setup: {
               name: 'account.ts',
               text: ['const user = await getUser(id);', 'const team = await getUsers(teamId);', 'const cfg = getConfig();'],
@@ -1021,7 +1023,7 @@ export const substitute: Section = {
             solution: ':%s/get\\zeUser/fetch/<CR>',
           },
           {
-            prompt: 'Extend the copyright to 2026. Leave the other years alone.',
+            prompt: 'Change "2019-2024" to "2019-2026". The other 2019 stays.',
             setup: {
               name: 'LICENSE',
               text: ['MIT License', '', 'Copyright (c) 2019-2024 Acme Inc.', 'First released in 2019.'],
@@ -1030,7 +1032,7 @@ export const substitute: Section = {
             solution: ':%s/-\\zs2024/2026/<CR>',
           },
           {
-            prompt: 'Rename the db.get( calls to db.load(. cache.get and db.getAll stay.',
+            prompt: 'Change "db.get(" to "db.load(". cache.get and db.getAll stay.',
             setup: {
               name: 'repo.js',
               text: ['const a = db.get(id);', 'const b = cache.get(id);', 'const c = db.getAll();', 'const d = db.get(key);'],
@@ -1088,7 +1090,7 @@ export const substitute: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Strip the tags from the paragraph, keep the text.',
+            prompt: 'Delete every <...> tag on the cursor line, keeping the text between them.',
             setup: {
               name: 'excerpt.html',
               text: [
@@ -1102,7 +1104,7 @@ export const substitute: Section = {
             solution: ':s/<lt>.\\{-}>//g<CR>',
           },
           {
-            prompt: 'Drop the timestamp in brackets. Keep the level.',
+            prompt: 'Delete the first bracketed part and its space from every line, like "[2026-09-27 10:14:02] ".',
             setup: {
               name: 'api.log',
               text: [
@@ -1116,7 +1118,7 @@ export const substitute: Section = {
             solution: ':%s/^.\\{-}] //<CR>',
           },
           {
-            prompt: 'Turn *stars* into _underscores_.',
+            prompt: 'Change each *word* to _word_. In \\v, write * as \\*.',
             setup: {
               name: 'release.md',
               text: ['## 2.1.0', '', 'This release is *faster* and *smaller*.', 'Upgrade is *optional*.'],
@@ -1125,7 +1127,7 @@ export const substitute: Section = {
             solution: ':%s/\\v\\*(.{-})\\*/_\\1_/g<CR>',
           },
           {
-            prompt: 'Redact every quoted value on the login line.',
+            prompt: 'Replace the text inside every pair of quotes on the cursor line with ***.',
             setup: {
               name: 'audit.log',
               text: [
@@ -1190,7 +1192,7 @@ export const substitute: Section = {
             solution: ':%s//buf/g<CR>',
           },
           {
-            prompt: 'Rename the variable under the cursor to "total".',
+            prompt: 'Change the word under the cursor, "sum", to "total" everywhere. "summary" stays.',
             setup: {
               name: 'report.py',
               text: ['sum = 0', 'for row in rows:', '    sum += row.amount', 'summary = f"{sum} across {len(rows)}"'],
@@ -1200,7 +1202,7 @@ export const substitute: Section = {
             solution: '*:%s//total/g<CR>',
           },
           {
-            prompt: 'Search for the durations like 250ms, then wrap each in backticks.',
+            prompt: 'Search for the numbers ending in ms (\\d\\+ms), then wrap each in backticks.',
             setup: {
               name: 'perf.md',
               text: ['## Performance', '', 'Cold start dropped from 900ms to 250ms.', 'The p99 is still 1200ms.'],
@@ -1212,7 +1214,7 @@ export const substitute: Section = {
             solution: '/\\d\\+ms<CR>:%s//`&`/g<CR>',
           },
           {
-            prompt: 'The last search was /colou\\?r. Fix this line only.',
+            prompt: 'The last search was /colou\\?r. Change its matches to "color" on the cursor line only.',
             setup: {
               name: 'style.md',
               search: 'colou\\?r',
@@ -1376,7 +1378,7 @@ export const substitute: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Bump the patch version by one.',
+            prompt: 'Add one to the last number of the version: 2.4.7 becomes 2.4.8.',
             setup: {
               name: 'Makefile',
               text: ['NAME = vimchi', 'VERSION = 2.4.7', 'PREFIX = /usr/local'],
@@ -1386,7 +1388,7 @@ export const substitute: Section = {
             solution: ':s/\\d\\+$/\\=submatch(0)+1/<CR>',
           },
           {
-            prompt: 'Double the recipe.',
+            prompt: 'Double every number.',
             setup: {
               name: 'bread.md',
               text: ['- 500 g flour', '- 350 ml water', '- 10 g salt', '- 4 g yeast'],
@@ -1404,7 +1406,7 @@ export const substitute: Section = {
             solution: ":%s/^\\d\\+/\\=line('.')/<CR>",
           },
           {
-            prompt: 'Pad the lone digits (the last search) to two digits.',
+            prompt: "The last search matches each lone digit. Put a 0 before each; '0' . submatch(0) joins them.",
             setup: {
               name: 'playlist.m3u',
               text: ['track-1-intro.mp3', 'track-2-theme.mp3', 'track-10-outro.mp3'],
@@ -1439,7 +1441,12 @@ export const substitute: Section = {
           </p>
         </>
       ),
-      practice: total => <p>Rename the word the prompt names everywhere in the project. {total} rounds.</p>,
+      practice: total => (
+        <p>
+          Rename the word the prompt names everywhere in the project, then close the report with <Code>q</Code>.{' '}
+          {total} rounds.
+        </p>
+      ),
       aside: {
         title: 'The real grug-far',
         body: (
@@ -1464,7 +1471,7 @@ export const substitute: Section = {
         },
         rounds: [
           {
-            prompt: 'Rename total to cartTotal everywhere.',
+            prompt: 'The cursor is on total. Rename it to cartTotal everywhere.',
             setup: { cursor: { line: 0, col: 16 } },
             goal: { check: vim => closed(vim) && ['src/cart.ts', 'src/app.ts', 'README.md'].every(f => !/\btotal\b/.test(vim.fs.read(f) ?? 'total') && (vim.fs.read(f) ?? '').includes('cartTotal')) },
             solution: '<Space>srcartTotal<CR>q',
@@ -1545,7 +1552,7 @@ export const substitute: Section = {
             solution: ':%s/\\<lt>var\\>/let/<CR>',
           },
           {
-            prompt: '2/3: Convert every snake_case name to camelCase.',
+            prompt: '2/3: Remove each "_" in a name and uppercase the letter after it: retry_count becomes retryCount.',
             setup: {
               text: [
                 'let retry_count = 0;',

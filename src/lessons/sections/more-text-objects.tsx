@@ -47,8 +47,8 @@ export const moreTextObjects: Section = {
       intro: (
         <>
           <p>
-            Both starters extend the <Code>i</Code> and <Code>a</Code> objects, with mini.ai and
-            treesitter-textobjects. mini.ai adds a direction: put <Code>n</Code> (next) or{' '}
+            Both starters extend the <Code>i</Code> and <Code>a</Code> objects with the mini.ai plugin. It adds a
+            direction: put <Code>n</Code> (next) or{' '}
             <Code>l</Code> (last) in the middle and the object is found ahead of or behind the cursor:{' '}
             <Code>cin(</Code> changes inside the next parentheses, <Code>dil"</Code> empties the previous string.
           </p>
@@ -65,11 +65,12 @@ export const moreTextObjects: Section = {
         </p>
       ),
       aside: {
-        title: 'From targets.vim',
+        title: "kickstart's keys",
         body: (
           <p>
-            The <Code>n</Code> and <Code>l</Code> objects come from targets.vim, which also adds them to classic Vim.
-            A count reaches further: <Code>2cin(</Code> skips one pair.
+            These are LazyVim's keys. kickstart moves "next" to <Code>ii</Code> and <Code>aa</Code>
+            (<Code>cii(</Code>), because Neovim 0.12 uses <Code>in</Code> and <Code>an</Code> for its own treesitter
+            selection. A count reaches further: <Code>2cin(</Code> skips one pair.
           </p>
         ),
       },
@@ -78,13 +79,13 @@ export const moreTextObjects: Section = {
         base: { name: 'api.ts', plugins: ['mini-ai'] },
         rounds: [
           {
-            prompt: 'Pass "render" to then() instead of "parse".',
+            prompt: 'Change "parse" to "render".',
             setup: { text: ['export function show(url: string) {', '  return fetch(url).then(parse);', '}'], cursor: { line: 1, col: 16 } },
             goal: { text: ['export function show(url: string) {', '  return fetch(url).then(render);', '}'] },
             solution: 'cin(render<Esc>',
           },
           {
-            prompt: 'Both expected values are 0.',
+            prompt: 'Change both toBe(1) to toBe(0).',
             setup: {
               name: 'math.test.ts',
               text: ["import { add, mul } from './math';", '', "test('zero', () => {", '  expect(add(0, 0)).toBe(1);', '  expect(mul(0, 5)).toBe(1);', '});'],
@@ -100,7 +101,7 @@ export const moreTextObjects: Section = {
             solution: 'cil"Hello<Esc>',
           },
           {
-            prompt: 'Both lines index the column with k.',
+            prompt: 'Change [j] to [k] on both lines.',
             setup: {
               text: ['for (let i = 0; i < rows; i++) {', '  for (let k = 0; k < cols; k++) {', '    const cell = grid[i][j];', '    seen[i][j] = true;', '  }', '}'],
               cursor: { line: 2, col: 22 },
@@ -109,7 +110,7 @@ export const moreTextObjects: Section = {
             solution: 'cin[k<Esc>jFi.',
           },
           {
-            prompt: 'Empty the first condition.',
+            prompt: 'Empty the parentheses around "cached".',
             setup: { text: ['async function get(key: string) {', '  if (cached) return load(key);', '  return fetchFresh(key);', '}'], cursor: { line: 1, col: 27 } },
             goal: { text: ['async function get(key: string) {', '  if () return load(key);', '  return fetchFresh(key);', '}'] },
             solution: 'dil(',
@@ -148,8 +149,8 @@ export const moreTextObjects: Section = {
         body: (
           <p>
             Commas inside nested brackets and strings don't count, so <Mono>{"f(g(1, 2), 'a, b')"}</Mono> has two
-            arguments. targets.vim and nvim-treesitter-textobjects offer the same object as <Code>ia</Code> or{' '}
-            <Code>i,</Code>.
+            arguments. In kickstart <Code>aa</Code> starts a "next" object instead, so there <Code>daa</Code> waits
+            for another key; <Code>ia</Code> works in both.
           </p>
         ),
       },
@@ -159,7 +160,7 @@ export const moreTextObjects: Section = {
         base: { name: 'users.ts', plugins: ['mini-ai'] },
         rounds: [
           {
-            prompt: 'Neither call passes email.',
+            prompt: 'Delete the email argument on both lines.',
             setup: {
               text: ['export async function signUp(form: Form) {', '  saveUser(name, email, role);', '  mailUser(name, email, role);', '}'],
               cursor: { line: 1, col: 18 },
@@ -168,7 +169,7 @@ export const moreTextObjects: Section = {
             solution: 'daaj.',
           },
           {
-            prompt: 'Drop the URL; keep the options.',
+            prompt: 'Delete the url argument inside fetch( ).',
             setup: {
               text: ['async function post(url: string) {', "  const res = await fetch(url, { method: 'POST' });", '  return res.json();', '}'],
               cursor: { line: 2, col: 2 },
@@ -177,7 +178,7 @@ export const moreTextObjects: Section = {
             solution: 'kfudaa',
           },
           {
-            prompt: 'Compare against "sum" instead.',
+            prompt: 'Replace "a + b" with "sum".',
             setup: {
               name: 'sum.test.ts',
               text: ["test('adds', () => {", '  const sum = add(1, 2);', '  assert.equal(a + b, 3);', '});'],
@@ -187,7 +188,7 @@ export const moreTextObjects: Section = {
             solution: 'ciasum<Esc>',
           },
           {
-            prompt: 'Remove the last argument from both calls.',
+            prompt: 'Delete extra from the log and send lines.',
             setup: {
               text: ['export function warn(msg: string, extra?: unknown) {', "  log('warn', msg, extra);", "  send('warn', msg, extra);", '}'],
               cursor: { line: 1, col: 21 },
@@ -196,7 +197,7 @@ export const moreTextObjects: Section = {
             solution: 'daajfx.',
           },
           {
-            prompt: 'The check runs after 0 ms.',
+            prompt: 'Replace "60 * 1000" with 0.',
             setup: {
               name: 'tick.lua',
               text: ['local function check()', "  vim.notify('tick')", 'end', 'vim.defer_fn(check, 60 * 1000)'],
@@ -244,8 +245,9 @@ export const moreTextObjects: Section = {
         title: 'Where it comes from',
         body: (
           <p>
-            LazyVim adds <Code>ii</Code> and <Code>ai</Code> to mini.ai; mini.indentscope and vim-indent-object provide
-            the same objects on their own.
+            LazyVim gets <Code>ii</Code> and <Code>ai</Code> from snacks.nvim's scope module; mini.indentscope and
+            vim-indent-object provide the same objects. kickstart has none: its <Code>ii</Code> means "inside
+            next".
           </p>
         ),
       },
@@ -255,7 +257,7 @@ export const moreTextObjects: Section = {
         base: { name: 'cache.py', plugins: ['mini-ai'] },
         rounds: [
           {
-            prompt: 'Both method bodies are just pass.',
+            prompt: 'Replace the lines under each def with pass.',
             setup: {
               text: ['class Cache:', '    def reset(self):', '        self.cache.clear()', '        self.count = 0', '', '    def size(self):', '        return len(self.cache)'],
               cursor: { line: 3, col: 13 },
@@ -264,7 +266,7 @@ export const moreTextObjects: Section = {
             solution: 'ciipass<Esc>3j.',
           },
           {
-            prompt: 'Delete both debug branches.',
+            prompt: 'Delete both "if DEBUG:" blocks.',
             setup: {
               text: ['def main():', '    if DEBUG:', '        dump(state)', '    run()', '    if DEBUG:', '        dump(result)', '    return result'],
               cursor: { line: 2, col: 8 },
@@ -273,7 +275,7 @@ export const moreTextObjects: Section = {
             solution: 'daijj.',
           },
           {
-            prompt: 'Remove the Neovide block.',
+            prompt: 'Delete the whole if block, from "if" to "end".',
             setup: {
               name: 'options.lua',
               text: ['vim.o.number = true', 'if vim.g.neovide then', "  vim.o.guifont = 'JetBrains Mono:h14'", '  vim.g.neovide_scale_factor = 1.0', 'end', 'vim.o.wrap = false'],
@@ -283,7 +285,7 @@ export const moreTextObjects: Section = {
             solution: 'dai',
           },
           {
-            prompt: 'Replace the handler body with a bare raise.',
+            prompt: 'Replace the two lines under "except OSError:" with raise.',
             setup: {
               name: 'load.py',
               text: ['try:', '    load()', 'except OSError:', "    log.warning('load failed')", '    retry()'],
@@ -293,7 +295,7 @@ export const moreTextObjects: Section = {
             solution: 'ciiraise<Esc>',
           },
           {
-            prompt: 'Drop the sub-steps under both items.',
+            prompt: 'Delete the indented lines under "- Setup" and "- Usage".',
             setup: {
               name: 'README.md',
               text: ['- Setup', '  - Install Node 22', '  - Run npm ci', '- Usage', '  - npm start', '  - npm test'],
@@ -318,7 +320,8 @@ export const moreTextObjects: Section = {
       intro: (
         <>
           <p>
-            With treesitter the editor knows where functions and classes begin and end. <Code>if</Code> is a function's
+            Treesitter, the parser behind Neovim's syntax colours, knows where functions and classes begin and end.
+            With it, <Code>if</Code> is a function's
             body, <Code>af</Code> the whole function; <Code>ic</Code> and <Code>ac</Code> do the same for classes.
           </p>
           <p>
@@ -343,7 +346,7 @@ export const moreTextObjects: Section = {
         body: (
           <p>
             These come from nvim-treesitter-textobjects or from mini.ai with a treesitter spec (LazyVim's default).
-            The keys are a convention, set in your config.
+            In kickstart, mini.ai's own <Code>f</Code> is a function call and there is no <Code>c</Code>.
           </p>
         ),
       },
@@ -362,7 +365,7 @@ export const moreTextObjects: Section = {
             solution: '>if',
           },
           {
-            prompt: 'debug() and dump() are gone.',
+            prompt: 'Delete the debug() and dump() blocks.',
             setup: {
               text: [
                 'class Cart {',
@@ -383,7 +386,7 @@ export const moreTextObjects: Section = {
             solution: 'daf4j.',
           },
           {
-            prompt: 'Delete the legacy class.',
+            prompt: 'Delete the LegacyStore class.',
             setup: {
               name: 'store.ts',
               text: ['class LegacyStore {', '  get(key: string) {', '    return localStorage.getItem(key);', '  }', '}', 'export const store = new Map<string, string>();'],
@@ -393,7 +396,7 @@ export const moreTextObjects: Section = {
             solution: 'dac',
           },
           {
-            prompt: 'Replace the class body with one field: n = 0;',
+            prompt: 'Replace everything inside the class with: n = 0;',
             setup: {
               name: 'counter.ts',
               text: ['export class Counter {', '  inc() {', '    this.n++;', '  }', '}'],
@@ -403,7 +406,7 @@ export const moreTextObjects: Section = {
             solution: 'cicn = 0;<Esc>',
           },
           {
-            prompt: 'Duplicate the add() method above itself.',
+            prompt: 'Make a second copy of add() and its body.',
             setup: {
               text: ['class Cart {', '  add(item: Item) {', '    this.items.push(item);', '  }', '}'],
               cursor: { line: 2, col: 6 },
@@ -414,7 +417,7 @@ export const moreTextObjects: Section = {
             solution: 'yafP',
           },
           {
-            prompt: 'onSave() has the same body as onOpen().',
+            prompt: 'Copy the body of onOpen() over the body of onSave().',
             setup: {
               name: 'hooks.ts',
               text: ['function onOpen(doc: Doc) {', '  lint(doc);', '}', 'function onSave(doc: Doc) {', '  const text = doc.getText();', '  lint(parse(text));', '}'],
@@ -424,7 +427,7 @@ export const moreTextObjects: Section = {
             solution: 'yif3jcif<C-r>0<Esc>',
           },
           {
-            prompt: 'The callback is gone.',
+            prompt: 'Delete the function inside forEach( ), leaving items.forEach();',
             setup: {
               text: ['const total = sum(prices);', 'items.forEach(function (item) {', '  if (item.qty > 1) {', '    warn(item);', '  }', '});'],
               cursor: { line: 3, col: 6 },
@@ -464,8 +467,9 @@ export const moreTextObjects: Section = {
         title: 'Ends too',
         body: (
           <p>
-            <Code>]M</Code> and <Code>[M</Code> go to function ends. Vim has <Code>]m</Code> built in, but it only
-            understands Java-style classes; nvim-treesitter-textobjects makes it work in every language.
+            Vim's own <Code>]m</Code> only understands Java-style classes; nvim-treesitter-textobjects makes it work
+            in every language. LazyVim puts these moves on <Code>]f</Code> and <Code>[f</Code> (<Code>]F</Code> and{' '}
+            <Code>[F</Code> for function ends); kickstart has only Vim's own.
           </p>
         ),
       },
@@ -559,7 +563,7 @@ export const moreTextObjects: Section = {
           base: { name: 'orders.ts', text: orders, folds: folds(true) },
           rounds: [
             {
-              prompt: 'The base delay is folded away in retryDelay. Open it and make 250 into 500.',
+              prompt: 'Open the retryDelay fold and change 250 to 500.',
               setup: { cursor: { line: 0, col: 0 } },
               goal: { text: edit('base = 250', 'base = 500') },
               solution: 'Gzakkf2cw500<Esc>',
@@ -577,13 +581,13 @@ export const moreTextObjects: Section = {
               solution: 'zR',
             },
             {
-              prompt: 'cancelOrder hides a folded if block. Open both, then remove "already " from the error.',
+              prompt: 'Open the cancelOrder fold and the fold inside it, then delete "already ".',
               setup: { cursor: { line: 7, col: 0 } },
               goal: { text: edit("Error('already shipped')", "Error('shipped')") },
               solution: 'zajjzajfadw',
             },
             {
-              prompt: 'Fold everything, then open only listOrders and delete its return line.',
+              prompt: 'Close every fold, then open only listOrders and delete its return line.',
               setup: { folds: folds(false), cursor: { line: 12, col: 2 } },
               goal: {
                 text: orders.filter(l => !l.includes('return rows')),
@@ -592,7 +596,7 @@ export const moreTextObjects: Section = {
               solution: 'zMgg2jza2jdd',
             },
             {
-              prompt: 'You are done with retryDelay. Close its fold.',
+              prompt: 'Close the retryDelay fold.',
               setup: { folds: folds(false), cursor: { line: 17, col: 2 } },
               goal: { check: vim => closedAt(vim, 'retryDelay') && !closedAt(vim, 'cancelOrder') },
               solution: 'za',

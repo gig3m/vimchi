@@ -44,12 +44,11 @@ export const surround: Section = {
         title: 'Two starters, one plugin',
         body: (
           <p>
-            LazyVim's mini.surround extra maps <Code>gsa</Code>, <Code>gsd</Code>, <Code>gsr</Code>,{' '}
-            <Code>gsf</Code> so that <Code>s</Code> stays free for flash, which is on in every lesson here.
-            kickstart enables mini.surround as it comes, so there you drop the <Code>g</Code>: <Code>sa</Code>,{' '}
-            <Code>sd</Code>, <Code>sr</Code>, <Code>sf</Code>. The older lineage, tpope's vim-surround and
-            nvim-surround, spells them <Code>ys</Code>, <Code>cs</Code>, <Code>ds</Code>. Shortcuts here:{' '}
-            <Code>b</Code> is <Mono>)</Mono>, <Code>B</Code> is <Mono>{'}'}</Mono>, <Code>r</Code> is <Mono>]</Mono>.
+            LazyVim's mini.surround extra puts the keys under <Code>gs</Code> so that <Code>s</Code> stays free for
+            flash; kickstart keeps the plugin's own keys, so there you drop the <Code>g</Code>: <Code>sa</Code>,{' '}
+            <Code>sd</Code>, <Code>sr</Code>, <Code>sf</Code>. tpope's vim-surround and nvim-surround spell them{' '}
+            <Code>ys</Code>, <Code>ds</Code>, <Code>cs</Code>. In mini.surround <Code>b</Code> stands for{' '}
+            <Mono>)</Mono> and <Code>q</Code> for <Mono>"</Mono>.
           </p>
         ),
       },
@@ -73,13 +72,13 @@ export const surround: Section = {
             solution: 'gsa3e)',
           },
           {
-            prompt: 'Make the list of ports an array.',
+            prompt: 'Put the three numbers in square brackets.',
             setup: { text: ["const host = 'localhost';", 'const ports = 3000, 3001, 3002;', 'server.listen(host, ports);'], cursor: { line: 1, col: 14 } },
             goal: { text: ["const host = 'localhost';", 'const ports = [3000, 3001, 3002];', 'server.listen(host, ports);'] },
             solution: 'gsat;]',
           },
           {
-            prompt: 'Wrap "silent = true" in a table, with spaces inside.',
+            prompt: 'Wrap "silent = true" in braces, with spaces inside.',
             setup: {
               name: 'init.lua',
               text: ['local map = vim.keymap.set', "map('n', '<leader>w', ':w<CR>', silent = true)", "map('n', '<leader>q', ':q<CR>')"],
@@ -89,7 +88,7 @@ export const surround: Section = {
             solution: 'gsat){',
           },
           {
-            prompt: 'Mark "npm install" as code.',
+            prompt: 'Put backticks around "npm install".',
             setup: {
               name: 'README.md',
               text: ['## Setup', '', 'Run npm install before the first build.', 'Then copy .env.example to .env.'],
@@ -113,8 +112,8 @@ export const surround: Section = {
             <Code>gsr'"</Code> turns <Mono>'text'</Mono> into <Mono>"text"</Mono>.
           </p>
           <p>
-            The cursor only has to be inside the pair. If it isn't inside one, nvim-surround uses the next pair on the
-            line. The same spacing rule applies: <Code>gsr)(</Code> adds spaces inside, <Code>gsr()</Code> removes them.
+            The cursor only has to be inside the pair: <Code>gsr</Code> looks at the pairs around the cursor, not
+            ahead of it. The same spacing rule applies: <Code>gsr)(</Code> adds spaces inside, <Code>gsr()</Code> removes them.
           </p>
           <Edits
             plugins={['surround']}
@@ -145,7 +144,7 @@ export const surround: Section = {
         base: { name: 'app.ts', plugins: ['surround'] },
         rounds: [
           {
-            prompt: 'Switch "express" to double quotes.',
+            prompt: "Switch 'express' to double quotes.",
             setup: {
               text: ["import express from 'express';", "import cors from 'cors';", '', 'const app = express();'],
               cursor: { line: 0, col: 22 },
@@ -154,7 +153,7 @@ export const surround: Section = {
             solution: `gsr'"`,
           },
           {
-            prompt: 'Make the URL a template string.',
+            prompt: 'Swap the double quotes around the path for backticks.',
             setup: {
               text: ['async function load(id: string) {', '  const url = "/api/users/${id}";', '  return fetch(url);', '}'],
               cursor: { line: 1, col: 16 },
@@ -163,7 +162,7 @@ export const surround: Section = {
             solution: 'gsr"`',
           },
           {
-            prompt: 'Turn the tuple into an array.',
+            prompt: 'Change (x, y) to [x, y].',
             setup: { text: ['const x = 4, y = 2;', 'const point = (x, y);', 'draw(...point);'], cursor: { line: 1, col: 15 } },
             goal: { text: ['const x = 4, y = 2;', 'const point = [x, y];', 'draw(...point);'] },
             solution: 'gsr)]',
@@ -175,7 +174,7 @@ export const surround: Section = {
             solution: 'gsr()',
           },
           {
-            prompt: 'Swap the brackets for braces, spaced.',
+            prompt: 'Swap [ ] for { }, with spaces inside.',
             setup: {
               name: 'treesitter.lua',
               text: ["require('nvim-treesitter.configs').setup({", "  ensure_installed = [ 'lua', 'rust' ],", '  highlight = { enable = true },', '})'],
@@ -234,13 +233,13 @@ export const surround: Section = {
         base: { name: 'server.ts', plugins: ['surround'] },
         rounds: [
           {
-            prompt: 'Remove the extra parentheses.',
+            prompt: 'Remove the inner pair of parentheses.',
             setup: { text: ['const total = items.reduce(sum, 0);', 'console.log((total));', 'process.exit(0);'], cursor: { line: 1, col: 14 } },
             goal: { text: ['const total = items.reduce(sum, 0);', 'console.log(total);', 'process.exit(0);'] },
             solution: 'gsd)',
           },
           {
-            prompt: 'Make the port a number.',
+            prompt: 'Remove the quotes around 8080.',
             setup: {
               text: ["import { createServer } from 'node:http';", '', 'const port = "8080";', 'createServer(handler).listen(port);'],
               cursor: { line: 2, col: 15 },
@@ -249,13 +248,13 @@ export const surround: Section = {
             solution: 'gsd"',
           },
           {
-            prompt: 'Unwrap the expression, spaces too.',
+            prompt: 'Remove the parentheses and the spaces inside them.',
             setup: { text: ['function add(a: number, b: number) {', '  return ( a + b );', '}'], cursor: { line: 1, col: 11 } },
             goal: { text: ['function add(a: number, b: number) {', '  return a + b;', '}'] },
             solution: 'gsd(',
           },
           {
-            prompt: 'Drop the emphasis.',
+            prompt: 'Remove the underscores around "really".',
             setup: {
               name: 'NOTES.md',
               text: ['## CI', '', 'This step is _really_ slow on CI.', 'Caching the install speeds it up.'],
@@ -275,7 +274,7 @@ export const surround: Section = {
             solution: 'gsdt',
           },
           {
-            prompt: 'Unwrap the call to String().',
+            prompt: 'Remove String( ) and keep user.id.',
             setup: { text: ['function key(user: User) {', '  const id = String(user.id);', '  return `user:${id}`;', '}'], cursor: { line: 1, col: 20 } },
             goal: { text: ['function key(user: User) {', '  const id = user.id;', '  return `user:${id}`;', '}'] },
             solution: 'gsdf',
@@ -325,7 +324,7 @@ export const surround: Section = {
         base: { name: 'checkout.ts', plugins: ['surround'] },
         rounds: [
           {
-            prompt: 'Jump to the closing parenthesis of the call.',
+            prompt: 'Jump to the closing parenthesis of sum(.',
             setup: {
               text: ['const total = round(sum(subtotal,', '  shipping, handling, duty,', '  fees + tips) * rate);', 'send(total);'],
               cursor: { line: 1, col: 24 },
@@ -334,7 +333,7 @@ export const surround: Section = {
             solution: 'gsf)',
           },
           {
-            prompt: 'Jump to the opening parenthesis of the inner call.',
+            prompt: 'Jump to the opening parenthesis of taxFor(.',
             setup: {
               text: ['const total = sum(prices, taxFor(region,', '  zone, rate, discount,', '  tier), fees);'],
               cursor: { line: 1, col: 8 },
@@ -343,7 +342,7 @@ export const surround: Section = {
             solution: 'gsF)',
           },
           {
-            prompt: 'Jump to the closing tag of the paragraph.',
+            prompt: 'Jump to the </p> tag.',
             setup: {
               name: 'note.html',
               text: ['<p class="note">Thanks for your order.', '  It ships today, and the tracking', '  link follows.</p> <a href="/track">Track</a>', '<hr>'],
@@ -353,7 +352,7 @@ export const surround: Section = {
             solution: 'gsft',
           },
           {
-            prompt: 'Jump to the opening brace of the object.',
+            prompt: 'Jump to the { on the first line.',
             setup: {
               text: ["const opts = { name: 'api',", "  retries: 3, backoff: 'exp',", '  timeout: 500,', '};', 'export default opts;'],
               cursor: { line: 1, col: 24 },
@@ -421,31 +420,31 @@ export const surround: Section = {
         base: { name: 'types.ts', plugins: ['surround'] },
         rounds: [
           {
-            prompt: 'Group the sum before dividing.',
+            prompt: 'Put "lo + hi" in parentheses.',
             setup: { text: ['function bisect(lo: number, hi: number) {', '  const mid = lo + hi / 2;', '  return Math.floor(mid);', '}'], cursor: { line: 1, col: 14 } },
             goal: { text: ['function bisect(lo: number, hi: number) {', '  const mid = (lo + hi) / 2;', '  return Math.floor(mid);', '}'] },
             solution: 'v3egsa)',
           },
           {
-            prompt: 'An array of string or null: wrap the union.',
+            prompt: 'Put "string | null" in parentheses.',
             setup: { text: ['type Row = { id: number };', 'let names: string | null[];', 'let rows: Row[] = [];'], cursor: { line: 1, col: 11 } },
             goal: { text: ['type Row = { id: number };', 'let names: (string | null)[];', 'let rows: Row[] = [];'] },
             solution: 'vt[gsa)',
           },
           {
-            prompt: 'Turn "migration guide" into link text.',
+            prompt: 'Put "migration guide" in square brackets.',
             setup: { name: 'README.md', text: ['# Upgrading', '', 'Read the migration guide first.', 'Then bump the version.'], cursor: { line: 2, col: 9 } },
             goal: { text: ['# Upgrading', '', 'Read the [migration guide] first.', 'Then bump the version.'] },
             solution: 'veegsa]',
           },
           {
-            prompt: 'Wrap all three settings in braces.',
+            prompt: 'Wrap all three lines in braces.',
             setup: { name: '.prettierrc.json', text: ['"semi": false,', '"singleQuote": true,', '"printWidth": 60'], cursor: { line: 0, col: 0 } },
             goal: { text: ['{"semi": false,', '"singleQuote": true,', '"printWidth": 60}'] },
             solution: 'VGgsa}',
           },
           {
-            prompt: 'Quote the whole path.',
+            prompt: 'Put double quotes around $HOME/My Apps/.',
             setup: { name: 'deploy.sh', text: ['#!/bin/sh', 'npm run build', 'cp dist/app.js $HOME/My Apps/', 'echo done'], cursor: { line: 2, col: 15 } },
             goal: { text: ['#!/bin/sh', 'npm run build', 'cp dist/app.js "$HOME/My Apps/"', 'echo done'] },
             solution: 'vg_gsa"',
@@ -508,25 +507,25 @@ export const surround: Section = {
             solution: 'gsrttstrong<CR>',
           },
           {
-            prompt: 'Make the card a <section> with the same className.',
+            prompt: 'Change the outer <div> to <section>, keeping className="card".',
             setup: { text: ['<div className="card">', '  <h2>{title}</h2>', '</div>'], cursor: { line: 1, col: 6 } },
             goal: { text: ['<section className="card">', '  <h2>{title}</h2>', '</section>'] },
             solution: 'jgsrttsection className="card"<CR>',
           },
           {
-            prompt: 'Demote the heading to <h3>.',
+            prompt: 'Change <h2> to <h3>.',
             setup: { text: ['<section>', '  <h2>Settings</h2>', '  <Toggle label="Dark mode" />', '</section>'], cursor: { line: 1, col: 8 } },
             goal: { text: ['<section>', '  <h3>Settings</h3>', '  <Toggle label="Dark mode" />', '</section>'] },
             solution: 'gsrtth3<CR>',
           },
           {
-            prompt: 'Make the item a list entry.',
+            prompt: 'Wrap "Buy milk" in <li> tags.',
             setup: { text: ['<ul>', '  <li>Eggs</li>', '  Buy milk', '</ul>'], cursor: { line: 0, col: 0 } },
             goal: { text: ['<ul>', '  <li>Eggs</li>', '  <li>Buy milk</li>', '</ul>'] },
             solution: '2j^gsa$tli<CR>',
           },
           {
-            prompt: 'Emphasise "never".',
+            prompt: 'Wrap "never" in <em> tags.',
             setup: { text: ['<Card title="Tokens">', '  <p>Tokens never expire.</p>', '</Card>'], cursor: { line: 1, col: 13 } },
             goal: { text: ['<Card title="Tokens">', '  <p>Tokens <em>never</em> expire.</p>', '</Card>'] },
             solution: 'gsaiwtem<CR>',
