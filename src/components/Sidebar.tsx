@@ -68,7 +68,7 @@ export function Sidebar(p: Props) {
     <aside className="side">
       <div className="side-scroll">
         <div className="side-head">
-          <span className="brand">:vimchi</span>
+          <a className="brand" href="#" aria-label="vimchi home"><img src="/logo/vimchi-lockup.svg" alt="vimchi" /></a>
           <span className="side-count">{p.completedText}</span>
         </div>
         {BANDS.map(band => {
