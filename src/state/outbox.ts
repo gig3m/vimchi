@@ -4,6 +4,7 @@
 // (user, lesson, at) makes resends safe. An in-memory mirror keeps working when storage throws.
 import { ApiError } from './api';
 import type { CoachFields } from './coach';
+import { clampRun } from './run';
 import type { Run } from './store';
 
 const KEY = 'vimchi.outbox.v1';
@@ -45,8 +46,10 @@ export type FlushResult = { status: 'ok' | 'retry' | 'unauthorized'; retryAfter:
 export async function flushOutbox(owner: string, send: (run: Run) => Promise<void>): Promise<FlushResult> {
   let failed = false;
   for (const run of loadOutbox(owner)) {
-    const { coach, mix, ...bare } = run as Run & CoachFields;
-    const tries = coach || mix ? [run, bare] : [run];
+    // Runs queued before the cap existed can be over the server's limit; it would refuse them.
+    const capped = clampRun(run);
+    const { coach, mix, ...bare } = capped as Run & CoachFields;
+    const tries = coach || mix ? [capped, bare] : [capped];
     for (let i = 0; i < tries.length; i++) {
       try {
         await send(tries[i]);

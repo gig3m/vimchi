@@ -580,8 +580,8 @@ export const neovimBuiltins: Section = {
         title: 'On save, and how it differs from =',
         body: (
           <p>
-            Both starters format on save, so mostly you meet it through <Code>:w</Code>; LazyVim puts the key on{' '}
-            <Code>Space cf</Code>. The <Code>=</Code> operator only re-indents, with Vim's own rules, and never touches
+            LazyVim formats on save; kickstart only for the filetypes you list in <Code>format_on_save</Code>. So
+            mostly you meet it through <Code>:w</Code>; LazyVim puts the key on <Code>Space cf</Code>. The <Code>=</Code> operator only re-indents, with Vim's own rules, and never touches
             the spacing inside a line.
           </p>
         ),

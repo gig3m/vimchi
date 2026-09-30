@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { type Account, ApiError, api } from './api';
 import { coachGuest, coachSignedIn, forgetGuestCoach } from './coach';
 import { flushOutbox, loadOutbox, pushOutbox, removeOutbox as removeSent, takeOutbox } from './outbox';
+import { MAX_RUN_TIME, clampRun } from './run';
 
 export type Run = {
   lesson: string;
@@ -17,17 +18,18 @@ export type Run = {
   score: number;
 };
 
-/** The longest run the server accepts (ms); it validates `time` against this. */
-export const MAX_RUN_TIME = 24 * 60 * 60 * 1000;
-/** The timer starts at the first key, so a tab left open overnight can run past the server's limit: cap it rather than lose the run. */
-export function clampRun<R extends Run>(run: R): R {
-  return run.time > MAX_RUN_TIME ? { ...run, time: MAX_RUN_TIME } : run;
-}
+export { MAX_RUN_TIME, clampRun };
 
 type Local = { lesson: string; runs: Run[] };
 const KEY = 'vimchi.v1';
 /** Guest runs go to the account this many at a time (the server caps an import at 5000). */
 const IMPORT_CHUNK = 1000;
+/** Guest runs as import requests: chunked, and clamped, since runs stored before the cap existed can be over it. */
+export function importChunks(runs: Run[]): Run[][] {
+  const out: Run[][] = [];
+  for (let i = 0; i < runs.length; i += IMPORT_CHUNK) out.push(runs.slice(i, i + IMPORT_CHUNK).map(clampRun));
+  return out;
+}
 /** Where progress lived before the rename; read once as a fallback. */
 const OLD_KEY = 'hjkl.v1';
 
@@ -115,8 +117,7 @@ export function useProgress(): Progress {
         let imported = true;
         if (guest.length) {
           try {
-            for (let i = 0; i < guest.length; i += IMPORT_CHUNK) {
-              const chunk = guest.slice(i, i + IMPORT_CHUNK);
+            for (const chunk of importChunks(guest)) {
               await api.importRuns(chunk);
               const sent = new Set(chunk.map(r => `${r.lesson}@${r.at}`));
               updateLocal(v => ({ ...v, runs: v.runs.filter(r => !sent.has(`${r.lesson}@${r.at}`)) }));

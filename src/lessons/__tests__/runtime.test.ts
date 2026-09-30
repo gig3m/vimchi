@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createVim, Session, marksOf } from '../runtime';
+import { createVim, Session, marksOf, solutionKeys } from '../runtime';
 import { LESSONS } from '../index';
-import type { MarksChallenge } from '../types';
+import type { MarksChallenge, RoundsChallenge } from '../types';
 
 describe('createVim', () => {
   it('keeps an insert-mode start at the end of the line', () => {
@@ -38,5 +38,35 @@ describe('fix / replace scoring after undo', () => {
     expect(s.result().correctText).toBe('0 of 1 edits right');
     s.key('u');
     expect(s.result().correctText).toBe('0 of 1 edits right');
+  });
+});
+
+describe('cursor carry and folds', () => {
+  const text = ['top', '', 'function a() {', '  body', '}', 'end'];
+  it('does not carry the cursor into a round that sets up folds', () => {
+    const c: RoundsChallenge = {
+      kind: 'rounds', base: { name: 'a.ts', text },
+      rounds: [
+        { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 3, col: 2 } }, solution: '3jw' },
+        { setup: { cursor: { line: 0, col: 0 }, folds: [{ start: 2, end: 4 }] }, goal: { cursor: { line: 5, col: 0 } }, solution: '2j' },
+      ],
+    };
+    const s = new Session(c);
+    for (const k of solutionKeys('3jw')) s.key(k, 100);
+    s.advance();
+    expect(s.vim!.cursor).toEqual({ line: 0, col: 0 });
+    expect(s.vim!.closedFoldAt(s.vim!.cursor.line)).toBeNull();
+  });
+  it('the Folds lesson solves every round in order with the cursor carried', () => {
+    const lesson = LESSONS['toggle-folds'];
+    const c = lesson.challenge as RoundsChallenge;
+    const s = new Session(c);
+    let t = 0;
+    c.rounds.forEach((r, i) => {
+      for (const k of solutionKeys(r.solution)) s.key(k, (t += 100));
+      expect(s.done || s.roundDone, `round ${i + 1} (${r.solution}) not solved`).toBe(true);
+      if (!s.done) s.advance();
+    });
+    expect(s.done).toBe(true);
   });
 });

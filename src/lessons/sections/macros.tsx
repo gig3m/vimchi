@@ -254,7 +254,7 @@ export const macros: Section = {
       keyCards: [
         { key: '0', glyph: '|←', label: 'start from a known spot' },
         { key: 'f', glyph: '→x', label: 'move by content', sub: 'not by counting' },
-        { key: 'j', glyph: '↓', label: 'end on the next line' },
+        { key: 'A', glyph: '→|', label: 'append at the end', sub: 'however long the line' },
       ],
       intro: (
         <>
