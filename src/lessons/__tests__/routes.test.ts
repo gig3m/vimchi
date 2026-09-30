@@ -37,7 +37,8 @@ function sweep() {
         const lines = vim0.buf.lines;
         const acts = (p: Pos) => {
           const a = [...BASE_MOTIONS];
-          for (const n of '23456789') for (const m of 'hjklwbeWBE') a.push(n + m);
+          // Counts a person really types: up to 3 on line and word motions, never on h/l (nobody counts columns).
+          for (const n of '23') for (const m of 'jkwbeWBE') a.push(n + m);
           for (const ch of new Set(lines[p.line])) if (ch !== ' ' && ch !== '<') for (const f of 'fFtT') a.push(f + ch);
           return a.filter(k => !banned(k));
         };
