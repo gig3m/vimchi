@@ -12,6 +12,7 @@ import { Buffer } from '../buffer';
 import type { Float, Plugin, Vim } from '../editor';
 import type { Key } from '../keys';
 import type { QfItem, Window } from '../layout';
+import { helpTags as bundledHelpTags } from '../help';
 import { pos } from '../types';
 import { descOf, showKeys } from './keymap-descs';
 
@@ -313,18 +314,15 @@ export function buffers(vim: Vim) {
   startPicker(vim, 'Buffers', { entries });
 }
 
-/** Help tags (a sample of Neovim's): <CR> runs :help on the tag. */
-export const HELP_TAGS = [
-  'quickref', 'motion.txt', 'word-motions', 'text-objects', 'operator', 'change.txt', 'undo-tree', 'registers',
-  'visual-mode', 'pattern', 'search-commands', ':substitute', ':global', 'quickfix', 'location-list',
-  'windows.txt', 'buffers', 'folding', 'fold-commands', 'za', 'zR', 'zM', 'lsp', 'lsp-defaults', 'gO',
-  'vim.lsp.buf.format()', 'diagnostic.txt', 'options', "'relativenumber'", "'ignorecase'", 'mapleader',
-  'lua-guide', 'vim.keymap.set()', 'which-key.nvim', 'telescope.nvim', 'conform.nvim',
-];
+/** Every tag in the bundled help pages, sorted; <CR> runs :help on the tag. */
+export function helpTagEntries(vim: Vim): Entry[] {
+  return [...bundledHelpTags().keys()]
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(t => ({ display: t, ordinal: t, path: '', run: () => vim.ex(`help ${t}`) }));
+}
 
 export function helpTags(vim: Vim) {
-  const entries = HELP_TAGS.map(t => ({ display: t, ordinal: t, path: '', run: () => vim.ex(`help ${t}`) }));
-  startPicker(vim, 'Help', { entries });
+  startPicker(vim, 'Help', { entries: helpTagEntries(vim) });
 }
 
 /** Every normal-mode key with a description; <CR> runs it, as Telescope's keymaps picker does. */

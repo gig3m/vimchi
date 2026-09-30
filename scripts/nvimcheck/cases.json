@@ -286,5 +286,22 @@
   {"id": "undo-in-time-r3", "src": "p4 undo-in-time rounds (init + solution)", "name": "routes.ts", "text": "app.get('/users', listUsers);\napp.post('/users', createUser);\napp.delete('/users/:id', removeUser);", "keys": "f/aapi/<Esc>ujddg-g-g+"},
   {"id": "undo-in-time-r4", "src": "p4 undo-in-time rounds (init + solution)", "name": "TODO.md", "text": "## Release\n- [ ] write tests\n- [ ] update docs\n- [ ] bump version\n- [ ] publish", "cursor": {"line": 1, "col": 0}, "keys": "jddukA!<Esc>uGdd2g-"},
   {"id": "undo-in-time-r5", "src": "p4 undo-in-time rounds (init + solution)", "name": "README.md", "text": "# jobq\n\nA tiny job queue for Node.\nInstall it with npm.\nMIT licensed.", "cursor": {"line": 2, "col": 0}, "keys": "A Zero deps.<Esc>ujdd3g-2g+"},
-  {"id": "undo-in-time-r6", "src": "p4 undo-in-time rounds (init + solution)", "name": "cart.ts", "text": "export function total(items: Item[]) {\n  const sum = items.reduce((a, i) => a + i.price, 0);\n  return sum;\n}", "cursor": {"line": 2, "col": 2}, "keys": "wcwsum * 1.2<Esc>ukddug+"}
+  {"id": "undo-in-time-r6", "src": "p4 undo-in-time rounds (init + solution)", "name": "cart.ts", "text": "export function total(items: Item[]) {\n  const sum = items.reduce((a, i) => a + i.price, 0);\n  return sum;\n}", "cursor": {"line": 2, "col": 2}, "keys": "wcwsum * 1.2<Esc>ukddug+"},
+  {"id": "fold-o-closed", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": ":3,4fold<CR>ggjjoX<Esc>"},
+  {"id": "fold-o-closed-first", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": ":3,4fold<CR>3GoX<Esc>"},
+  {"id": "fold-O-closed", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": ":3,4fold<CR>ggjjOX<Esc>"},
+  {"id": "fold-O-closed-last", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": ":3,4fold<CR>4GOX<Esc>"},
+  {"id": "fold-x-lastcol", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": "3G$:3,4fold<CR>x"},
+  {"id": "fold-x-lastcol-second", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": "4G$:3,4fold<CR>x"},
+  {"id": "fold-2x-lastcol", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": "3G$:3,4fold<CR>2x"},
+  {"id": "fold-x-midcol", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": "3G4l:3,4fold<CR>x"},
+  {"id": "fold-3dd-count", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": ":3,4fold<CR>gg3dd"},
+  {"id": "fold-2dd-on-fold", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": ":3,4fold<CR>ggjj2dd"},
+  {"id": "fold-2yy-count", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": ":3,4fold<CR>ggj2yy"},
+  {"id": "fold-2cc-count", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": ":3,4fold<CR>gg2ccQ<Esc>"},
+  {"id": "fold-2shift-above", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": ":3,4fold<CR>ggj2>>x"},
+  {"id": "fold-shift-opens", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": ":3,4fold<CR>ggjj>>jx"},
+  {"id": "fold-unshift-opens", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": ":3,4fold<CR>ggjj<<jx"},
+  {"id": "earlier-0", "src": "p4-review", "name": "x.txt", "text": "abcd", "keys": "xxxu:earlier 0<CR>x"},
+  {"id": "earlier-bare", "src": "p4-review", "name": "x.txt", "text": "abcd", "keys": "xxxu:earlier<CR>"}
 ]

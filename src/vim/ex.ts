@@ -847,33 +847,41 @@ function setOption(vim: Vim, arg: string, local: boolean) {
     if (!(name in vim.options)) {
       if (m[2].startsWith('no') && (OPTION_ALIASES[m[2].slice(2)] ?? m[2].slice(2)) in vim.options) {
         const n2 = OPTION_ALIASES[m[2].slice(2)] ?? m[2].slice(2);
+        if (!local) delete vim.win.opts[n2];
         target[n2] = false;
         continue;
       }
       fail(`E518: Unknown option: ${m[2]}`);
     }
-    const cur = vim.options[name];
+    // The window's value (a :setlocal) wins over the global one.
+    const cur = name in vim.win.opts ? vim.win.opts[name] : vim.options[name];
+    // :set sets the global value and the current window's; :setlocal only the window's.
+    const put = (v: boolean | number | string) => {
+      if (!local) delete vim.win.opts[name];
+      target[name] = v as boolean | number;
+    };
     if (m[3] === '?') {
-      const v = name in vim.win.opts ? vim.win.opts[name] : cur;
-      vim.msg(typeof v === 'boolean' ? (v ? `  ${name}` : `no${name}`) : `  ${name}=${v}`);
+      vim.msg(typeof cur === 'boolean' ? (cur ? `  ${name}` : `no${name}`) : `  ${name}=${cur}`);
       continue;
     }
-    if (m[3] === '&') { target[name] = (DEFAULTS as Record<string, boolean | number>)[name]; continue; }
+    if (m[3] === '&') { put((DEFAULTS as Record<string, boolean | number>)[name]); continue; }
     if (typeof cur === 'boolean') {
       if (m[4]) fail(`E474: Invalid argument: ${tok}`);
-      target[name] = m[1] === 'no' ? false : m[1] === 'inv' || m[3] === '!' ? !cur : true;
+      put(m[1] === 'no' ? false : m[1] === 'inv' || m[3] === '!' ? !cur : true);
       continue;
     }
+    if (m[1]) fail(`E474: Invalid argument: ${tok}`);
+    if (m[3] === '!') fail(`E488: Trailing characters: ${tok}`);
     if (!m[4]) {
       vim.msg(`  ${name}=${cur}`);
       continue;
     }
     const val = typeof cur === 'number' ? parseInt(m[5], 10) : m[5];
     if (typeof cur === 'number' && isNaN(val as number)) fail(`E521: Number required after =: ${tok}`);
-    if (m[4] === '+=') target[name] = typeof cur === 'number' ? cur + (val as number) : cur + String(val);
-    else if (m[4] === '-=') target[name] = typeof cur === 'number' ? cur - (val as number) : String(cur).replace(String(val), '');
-    else if (m[4] === '^=') target[name] = typeof cur === 'number' ? cur * (val as number) : String(val) + cur;
-    else target[name] = val;
+    if (m[4] === '+=') put(typeof cur === 'number' ? cur + (val as number) : cur + String(val));
+    else if (m[4] === '-=') put(typeof cur === 'number' ? cur - (val as number) : String(cur).replace(String(val), ''));
+    else if (m[4] === '^=') put(typeof cur === 'number' ? cur * (val as number) : String(val) + cur);
+    else put(val);
   }
   vim.emit('set');
 }
@@ -1348,7 +1356,9 @@ const COMMANDS: Record<string, Cmd> = {
 function undoTimeEx(vim: Vim, arg: string, dir: -1 | 1) {
   const m = /^\s*(\d*)\s*$/.exec(arg);
   if (!m) fail(`The tutor has no clock: use a count, as in :${dir < 0 ? 'earlier' : 'later'} 2`);
-  const p = vim.buf.undoTime(dir * (parseInt(m[1], 10) || 1), vim.cursor, vim.win.want);
+  const n = m[1] ? parseInt(m[1], 10) : 1;
+  if (!n) return; // :earlier 0 stays put
+  const p = vim.buf.undoTime(dir * n, vim.cursor, vim.win.want);
   if (!p) return vim.msg(dir < 0 ? 'Already at oldest change' : 'Already at newest change');
   vim.setCursor(p);
   vim.clampCursor(false);

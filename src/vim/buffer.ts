@@ -1,4 +1,6 @@
-import { type Pos, pos } from './types';
+import { fail, type Pos, pos } from './types';
+
+export const E21 = "E21: Cannot make changes, 'modifiable' is off";
 
 /** Neovim's default 'undolevels': how many changes undo can take back. */
 const UNDO_LEVELS = 1000;
@@ -29,6 +31,8 @@ export class Buffer {
   listed = true;
   modified = false;
   readonly = false;
+  /** 'modifiable': off (help pages), every edit fails with E21 before touching the text. */
+  modifiable = true;
   /** Lowercase marks plus automatic ones: [ ] < > . ^ " */
   marks = new Map<string, Pos>();
   changelist: Pos[] = [];
@@ -70,7 +74,13 @@ export class Buffer {
    * Replace `count` lines starting at `start` with `repl`, shifting marks and folds. `split`: the
    * new line comes from splitting line start - 1 in Insert mode, which keeps it in that line's fold.
    */
+  /** Fail with E21 when the buffer is not 'modifiable'. */
+  checkModifiable() {
+    if (!this.modifiable) fail(E21);
+  }
+
   splice(start: number, count: number, repl: string[], opts: { split?: boolean } = {}) {
+    this.checkModifiable();
     if (count || repl.length) this.markEdited();
     this.lines.splice(start, count, ...repl);
     if (!this.lines.length) this.lines = [''];
@@ -96,12 +106,14 @@ export class Buffer {
   }
 
   setLine(n: number, text: string) {
+    this.checkModifiable();
     if (this.lines[n] !== text) this.markEdited();
     this.lines[n] = text;
     this.modified = true;
   }
 
   setText(text: string) {
+    this.checkModifiable();
     if (text !== this.lines.join('\n')) this.markEdited();
     this.lines = splitText(text);
     this.modified = true;
@@ -223,6 +235,7 @@ export class Buffer {
 
   /** Undo one change; returns where the cursor goes, or null at the oldest change. */
   undo(cursor: Pos, want = cursor.col): Pos | null {
+    this.checkModifiable();
     this.commitPending();
     const node = this.undoCur;
     if (!node.parent) return null;
@@ -234,6 +247,7 @@ export class Buffer {
 
   /** Redo one change on the current branch; null at the newest change. */
   redo(cursor: Pos, want = cursor.col): Pos | null {
+    this.checkModifiable();
     this.commitPending();
     const node = this.undoCur.next;
     if (!node) return null;
@@ -244,6 +258,7 @@ export class Buffer {
 
   /** g- / g+: move `steps` states back (negative) or forward in time; null if already there. */
   undoTime(steps: number, cursor: Pos, want = cursor.col): Pos | null {
+    this.checkModifiable();
     this.commitPending();
     const from = this.undoCur;
     // Nodes stay in time order; once old ones are dropped a node's seq is no longer its index.
@@ -274,6 +289,7 @@ export class Buffer {
   }
 
   private restore(n: UndoNode) {
+    this.checkModifiable();
     this.lines = n.lines.slice();
     this.undoCur = n;
     this.modified = true;

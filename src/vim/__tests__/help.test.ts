@@ -43,6 +43,7 @@ describe(':help lookup (as Neovim 0.12 resolves these subjects)', () => {
     ['ic', 'options.txt', "'ic'"],
     ['set', 'options.txt', ':set'],
     ['earlier', 'undo.txt', ':earlier'],
+    ['wr', 'options.txt', "'wrap'"],
     ['', 'help.txt', 'help.txt'],
   ])(':h %s', (subject, file, name) => {
     expect(findHelp(subject)).toEqual({ file, pos: tag(name).pos });
@@ -50,7 +51,7 @@ describe(':help lookup (as Neovim 0.12 resolves these subjects)', () => {
   it('unknown subjects fail with E149', () => {
     const vim = fresh();
     vim.feedKeys(':h nosuchthing<CR>');
-    expect(vim.message?.text).toMatch(/E149/);
+    expect(vim.message?.text).toBe('E149: No help for nosuchthing');
     expect(at(vim)).toEqual({ buf: 'app.ts', line: 2, col: 0, wins: 1 });
   });
 });
@@ -110,5 +111,44 @@ describe(':help and CTRL-]', () => {
     const vim = fresh();
     vim.feedKeys('<C-]>');
     expect(vim.message?.text).toMatch(/E433/);
+  });
+});
+
+describe('the help window', () => {
+  it(':h puts the tag line at the top of the window, like zt (Neovim: :h CTRL-E -> w0 = tag line)', () => {
+    const vim = fresh();
+    vim.feedKeys(':h CTRL-E<CR>');
+    expect(vim.win.top).toBe(tag('CTRL-E').pos.line);
+    vim.feedKeys(':h zb<CR>');
+    expect(vim.win.top).toBe(tag('zb').pos.line);
+  });
+  it('CTRL-] puts the tag line at the top too', () => {
+    const vim = fresh();
+    vim.feedKeys(':h dd<CR>2j0f|<C-]>');
+    expect(vim.win.top).toBe(tag('linewise').pos.line);
+  });
+  it.each(['x', 'dd', 'i', 'o', 'O', 'A', 'R', 'p', '>>', 'J', 'rX', '~', 'cw', 'u', ':s/dd/X/<CR>', ':d<CR>'])(
+    'is not modifiable: %s fails with E21 and changes nothing',
+    keys => {
+      const vim = fresh();
+      vim.feedKeys('yy:h dd<CR>');
+      const before = vim.buf.lines.slice();
+      vim.feedKeys(keys);
+      expect(vim.message?.text).toBe("E21: Cannot make changes, 'modifiable' is off");
+      expect(vim.buf.lines).toEqual(before);
+      expect(vim.buf.modified).toBe(false);
+      expect(vim.mode).toBe('normal');
+    },
+  );
+  it('a later lookup still lands on the tag after a refused edit', () => {
+    const vim = fresh();
+    vim.feedKeys(':h dd<CR>x:h D<CR>');
+    expect(vim.cursor).toEqual(tag('D').pos);
+    expect(vim.line()).toContain('*D*');
+  });
+  it('yanking from help still works', () => {
+    const vim = fresh();
+    vim.feedKeys(':h dd<CR>yy');
+    expect(vim.registers.get('"').text).toContain('*dd*');
   });
 });

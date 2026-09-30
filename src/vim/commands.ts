@@ -418,6 +418,8 @@ export function installCommands(vim: Vim) {
     }
     V.buf.recordChange(pos(r.start.line, 0));
     V.setCursor(landOn(r.start.line), V.win.want);
+    // Neovim opens a closed fold the cursor ends up in (>> on a fold), not one it only shifted (2>> above it).
+    if (!c.visual) V.openFoldsAt(r.start.line);
     const n = r.end.line - r.start.line + 1;
     if (n > 2) V.msg(`${n} lines ${dir === 1 ? '>' : '<'}ed ${times} time${times > 1 ? 's' : ''}`);
   };
@@ -539,8 +541,9 @@ export function installCommands(vim: Vim) {
 
   A('x', c => {
     // x is dl, and an operator takes a closed fold whole: the fold's lines go, linewise.
+    // Except at the last column: l fails there, so x stays on the line and takes its last character.
     const f = V.closedFoldAt(cur().line);
-    if (f) return runOp('d', { start: pos(f.start, 0), end: pos(f.end, 0), kind: 'line' }, c);
+    if (f && !(ln().length && cur().col >= ln().length - 1)) return runOp('d', { start: pos(f.start, 0), end: pos(f.end, 0), kind: 'line' }, c);
     const r = charRange(c.count);
     if (!r) {
       if (!ln()) V.buf.markEdited(); // Vim saves undo for x on an empty line: the redo branch goes
@@ -664,7 +667,9 @@ export function installCommands(vim: Vim) {
   A('A', c => V.startInsert('A', pos(cur().line, ln().length), c.count), { change: true });
   A('R', c => V.startInsert('R', cur(), c.count), { change: true });
   const open = (above: boolean) => (c: ActionCtx) => {
-    const l = cur().line;
+    // On a closed fold, o opens below its last line and O above its first (n_opencmd).
+    const f = V.closedFoldAt(cur().line);
+    const l = above ? (f?.start ?? cur().line) : (f?.end ?? cur().line);
     const indent = V.opt('autoindent') ? indentOf(ln(l)) + (!above && /[{([]\s*$/.test(ln(l)) ? ' '.repeat(Number(V.opt('shiftwidth'))) : '') : '';
     const at = above ? l : l + 1;
     V.insertLines(at, [indent]);
