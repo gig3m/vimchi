@@ -114,9 +114,9 @@ export const commandLine: Section = {
       intro: (
         <>
           <p>
-            <Code>:</Code> opens the command line; <Code>esc</Code> leaves it, <Code>tab</Code> completes, and{' '}
-            <Code>:w</Code> / <Code>:q</Code> / <Code>ZZ</Code> save and quit. A bare line number on the command line jumps there: <Code>:42</Code> then <Code>Enter</Code> lands on line
-            42, at its first non-blank character. <Code>:$</Code> goes to the last line, though <Code>G</Code> gets there in one key.
+            <Code>:</Code> opens the command line, <Code>Esc</Code> leaves it and <Code>Tab</Code> completes. A bare
+            line number jumps there: <Code>:42</Code> then <Code>Enter</Code> lands on line 42, in the same column where
+            it can. <Code>:$</Code> goes to the last line, though <Code>G</Code> gets there in one key.
           </p>
           <p>
             Error messages, stack traces and code review comments all come with line numbers. Type the number instead
@@ -133,8 +133,9 @@ export const commandLine: Section = {
         title: 'Or 42G',
         body: (
           <p>
-            <Code>42G</Code> does the same from normal mode. Both add to the jumplist, so <Code>C-o</Code> takes you
-            back to where you were.
+            <Code>42G</Code> does the same from normal mode. Both add to the jump list, so <Code>C-o</Code> takes you
+            back to where you were. Classic Vim puts the cursor on the line's first non-blank instead of keeping the
+            column.
           </p>
         ),
       },
@@ -144,7 +145,7 @@ export const commandLine: Section = {
         base: { name: 'init.lua', text: INIT_LUA, height: 12, cursor: { line: 0, col: 0 } },
         rounds: [
           {
-            prompt: 'The augroup is created on line 30. Go there.',
+            prompt: 'Go to line 30.',
             goal: { cursor: { line: 29, col: 0 } },
             solution: ':30<CR>',
           },
@@ -161,7 +162,7 @@ export const commandLine: Section = {
             solution: ':24<CR>',
           },
           {
-            prompt: 'The ]q mapping is on line 25.',
+            prompt: 'Go to line 25.',
             setup: { cursor: { line: 5, col: 0 } },
             goal: { cursor: { line: 24, col: 0 } },
             solution: ':25<CR>',
@@ -194,7 +195,8 @@ export const commandLine: Section = {
       intro: (
         <>
           <p>
-            Most Ex commands take a range in front: <Code>:5,8d</Code> deletes lines 5 to 8. Besides numbers there are
+            Most commands you type after <Code>:</Code>, called Ex commands, take a range in front:{' '}
+            <Code>:5,8d</Code> deletes lines 5 to 8. Besides numbers there are
             three shorthands: <Code>.</Code> is the current line, <Code>$</Code> the last line, and <Code>%</Code> the
             whole file.
           </p>
@@ -228,7 +230,7 @@ export const commandLine: Section = {
         kind: 'rounds',
         rounds: [
           {
-            prompt: 'Delete from the restart marker to the end.',
+            prompt: 'Delete from the "--- restart ---" line, where the cursor is, to the end.',
             setup: {
               name: 'server.log',
               text: [
@@ -251,7 +253,7 @@ export const commandLine: Section = {
             solution: ':.,$d<CR>',
           },
           {
-            prompt: 'These are moving into a class. Indent the whole file.',
+            prompt: 'Indent the whole file one level.',
             setup: {
               name: 'handlers.ts',
               text: [
@@ -298,7 +300,7 @@ export const commandLine: Section = {
             solution: ':3,7d<CR>',
           },
           {
-            prompt: 'Join the query, lines 2 to 5, onto one line.',
+            prompt: 'Join lines 2 to 5 onto one line.',
             setup: {
               name: 'report.sql',
               text: [
@@ -325,7 +327,7 @@ export const commandLine: Section = {
             solution: ':2,5j<CR>',
           },
           {
-            prompt: 'Delete the local overrides: this line through line 7.',
+            prompt: 'Delete from the cursor line, "# local overrides", through line 7.',
             setup: {
               name: '.env',
               text: [
@@ -372,13 +374,14 @@ export const commandLine: Section = {
           </p>
           <p>
             Selecting is often easier than counting line numbers, especially with text objects like <Code>ip</Code>.
-            The range is always whole lines, even from a characterwise selection.
+            The range is always whole lines, even from a <Code>v</Code> selection.
           </p>
         </>
       ),
       practice: total => (
         <p>
-          Select the lines, press <Code>:</Code>, and finish the command. {total} rounds.
+          Select the lines, press <Code>:</Code>, and finish the command. <Code>{":'<,'>w name"}</Code> writes just
+          the selected lines to a new file. {total} rounds.
         </p>
       ),
       aside: {
@@ -395,13 +398,13 @@ export const commandLine: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Write the retry function to retry.ts.',
+            prompt: 'Write the paragraph under the cursor, "export async function retry" to its "}", to retry.ts.',
             setup: { name: 'utils.ts', text: RETRY_TS, cursor: { line: 7, col: 4 } },
             goal: { files: { 'retry.ts': RETRY_FN.join('\n') } },
             solution: 'vip:w retry.ts<CR>',
           },
           {
-            prompt: 'Write the March rows to march.csv.',
+            prompt: 'Write the three "2026-03" rows to march.csv.',
             setup: {
               name: 'sales.csv',
               text: [
@@ -418,7 +421,7 @@ export const commandLine: Section = {
             solution: 'Vjj:w march.csv<CR>',
           },
           {
-            prompt: 'You just selected the sleep helper. sleep.ts holds it.',
+            prompt: 'You selected the last two lines earlier. Write that selection to sleep.ts.',
             setup: {
               name: 'utils.ts',
               text: RETRY_TS,
@@ -429,7 +432,7 @@ export const commandLine: Section = {
             solution: 'gv:w sleep.ts<CR>',
           },
           {
-            prompt: 'Join the paragraph into one line.',
+            prompt: 'Join the paragraph under the cursor into one line.',
             setup: {
               name: 'DEPLOY.md',
               text: [
@@ -494,17 +497,17 @@ export const commandLine: Section = {
         base: { name: 'server.ts', text: SERVER_TS, cursor: { line: 18, col: 0 } },
         rounds: [
           {
-            prompt: 'Delete the debug middleware, lines 10 to 15.',
+            prompt: 'Delete lines 10 to 15, the "// debug" block.',
             goal: { text: [...SERVER_TS.slice(0, 9), ...SERVER_TS.slice(15)] },
             solution: ':10,15d<CR>',
           },
           {
-            prompt: 'Yank the route imports, lines 3 and 4, into register a.',
+            prompt: 'Yank lines 3 and 4 into register a.',
             goal: { registers: { a: SERVER_TS.slice(2, 4).join('\n') + '\n' } },
             solution: ':3,4y a<CR>',
           },
           {
-            prompt: 'Delete the leftover test line at the end.',
+            prompt: 'Delete the last line.',
             setup: {
               name: 'deploy.sh',
               text: [
@@ -523,7 +526,7 @@ export const commandLine: Section = {
             solution: ':$d<CR>',
           },
           {
-            prompt: 'Start a second table: copy the header from line 1 and put it below the cursor.',
+            prompt: 'Yank line 1 and put it below the cursor.',
             setup: {
               name: 'prices.csv',
               text: ['sku,name,price', 'A-100,desk lamp,24.00', 'A-101,monitor arm,79.00', '', '# discontinued'],
@@ -535,7 +538,7 @@ export const commandLine: Section = {
             solution: ':1y<CR>p',
           },
           {
-            prompt: 'Delete line 7, the cors middleware.',
+            prompt: 'Delete line 7, "app.use(cors());".',
             setup: { cursor: { line: 2, col: 0 } },
             goal: { text: [...SERVER_TS.slice(0, 6), ...SERVER_TS.slice(7)] },
             solution: ':7d<CR>',
@@ -590,7 +593,7 @@ export const commandLine: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Move this import to the top.',
+            prompt: 'Move the cursor line to the top.',
             setup: {
               name: 'Cart.tsx',
               text: [
@@ -644,7 +647,7 @@ export const commandLine: Section = {
             solution: ':2,4m$<CR>',
           },
           {
-            prompt: 'Move which-key to the top of the list, below line 1.',
+            prompt: 'Move the which-key line, where the cursor is, below line 1.',
             setup: {
               name: 'plugins.lua',
               text: [
@@ -734,7 +737,7 @@ export const commandLine: Section = {
         title: 'Insert mode ends itself',
         body: (
           <p>
-            <Code>:norm</Code> presses <Code>esc</Code> for you after each line, so <Code>:%norm I- </Code> needs no
+            <Code>:norm</Code> presses <Code>Esc</Code> for you after each line, so <Code>:%norm I- </Code> needs no
             escape at the end. Trailing spaces count, so type exactly what you want inserted.
           </p>
         ),
@@ -764,7 +767,7 @@ export const commandLine: Section = {
             solution: ':%norm A;<CR>',
           },
           {
-            prompt: 'Turn the paragraph into a list: prefix each line with "- ".',
+            prompt: 'Put "- " at the start of each line of the paragraph under the cursor.',
             setup: {
               name: 'RUNBOOK.md',
               text: ['## Before a release', '', 'back up the database', 'run migrations', 'restart the workers'],
@@ -774,7 +777,7 @@ export const commandLine: Section = {
             solution: 'vip:norm I- <CR>',
           },
           {
-            prompt: 'Strip the timestamp from every line.',
+            prompt: 'Delete the time, like "09:12:01 ", from the start of every line.',
             setup: {
               name: 'worker.log',
               text: [
@@ -802,7 +805,7 @@ export const commandLine: Section = {
             solution: ':2,4norm @q<CR>',
           },
           {
-            prompt: 'Every field of Config is pub.',
+            prompt: 'Put "pub " before the text on the three indented lines. The cursor is on the first.',
             setup: {
               name: 'config.rs',
               text: ['struct Config {', '    host: String,', '    port: u16,', '    tls: bool,', '}'],
@@ -855,7 +858,7 @@ export const commandLine: Section = {
         base: { name: 'keys.ts' },
         rounds: [
           {
-            prompt: 'Record a macro that drops the trailing comment, then run it on the rest.',
+            prompt: 'Record a macro that deletes the " // " comment on this line, then run it on the other lines.',
             setup: {
               text: ['const retries = 3 // tries', 'const delayMs = 250', 'const timeoutMs = 5000 // ms', 'const jitter = true'],
               cursor: { line: 0, col: 0 },
@@ -864,7 +867,7 @@ export const commandLine: Section = {
             solution: 'qaf/hDq:2,$norm @a<CR>',
           },
           {
-            prompt: 'Record a macro that makes a line a numbered step, then run it on the other lines.',
+            prompt: 'Record a macro that puts "1. " at the start of this line, then run it on the lines below.',
             setup: {
               name: 'deploy.md',
               text: ['# Deploy', '', 'Tag the release', 'Build the image', 'Push to the registry', 'Roll out to staging', 'Promote to prod'],
@@ -876,7 +879,7 @@ export const commandLine: Section = {
             solution: 'qaI1. <Esc>q:4,$norm @a<CR>',
           },
           {
-            prompt: 'Register q quotes a line and adds a comma. Select the three hosts and run it.',
+            prompt: 'Register q quotes a line and adds a comma. Select the three ".com" lines and run it.',
             setup: {
               name: 'allow.ts',
               text: ['export const ALLOWED = [', 'example.com', 'api.example.com', 'cdn.example.com', '];'],
@@ -887,7 +890,7 @@ export const commandLine: Section = {
             solution: 'Vjj:norm @q<CR>',
           },
           {
-            prompt: 'Register a turns "key = value" into "key: value". Run it on every line; the comments have no "=" and are skipped.',
+            prompt: 'Register a turns "key = value" into "key: value". Run it on every line; lines with no "=" are skipped.',
             setup: {
               name: 'settings.toml',
               text: ['# server', 'host = "0.0.0.0"', 'port = 8080', '# logging', 'level = "info"', 'format = "json"'],
@@ -951,7 +954,7 @@ export const commandLine: Section = {
             solution: '@:j@@',
           },
           {
-            prompt: 'Both console.log lines are gone.',
+            prompt: 'Delete both console.log lines: run :/console/d once, then repeat it.',
             setup: {
               name: 'checkout.ts',
               text: [
@@ -975,7 +978,7 @@ export const commandLine: Section = {
             solution: ':/console/d<CR>@:',
           },
           {
-            prompt: 'The fixture row appears five times.',
+            prompt: 'Make line 2 appear five times in a row: :t. copies it once, then repeat.',
             setup: {
               name: 'fixtures.csv',
               text: ['id,email,plan', '1,test@example.com,free', '2,ops@example.com,team'],
@@ -1025,8 +1028,9 @@ export const commandLine: Section = {
             the WORD, which includes dots and other punctuation.
           </p>
           <p>
-            Put the cursor on a name, then build the command around it without retyping (or mistyping) it:{' '}
-            <Code>:%s/</Code>, <Code>C-r C-w</Code>, <Code>/newName/g</Code>.
+            Put the cursor on a name, then build the command around it without retyping (or mistyping) it. The
+            classic use is a rename with substitute, which the next section covers: <Code>:%s/</Code>,{' '}
+            <Code>C-r C-w</Code>, <Code>/newName/g</Code>.
           </p>
         </>
       ),
@@ -1039,7 +1043,7 @@ export const commandLine: Section = {
         title: 'Registers too',
         body: (
           <p>
-            <Code>C-r</Code> followed by any register name pastes it: <Code>C-r "</Code> for the last yank,{' '}
+            <Code>C-r</Code> followed by any register name pastes it: <Code>C-r "</Code> for the last yank or delete,{' '}
             <Code>C-r /</Code> for the last search. It works in insert mode as well.
           </p>
         ),
@@ -1049,7 +1053,7 @@ export const commandLine: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Rename sm to sum everywhere.',
+            prompt: 'Change every "sm" to "sum" with :%s/sm/sum/g. The cursor is on sm.',
             setup: {
               name: 'total.ts',
               text: [
@@ -1073,7 +1077,7 @@ export const commandLine: Section = {
             solution: ':%s/<C-r><C-w>/sum/g<CR>',
           },
           {
-            prompt: 'Delete every line that mentions this flag.',
+            prompt: 'Delete every line with the word under the cursor, using :g/word/d.',
             setup: {
               name: 'flags.ts',
               text: [
@@ -1091,7 +1095,7 @@ export const commandLine: Section = {
             solution: ':g/<C-r><C-w>/d<CR>',
           },
           {
-            prompt: 'Change cfg.retries to cfg.http.retries everywhere.',
+            prompt: 'Change every "cfg.retries" to "cfg.http.retries" with :%s/old/new/g. The cursor is on it.',
             setup: {
               name: 'client.ts',
               text: [
@@ -1113,7 +1117,7 @@ export const commandLine: Section = {
             solution: ':%s/<C-r><C-a>/cfg.http.retries/g<CR>',
           },
           {
-            prompt: 'Rename the userName key to login.',
+            prompt: 'Change "userName" to "login" with :s/old/new/. The cursor is on it.',
             setup: {
               name: 'user.json',
               text: ['{', '  "id": 7,', '  "userName": "ada",', '  "email": "ada@example.com"', '}'],
@@ -1164,7 +1168,7 @@ export const commandLine: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'Rerun the sort from your history.',
+            prompt: 'Rerun the "sort n" command from your history.',
             setup: {
               name: 'scores.txt',
               text: ['42 alice', '7 bob', '19 carol', '3 dan'],
@@ -1202,7 +1206,7 @@ export const commandLine: Section = {
             solution: 'q:ggI2,4<Esc><CR>',
           },
           {
-            prompt: 'Rerun the :m command, four entries up.',
+            prompt: 'Rerun the "3m0" command, four lines up from the bottom of the history.',
             setup: {
               name: 'app.ts',
               text: [
@@ -1275,7 +1279,7 @@ export const commandLine: Section = {
         base: { name: 'server.ts', text: SERVER_TS },
         rounds: [
           {
-            prompt: 'Turn on relativenumber, then delete updatetime and the two split lines.',
+            prompt: 'Turn on relativenumber, then delete the opt.updatetime line and the two opt.split lines below it.',
             setup: { name: 'init.lua', text: INIT_LUA, cursor: { line: 14, col: 0 } },
             goal: {
               text: [...INIT_LUA.slice(0, 14), ...INIT_LUA.slice(17)],

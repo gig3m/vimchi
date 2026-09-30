@@ -122,7 +122,7 @@ export const essentialMotions: Section = {
         body: (
           <p>
             <Code>b</Code> lands on the start of a word; you'd still need <Code>e</Code> to reach its end. <Code>ge</Code>{' '}
-            gets there in one motion, and <Code>dge</Code> deletes back to it.
+            gets there in one motion. Once you know operators, <Code>dge</Code> deletes back to it.
           </p>
         ),
       },
@@ -180,9 +180,9 @@ export const essentialMotions: Section = {
         title: 'Plus and minus',
         body: (
           <p>
-            <Code>+</Code> and <Code>Enter</Code> go to the first non-blank of the next line, <Code>-</Code> to the one
-            above. <Code>_</Code> exists mostly for operators: <Code>d_</Code> deletes the whole line, like{' '}
-            <Code>dd</Code>.
+            <Code>+</Code> and <Code>enter</Code> go to the first non-blank of the next line, <Code>-</Code> to the one
+            above. <Code>_</Code> exists mostly for operators (First Operators): <Code>d_</Code> deletes the
+            whole line, like <Code>dd</Code>.
           </p>
         ),
       },
@@ -370,7 +370,7 @@ export const essentialMotions: Section = {
         <>
           <p>
             <Code>gg</Code> jumps to the first line of the file and <Code>G</Code> to the last. Neovim keeps your
-            column when it can (Vim's <Code>startofline</Code> is off), so from column 5 you land on column 5 of the
+            column when it can (its <Code>startofline</Code> option is off), so from column 5 you land on column 5 of the
             new line; add <Code>0</Code> or <Code>^</Code> when you want the start of it.
           </p>
           <p>
@@ -531,7 +531,7 @@ export const essentialMotions: Section = {
           </p>
           <p>
             Not on a bracket? <Code>%</Code> finds the next one on the line first, then jumps to its match. From the start
-            of an <Code>if</Code> line it lands on the closing parenthesis of the condition.
+            of the line below, it finds the first <Mono>(</Mono> and lands on the <Mono>)</Mono> that closes it.
           </p>
           <Motions text="if (hit && (Date.now() - hit.at) < ttl) return;" cursor={0} keys={['%']} />
         </>
@@ -546,7 +546,7 @@ export const essentialMotions: Section = {
         body: (
           <p>
             Neovim ships the matchit plugin, and it is on by default: <Code>%</Code> also jumps between HTML tags and
-            between <Code>if</Code>, <Code>else</Code> and <Code>end</Code> in Lua and shell. In classic Vim, run{' '}
+            between <Code>if</Code>, <Code>else</Code> and <Code>end</Code> in Lua (<Code>fi</Code> in shell). In classic Vim, run{' '}
             <Code>:packadd matchit</Code> first.
           </p>
         ),

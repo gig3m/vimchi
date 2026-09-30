@@ -61,7 +61,7 @@ export const basicOperators: Section = {
         base: { name: 'main.ts' },
         rounds: [
           {
-            prompt: '"default " is gone.',
+            prompt: 'Delete "default ".',
             setup: {
               text: [
                 "import { serve } from './server';",
@@ -84,7 +84,7 @@ export const basicOperators: Section = {
             solution: 'jjwdw',
           },
           {
-            prompt: '"noremap" is "silent".',
+            prompt: 'Change "noremap" to "silent".',
             setup: {
               name: 'keymaps.lua',
               text: [
@@ -104,7 +104,7 @@ export const basicOperators: Section = {
             solution: 'kfncwsilent<Esc>',
           },
           {
-            prompt: 'The comment is gone.',
+            prompt: 'Delete everything after "8080;".',
             setup: {
               text: [
                 "const host = 'localhost';",
@@ -123,7 +123,7 @@ export const basicOperators: Section = {
             solution: 'jf;ld$',
           },
           {
-            prompt: 'Everything after "=" is name;',
+            prompt: 'Change everything after "= " to "name;".',
             setup: {
               text: [
                 'function greet(name: string) {',
@@ -233,7 +233,7 @@ export const basicOperators: Section = {
             solution: 'jj3wdw',
           },
           {
-            prompt: 'Delete the duplicated "local".',
+            prompt: 'Delete the "local" just before "setup".',
             setup: {
               name: 'init.lua',
               text: ['local M = {}', '', 'local function local setup(opts)', '  M.opts = opts', 'end'],
@@ -306,7 +306,7 @@ export const basicOperators: Section = {
         base: { name: 'app.ts' },
         rounds: [
           {
-            prompt: 'Remove the "state" label.',
+            prompt: 'Turn console.log("state", user) into console.log(user).',
             setup: {
               text: ['function render(user: User) {', '  console.log("state", user);', '  return view(user);', '}'],
               cursor: { line: 0, col: 0 },
@@ -315,7 +315,7 @@ export const basicOperators: Section = {
             solution: 'jf"dtu',
           },
           {
-            prompt: 'Drop the options argument.',
+            prompt: 'Turn greet(name, { loud: true }) into greet(name).',
             setup: {
               text: ['const name = input.value;', 'greet(name, { loud: true });', 'showBanner();'],
               cursor: { line: 2, col: 0 },
@@ -345,7 +345,7 @@ export const basicOperators: Section = {
             solution: 'jfpdf.',
           },
           {
-            prompt: 'Drop the fallback port.',
+            prompt: 'Delete " ?? 3000" from the port line.',
             setup: {
               text: [
                 "import { createServer } from 'node:http';",
@@ -366,7 +366,7 @@ export const basicOperators: Section = {
             solution: 'kt?dt;',
           },
           {
-            prompt: 'Strip the prerelease tag.',
+            prompt: 'Change "1.2.0-beta.3" to "1.2.0".',
             setup: {
               name: 'package.json',
               text: ['{', '  "name": "vimchi",', '  "version": "1.2.0-beta.3",', '  "private": true', '}'],
@@ -409,7 +409,7 @@ export const basicOperators: Section = {
         body: (
           <p>
             Everything you delete goes into a register. After <Code>dd</Code>, press <Code>p</Code> to put the line back
-            below the cursor. That's how you move lines around, as the Copy/Paste lesson shows.
+            below the cursor. That's how you move lines around, as Copy/Paste Lines shows.
           </p>
         ),
       },
@@ -428,7 +428,7 @@ export const basicOperators: Section = {
             solution: 'jdd',
           },
           {
-            prompt: 'Delete the trailing comment.',
+            prompt: 'Delete " // was 5 before the outage".',
             setup: {
               text: ['const timeout = 5000;', 'const retries = 3; // was 5 before the outage', 'const backoff = 2;'],
               cursor: { line: 2, col: 6 },
@@ -437,7 +437,7 @@ export const basicOperators: Section = {
             solution: 'kf/hD',
           },
           {
-            prompt: 'Remove the swapfile setting.',
+            prompt: 'Delete the "vim.opt.swapfile" line.',
             setup: {
               name: 'options.lua',
               text: ['vim.opt.number = true', 'vim.opt.swapfile = true', 'vim.opt.undofile = true', 'vim.opt.wrap = false'],
@@ -447,7 +447,7 @@ export const basicOperators: Section = {
             solution: 'kkdd',
           },
           {
-            prompt: 'Cut the note off the end of the task.',
+            prompt: 'Delete " (blocked on review)" from the end of the line.',
             setup: {
               name: 'TODO.md',
               text: ['## Sprint 12', '- [x] Ship v2 (blocked on review)', '- [ ] Update docs'],
@@ -457,7 +457,7 @@ export const basicOperators: Section = {
             solution: 'kf(hD',
           },
           {
-            prompt: 'Delete the duplicate "lint" script.',
+            prompt: 'Delete the second "lint" line.',
             setup: {
               name: 'package.json',
               text: ['"scripts": {', '  "lint": "eslint .",', '  "test": "vitest",', '  "lint": "eslint .",', '  "build": "vite build"', '}'],
@@ -480,8 +480,8 @@ export const basicOperators: Section = {
       intro: (
         <>
           <p>
-            <Code>j</Code> and <Code>k</Code> are linewise motions, so <Code>dj</Code> deletes the current line and the one
-            below, and <Code>dk</Code> deletes the current line and the one above.
+            <Code>j</Code> and <Code>k</Code> move by whole lines, so an operator on them takes whole lines:{' '}
+            <Code>dj</Code> deletes the current line and the one below, and <Code>dk</Code> deletes the current line and the one above.
           </p>
           <p>
             Add a count to the motion for bigger blocks: <Code>d2j</Code> deletes three lines, this one and two more.
@@ -513,7 +513,7 @@ export const basicOperators: Section = {
         base: { name: 'server.ts' },
         rounds: [
           {
-            prompt: 'Delete the two debug lines.',
+            prompt: 'Delete the two console.log lines.',
             setup: {
               text: ['app.listen(port, () => {', "  console.log('port', port);", "  console.log('env', env);", "  log.info('ready');", '});'],
               cursor: { line: 0, col: 0 },
@@ -522,7 +522,7 @@ export const basicOperators: Section = {
             solution: 'jdj',
           },
           {
-            prompt: 'Delete the commented-out pair.',
+            prompt: 'Delete the two lines that start with "--".',
             setup: {
               name: 'keymaps.lua',
               text: [
@@ -539,7 +539,7 @@ export const basicOperators: Section = {
             solution: 'dk',
           },
           {
-            prompt: 'Delete the whole if block.',
+            prompt: 'Delete from "if (!id) {" down to the "}" under the cursor.',
             setup: {
               text: ['function load(id) {', '  if (!id) {', "    throw new Error('missing id');", '  }', '  return db.get(id);', '}'],
               cursor: { line: 3, col: 2 },
@@ -548,7 +548,7 @@ export const basicOperators: Section = {
             solution: 'd2k',
           },
           {
-            prompt: 'Delete the draft section: heading, text and blank line.',
+            prompt: 'Delete "## Draft", the line under it and the blank line.',
             setup: {
               name: 'CHANGELOG.md',
               text: ['## 2.1.0', '- Faster startup', '', '## Draft', 'Notes for next time.', '', '## 2.0.0', '- New engine'],
@@ -614,13 +614,13 @@ export const basicOperators: Section = {
         base: { name: 'config.ts' },
         rounds: [
           {
-            prompt: 'verbose is "no".',
+            prompt: 'Change "verbose: yes" to "verbose: no".',
             setup: { name: 'flags.yml', text: ['debug: yes', 'verbose: yes', 'color: yes'], cursor: { line: 0, col: 0 } },
             goal: { text: ['debug: yes', 'verbose: no', 'color: yes'] },
             solution: 'jfyCno<Esc>',
           },
           {
-            prompt: 'The debug line should close the function.',
+            prompt: 'Replace the whole console.log line with "}".',
             setup: {
               name: 'one.ts',
               text: ['function one() {', '  return 1;', "console.log('here');", 'one();'],
@@ -630,7 +630,7 @@ export const basicOperators: Section = {
             solution: 'jjcc}<Esc>',
           },
           {
-            prompt: 'The port is 8080, with no comment.',
+            prompt: 'Change "3000; // TODO" to "8080;".',
             setup: {
               text: ["import { serve } from './server';", 'const port = 3000; // TODO', 'serve(port);'],
               cursor: { line: 0, col: 0 },
@@ -639,7 +639,7 @@ export const basicOperators: Section = {
             solution: 'jf3C8080;<Esc>',
           },
           {
-            prompt: 'The throw becomes break;.',
+            prompt: 'Replace the whole "throw" line with "break;".',
             setup: {
               name: 'rows.ts',
               text: ['for (const row of rows) {', '  if (!row) {', "    throw new Error('bad row');", '  }', '}'],
@@ -649,7 +649,7 @@ export const basicOperators: Section = {
             solution: 'jjccbreak;<Esc>',
           },
           {
-            prompt: 'Only the age check is left.',
+            prompt: 'Make the if line read "if (user.age > 17) {".',
             setup: {
               text: [
                 'function checkVoter(user: User) {',
@@ -707,7 +707,7 @@ export const basicOperators: Section = {
         base: { name: 'math.test.ts' },
         rounds: [
           {
-            prompt: 'Duplicate the first test case.',
+            prompt: 'Duplicate the "[1, 2, 3]," line.',
             setup: {
               text: ['const cases = [', '  [1, 2, 3],', '  [2, 2, 4],', '];'],
               cursor: { line: 3, col: 0 },
@@ -716,7 +716,7 @@ export const basicOperators: Section = {
             solution: 'kkyyp',
           },
           {
-            prompt: 'Swap the two steps.',
+            prompt: 'Swap the "3." and "2." lines.',
             setup: {
               name: 'deploy.md',
               text: ['## Release', '1. Run the tests', '3. Push the tag', '2. Build the release'],
@@ -726,7 +726,7 @@ export const basicOperators: Section = {
             solution: 'jjddp',
           },
           {
-            prompt: 'Move the import to the top.',
+            prompt: 'Move the "import React" line to the top.',
             setup: {
               name: 'main.tsx',
               text: [
@@ -750,7 +750,7 @@ export const basicOperators: Section = {
             solution: 'ddggP',
           },
           {
-            prompt: 'Copy the header row above the data.',
+            prompt: 'Copy "name,score" to just above "linus,75".',
             setup: {
               name: 'scores.csv',
               text: ['name,score', 'ada,92', 'grace,88', 'linus,75'],
@@ -760,7 +760,7 @@ export const basicOperators: Section = {
             solution: 'ggyyGP',
           },
           {
-            prompt: 'Duplicate both keymap lines below.',
+            prompt: 'Copy the two "map(" lines to below the last line.',
             setup: {
               name: 'keymaps.lua',
               text: ['local map = vim.keymap.set', "map('n', '<C-h>', '<C-w>h')", "map('n', '<C-l>', '<C-w>l')"],
@@ -817,7 +817,7 @@ export const basicOperators: Section = {
         base: { name: 'theme.ts' },
         rounds: [
           {
-            prompt: 'Give accent the same colour as primary.',
+            prompt: 'Copy the colour after "primary = " to the end of the accent line.',
             setup: {
               text: ['// Catppuccin Latte', "const primary = '#1e66f5';", 'const accent = ', "const text = '#4c4f69';"],
               cursor: { line: 0, col: 0 },
@@ -828,7 +828,7 @@ export const basicOperators: Section = {
             solution: "jf'Yj$p",
           },
           {
-            prompt: 'Map <C-p> to the same picker.',
+            prompt: 'Copy "builtin.find_files)" to the end of the <C-p> line.',
             setup: {
               name: 'telescope.lua',
               text: [
@@ -850,7 +850,7 @@ export const basicOperators: Section = {
             solution: 'kkfbYj$p',
           },
           {
-            prompt: 'Load admin the same way as user.',
+            prompt: 'Copy "await db.users.findOne({ id });" to the end of the admin line.',
             setup: {
               name: 'users.ts',
               text: [
@@ -874,7 +874,7 @@ export const basicOperators: Section = {
             solution: 'jfaYj$p',
           },
           {
-            prompt: 'Give the second link the same URL.',
+            prompt: 'Copy the docs URL to the end of the "[manual]: " line.',
             setup: {
               name: 'links.md',
               text: ['Read the [docs] or the [manual].', '', '[docs]: https://neovim.io/doc/user/', '[manual]: '],
@@ -935,7 +935,7 @@ export const basicOperators: Section = {
         base: { name: 'notes.md' },
         rounds: [
           {
-            prompt: 'Join the sentence back into one line.',
+            prompt: 'Join the last two lines into one.',
             setup: {
               text: ['# Modes', '', 'Vim is a modal editor.', 'Normal mode is home.'],
               cursor: { line: 0, col: 0 },
@@ -944,7 +944,7 @@ export const basicOperators: Section = {
             solution: 'jjJ',
           },
           {
-            prompt: 'Put the table on one line.',
+            prompt: 'Join the "{ noremap" line onto "local opts =".',
             setup: {
               name: 'keymaps.lua',
               text: [
@@ -960,7 +960,7 @@ export const basicOperators: Section = {
             solution: 'kkJ',
           },
           {
-            prompt: 'Fold compilerOptions onto one line.',
+            prompt: 'Join the "compilerOptions" line and the two below it into one.',
             setup: {
               name: 'tsconfig.json',
               text: ['{', '  "extends": "./base.json",', '  "compilerOptions": {', '    "strict": true', '  }', '}'],
@@ -970,7 +970,7 @@ export const basicOperators: Section = {
             solution: 'jj3J',
           },
           {
-            prompt: 'Repair the split URL.',
+            prompt: 'Join the split URL back together, with no space.',
             setup: {
               text: ['## Further reading', '', 'Read [this](https://neovim.io/doc/', 'user/motion.html).'],
               cursor: { line: 0, col: 0 },
@@ -979,7 +979,7 @@ export const basicOperators: Section = {
             solution: 'jjgJ',
           },
           {
-            prompt: 'Repair the split key.',
+            prompt: 'Join the split "session_token" string, with no space.',
             setup: {
               name: 'cache.ts',
               text: ['export function cacheKey(id: string) {', "  const key = 'session_", "token';", '  return `${key}:${id}`;', '}'],
@@ -1054,7 +1054,7 @@ export const basicOperators: Section = {
             solution: 'ddj.',
           },
           {
-            prompt: 'Drop the second argument from each call.',
+            prompt: "Delete \"'n', \" from each line.",
             setup: {
               name: 'keymaps.lua',
               text: ["map('<leader>ff', 'n', find_files)", "map('<leader>fg', 'n', live_grep)", "map('<leader>fb', 'n', buffers)"],
@@ -1064,7 +1064,7 @@ export const basicOperators: Section = {
             solution: 'f,ldf,j.j.',
           },
           {
-            prompt: 'Uncheck all three tasks.',
+            prompt: 'Change each "[x]" to "[ ]".',
             setup: { name: 'TODO.md', text: ['- [x] Write tests', '- [x] Fix the parser', '- [x] Tag a release'], cursor: { line: 2, col: 0 } },
             goal: { text: ['- [ ] Write tests', '- [ ] Fix the parser', '- [ ] Tag a release'] },
             solution: 'fxr k.k.',
@@ -1137,7 +1137,7 @@ export const basicOperators: Section = {
             solution: 'jjfn3dw',
           },
           {
-            prompt: 'Delete the whole retry block.',
+            prompt: 'Delete the four lines from "if (!res.ok) {" to the next "}".',
             setup: {
               text: ['const res = await fetch(url);', 'if (!res.ok) {', '  await sleep(500);', '  return retry(url);', '}', 'return res.json();'],
               cursor: { line: 1, col: 0 },
@@ -1169,7 +1169,7 @@ export const basicOperators: Section = {
             solution: 'jjfvd3w',
           },
           {
-            prompt: 'Duplicate both lines of the setting below.',
+            prompt: 'Copy the last two lines and put the copy below them.',
             setup: {
               name: 'options.lua',
               text: ['vim.opt.number = true', '-- Indent with two spaces', 'vim.opt.shiftwidth = 2'],
@@ -1263,7 +1263,7 @@ export const basicOperators: Section = {
             solution: 'wcwgross<Esc>',
           },
           {
-            prompt: 'Drop the debug parameter.',
+            prompt: 'Delete ", debug" from the first line.',
             setup: {
               text: [
                 'function gross(items, taxRate, debug) {',
@@ -1294,7 +1294,7 @@ export const basicOperators: Section = {
             solution: 'gg2f,dt)',
           },
           {
-            prompt: 'Delete both debug lines.',
+            prompt: 'Delete the two lines that contain "console.log".',
             setup: {
               text: [
                 'function gross(items, taxRate) {',
@@ -1323,7 +1323,7 @@ export const basicOperators: Section = {
             solution: 'jdd4j.',
           },
           {
-            prompt: 'The loop adds item.total, not the price maths.',
+            prompt: 'Change "item.price * item.qty" to "item.total".',
             setup: {
               text: [
                 'function gross(items, taxRate) {',
@@ -1350,7 +1350,7 @@ export const basicOperators: Section = {
             solution: 'jfpct;total<Esc>',
           },
           {
-            prompt: 'Rename the local total to sum in all three places.',
+            prompt: 'Change "total" to "sum" in "let total", "total +=" and "return total".',
             setup: {
               text: [
                 'function gross(items, taxRate) {',
@@ -1377,7 +1377,7 @@ export const basicOperators: Section = {
             solution: 'wcwsum<Esc>2j^.2j^w.',
           },
           {
-            prompt: 'Remove the stale comment.',
+            prompt: 'Delete " // TODO: rounding?".',
             setup: {
               text: [
                 'function gross(items, taxRate) {',

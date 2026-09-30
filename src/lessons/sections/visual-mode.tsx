@@ -58,7 +58,7 @@ export const visualMode: Section = {
         base: { name: 'app.ts' },
         rounds: [
           {
-            prompt: 'Drop the "debug" label from both log calls.',
+            prompt: "Delete \"'debug', \" from both console.log lines.",
             setup: {
               text: [
                 'async function load(user: User) {',
@@ -81,7 +81,7 @@ export const visualMode: Section = {
             solution: 'vf dj.',
           },
           {
-            prompt: 'Delete the trailing comment on the timeout.',
+            prompt: 'Delete " // ms" after "5000,".',
             setup: {
               text: [
                 'export const config = {',
@@ -121,7 +121,7 @@ export const visualMode: Section = {
             solution: 'vf)ohdj.',
           },
           {
-            prompt: 'greet() gets only the first name.',
+            prompt: "Delete \" + ' ' + last\" after \"first\".",
             setup: {
               text: [
                 'function welcome(first: string, last: string) {',
@@ -140,7 +140,7 @@ export const visualMode: Section = {
             solution: 'vt,ohd',
           },
           {
-            prompt: 'Cut the middle sentence.',
+            prompt: 'Delete the middle sentence, "It takes a minute."',
             setup: {
               name: 'README.md',
               text: [
@@ -195,7 +195,7 @@ export const visualMode: Section = {
         base: { name: 'server.ts' },
         rounds: [
           {
-            prompt: 'Delete both pairs of debug lines.',
+            prompt: 'Delete both pairs of console.log lines.',
             setup: {
               text: [
                 'app.get("/health", (req, res) => {',
@@ -212,7 +212,7 @@ export const visualMode: Section = {
             solution: 'Vjdj.',
           },
           {
-            prompt: 'Join the hand-wrapped paragraph, down to the end of the file.',
+            prompt: 'Join "This note" and every line below it into one line.',
             setup: {
               name: 'notes.md',
               text: ['# Notes', '', 'This note', 'was wrapped', 'by hand, so', 'it reads', 'badly.'],
@@ -222,7 +222,7 @@ export const visualMode: Section = {
             solution: 'VGJ',
           },
           {
-            prompt: 'Delete the whole retry block, from the cursor up.',
+            prompt: 'Delete from the "}" under the cursor up to "if (!res.ok) {".',
             setup: {
               text: [
                 'const res = await fetch(url);',
@@ -248,7 +248,7 @@ export const visualMode: Section = {
             solution: 'VGd',
           },
           {
-            prompt: 'Replace the two old routes with the yanked line.',
+            prompt: 'Replace the two "legacy" lines with the yanked line.',
             setup: {
               text: ['app.use(auth);', 'app.get("/a", legacyA);', 'app.get("/b", legacyB);', 'app.listen(3000);'],
               registers: { '"': 'app.use("/api", router);\n' },
@@ -335,7 +335,7 @@ export const visualMode: Section = {
             solution: 'gvdj.',
           },
           {
-            prompt: 'Yank the two calls for later, then reselect them and delete them.',
+            prompt: 'Yank the run() and done() lines, then reselect and delete them.',
             setup: {
               name: 'nested.ts',
               text: ['function setup() {', '  run();', '  done();', '  return ok;', '}'],
@@ -411,7 +411,7 @@ export const visualMode: Section = {
         base: { name: 'config.ts' },
         rounds: [
           {
-            prompt: 'Replace the port expression with 8080.',
+            prompt: 'Change "process.env.PORT || 3000" to "8080".',
             setup: {
               text: [
                 "import { createServer } from 'node:http';",
@@ -432,7 +432,7 @@ export const visualMode: Section = {
             solution: '3wvt;c8080<Esc>',
           },
           {
-            prompt: 'Drop the first check.',
+            prompt: 'Delete "!user || " from the if line.',
             setup: {
               text: ['function greet(user?: User) {', '  if (!user || !user.active) return;', '  say(user.name);', '}'],
               cursor: { line: 1, col: 6 },
@@ -441,7 +441,7 @@ export const visualMode: Section = {
             solution: 'v2f d',
           },
           {
-            prompt: 'The buy event gets "order.id" as its second argument.',
+            prompt: 'Copy "order.id" into the gap before ")" on the buy line.',
             setup: {
               text: ['const id = order.id;', "track('view', order.id);", "track('buy', );", 'await flush();'],
               cursor: { line: 0, col: 11 },
@@ -450,7 +450,7 @@ export const visualMode: Section = {
             solution: 'vt;yjjf)P',
           },
           {
-            prompt: 'Stub the function body out with todo().',
+            prompt: 'Replace the three lines inside the braces with "todo()".',
             setup: {
               text: ['function total(xs) {', '  let t = 0;', '  for (const x of xs) t += x;', '  return t;', '}'],
               cursor: { line: 1, col: 2 },
@@ -459,7 +459,7 @@ export const visualMode: Section = {
             solution: 'Vjjctodo()<Esc>',
           },
           {
-            prompt: 'The dark flag is "no".',
+            prompt: 'Change "yes" on the dark line to "no".',
             setup: {
               text: ['const flags = {', '  beta: "yes",', '  dark: "yes",', '  sync: "yes",', '};'],
               cursor: { line: 1, col: 9 },
@@ -468,7 +468,7 @@ export const visualMode: Section = {
             solution: 'jvi"cno<Esc>',
           },
           {
-            prompt: 'Copy port and host into the test config.',
+            prompt: 'Copy the port and host lines to just above the last "};".',
             setup: {
               text: ['export const dev = {', '  port: 3000,', "  host: 'localhost',", '};', '', 'export const test = {', '};'],
               cursor: { line: 1, col: 2 },
@@ -532,7 +532,7 @@ export const visualMode: Section = {
         base: { name: 'vars.ts' },
         rounds: [
           {
-            prompt: 'Uncomment both pairs of lines.',
+            prompt: 'Delete the "// " from the front of all four lines.',
             setup: {
               text: ['// const a = 1;', '// const b = 2;', 'run(a, b);', '// const c = 3;', '// const d = 4;'],
               cursor: { line: 0, col: 0 },
@@ -541,7 +541,7 @@ export const visualMode: Section = {
             solution: '<C-v>jlld3j.',
           },
           {
-            prompt: 'Tick every box in both lists.',
+            prompt: 'Change every "[ ]" to "[x]".',
             setup: {
               name: 'todo.md',
               text: ['## Today', '- [ ] write tests', '- [ ] update docs', '## Later', '- [ ] tag release', '- [ ] blog'],
@@ -634,13 +634,13 @@ export const visualMode: Section = {
         base: { name: 'list.md' },
         rounds: [
           {
-            prompt: 'Turn both groups into bullet lists.',
+            prompt: 'Put "- " in front of Milk, Eggs, Soap and Tape.',
             setup: { text: ['## Groceries', 'Milk', 'Eggs', '', 'Soap', 'Tape'], cursor: { line: 1, col: 0 } },
             goal: { text: ['## Groceries', '- Milk', '- Eggs', '', '- Soap', '- Tape'] },
             solution: '<C-v>jI- <Esc>}j.',
           },
           {
-            prompt: 'Make the three globals local.',
+            prompt: 'Put "local " in front of the width, height and wrap lines.',
             setup: {
               name: 'init.lua',
               text: ['-- globals leak', 'width = 80', 'height = 24', 'wrap = false', 'return width'],
@@ -652,13 +652,13 @@ export const visualMode: Section = {
             solution: '<C-v>kkIlocal <Esc>',
           },
           {
-            prompt: 'Add "-alt" after each size.',
+            prompt: 'Add "-alt" after "sm", "md" and "lg".',
             setup: { name: 'buttons.css', text: ['.btn-sm {}', '.btn-md {}', '.btn-lg {}'], cursor: { line: 0, col: 6 } },
             goal: { text: ['.btn-sm-alt {}', '.btn-md-alt {}', '.btn-lg-alt {}'] },
             solution: '<C-v>jjA-alt<Esc>',
           },
           {
-            prompt: 'End every statement in both pairs with a semicolon.',
+            prompt: 'Add ";" to the end of every line except "// then".',
             setup: {
               name: 'setup.ts',
               text: ['const app = express()', 'app.use(cors())', '// then', 'app.use(auth)', 'app.listen(3000)'],
@@ -668,7 +668,7 @@ export const visualMode: Section = {
             solution: '<C-v>j$A;<Esc>3j.',
           },
           {
-            prompt: 'Add a comma after the first two items.',
+            prompt: 'Add a comma after "apple" and after "pear".',
             setup: {
               name: 'fruit.json',
               text: ['[', '  "apple"', '  "pear"', '  "plum"', ']'],
@@ -736,7 +736,7 @@ export const visualMode: Section = {
             solution: 'vi(i(capp<Esc>',
           },
           {
-            prompt: 'The if tests staff instead of repeating its definition.',
+            prompt: 'Change "(isAdmin(user) || isOwner(user))" on the if line to "staff".',
             setup: {
               text: [
                 'function canSave(user: User) {',
@@ -763,7 +763,7 @@ export const visualMode: Section = {
             solution: 'va(a(cstaff<Esc>',
           },
           {
-            prompt: 'Log "body" instead of the whole expression.',
+            prompt: 'Change "JSON.stringify(parse(body))" to "body".',
             setup: {
               text: [
                 "app.post('/echo', (req, res) => {",
@@ -786,7 +786,7 @@ export const visualMode: Section = {
             solution: 'vi(i(i(cbody<Esc>',
           },
           {
-            prompt: 'The board is empty, outer brackets kept.',
+            prompt: 'Make "[[1, 2], [3, 4]]" read "[]".',
             setup: {
               text: ['const board = [[1, 2], [3, 4]];', 'const size = board.length;', 'render(board, size);'],
               cursor: { line: 0, col: 16 },
@@ -795,7 +795,7 @@ export const visualMode: Section = {
             solution: 'vi[i[d',
           },
           {
-            prompt: 'config is an empty object.',
+            prompt: 'Replace the whole outer "{ … }" with "{}".',
             setup: {
               text: [
                 "import { start } from './server';",

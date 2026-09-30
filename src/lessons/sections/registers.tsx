@@ -45,8 +45,9 @@ export const registers: Section = {
         body: (
           <p>
             Yank a word, delete the one you meant to replace, press <Code>p</Code>: you get the deleted word back. The
-            next lesson shows where the yank went.
-           <Code>"+</Code> is the system clipboard; <Code>:reg</Code> lists every register.</p>
+            next lesson shows where the yank went.{' '}
+            <Code>:reg</Code> lists every register; <Code>"+</Code> is the system clipboard.
+          </p>
         ),
       },
       challenge: {
@@ -107,7 +108,7 @@ export const registers: Section = {
             solution: '2kwdwwP',
           },
           {
-            prompt: 'The tax is used before it is defined. Move its line up one.',
+            prompt: 'Move the "const tax" line up one, above "const total".',
             setup: {
               text: ['const subtotal = sum(items);', 'const total = subtotal + tax;', 'const tax = subtotal * TAX_RATE;', 'return total;'],
               cursor: { line: 2, col: 0 },
@@ -116,7 +117,7 @@ export const registers: Section = {
             solution: 'ddkP',
           },
           {
-            prompt: 'Swap the first two helper functions.',
+            prompt: 'Move the "function format" block below the "function sum" block.',
             setup: {
               text: [
                 'function format(n) {',
@@ -178,7 +179,7 @@ export const registers: Section = {
         </p>
       ),
       aside: {
-        title: 'One more idea',
+        title: 'Replacing many words',
         body: (
           <p>
             Replacing the same word in several places? Yank it once, then <Code>{'viw"0p'}</Code> on each target. Plain{' '}
@@ -191,7 +192,7 @@ export const registers: Section = {
         base: { name: 'config.ts' },
         rounds: [
           {
-            prompt: 'Give staging the same retries line as prod.',
+            prompt: 'Replace the "retries: 1" line with a copy of "retries: 5".',
             setup: {
               text: [
                 'const prod = {',
@@ -246,7 +247,7 @@ export const registers: Section = {
             solution: 'yy3jdd"0P',
           },
           {
-            prompt: 'Match the react-dom version to react.',
+            prompt: 'Change "^18.3.1" to "^19.1.0", copied from the line above.',
             setup: {
               name: 'package.json',
               text: ['{', '  "dependencies": {', '    "react": "^19.1.0",', '    "react-dom": "^18.3.1"', '  }', '}'],
@@ -256,7 +257,7 @@ export const registers: Section = {
             solution: 'f^yi"jf^di""0P',
           },
           {
-            prompt: 'Use the local "map" alias on both lines below it.',
+            prompt: 'Replace "vim.keymap.set" with "map" on the last two lines. The cursor is on "map".',
             setup: {
               name: 'keymaps.lua',
               text: [
@@ -278,7 +279,7 @@ export const registers: Section = {
             solution: 'yiwjvt(pj0vt("0p',
           },
           {
-            prompt: 'Replace both stale lines with the export line.',
+            prompt: 'Replace the last two lines with one copy of the first line.',
             setup: {
               name: 'index.ts',
               text: [
@@ -334,7 +335,7 @@ export const registers: Section = {
         base: { name: 'db.test.ts' },
         rounds: [
           {
-            prompt: 'Yank the query line into register q.',
+            prompt: 'Yank the "sql =" line into register q.',
             setup: {
               name: 'report.py',
               text: [
@@ -349,7 +350,7 @@ export const registers: Section = {
             solution: 'k"qyy',
           },
           {
-            prompt: 'Save the URL in u and the header name in k.',
+            prompt: 'Yank the text inside the quotes: the postgres URL into u, "X-Api-Key" into k.',
             setup: {
               name: 'env.ts',
               text: [
@@ -364,7 +365,7 @@ export const registers: Section = {
             solution: `2kf'"uyi'jf'"kyi'`,
           },
           {
-            prompt: 'Give the orders suite the same beforeEach and afterAll.',
+            prompt: 'Copy the beforeEach line above "lists orders" and the afterAll line below it.',
             setup: {
               text: [
                 "describe('users', () => {",
@@ -397,7 +398,7 @@ export const registers: Section = {
             solution: '"ayy2j"byy4j"aPj"bp',
           },
           {
-            prompt: 'Register h holds the license header and s the strict pragma. Put both at the top, h first.',
+            prompt: 'Registers h and s each hold one line. Put both at the top of the file, h first.',
             setup: {
               name: 'server.js',
               text: ["const http = require('node:http');", '', 'http.createServer(handler).listen(8080);'],
@@ -450,8 +451,8 @@ export const registers: Section = {
         title: 'Collect with :g',
         body: (
           <p>
-            Clear the register with <Code>qaq</Code>, then <Code>:g/TODO/y A</Code> appends every matching line in one
-            command.
+            A preview of Global Commands: clear the register with <Code>qaq</Code>, then{' '}
+            <Code>:g/TODO/y A</Code> appends every matching line in one command.
           </p>
         ),
       },
@@ -492,7 +493,7 @@ export const registers: Section = {
             solution: 'j"ayy2j"Ayy2j"AyyG"ap',
           },
           {
-            prompt: 'Move both imports to the top of the file.',
+            prompt: 'Move both "import" lines to the top of the file.',
             setup: {
               name: 'app.ts',
               text: [
@@ -516,7 +517,7 @@ export const registers: Section = {
             solution: '"addj"Addgg"aP',
           },
           {
-            prompt: 'Register e already holds one exported name. Add the other two lines to it.',
+            prompt: 'Register e already holds an export line. Append the parse and validate lines to it, in that order.',
             setup: {
               name: 'index.ts',
               text: ["export { parse } from './parse';", "export { format } from './format';", "export { validate } from './validate';"],
@@ -531,7 +532,7 @@ export const registers: Section = {
             solution: '"Eyy2j"Eyy',
           },
           {
-            prompt: 'Cut the two debug lines into t and put them at the bottom.',
+            prompt: 'Cut the two DEBUG lines into t and put them at the bottom.',
             setup: {
               name: 'worker.py',
               text: [
@@ -608,7 +609,7 @@ export const registers: Section = {
         base: { name: 'routes.ts' },
         rounds: [
           {
-            prompt: 'Three lines were deleted. Put the first one back below the cursor.',
+            prompt: 'Three lines were deleted, the router.post line first. Put it back below the cursor.',
             setup: {
               text: [
                 "router.get('/users', listUsers);",
@@ -636,7 +637,7 @@ export const registers: Section = {
             solution: '"3p',
           },
           {
-            prompt: 'Two lines were deleted. Put back the first one, the return, below the cursor.',
+            prompt: 'The "return" line was deleted, then "# FIXME". Put the return line back below the cursor.',
             setup: {
               name: 'user.py',
               text: [
@@ -658,7 +659,7 @@ export const registers: Section = {
             solution: '"2p',
           },
           {
-            prompt: 'A word was cut, then a line. Put the word back before "function".',
+            prompt: 'A word was cut, then a line. Put the word back before "function", where the cursor is.',
             setup: {
               name: 'load.ts',
               text: ['// fetch the user', 'export async function loadUser(id: string) {', '  return api.get(`/users/${id}`);', '}'],
@@ -672,7 +673,7 @@ export const registers: Section = {
             solution: '"-P',
           },
           {
-            prompt: 'Delete the "old" line, then put the benchmark task deleted earlier back at the end.',
+            prompt: 'Delete the "old:" line, then put the "benchmark" line, deleted earlier, back at the end.',
             setup: {
               name: 'todo.md',
               text: ['- [x] ship v2', '- [ ] old: migrate to webpack', '- [ ] write release notes'],
@@ -726,7 +727,7 @@ export const registers: Section = {
         base: { name: 'handler.go' },
         rounds: [
           {
-            prompt: 'Replace the two log lines with a copy of the return line.',
+            prompt: 'Replace the log.Println and os.Exit lines with a copy of the return line.',
             setup: {
               text: [
                 'if err != nil {',
@@ -752,7 +753,7 @@ export const registers: Section = {
             solution: 'yy3j"_2ddP',
           },
           {
-            prompt: 'Replace "ctx2" with the yanked "ctx".',
+            prompt: 'Replace "ctx2" with "ctx", copied from the line above. The cursor is on it.',
             setup: {
               text: [
                 '// Get loads one user by id.',
@@ -773,7 +774,7 @@ export const registers: Section = {
             solution: 'yiwjfc"_diwP',
           },
           {
-            prompt: 'Swap in the yanked name for "tmp", keeping the comma.',
+            prompt: 'Replace "tmp" with "start_date". The cursor is on start_date.',
             setup: {
               name: 'dates.py',
               text: [
@@ -795,7 +796,7 @@ export const registers: Section = {
             solution: 'yiw2jf(l"_dt,P',
           },
           {
-            prompt: 'Replace the placeholder paragraph with the yanked intro.',
+            prompt: 'Replace the "Lorem ipsum" paragraph with a copy of the line the cursor is on.',
             setup: {
               name: 'README.md',
               text: [
@@ -846,8 +847,8 @@ export const registers: Section = {
         title: 'Run it again',
         body: (
           <p>
-            <Code>@:</Code> runs the <Code>{'":'}</Code> register as a command again, and <Code>@@</Code> repeats that.
-            It's dot-repeat for Ex commands.
+            <Code>@:</Code> runs the <Code>{'":'}</Code> register as a command again, and <Code>@@</Code> repeats that:
+            dot-repeat for Ex commands. Repeat a Command, in the Command Line section, drills it.
           </p>
         ),
       },
@@ -856,7 +857,7 @@ export const registers: Section = {
         base: { name: 'Button.tsx' },
         rounds: [
           {
-            prompt: 'You just renamed sum to subtotal where it is declared. The return and log() use subtotal too.',
+            prompt: 'You just changed "sum" to "subtotal" with cw. Do the same to "return sum", and put subtotal inside log().',
             setup: {
               name: 'total.ts',
               text: ['function total(items: Item[]) {', '  const sum = items.reduce(add, 0);', '  log();', '  return sum;', '}'],
@@ -872,7 +873,7 @@ export const registers: Section = {
             solution: 'jjb.kF(".p',
           },
           {
-            prompt: 'Finish the header comment with the file name.',
+            prompt: 'Add the file name after "// File: ".',
             setup: {
               name: 'src/api/client.ts',
               text: [
@@ -894,7 +895,7 @@ export const registers: Section = {
             solution: 'gg$"%p',
           },
           {
-            prompt: 'Paste the command you just ran into the code block.',
+            prompt: 'Put the command you just ran on a new line between the ``` lines, with a ":" in front.',
             setup: {
               name: 'cheatsheet.md',
               text: ['## Strip trailing whitespace', '', '```vim', '```'],
@@ -909,7 +910,7 @@ export const registers: Section = {
             solution: 'o:<Esc>":p',
           },
           {
-            prompt: 'Name the module after its file.',
+            prompt: "Put the file name between the empty quotes ''.",
             setup: {
               name: 'billing.lua',
               text: ['local M = {}', '', "M.name = ''", '', 'return M'],
@@ -939,7 +940,7 @@ export const registers: Section = {
           </p>
           <p>
             It saves the leave-insert, put, re-enter dance, and it works on the command line too: yank a word, then{' '}
-            <Code>:%s/</Code> and <Code>C-r 0</Code> to search for it.
+            <Code>/</Code> and <Code>C-r 0</Code> searches for it.
           </p>
         </>
       ),
@@ -952,8 +953,8 @@ export const registers: Section = {
         title: 'Word under the cursor',
         body: (
           <p>
-            On the command line, <Code>C-r C-w</Code> inserts the word under the cursor without yanking it first.{' '}
-            <Code>:%s/</Code><Code>C-r C-w</Code><Code>/</Code> is the classic rename.
+            On the command line, <Code>C-r C-w</Code> inserts the word under the cursor without yanking it first.
+            The Command Line section drills it; with Substitute it becomes the classic rename.
           </p>
         ),
       },
@@ -962,7 +963,7 @@ export const registers: Section = {
         base: { name: 'checkout.ts' },
         rounds: [
           {
-            prompt: 'The log prints orderTotal, labelled with its name.',
+            prompt: "Make the log line read console.log('orderTotal', orderTotal). The cursor is on orderTotal.",
             setup: {
               text: [
                 'export function checkout(items: Item[]) {',
@@ -985,7 +986,7 @@ export const registers: Section = {
             solution: "yiwkF(a'<C-r>0', <C-r>0<Esc>",
           },
           {
-            prompt: 'The cache key is str(order_id).',
+            prompt: 'Change "cache.set(order_id," to "cache.set(str(order_id),".',
             setup: {
               name: 'receipts.py',
               text: [
@@ -1007,7 +1008,7 @@ export const registers: Section = {
             solution: 'kf(wciwstr(<C-r>")<Esc>',
           },
           {
-            prompt: 'Register u holds the endpoint. url is set to it.',
+            prompt: 'Register u holds a URL. Put it between the empty quotes on the first line.',
             setup: {
               text: [
                 "const url = '';",
@@ -1031,7 +1032,7 @@ export const registers: Section = {
             solution: "ggf'a<C-r>u<Esc>",
           },
           {
-            prompt: 'Every "amt" is "amount".',
+            prompt: 'Change every "amt" to "amount".',
             setup: {
               text: ['function charge(amt: number) {', '  if (amt <= 0) throw new Error(`bad amt`);', '  return gateway.charge(amt);', '}'],
               cursor: { line: 0, col: 16 },
@@ -1047,7 +1048,7 @@ export const registers: Section = {
             solution: 'yiw:%s/<C-r>0/amount/g<CR>',
           },
           {
-            prompt: "The getter reads the 'theme' key.",
+            prompt: "Put 'theme', with its quotes, inside the empty get().",
             setup: {
               text: ['const settings = loadSettings();', 'const theme = settings.theme;', 'const saved = settings.get();', 'applyTheme(saved);'],
               cursor: { line: 1, col: 0 },
@@ -1098,7 +1099,7 @@ export const registers: Section = {
         base: { name: 'limits.ts' },
         rounds: [
           {
-            prompt: 'Fill in one day in milliseconds.',
+            prompt: 'Fill in one day in milliseconds: 24*60*60*1000.',
             setup: {
               text: ['export const MAX_RETRIES = 5;', 'export const ONE_DAY_MS = ;', 'export const PAGE_SIZE = 50;'],
               cursor: { line: 2, col: 0 },
@@ -1107,7 +1108,7 @@ export const registers: Section = {
             solution: 'kf;i<C-r>=24*60*60*1000<CR><Esc>',
           },
           {
-            prompt: 'Fill in the total.',
+            prompt: 'Fill in the Total row: the three costs added up.',
             setup: {
               name: 'invoice.md',
               text: ['| Item | Cost |', '|---|---|', '| Hosting | 129 |', '| Domain | 18 |', '| Email | 45 |', '| Total | |'],
@@ -1117,7 +1118,7 @@ export const registers: Section = {
             solution: '$i<C-r>=129+18+45<CR> <Esc>',
           },
           {
-            prompt: 'Set the upload limit to 25 MB in bytes.',
+            prompt: 'Replace the 0 with 25 MB in bytes: 25*1024*1024.',
             setup: {
               text: ['export const upload = {', '  maxBytes: 0, // 25 MB', "  types: ['image/png', 'image/jpeg'],", '};'],
               cursor: { line: 3, col: 0 },
@@ -1126,7 +1127,7 @@ export const registers: Section = {
             solution: '2kf0cl<C-r>=25*1024*1024<CR><Esc>',
           },
           {
-            prompt: 'Underline the 23-character heading with "=" signs.',
+            prompt: "Add a line of 23 '=' under the heading. repeat('=', 23) builds it.",
             setup: {
               name: 'CHANGELOG.md',
               text: ['Release notes for 3.0.0', '', '- Drop Node 18 support.', '- New plugin API.'],
@@ -1136,7 +1137,7 @@ export const registers: Section = {
             solution: "ggo<C-r>=repeat('=', 23)<CR><Esc>",
           },
           {
-            prompt: 'Fill in the line total for 3 mugs at 4.99, to two decimals.',
+            prompt: 'Replace the total 0 with 3 * 4.99, to two decimals (see the aside).',
             setup: {
               name: 'order.json',
               text: ['{', '  "sku": "MUG-01",', '  "qty": 3,', '  "price": 4.99,', '  "total": 0', '}'],

@@ -60,7 +60,7 @@ export const textObjects: Section = {
         base: { name: 'cart.ts' },
         rounds: [
           {
-            prompt: '"itemCount" is "count".',
+            prompt: 'Change "itemCount" to "count".',
             setup: {
               text: [
                 'export function isEmpty(cart: Cart) {',
@@ -81,7 +81,7 @@ export const textObjects: Section = {
             solution: 'jfCciwcount<Esc>',
           },
           {
-            prompt: 'Both "very"s are gone, with their spaces.',
+            prompt: 'Delete both "very" words and their spaces.',
             setup: {
               name: 'README.md',
               text: [
@@ -103,7 +103,7 @@ export const textObjects: Section = {
             solution: 'jjfvdawjfv.',
           },
           {
-            prompt: 'The string is "dark".',
+            prompt: 'Change "light" to "dark".',
             setup: {
               text: [
                 'const theme = "light";',
@@ -122,7 +122,7 @@ export const textObjects: Section = {
             solution: 'ci"dark<Esc>',
           },
           {
-            prompt: 'Both argument lists are empty.',
+            prompt: 'Empty the parentheses after both "clear".',
             setup: {
               text: [
                 'export function reset(cart: Cart) {',
@@ -143,7 +143,7 @@ export const textObjects: Section = {
             solution: 'jf(di(j.',
           },
           {
-            prompt: 'Poll every second instead of every five.',
+            prompt: 'Change "5000" to "1000".',
             setup: {
               text: [
                 "const poll = () => fetch('/api/status');",
@@ -195,7 +195,7 @@ export const textObjects: Section = {
         body: (
           <p>
             <Code>daw</Code> repeats well with <Code>.</Code> because it doesn't care where in the word you are.{' '}
-            <Code>dw</Code> only works from the first letter.
+            <Code>dw</Code> only takes the whole word from its first letter.
           </p>
         ),
       },
@@ -248,7 +248,7 @@ export const textObjects: Section = {
             solution: 'jjfydawj0fy.',
           },
           {
-            prompt: 'Delete "again" at the end of the line.',
+            prompt: 'Delete "again" from the end of the line above.',
             setup: {
               name: 'CONTRIBUTING.md',
               text: [
@@ -270,7 +270,7 @@ export const textObjects: Section = {
             solution: 'k$daw',
           },
           {
-            prompt: 'Raise the timeout to 10000.',
+            prompt: 'Change "3000" to "10000".',
             setup: {
               name: 'config.json',
               text: [
@@ -314,7 +314,7 @@ export const textObjects: Section = {
             solution: 'ciwtrue<Esc>j.',
           },
           {
-            prompt: 'Delete the stray "async".',
+            prompt: 'Delete the second "async".',
             setup: {
               text: [
                 "import { db } from './db';",
@@ -379,7 +379,7 @@ export const textObjects: Section = {
         base: { name: 'server.ts' },
         rounds: [
           {
-            prompt: 'Replace the config path with PORT.',
+            prompt: 'Change "config.server.port" to "PORT".',
             setup: {
               text: [
                 "import config from './config';",
@@ -422,7 +422,7 @@ export const textObjects: Section = {
             solution: 'jjf-daWj.',
           },
           {
-            prompt: 'Both dead links read n/a.',
+            prompt: 'Replace both URLs with "n/a".',
             setup: {
               name: 'README.md',
               text: [
@@ -444,7 +444,7 @@ export const textObjects: Section = {
             solution: 'jjWciWn/a<Esc>j.',
           },
           {
-            prompt: 'The return uses name instead of repeating the chain.',
+            prompt: 'Change "data?.user?.profile?.name" on the return line to "name".',
             setup: {
               text: [
                 'function displayName(data: Payload) {',
@@ -465,7 +465,7 @@ export const textObjects: Section = {
             solution: 'ciWname<Esc>',
           },
           {
-            prompt: 'Delete the bold "really".',
+            prompt: 'Delete "**really**" and its space.',
             setup: {
               name: 'guide.md',
               text: [
@@ -533,7 +533,7 @@ export const textObjects: Section = {
         base: { name: 'package.json' },
         rounds: [
           {
-            prompt: 'Name the package "app" and point main at "src".',
+            prompt: 'Change "vim-tutor-draft" to "app" and "dist/index.js" to "src".',
             setup: {
               text: [
                 '{',
@@ -556,7 +556,7 @@ export const textObjects: Section = {
             solution: 'jfvci"app<Esc>jci"src<Esc>',
           },
           {
-            prompt: 'Switch the theme to nord.',
+            prompt: 'Change "gruvbox" to "nord".',
             setup: {
               name: 'lualine.lua',
               text: [
@@ -578,7 +578,7 @@ export const textObjects: Section = {
             solution: "kkfgci'nord<Esc>",
           },
           {
-            prompt: 'DIR comes from `pwd`.',
+            prompt: 'Replace the text between the backticks with "pwd".',
             setup: {
               name: 'deploy.sh',
               text: [
@@ -598,7 +598,7 @@ export const textObjects: Section = {
             solution: 'ci`pwd<Esc>',
           },
           {
-            prompt: 'Both hard-coded secrets are empty strings.',
+            prompt: 'Empty the "sk-live-4f9a2c" and "hunter2" strings.',
             setup: {
               name: 'env.ts',
               text: [
@@ -622,7 +622,7 @@ export const textObjects: Section = {
             solution: 'jjf"di"j.',
           },
           {
-            prompt: 'Change the scheme from the opening quote.',
+            prompt: 'Change "catppuccin" to "desert". The cursor is on the opening quote.',
             setup: {
               name: 'init.lua',
               text: [
@@ -686,7 +686,7 @@ export const textObjects: Section = {
         base: { name: 'greet.ts' },
         rounds: [
           {
-            prompt: 'Both calls get the whole user.',
+            prompt: 'Change what is inside the greet and track parentheses to "user".',
             setup: {
               text: [
                 'const user = await loadUser(id);',
@@ -705,7 +705,7 @@ export const textObjects: Section = {
             solution: 'jfFci(user<Esc>j.',
           },
           {
-            prompt: 'Drop the parentheses in both arrow functions.',
+            prompt: 'Change "(n)" to "n" on both lines.',
             setup: {
               text: [
                 'const double = (n) => n * 2;',
@@ -724,7 +724,7 @@ export const textObjects: Section = {
             solution: 'kkf(ca(n<Esc>j.',
           },
           {
-            prompt: 'Empty the call from inside the options.',
+            prompt: 'Empty the parentheses after "fetchWithRetry". The cursor is already inside.',
             setup: {
               name: 'fetch.ts',
               text: [
@@ -766,7 +766,7 @@ export const textObjects: Section = {
             solution: 'ci(v, 0<Esc>',
           },
           {
-            prompt: 'Print the msg variable.',
+            prompt: 'Change what is inside the Println parentheses to "msg".',
             setup: {
               name: 'main.go',
               text: [
@@ -831,7 +831,7 @@ export const textObjects: Section = {
         base: { name: 'data.ts' },
         rounds: [
           {
-            prompt: 'Both arrays are empty.',
+            prompt: 'Delete the numbers inside both pairs of [ ].',
             setup: {
               text: [
                 'const primes = [2, 3, 5, 7, 11];',
@@ -850,7 +850,7 @@ export const textObjects: Section = {
             solution: 'kkf5di[j.',
           },
           {
-            prompt: 'Empty the options on the first two calls.',
+            prompt: 'Empty the { } on the first two lines.',
             setup: {
               text: [
                 'const a = load({ cache: true });',
@@ -869,7 +869,7 @@ export const textObjects: Section = {
             solution: 'f{di{j.',
           },
           {
-            prompt: 'Clear the function body.',
+            prompt: 'Delete the three lines between "{" and "}".',
             setup: {
               name: 'counter.ts',
               text: [
@@ -890,7 +890,7 @@ export const textObjects: Section = {
             solution: 'jdiB',
           },
           {
-            prompt: 'Publish only dist.',
+            prompt: 'Make the [ ] hold only "dist".',
             setup: {
               name: 'package.json',
               text: [
@@ -914,7 +914,7 @@ export const textObjects: Section = {
             solution: 'jjf[ci["dist"<Esc>',
           },
           {
-            prompt: 'Empty the plugin options.',
+            prompt: 'Empty the { } the cursor is in, on the which-key line.',
             setup: {
               name: 'plugins.lua',
               text: [
@@ -999,7 +999,7 @@ export const textObjects: Section = {
             solution: 'jfWcitHome<Esc>',
           },
           {
-            prompt: 'Label the button "Save".',
+            prompt: 'Change "Submit form" to "Save".',
             setup: {
               name: 'Form.tsx',
               text: [
@@ -1021,7 +1021,7 @@ export const textObjects: Section = {
             solution: 'citSave<Esc>',
           },
           {
-            prompt: 'Both icon spans are gone.',
+            prompt: 'Delete both <span> elements, tags and all.',
             setup: {
               text: [
                 '<nav>',
@@ -1042,7 +1042,7 @@ export const textObjects: Section = {
             solution: 'kkf+datj.',
           },
           {
-            prompt: 'Replace the whole paragraph text with "Soon."',
+            prompt: 'Replace everything between <p> and </p> with "Soon."',
             setup: {
               text: [
                 '<section>',
@@ -1063,7 +1063,7 @@ export const textObjects: Section = {
             solution: 'citSoon.<Esc>',
           },
           {
-            prompt: 'Change the page title.',
+            prompt: 'Change "Untitled" to "vimchi".',
             setup: {
               text: [
                 '<head>',
@@ -1084,7 +1084,7 @@ export const textObjects: Section = {
             solution: 'jjwcitvimchi<Esc>',
           },
           {
-            prompt: 'Both prices read 0.',
+            prompt: 'Change "12.50" and "9.99" to "0".',
             setup: {
               text: [
                 '<tr>',
@@ -1150,7 +1150,7 @@ export const textObjects: Section = {
         base: { name: 'notes.md' },
         rounds: [
           {
-            prompt: 'Both "Easy, right?" asides are gone.',
+            prompt: 'Delete both "Easy, right?" sentences.',
             setup: {
               text: [
                 '# Basics',
@@ -1171,7 +1171,7 @@ export const textObjects: Section = {
             solution: 'dasj.',
           },
           {
-            prompt: 'Rewrite the second sentence as "Ship."',
+            prompt: 'Change "Or else." to "Ship."',
             setup: {
               text: [
                 '## Habits',
@@ -1192,7 +1192,7 @@ export const textObjects: Section = {
             solution: 'jjfOcisShip.<Esc>',
           },
           {
-            prompt: 'Delete both draft paragraphs.',
+            prompt: 'Delete both paragraphs that start with "Draft:".',
             setup: {
               text: [
                 '# Release notes',
@@ -1220,7 +1220,7 @@ export const textObjects: Section = {
             solution: 'dapjj.',
           },
           {
-            prompt: 'Delete the unused helper.',
+            prompt: 'Delete the "function unused()" block and the blank line after it.',
             setup: {
               name: 'utils.ts',
               text: [
@@ -1248,7 +1248,7 @@ export const textObjects: Section = {
             solution: 'dap',
           },
           {
-            prompt: 'Duplicate the keymap block above itself.',
+            prompt: 'Duplicate the first paragraph, blank line included, above itself.',
             setup: {
               name: 'keymaps.lua',
               text: [
@@ -1329,7 +1329,7 @@ export const textObjects: Section = {
         base: { name: 'init.lua' },
         rounds: [
           {
-            prompt: 'Switch the colorscheme.',
+            prompt: 'Change "gruvbox" to "nord".',
             setup: {
               text: [
                 "local theme = 'gruvbox'",
@@ -1348,7 +1348,7 @@ export const textObjects: Section = {
             solution: "ci'nord<Esc>",
           },
           {
-            prompt: 'Make comma the leader key.',
+            prompt: "Change the ' ' string to ','.",
             setup: {
               text: [
                 '-- Leader keys',
@@ -1367,7 +1367,7 @@ export const textObjects: Section = {
             solution: "jci',<Esc>",
           },
           {
-            prompt: 'The log prints sum.',
+            prompt: 'Make the last line read "console.log(sum);".',
             setup: {
               name: 'cart.ts',
               text: [
@@ -1387,7 +1387,7 @@ export const textObjects: Section = {
             solution: 'jjci(sum<Esc>',
           },
           {
-            prompt: 'The if tests admin.',
+            prompt: 'Make the if line read "if (admin) {".',
             setup: {
               name: 'guard.ts',
               text: [
@@ -1413,7 +1413,7 @@ export const textObjects: Section = {
             solution: 'ci(admin<Esc>',
           },
           {
-            prompt: 'Both tables are empty.',
+            prompt: 'Empty the { } on the first two lines.',
             setup: {
               text: [
                 'local opts = { debug = true }',
@@ -1454,7 +1454,7 @@ export const textObjects: Section = {
             solution: 'jjci"fix<Esc>',
           },
           {
-            prompt: 'All three test names are empty.',
+            prompt: "Empty the three 'TODO: …' strings.",
             setup: {
               name: 'cart.test.ts',
               text: [

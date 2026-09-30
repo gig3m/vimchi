@@ -59,7 +59,7 @@ export const fileNavigation: Section = {
             solution: '<Space>e',
           },
           {
-            prompt: 'Open dates.ts, next to this file.',
+            prompt: 'Open dates.ts, in the same directory as this file.',
             setup: { open: 'src/lib/money.ts' },
             goal: { check: shows('src/lib/dates.ts') },
             solution: '<Space>ekkl',
@@ -71,13 +71,13 @@ export const fileNavigation: Section = {
             solution: '<Space>ejljjl',
           },
           {
-            prompt: 'Open logger.ts, then close the tree.',
+            prompt: 'The tree is open on dates.ts. Open logger.ts, then close the tree.',
             setup: { open: 'src/lib/dates.ts', init: inTree },
             goal: { check: vim => shows('src/lib/logger.ts')(vim) && !explorerOpen(vim) },
             solution: 'jl<Space>e',
           },
           {
-            prompt: 'Collapse src, then open README.md.',
+            prompt: 'The tree is open on invoices.ts. Collapse src, then open README.md.',
             setup: { open: 'src/routes/invoices.ts', init: inTree },
             goal: { check: vim => shows('README.md')(vim) && treeLines(vim).includes('▸ src') },
             solution: 'hhGl',
@@ -136,42 +136,42 @@ export const fileNavigation: Section = {
         base: { files: SHOP, open: 'README.md', plugins: ['explorer'], height: 16 },
         rounds: [
           {
-            prompt: 'dates.ts is called time.ts.',
+            prompt: 'Rename dates.ts to time.ts. The tree is open on it.',
             setup: { open: 'src/lib/dates.ts', init: inTree },
             goal: { check: vim => projectHas(vim, 'src/lib/time.ts') && !projectHas(vim, 'src/lib/dates.ts') },
             solution: 'r<C-u>time.ts<CR>',
           },
           {
-            prompt: 'logger.ts is gone.',
+            prompt: 'Delete logger.ts. The tree is open on it.',
             setup: { open: 'src/lib/logger.ts', init: inTree },
             goal: { check: vim => !projectHas(vim, 'src/lib/logger.ts') && projectHas(vim, 'src/lib/money.ts') },
             solution: 'dy',
           },
           {
-            prompt: 'src/lib has a new fmt.ts.',
+            prompt: 'Add fmt.ts to src/lib. The tree is open on money.ts.',
             setup: { open: 'src/lib/money.ts', init: inTree },
             goal: { check: vim => projectHas(vim, 'src/lib/fmt.ts') },
             solution: 'afmt.ts<CR>',
           },
           {
-            prompt: 'src has a new services directory.',
+            prompt: 'Add a services directory to src. The tree is open on app.ts.',
             setup: { open: 'src/app.ts', init: inTree },
             goal: { check: vim => projectHas(vim, 'src/services') },
             solution: 'aservices/<CR>',
           },
           {
-            prompt: 'The routes directory is called api.',
+            prompt: 'Rename the routes directory to api. The tree is open on invoices.ts, inside it.',
             setup: { open: 'src/routes/invoices.ts', init: inTree },
             goal: { check: vim => projectHas(vim, 'src/api/invoices.ts') && !projectHas(vim, 'src/routes') },
             solution: 'hr<C-u>api<CR>',
           },
           {
-            prompt: 'The test directory is gone.',
+            prompt: 'Delete the test directory.',
             goal: { check: vim => !projectHas(vim, 'test') && projectHas(vim, 'README.md') },
             solution: '<Space>ekkdy',
           },
           {
-            prompt: 'money.ts is price.ts and dates.ts is gone.',
+            prompt: 'Rename money.ts to price.ts, then delete dates.ts.',
             setup: { open: 'src/lib/money.ts', init: inTree },
             goal: {
               check: vim => projectHas(vim, 'src/lib/price.ts') && !projectHas(vim, 'src/lib/money.ts') && !projectHas(vim, 'src/lib/dates.ts'),

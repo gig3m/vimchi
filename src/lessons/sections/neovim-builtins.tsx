@@ -201,7 +201,7 @@ export const neovimBuiltins: Section = {
         base: { name: 'checkout.ts' },
         rounds: [
           {
-            prompt: 'Comment out the debug log.',
+            prompt: 'Comment out the console.log line.',
             setup: {
               text: ['export function checkout(order: Order) {', '  console.log(order);', '  return submit(order);', '}'],
               cursor: { line: 1, col: 2 },
@@ -210,7 +210,7 @@ export const neovimBuiltins: Section = {
             solution: 'gcc',
           },
           {
-            prompt: 'Turn off the whole block of options.',
+            prompt: 'Comment out the three lines below the blank one.',
             setup: {
               name: 'options.lua',
               text: ['vim.opt.number = true', '', 'vim.opt.wrap = false', 'vim.opt.list = true', 'vim.opt.colorcolumn = "100"'],
@@ -222,7 +222,7 @@ export const neovimBuiltins: Section = {
             solution: 'gcip',
           },
           {
-            prompt: 'Bring the commented-out retry loop back.',
+            prompt: 'Uncomment the three commented-out lines.',
             setup: {
               text: [
                 'async function send(req: Request) {',
@@ -259,7 +259,7 @@ export const neovimBuiltins: Section = {
             solution: 'Vjgc',
           },
           {
-            prompt: 'Comment out the three export lines.',
+            prompt: 'Comment out the cursor line and the two below it.',
             setup: {
               name: '.zshrc',
               text: ['export EDITOR=nvim', 'export GOPATH="$HOME/go"', 'export PATH="$GOPATH/bin:$PATH"', 'export NODE_ENV=development', 'alias vim=nvim'],
@@ -291,7 +291,8 @@ export const neovimBuiltins: Section = {
       intro: (
         <>
           <p>
-            <Code>grn</Code> renames the symbol under the cursor everywhere it's used. Neovim prompts{' '}
+            <Code>grn</Code> renames the symbol under the cursor (a variable, function or type name) everywhere it's
+            used. Neovim prompts{' '}
             <Mono>New Name:</Mono> with the old name filled in; edit it and press <Code>enter</Code>.
           </p>
           <p>
@@ -476,7 +477,7 @@ export const neovimBuiltins: Section = {
               solution: ']dgra<CR>',
             },
             {
-              prompt: 'Convert the concatenation to a template string.',
+              prompt: 'Open the code actions and pick "Convert to template string".',
               setup: {
                 name: 'greet.ts',
                 text: greet,
@@ -494,7 +495,7 @@ export const neovimBuiltins: Section = {
               solution: 'gra<CR>',
             },
             {
-              prompt: 'req is unused. Keep the parameter but prefix it with an underscore (the second action).',
+              prompt: 'Jump back to the hint on req, then pick the second action, which adds an underscore.',
               setup: {
                 name: 'server.ts',
                 text: handler,
@@ -511,7 +512,7 @@ export const neovimBuiltins: Section = {
               solution: '[dgraj<CR>',
             },
             {
-              prompt: 'res is a Promise. Let the server add the missing await.',
+              prompt: 'Jump to the error on json and apply the fix that adds await.',
               setup: {
                 name: 'users.ts',
                 text: load,
@@ -580,9 +581,9 @@ export const neovimBuiltins: Section = {
         title: 'On save, and how it differs from =',
         body: (
           <p>
-            LazyVim formats on save; kickstart only for the filetypes you list in <Code>format_on_save</Code>. So
-            mostly you meet it through <Code>:w</Code>; LazyVim puts the key on <Code>Space cf</Code>. The <Code>=</Code> operator only re-indents, with Vim's own rules, and never touches
-            the spacing inside a line.
+            LazyVim formats on save, so there you mostly meet it through <Code>:w</Code>. kickstart formats on save
+            only the filetypes you enable in its <Code>format_on_save</Code> list. The <Code>=</Code> operator only
+            re-indents, with Vim's own rules, and never touches the spacing inside a line.
           </p>
         ),
       },
@@ -760,12 +761,12 @@ export const codeNavigation: Section = {
       intro: (
         <>
           <p>
-            A language server reports errors and warnings as diagnostics: a letter in the sign column and the message
-            at the end of the line. <Code>]d</Code> jumps to the next one, <Code>[d</Code> to the previous.
+            A language server reports errors and warnings as diagnostics: a letter in the sign column and, in most
+            configs, the message at the end of the line. <Code>]d</Code> jumps to the next one, <Code>[d</Code> to the previous.
           </p>
           <p>
-            Both wrap around the file and take a count. Fix, <Code>]d</Code>, fix: no scrolling to find the next red
-            squiggle.
+            Both wrap around the file and take a count. Fix, <Code>]d</Code>, fix: no scrolling to find the next
+            underlined mistake.
           </p>
         </>
       ),
@@ -839,37 +840,37 @@ export const codeNavigation: Section = {
         base: { plugins: ['lsp'] },
         rounds: [
           {
-            prompt: 'Jump to where formatMoney is defined.',
+            prompt: 'Jump to where formatMoney is defined. The cursor is on it.',
             setup: shop('src/cart.ts', at(CART, 6, 'formatMoney')),
             goal: { buffer: 'src/money.ts', cursor: at(MONEY, 1, 'formatMoney') },
             solution: 'gd',
           },
           {
-            prompt: 'Read the docs for formatMoney.',
+            prompt: "Show the docs for formatMoney, on the cursor's line.",
             setup: shop('src/receipt.ts', at(RECEIPT, 3, 'return')),
             goal: { check: hoverOpen },
             solution: 'ffK',
           },
           {
-            prompt: 'Go to the TAX_RATE constant.',
+            prompt: 'Jump to where TAX_RATE is defined. The cursor is on it.',
             setup: shop('src/cart.ts', at(CART, 14, 'TAX_RATE')),
             goal: { buffer: 'src/cart.ts', cursor: at(CART, 3, 'TAX_RATE') },
             solution: 'gd',
           },
           {
-            prompt: 'What does CartItem hold? Show its type.',
+            prompt: "Show the docs for CartItem, on the cursor's line.",
             setup: shop('src/cart.ts', at(CART, 5, 'export')),
             goal: { check: hoverOpen },
             solution: 'fCK',
           },
           {
-            prompt: 'Jump to the CartItem interface.',
+            prompt: 'Jump to where CartItem is defined. The cursor is on it.',
             setup: shop('src/cart.ts', at(CART, 9, 'CartItem')),
             goal: { buffer: 'src/types.ts', cursor: at(TYPES, 0, 'CartItem') },
             solution: 'gd',
           },
           {
-            prompt: 'What does padEnd take? Show its docs.',
+            prompt: 'Show the docs for padEnd. The cursor is on it.',
             setup: shop('src/receipt.ts', at(RECEIPT, 3, 'padEnd')),
             goal: { check: hoverOpen },
             solution: 'K',
@@ -924,25 +925,25 @@ export const codeNavigation: Section = {
             solution: 'grr]Q',
           },
           {
-            prompt: 'From receipt.ts, list the references and jump to the second: the call in lineTotal.',
+            prompt: 'List the references to formatMoney and jump to the second entry, line 7 of cart.ts.',
             setup: shop('src/receipt.ts', at(RECEIPT, 3, 'formatMoney')),
             goal: { buffer: 'src/cart.ts', cursor: at(CART, 6, 'formatMoney') },
             solution: 'grr]q',
           },
           {
-            prompt: 'List the classes implementing PaymentProvider and go to the second.',
+            prompt: 'The cursor is on PaymentProvider. List its implementations and go to the second.',
             setup: shop('src/payments.ts', at(PAYMENTS, 0, 'PaymentProvider')),
             goal: { buffer: 'src/payments.ts', cursor: at(PAYMENTS, 14, 'InvoiceProvider') },
             solution: 'gri]q',
           },
           {
-            prompt: 'Logger has one implementation. Go to it.',
+            prompt: 'The cursor is on Logger, which has one implementation. Jump to it.',
             setup: shop('src/log.ts', at(LOG, 0, 'Logger')),
             goal: { buffer: 'src/log.ts', cursor: at(LOG, 4, 'ConsoleLogger') },
             solution: 'gri',
           },
           {
-            prompt: 'Find the charge method implementations and go to the last.',
+            prompt: 'The cursor is on charge. List its implementations and go to the last.',
             setup: shop('src/payments.ts', at(PAYMENTS, 1, 'charge')),
             goal: { buffer: 'src/payments.ts', cursor: at(PAYMENTS, 15, 'charge') },
             solution: 'gri]Q',
@@ -1055,7 +1056,7 @@ export const codeNavigation: Section = {
               solution: 'gO/refund<CR><CR>',
             },
             {
-              prompt: 'Jump to the paidAt field of Invoice.',
+              prompt: 'Jump to the paidAt symbol.',
               setup: { cursor: { line: 36, col: 2 } },
               goal: { buffer: 'invoices.ts', cursor: at(inv, 8, 'paidAt') },
               solution: 'gO/paid<CR><CR>',

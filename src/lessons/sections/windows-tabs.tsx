@@ -179,13 +179,13 @@ export const windowsTabs: Section = {
             solution: ':vs init.lua<CR>',
           },
           {
-            prompt: 'Open lsp.lua above telescope.lua, on the left.',
+            prompt: 'You are in telescope.lua, on the left. Open lsp.lua above it.',
             setup: { init: vim => vim.ex(`vs ${TEL}`) },
             goal: { buffer: LSP, check: vim => shape(vim) === 'row(col(lsp,telescope),options)' },
             solution: `:sp ${LSP}<CR>`,
           },
           {
-            prompt: 'Split this window horizontally.',
+            prompt: 'Split this window in two, one above the other.',
             setup: { open: KEY },
             goal: { check: vim => shape(vim) === 'col(keymaps,keymaps)' },
             solution: ':sp<CR>',
@@ -214,7 +214,8 @@ export const windowsTabs: Section = {
       ),
       practice: total => (
         <p>
-          Four windows are open. Move to the one each round names. {ALT_NOTE} {total} rounds.
+          Four windows are open: keymaps and options on the left, lsp and init on the right. Move to the one each
+          round names. {ALT_NOTE} {total} rounds.
         </p>
       ),
       aside: {
@@ -301,7 +302,7 @@ export const windowsTabs: Section = {
             solution: '<C-w>o',
           },
           {
-            prompt: 'Close the window below this one.',
+            prompt: 'You are in keymaps.lua. Close options.lua, the window below.',
             setup: { init: grid(KEY) },
             goal: { check: vim => vim.tab.windows().length === 3 && !vim.tab.windows().some(w => w.buf.name === OPT) },
             solution: '<C-w>j<C-w>c',
@@ -313,7 +314,7 @@ export const windowsTabs: Section = {
             solution: '<C-w>k<C-w>o',
           },
           {
-            prompt: 'Close the window to the left.',
+            prompt: 'Close init.lua, the window to the left.',
             setup: { init: vim => { vim.ex('vs init.lua'); focus(vim, OPT); } },
             goal: { buffer: OPT, check: vim => vim.tab.windows().length === 1 },
             solution: '<C-w>h<C-w>c',
@@ -344,7 +345,8 @@ export const windowsTabs: Section = {
       ),
       practice: total => (
         <p>
-          Resize the windows the way each round asks. {ALT_NOTE} {total} rounds.
+          Resize the windows the way each round asks. The four-window rounds have keymaps and options on the left,
+          lsp and init on the right. {ALT_NOTE} {total} rounds.
         </p>
       ),
       aside: {
@@ -379,7 +381,7 @@ export const windowsTabs: Section = {
             solution: '<C-w>=',
           },
           {
-            prompt: 'Maximize the height of the window below.',
+            prompt: 'You are in keymaps.lua. Give options.lua, the window below, all the height.',
             setup: { init: grid(KEY) },
             goal: { buffer: OPT, check: vim => maxed(vim, 'tall') },
             solution: '<C-w>j<C-w>_',
@@ -435,13 +437,13 @@ export const windowsTabs: Section = {
         base: { files: CONFIG, open: OPT, height: 18 },
         rounds: [
           {
-            prompt: 'Turn the stack into a side-by-side split, keymaps on the right.',
+            prompt: 'keymaps.lua is above options.lua. Move keymaps to the right, side by side.',
             setup: { init: vim => vim.ex(`sp ${KEY}`) },
             goal: { check: vim => shape(vim) === 'row(options,keymaps)' },
             solution: '<C-w>L',
           },
           {
-            prompt: 'Put init.lua on top, full width.',
+            prompt: 'You are in init.lua. Put it on top, full width.',
             setup: { init: vim => vim.ex('vs init.lua') },
             goal: { check: vim => shape(vim) === 'col(init,options)' },
             solution: '<C-w>K',

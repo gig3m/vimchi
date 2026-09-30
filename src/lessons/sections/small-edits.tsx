@@ -243,7 +243,7 @@ export const smallEdits: Section = {
             solution: 'u',
           },
           {
-            prompt: 'Undo the whole line that was typed in.',
+            prompt: 'Undo the line that was typed in: vim.opt.mouse = "".',
             setup: {
               name: 'init.lua',
               text: ['vim.opt.number = true', 'vim.opt.wrap = false', 'vim.opt.tabstop = 2'],
@@ -254,7 +254,7 @@ export const smallEdits: Section = {
             solution: 'u',
           },
           {
-            prompt: 'Undo both renames.',
+            prompt: 'Undo both renames on the const line.',
             setup: {
               text: [
                 'function lineTotal(price: number, quantity: number) {',
@@ -413,7 +413,7 @@ export const smallEdits: Section = {
             solution: '2g+',
           },
           {
-            prompt: 'C-r would redo the deleted line. Bring back the 1.2 version.',
+            prompt: 'C-r would delete the "const sum" line again. Bring back the "* 1.2" version.',
             setup: {
               name: 'cart.ts',
               text: [
@@ -457,7 +457,7 @@ export const smallEdits: Section = {
           <p>
             Words between bars, like <Mono>|linewise|</Mono>, are links. Put the cursor on one and press{' '}
             <Code>C-]</Code> to jump to it. <Code>C-o</Code> jumps back, one link at a time. <Code>:q</Code> closes
-            the help window.
+            the help window (Save &amp; Quit covers it).
           </p>
         </>
       ),
@@ -470,7 +470,7 @@ export const smallEdits: Section = {
         title: 'Search help by name',
         body: (
           <p>
-            Both kickstart and LazyVim map <Code>␣sh</Code> to a picker over every help tag: type part of a name,
+            Both kickstart and LazyVim map <Code>␣sh</Code> (Space, then <Mono>sh</Mono>) to a picker over every help tag: type part of a name,
             then <Code>enter</Code>. It is the quickest way in when you don't know the exact tag.
           </p>
         ),
@@ -505,7 +505,7 @@ export const smallEdits: Section = {
             solution: '<C-o>',
           },
           {
-            prompt: 'Follow the |scroll.txt| link to the scrolling page.',
+            prompt: 'Follow the |scroll.txt| link on this line.',
             setup: { cursor: { line: 0, col: 0 }, init: vim => openAt(vim, 'help.txt', 'scroll.txt') },
             goal: helpGoal('scroll.txt'),
             solution: '<C-]>',
