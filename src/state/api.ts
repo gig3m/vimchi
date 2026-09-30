@@ -24,15 +24,13 @@ async function req<T>(method: string, path: string, body?: unknown): Promise<T> 
 }
 
 export const api = {
-  me: () => req<Account>('GET', '/api/me'),
+  /** The signed-in account, or null for a guest (the server answers 204, not a 401 the console logs). */
+  me: () => req<Account | undefined>('GET', '/api/me').then(a => a ?? null),
   runs: () => req<Run[]>('GET', '/api/runs'),
   /** A run may carry its coach events and key mix (optional; older runs have neither). */
   addRun: (run: Run & CoachFields) => req<void>('POST', '/api/runs', run),
   importRuns: (runs: (Run & CoachFields)[]) => req<void>('POST', '/api/runs/import', runs),
   coachProfile: () => req<CoachProfile>('GET', '/api/coach/profile'),
-  /** Signing out also tells the coach memory to switch to the guest profile. */
-  signOut: () => req<void>('POST', '/auth/logout').finally(() => {
-    if (typeof window !== 'undefined') window.dispatchEvent(new Event('vimchi:signed-out'));
-  }),
+  signOut: () => req<void>('POST', '/auth/logout'),
   loginUrl: (returnTo: string) => '/auth/github/login?return=' + encodeURIComponent(returnTo),
 };
