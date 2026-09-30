@@ -11,6 +11,7 @@ import type { RegValue } from './registers';
 import { formatLines, reindentLines, toggleComment } from './transforms';
 import { firstNonBlank, indentOf, lastCol, lastNonBlank } from './text';
 import { TEXT_OBJECTS } from './textobjects';
+import { followTag } from './help';
 import { type Pos, type Range, cmpPos, fail } from './types';
 
 export function installCommands(vim: Vim) {
@@ -871,7 +872,11 @@ export function installCommands(vim: Vim) {
     } else {
       // Keep the cursor on screen.
       const vis = rows.slice(newTop, newTop + V.win.height);
-      if (!vis.includes(rows[curRow])) V.win.cursor = pos(n > 0 ? vis[0] : vis[vis.length - 1], 0);
+      if (!vis.includes(rows[curRow])) {
+        // nostartofline: the cursor keeps the column it wants (C-e / C-y, as in Neovim).
+        V.win.cursor = pos(n > 0 ? vis[0] : vis[vis.length - 1], 0);
+        V.win.cursor.col = Math.min(V.win.want, lastCol(ln()));
+      }
     }
   };
   const half = () => Math.max(1, Math.floor(V.win.height / 2));
@@ -950,6 +955,7 @@ export function installCommands(vim: Vim) {
   };
   A('<C-o>', jump(-1));
   A('<C-i>', jump(1));
+  A('<C-]>', () => followTag(V));
   A('<Tab>', jump(1));
   const changeJump = (dir: -1 | 1) => (c: ActionCtx) => {
     const b = V.buf;
