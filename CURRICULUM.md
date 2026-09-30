@@ -339,12 +339,12 @@ What a starter config adds: LSP, richer text objects, flash, surround, completio
 ### Surround
 | # | Lesson | Keys | Challenge |
 |---|---|---|---|
-| 163 | Add Surroundings | `ys` | transform |
-| 164 | Change Surroundings | `cs` | transform |
-| 165 | Delete Surroundings | `ds` | transform |
-| 166 | Surround a Line | `yss` | transform |
-| 167 | Surround a Selection | `v` `S` | transform |
-| 168 | Surround with Tags | `cst` `yst` | transform |
+| 163 | Add Surroundings | `sa` | transform |
+| 164 | Change Surroundings | `sr` | transform |
+| 165 | Delete Surroundings | `sd` | transform |
+| 166 | Find a Surrounding | `sf` `sF` | transform |
+| 167 | Surround a Selection | `v` `sa` | transform |
+| 168 | Surround with Tags | `srt` `sat` | transform |
 
 ### Insert Mode Power
 | # | Lesson | Keys | Challenge |

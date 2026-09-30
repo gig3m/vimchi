@@ -10,10 +10,10 @@ const NAMED: Record<string, string> = {
 /** Words that are prose, not keys: init.lua, vim.opt, macros, norm. */
 const PROSE = /^[a-z]+(\.[a-z]+)+$|^[a-z]{4,}$/i;
 const PROSE_WORDS = new Set(['tab', 'norm', 'macros']);
-const TWO = /^(dd|yy|cc|gg|ge|gE|gc|gu|gU|g~|gv|gn|gN|gJ|gJ|gq|gw|gi|gd|gf|gt|gT|gs|gr|ga|g8|g;|g&|zz|zt|zb|zo|zc|za|zM|zR|zf|zj|zk|cs|ds|ys|cx|cr|ZZ|<<|>>|==|\[[a-zA-Z]|\][a-zA-Z]|q:)/;
+const TWO = /^(dd|yy|cc|gg|ge|gE|gc|gu|gU|g~|gv|gn|gN|gJ|gJ|gq|gw|gi|gd|gf|gt|gT|gs|gr|ga|g8|g;|g&|zz|zt|zb|zo|zc|za|zM|zR|zf|zj|zk|cs|ds|ys|yS|sa|sd|sr|sf|sF|cx|cr|ZZ|<<|>>|==|\[[a-zA-Z]|\][a-zA-Z]|q:)/;
 
 /** Split a chip into engine tokens: operators, motions, text objects, prefixes, specials. */
-export function tokenize(chip: string): string[] {
+export function tokenize(chip: string, opts: { prose?: boolean } = {}): string[] {
   const out: string[] = [];
   for (let p of chip.trim().split(/\s+/)) {
     if (!p) continue;
@@ -22,7 +22,7 @@ export function tokenize(chip: string): string[] {
     if (/^<c-.>$/i.test(p)) { out.push(`<C-${p[3].toLowerCase()}>`); continue; }
     if (/^C-.$/i.test(p)) { out.push(`<C-${p[2].toLowerCase()}>`); continue; }
     if (/^<[A-Za-z-]+>$/.test(p)) { out.push(p); continue; }
-    if (PROSE_WORDS.has(low) || (PROSE.test(p) && !/^[gz][a-z]$/.test(p))) continue;
+    if (opts.prose !== false && (PROSE_WORDS.has(low) || (PROSE.test(p) && !/^[gz][a-z]$/.test(p)))) continue;
     if (p.startsWith(':')) { out.push(':'); continue; }
     if (/^[/?]/.test(p)) { out.push(p[0]); continue; }
     if (p.startsWith('\\')) continue;                       // regex atoms, not keys
@@ -63,9 +63,15 @@ export function commandTokens(keys: readonly string[]): string[] {
     const prev = rest[rest.length - 2];
     if (ARG_HEADS.has(k) && !/^[ia]$/.test(prev ?? '')) break; // an argument follows (it/at keep their t)
   }
+  // Surround commands take their pair character as an argument: after the motion for sa/ys,
+  // right after the command for sd/sf/sF/ds and sr/cs (two of them).
+  const head = rest.slice(0, 2).join('');
+  if (/^(sd|sf|sF|ds|sr|cs)$/.test(head)) return [...out, head];
+  if (/^(sa|ys|yS)$/.test(head) && rest.length > 2) rest.pop();
+  if (rest[0] === 'S' && rest.length === 2) return [...out, 'S'];
   // Special keys (<C-v>, <Esc>) are their own chips; plain keys run together so gg/ge/ciw tokenize as units.
   const text = rest.map(k => (k.length > 1 ? ` ${k} ` : k)).join('');
-  return [...out, ...tokenize(text)];
+  return [...out, ...tokenize(text, { prose: false })]; // keys ran together are never prose
 }
 
 const cache = new Map<string, Set<string>>();

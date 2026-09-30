@@ -1,6 +1,8 @@
-// nvim-surround (kylechui/nvim-surround), default keymaps:
-//   ys{motion}{char}  add         yss{char}  add around the line     yS / ySS  on new lines
-//   ds{char}          delete      cs{old}{new}  change               S{char}   visual add
+// Surround: mini.surround's default keys (what kickstart ships; LazyVim's extra prefixes them
+// with g) and nvim-surround's (the tpope lineage) on the same engine.
+//   mini:  sa{motion}{char} add   sa{char} in visual   sd{char} delete   sr{old}{new} replace
+//          sf{char} / sF{char} jump to the right / left delimiter
+//   nvim-surround: ys{motion}{char}  yss{char}  yS / ySS  ds{char}  cs{old}{new}  S{char} (visual)
 // Opening brackets add inner spaces, closing ones don't. Aliases: b=) B=} r=] a=> q=any quote
 // s=any surrounding. t / T are tags (the name is typed at a prompt, ended by <CR>; a whole <tag>
 // works too), f is a function call.
@@ -251,18 +253,37 @@ export const surround: Plugin = {
       run: (r, c) => addAround(vim, r, addPair(vim.opArgument), c.visual === 'V'),
     }, ['v']);
 
-    vim.defineAction('ds', {
-      arg: 'char', change: true,
-      run: c => {
+    // mini.surround: the same operations under s-prefixed keys. A lone `s` still substitutes: the
+    // engine runs it when the next key is not a/d/r/f/F.
+    vim.defineOperator('sa', { change: true, argAfter: 'surround', run: add(false) }, ['n']);
+    vim.defineOperator('sa', {
+      change: true, argAfter: 'surround',
+      run: (r, c) => addAround(vim, r, addPair(vim.opArgument), c.visual === 'V'),
+    }, ['v']);
+    const del = {
+      arg: 'char' as const, change: true,
+      run: (c: { arg: string }) => {
         const f = findSurrounding(vim.lines, vim.cursor, c.arg);
         if (!f) fail();
         replaceFound(vim, f, null);
       },
+    };
+    vim.defineAction('ds', del);
+    vim.defineAction('sd', del);
+    const jump = (side: 'l' | 'r') => ({
+      arg: 'char' as const,
+      run: (c: { arg: string }) => {
+        const f = findSurrounding(vim.lines, vim.cursor, c.arg);
+        if (!f) fail();
+        vim.setCursor(side === 'r' ? f.r[0] : f.l[0]);
+      },
     });
+    vim.defineAction('sf', jump('r'));
+    vim.defineAction('sF', jump('l'));
 
-    for (const t of TARGETS) {
+    for (const t of TARGETS) for (const prefix of ['cs', 'sr']) {
       const tag = t === 't' || t === 'T';
-      vim.defineAction(`cs${t === '<' ? '<lt>' : t}`, {
+      vim.defineAction(`${prefix}${t === '<' ? '<lt>' : t}`, {
         arg: tag || t === 'f' ? 'tag' : 'surround',
         change: true,
         run: c => {

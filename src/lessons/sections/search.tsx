@@ -395,7 +395,7 @@ export const search: Section = {
             solution: 'dgn..',
           },
           {
-            prompt: 'Uppercase every "todo".',
+            prompt: 'Change every "todo" to "TODO" (gU comes later; cgn does it now).',
             setup: {
               name: 'plan.md',
               text: ['- todo: write tests', '- todo: update docs', '- done: tag release', '- todo: announce'],
@@ -403,7 +403,7 @@ export const search: Section = {
               cursor: { line: 0, col: 0 },
             },
             goal: { text: ['- TODO: write tests', '- TODO: update docs', '- done: tag release', '- TODO: announce'] },
-            solution: 'gUgn..',
+            solution: 'cgnTODO<Esc>..',
           },
           {
             prompt: 'Rename "cfg" to "config" everywhere.',

@@ -74,3 +74,34 @@ describe('nvim-surround', () => {
     expect(run('call "x"', 0, 'ds"').buf.text()).toBe('call x');
   });
 });
+
+describe('mini.surround keys (kickstart default)', () => {
+  it.each([
+    ['surr*ound_words', 4, 'saiw)', '(surround_words)'],
+    ['*make strings', 0, 'sa$"', '"make strings"'],
+    ['hello world', 0, 'saiw(', '( hello ) world'],
+    ['[delete ar*ound me!]', 10, 'sd]', 'delete around me!'],
+    ['remove <b>HTML t*ags</b>', 15, 'sdt', 'remove HTML tags'],
+    ["'change quot*es'", 12, `sr'"`, '"change quotes"'],
+    ['<b>or tag* types</b>', 9, 'srth1<CR>', '<h1>or tag types</h1>'],
+    ['delete(functi*on calls)', 13, 'sdf', 'function calls'],
+    ['tag *word here', 4, 'saiwtem<CR>', 'tag <em>word</em> here'],
+  ])('%s  %s', (text, _col, keys, want) => {
+    expect(run(text.replace('*', ''), text.indexOf('*'), keys as string).buf.text()).toBe(want);
+  });
+  it('sa surrounds a visual selection; V puts the pair on its own lines', () => {
+    expect(run('hello world', 0, 'vesa)').buf.text()).toBe('(hello) world');
+    expect(run('  x = 1', 2, 'Vsa{').buf.lines).toEqual(['  {', '    x = 1', '  }']);
+  });
+  it('sf and sF jump to the right and left delimiter of the surrounding', () => {
+    const v = run('call(a, (b), c)', 6, 'sf)');
+    expect(v.cursor).toEqual({ line: 0, col: 14 });
+    const w = run('call(a, (b), c)', 6, 'sF)');
+    expect(w.cursor).toEqual({ line: 0, col: 4 });
+    const q = run('say("hi there")', 8, 'sf"');
+    expect(q.cursor).toEqual({ line: 0, col: 13 });
+  });
+  it('a lone s still substitutes once a non-surround key follows', () => {
+    expect(run('abc', 1, 'sX<Esc>').buf.text()).toBe('aXc');
+  });
+});
