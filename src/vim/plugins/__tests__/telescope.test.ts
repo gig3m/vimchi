@@ -84,3 +84,29 @@ describe('telescope', () => {
     expect(vim.findBuffer('README.md')).toBeUndefined();
   });
 });
+
+describe('shared bindings', () => {
+  it('<leader>sf and <leader>sg open the pickers', () => {
+    const v = mk();
+    v.feedKeys('<Space>sf');
+    expect(v.floats.some(f => f.id === 'telescope' && f.title === 'Find Files')).toBe(true);
+    v.feedKeys('<Esc>q'); // Esc: picker normal mode; q: close
+    v.feedKeys('<Space>sg');
+    expect(v.floats.some(f => f.id === 'telescope' && f.title === 'Live Grep')).toBe(true);
+  });
+  it('<leader>sw greps the word under the cursor', () => {
+    const v = mk();
+    v.feedKeys('jw'); // line 2 "// TODO: routes", on TODO
+    v.feedKeys('<Space>sw');
+    const f = v.floats.find(x => x.id === 'telescope')!;
+    expect(f.prompt?.text).toBe('TODO');
+    expect(f.lines.length).toBe(2);
+  });
+  it('sw on whitespace opens an empty grep', () => {
+    const v = mk();
+    v.feedKeys('jl'); // on the space after "//"... col 2 is a space
+    v.feedKeys('<Space>sw');
+    const f = v.floats.find(x => x.id === 'telescope')!;
+    expect(f.prompt?.text).toBe('');
+  });
+});

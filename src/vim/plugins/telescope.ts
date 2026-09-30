@@ -1,4 +1,5 @@
-// telescope.nvim with the README's keymaps: <leader>ff find_files,
+// telescope.nvim with kickstart's keymaps (<leader>sf find_files, sg live_grep, sw grep the word
+// under the cursor) plus the README's <leader>ff/fg/fb aliases,
 // <leader>fg live_grep, <leader>fb buffers (and :Telescope {picker}). A
 // centered float with a prompt, results (fzy-style fuzzy match, best first,
 // ties alphabetical) and a preview. The prompt starts in insert mode:
@@ -238,11 +239,11 @@ function handleKey(vim: Vim, p: Picker, key: Key): void {
   }
 }
 
-function startPicker(vim: Vim, title: string, src: { entries?: Entry[]; find?: (prompt: string) => Entry[] }) {
+function startPicker(vim: Vim, title: string, src: { entries?: Entry[]; find?: (prompt: string) => Entry[] }, initial = '') {
   if (vim.modal) return;
   const float: Float = { id: 'telescope', title, anchor: 'center', width: 110, lines: [] };
   const p: Picker = {
-    title, ...src, prompt: '', cursor: 0, results: [], sel: 0, mode: 'insert', pendingG: false, origin: vim.win, float,
+    title, ...src, prompt: initial, cursor: initial.length, results: [], sel: 0, mode: 'insert', pendingG: false, origin: vim.win, float,
   };
   filter(p);
   draw(vim, p);
@@ -261,7 +262,7 @@ export function findFiles(vim: Vim) {
   startPicker(vim, 'Find Files', { entries });
 }
 
-export function liveGrep(vim: Vim) {
+export function liveGrep(vim: Vim, initial = '') {
   const files = vim.fs.list().filter(f => !f.split('/').some(s => s.startsWith('.')));
   startPicker(vim, 'Live Grep', {
     find: prompt => {
@@ -284,7 +285,14 @@ export function liveGrep(vim: Vim) {
       }
       return out;
     },
-  });
+  }, initial);
+}
+
+/** Live grep seeded with the keyword under the cursor (empty on whitespace or punctuation). */
+export function grepWord(vim: Vim) {
+  const l = vim.line();
+  const m = [...l.matchAll(/[A-Za-z0-9_]+/g)].find(x => x.index! <= vim.cursor.col && vim.cursor.col < x.index! + x[0].length);
+  liveGrep(vim, m ? m[0] : '');
 }
 
 export function buffers(vim: Vim) {
@@ -302,8 +310,10 @@ export function buffers(vim: Vim) {
 export const telescope: Plugin = {
   name: 'telescope',
   setup: vim => {
-    vim.map(['n'], '<leader>ff', () => findFiles(vim));
-    vim.map(['n'], '<leader>fg', () => liveGrep(vim));
+    // kickstart's keys (sf/sg/sw) and the older Telescope README keys (ff/fg/fb) both work.
+    for (const k of ['<leader>ff', '<leader>sf']) vim.map(['n'], k, () => findFiles(vim));
+    for (const k of ['<leader>fg', '<leader>sg']) vim.map(['n'], k, () => liveGrep(vim));
+    vim.map(['n'], '<leader>sw', () => grepWord(vim));
     vim.map(['n'], '<leader>fb', () => buffers(vim));
     vim.defineEx('Telescope', 3, a => {
       const pickers: Record<string, (v: Vim) => void> = { find_files: findFiles, live_grep: liveGrep, buffers };
