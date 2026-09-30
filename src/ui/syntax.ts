@@ -63,6 +63,7 @@ export function colorize(t: string, filetype: string): string[] {
   if (filetype === 'fugitive') return fugitive(t, col);
   if (filetype === 'git' || filetype === 'diff' || filetype === 'gitcommit') return gitish(t, col);
   if (filetype === 'csv') return csv(t, col);
+  if (filetype === 'help') return help(t, col);
   const lang = LANGS[filetype];
   if (!lang) return col;
   let re = TOKENS.get(lang);
@@ -128,6 +129,18 @@ function gitish(t: string, col: string[]) {
   else if (t.startsWith('@@')) paint(col, 0, t.length, C.purple);
   else if (t.startsWith('#')) paint(col, 0, t.length, C.comment);
   else if (/^[0-9a-f]{7,}/.test(t)) paint(col, 0, t.indexOf(' '), C.yellow);
+  return col;
+}
+
+/** Help pages: *tags* purple, |links| cyan (bars dimmed), 'options' green, section titles orange. */
+function help(t: string, col: string[]) {
+  if (/^\d+\. [A-Z]/.test(t)) paint(col, 0, t.search(/\s{2,}|$/), C.orange);
+  for (const m of t.matchAll(/'[a-z]{2,}'/g)) paint(col, m.index!, m.index! + m[0].length, C.green);
+  for (const m of t.matchAll(/\*[^\s*|"]+\*/g)) paint(col, m.index!, m.index! + m[0].length, C.purple);
+  for (const m of t.matchAll(/\|[^\s*|"]+\|/g)) {
+    paint(col, m.index!, m.index! + m[0].length, C.cyan);
+    col[m.index!] = col[m.index! + m[0].length - 1] = C.comment;
+  }
   return col;
 }
 

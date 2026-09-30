@@ -9,6 +9,7 @@ import { shellFilter } from './transforms';
 import { basename } from './fs';
 import type { QfItem } from './layout';
 import { parseKeys } from './keys';
+import { openHelp } from './help';
 
 type Cmd = { min: number; run: (vim: Vim, a: ExArgs) => void; bar?: boolean; defaultAll?: boolean };
 
@@ -1331,7 +1332,9 @@ const COMMANDS: Record<string, Cmd> = {
   number: { min: 2, run: (v, a) => { const r = lineRange(v, a); v.msg(v.buf.lines.slice(r.start, r.end + 1).map((l, i) => `${String(r.start + i + 1).padStart(3)} ${l}`).join('\n'), 'more'); } },
   '#': { min: 1, run: (v, a) => COMMANDS.number.run(v, a) },
   '=': { min: 1, run: (v, a) => v.msg(String((a.range ? a.range.end : v.buf.lineCount - 1) + 1)) },
-  help: { min: 1, run: (v, a) => v.msg(`Help for "${a.arg || 'help'}" isn't bundled in the tutor. In Neovim, :h ${a.arg || 'help'} opens it.`) },
+  help: { min: 1, run: (v, a) => openHelp(v, a.arg) },
+  earlier: { min: 2, run: (v, a) => undoTimeEx(v, a.arg, -1) },
+  later: { min: 3, run: (v, a) => undoTimeEx(v, a.arg, 1) },
   terminal: { min: 3, run: v => v.msg('The terminal is not available in the tutor.') },
   startinsert: { min: 4, run: (v, a) => { const p = v.cursor; v.startInsert(a.bang ? 'A' : 'i', a.bang ? pos(p.line, v.line().length) : p); } },
   stopinsert: { min: 5, run: v => { if (v.insert) v.leaveInsert(); } },
@@ -1340,6 +1343,17 @@ const COMMANDS: Record<string, Cmd> = {
   '*': { min: 1, run: (v, a) => COMMANDS['@'].run(v, a) },
   noh: { min: 3, run: v => { v.hlActive = false; } },
 };
+
+/** :earlier / :later {N}: g- / g+ N times. The time forms (10s, 1f) are not modelled. */
+function undoTimeEx(vim: Vim, arg: string, dir: -1 | 1) {
+  const m = /^\s*(\d*)\s*$/.exec(arg);
+  if (!m) fail(`The tutor has no clock: use a count, as in :${dir < 0 ? 'earlier' : 'later'} 2`);
+  const p = vim.buf.undoTime(dir * (parseInt(m[1], 10) || 1), vim.cursor, vim.win.want);
+  if (!p) return vim.msg(dir < 0 ? 'Already at oldest change' : 'Already at newest change');
+  vim.setCursor(p);
+  vim.clampCursor(false);
+  vim.emit(dir < 0 ? 'undo' : 'redo');
+}
 
 function align(vim: Vim, a: ExArgs, how: 'center' | 'right' | 'left') {
   const r = lineRange(vim, a);

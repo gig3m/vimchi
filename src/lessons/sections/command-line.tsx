@@ -1231,5 +1231,113 @@ export const commandLine: Section = {
         ],
       },
     },
+    {
+      id: 'set-options',
+      title: 'Options',
+      chips: [':set x', ':set x!', ':set x?'],
+      keyCards: [
+        { key: ':set x', glyph: 'on', label: 'switch on', sub: ':set nox is off' },
+        { key: ':set x!', glyph: '⇄', label: 'toggle' },
+        { key: ':set x?', glyph: '?', label: 'show the value' },
+        { key: ':set x=n', glyph: '=', label: 'set a value' },
+      ],
+      intro: (
+        <>
+          <p>
+            Options change how the editor behaves. <Code>:set rnu</Code> switches one on and <Code>:set nornu</Code>{' '}
+            off; <Code>:set rnu!</Code> flips it; <Code>:set rnu?</Code> shows it. Number options take a value:{' '}
+            <Code>:set sw=4</Code>.
+          </p>
+          <p>
+            Every option has a long and a short name: <Code>relativenumber</Code> is <Code>rnu</Code>,{' '}
+            <Code>ignorecase</Code> is <Code>ic</Code>, <Code>shiftwidth</Code> is <Code>sw</Code>. With{' '}
+            <Code>rnu</Code> on, the gutter shows how far each line is from the cursor, which is the count{' '}
+            <Code>d3j</Code> needs.
+          </p>
+        </>
+      ),
+      practice: total => (
+        <p>
+          Set the option the round names, then finish the edit if there is one. {total} rounds.
+        </p>
+      ),
+      aside: {
+        title: 'Keeping an option',
+        body: (
+          <p>
+            <Code>:set</Code> lasts until you quit. To keep an option, put it in your config:{' '}
+            <Code>vim.opt.relativenumber = true</Code>. <Code>:set rnu&</Code> puts one back to its default.
+          </p>
+        ),
+      },
+      challenge: {
+        kind: 'rounds',
+        base: { name: 'server.ts', text: SERVER_TS },
+        rounds: [
+          {
+            prompt: 'Turn on relativenumber, then delete updatetime and the two split lines.',
+            setup: { name: 'init.lua', text: INIT_LUA, cursor: { line: 14, col: 0 } },
+            goal: {
+              text: [...INIT_LUA.slice(0, 14), ...INIT_LUA.slice(17)],
+              check: v => v.opt('relativenumber') === true,
+            },
+            solution: ':set rnu<CR>d2j',
+          },
+          {
+            prompt: 'Is wrap on? Show its value.',
+            setup: { cursor: { line: 5, col: 0 }, options: { wrap: true } },
+            goal: { check: v => /^\s*wrap$/.test(v.message?.text ?? '') },
+            solution: ':set wrap?<CR>',
+          },
+          {
+            prompt: 'Wrap is on. Toggle it off.',
+            setup: { cursor: { line: 5, col: 0 }, options: { wrap: true } },
+            goal: { check: v => v.opt('wrap') === false },
+            solution: ':set wrap!<CR>',
+          },
+          {
+            prompt: 'The last search was todo, but the file says TODO. Turn on ignorecase and press n.',
+            setup: {
+              name: 'queue.lua',
+              text: [
+                'local M = {}',
+                '',
+                'function M.push(q, item)',
+                '  table.insert(q, item)',
+                'end',
+                '',
+                'function M.pop(q)',
+                '  -- TODO: return nil when empty',
+                '  return table.remove(q, 1)',
+                'end',
+              ],
+              cursor: { line: 2, col: 9 },
+              search: 'todo',
+            },
+            goal: { cursor: { line: 7, col: 5 }, check: v => v.opt('ignorecase') === true },
+            solution: ':set ic<CR>n',
+          },
+          {
+            prompt: 'Hide the line numbers.',
+            setup: { cursor: { line: 3, col: 6 } },
+            goal: { check: v => v.opt('number') === false },
+            solution: ':set nu!<CR>',
+          },
+          {
+            prompt: 'Set shiftwidth to 4, then indent the return line.',
+            setup: {
+              name: 'sum.lua',
+              text: ['local function sum(xs)', '  local n = 0', 'return n', 'end'],
+              cursor: { line: 2, col: 0 },
+            },
+            goal: {
+              text: ['local function sum(xs)', '  local n = 0', '    return n', 'end'],
+              check: v => v.opt('shiftwidth') === 4,
+            },
+            solution: ':set sw=4<CR>>>',
+          },
+        ],
+      },
+    },
   ],
 };

@@ -6,7 +6,7 @@ describe('tokenize', () => {
   it.each([
     ['dt', ['d', 't']], ['ci"', ['c', 'i"']], ['$A', ['$', 'A']], ['"ap', ['"', 'p']], ['C-w h', ['<C-w>', 'h']],
     ['␣ff', ['<Space>', 'f', 'f']], [':noh', [':']], ['/e', ['/']], ['3dw', ['d', 'w']], ['esc', ['<Esc>']], ['CR', ['<CR>']],
-    ['C-r C-w', ['<C-r>', '<C-w>']], ['gcc', ['gc', 'c']], ['<leader>', ['<Space>']], ['ddp', ['dd', 'p']], ['xp', ['x', 'p']],
+    ['C-r C-w', ['<C-r>', '<C-w>']], ['gcc', ['gc', 'c']], ['<leader>', ['<Space>']], ['ddp', ['dd', 'p']], ['xp', ['x', 'p']], ['g-', ['g-']], ['3g+', ['g+']], ['C-]', ['<C-]>']],
   ] as [string, string[]][])('%s → %j', (chip, want) => expect(tokenize(chip)).toEqual(want));
   it('prose chips tokenize to nothing', () => {
     for (const chip of ['macros', 'init.lua', 'vim.opt', 'vim.keymap.set', 'tab', 'norm']) expect(tokenize(chip), chip).toEqual([]);
