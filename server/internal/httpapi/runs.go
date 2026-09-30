@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -21,7 +22,19 @@ type meResponse struct {
 	Created   int64  `json:"created"`
 }
 
-func (s *Server) handleMe(w http.ResponseWriter, r *http.Request, u store.User) {
+// handleMe answers the signed-in account, or 204 for a guest: "not signed in" is a guest's
+// normal state, so it is not an error status the browser logs on every page load.
+func (s *Server) handleMe(w http.ResponseWriter, r *http.Request) {
+	u, err := s.sessionUser(r)
+	if errors.Is(err, errNoSession) {
+		w.Header().Set("Cache-Control", "no-store")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	if err != nil {
+		s.serverError(w, r, err)
+		return
+	}
 	name := u.Name
 	if name == "" {
 		name = u.Login

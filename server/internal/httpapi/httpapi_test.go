@@ -98,9 +98,12 @@ func TestRunsEndpoints(t *testing.T) {
 	bob := signIn(t, s, 2, "bob")
 	at := testNow.UnixMilli()
 
-	// Unauthenticated.
+	// Unauthenticated. /api/me answers 204 ("not signed in" is the guest's normal state, not an
+	// error the browser logs); everything else is 401.
+	if w := do(t, h, "GET", "/api/me", ""); w.Code != http.StatusNoContent || w.Body.Len() != 0 {
+		t.Errorf("GET /api/me without session = %d %q, want 204 and no body", w.Code, w.Body)
+	}
 	for _, tc := range []struct{ method, path, body string }{
-		{"GET", "/api/me", ""},
 		{"GET", "/api/runs", ""},
 		{"POST", "/api/runs", runJSON("hjkl", at, 50)},
 		{"POST", "/api/runs/import", "[]"},
@@ -109,8 +112,11 @@ func TestRunsEndpoints(t *testing.T) {
 			t.Errorf("%s %s without session = %d, want 401", tc.method, tc.path, w.Code)
 		}
 	}
-	if w := do(t, h, "GET", "/api/me", "", withCookie(&http.Cookie{Name: sessionCookie, Value: "bogus"})); w.Code != http.StatusUnauthorized {
-		t.Errorf("bogus session = %d, want 401", w.Code)
+	if w := do(t, h, "GET", "/api/me", "", withCookie(&http.Cookie{Name: sessionCookie, Value: "bogus"})); w.Code != http.StatusNoContent {
+		t.Errorf("bogus session /api/me = %d, want 204", w.Code)
+	}
+	if w := do(t, h, "GET", "/api/runs", "", withCookie(&http.Cookie{Name: sessionCookie, Value: "bogus"})); w.Code != http.StatusUnauthorized {
+		t.Errorf("bogus session /api/runs = %d, want 401", w.Code)
 	}
 
 	// /api/me
@@ -203,8 +209,11 @@ func TestRunsEndpoints(t *testing.T) {
 	if w := do(t, h, "POST", "/auth/logout", "", withCookie(alice)); w.Code != http.StatusNoContent {
 		t.Fatalf("logout = %d", w.Code)
 	}
-	if w := do(t, h, "GET", "/api/me", "", withCookie(alice)); w.Code != http.StatusUnauthorized {
-		t.Errorf("after logout /api/me = %d, want 401", w.Code)
+	if w := do(t, h, "GET", "/api/me", "", withCookie(alice)); w.Code != http.StatusNoContent {
+		t.Errorf("after logout /api/me = %d, want 204", w.Code)
+	}
+	if w := do(t, h, "GET", "/api/runs", "", withCookie(alice)); w.Code != http.StatusUnauthorized {
+		t.Errorf("after logout /api/runs = %d, want 401", w.Code)
 	}
 }
 

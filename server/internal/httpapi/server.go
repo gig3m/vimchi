@@ -52,7 +52,7 @@ func (s *Server) Handler() http.Handler {
 
 	mux.HandleFunc("GET /healthz", s.handleHealth)
 
-	mux.HandleFunc("GET /api/me", s.requireUser(s.handleMe))
+	mux.HandleFunc("GET /api/me", s.handleMe)
 	mux.HandleFunc("GET /api/runs", s.requireUser(s.handleRuns))
 	mux.HandleFunc("POST /api/runs", s.limited(writeLimit, s.requireUser(s.handleAddRun)))
 	mux.HandleFunc("GET /api/coach/profile", s.requireUser(s.handleCoachProfile))
@@ -80,16 +80,29 @@ func (s *Server) Handler() http.Handler {
 
 type userHandler func(http.ResponseWriter, *http.Request, store.User)
 
+// errNoSession means the request carries no live session (no cookie, or one that expired or was
+// signed out).
+var errNoSession = errors.New("not signed in")
+
+// sessionUser resolves the session cookie: errNoSession without a live session, another error when
+// the lookup itself failed.
+func (s *Server) sessionUser(r *http.Request) (store.User, error) {
+	c, err := r.Cookie(sessionCookie)
+	if err != nil || c.Value == "" {
+		return store.User{}, errNoSession
+	}
+	u, err := s.Store.SessionUser(r.Context(), auth.HashToken(c.Value), s.Now())
+	if errors.Is(err, store.ErrNotFound) {
+		return store.User{}, errNoSession
+	}
+	return u, err
+}
+
 // requireUser resolves the session cookie and responds 401 without one.
 func (s *Server) requireUser(h userHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		c, err := r.Cookie(sessionCookie)
-		if err != nil || c.Value == "" {
-			writeError(w, http.StatusUnauthorized, "not signed in")
-			return
-		}
-		u, err := s.Store.SessionUser(r.Context(), auth.HashToken(c.Value), s.Now())
-		if errors.Is(err, store.ErrNotFound) {
+		u, err := s.sessionUser(r)
+		if errors.Is(err, errNoSession) {
 			writeError(w, http.StatusUnauthorized, "not signed in")
 			return
 		}
