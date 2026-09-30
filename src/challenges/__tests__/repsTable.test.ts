@@ -26,8 +26,8 @@ const PINNED: Record<string, { files: string[]; edits: [number, number]; runs: [
   'word-objects': { files: NO_QS, edits: [10, 15], runs: [[1, 'util.go', 10], [42, 'util.go', 12], [9001, 'permissions.lua', 10]] },
   'text-objects-quotes': { files: ['reps.lua'], edits: [10, 15], runs: [[1, 'reps.lua', 10], [42, 'reps.lua', 11], [9001, 'reps.lua', 10]] },
   'text-objects-parens': { files: ['reps.ts', 'reps.go'], edits: [10, 15], runs: [[1, 'reps.go', 10], [42, 'reps.go', 12], [9001, 'reps.go', 12]] },
-  'search-forward': { files: NO_QS, edits: [10, 15], runs: [[1, 'util.go', 10], [42, 'util.go', 12], [9001, 'permissions.lua', 11]] },
-  'word-under-cursor': { files: NO_QS, edits: [10, 15], runs: [[1, 'util.go', 10], [42, 'util.go', 12], [9001, 'permissions.lua', 11]] },
+  'search-forward': { files: ALL, edits: [10, 15], runs: [[1, 'util.go', 10], [42, 'util.go', 12], [9001, 'permissions.lua', 12]] },
+  'word-under-cursor': { files: ALL, edits: [10, 15], runs: [[1, 'util.go', 10], [42, 'util.go', 12], [9001, 'permissions.lua', 12]] },
   'argument-objects': { files: ['reps.ts', 'reps.go'], edits: [10, 15], runs: [[1, 'reps.go', 10], [42, 'reps.go', 12], [9001, 'reps.go', 12]] },
   'indent-objects': { files: ['reps.ts', 'reps.go', 'reps.lua'], edits: [10, 15], runs: [[1, 'reps.go', 10], [42, 'reps.go', 12], [9001, 'reps.lua', 12]] },
   'function-class-objects': { files: ['reps.ts'], edits: [9, 11], runs: [[1, 'reps.ts', 9], [42, 'reps.ts', 9], [9001, 'reps.ts', 9]] },
@@ -36,10 +36,10 @@ const PINNED: Record<string, { files: string[]; edits: [number, number]; runs: [
 const picksOf = (seed: number, n: number): WarmUpPick[] =>
   shuffle(mulberry32(seed), REPS_LESSONS).slice(0, n).map((lesson, i) => ({ lesson, seed: seed + i, due: true, ago: 1 }));
 const WARM_UPS: [number, number, number, string][] = [
-  [1, 1, 3, 'reps.ts'], [2, 3, 7922, 'kmp.go'], [3, 8, 15841, 'query.ts'], [4, 9, 23760, 'version.lua'],
-  [5, 10, 31679, 'permissions.lua'], [6, 1, 39598, 'minicyan.lua'], [7, 3, 47517, 'quick_select.ts'],
-  [8, 8, 55436, 'minicyan.lua'], [9, 9, 63355, 'permissions.lua'], [10, 10, 71274, 'reps.lua'],
-  [11, 1, 79193, 'reps.lua'], [12, 3, 87112, 'stack.ts'],
+  [1, 1, 3, 'reps.ts'], [2, 3, 7922, 'reps.go'], [3, 8, 15841, 'query.ts'], [4, 9, 23760, 'reps.lua'],
+  [5, 10, 31679, 'query.ts'], [6, 1, 39598, 'reps.ts'], [7, 3, 47517, 'kmp.go'],
+  [8, 8, 55436, 'permissions.lua'], [9, 9, 63355, 'stack.ts'], [10, 10, 71274, 'version1.go'],
+  [11, 1, 79193, 'reps.lua'], [12, 3, 87112, 'reps.go'],
 ];
 
 describe('reps table: first open is cheap', () => {

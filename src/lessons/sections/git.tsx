@@ -269,7 +269,8 @@ export const git: Section = {
         body: (
           <p>
             kickstart does not ship lazygit; <Code>:!git status</Code> or a second terminal fills the gap until you add
-            it.
+            it. To see how a config wires in the plugins from this band, read kickstart.nvim's single{' '}
+            <Code>init.lua</Code>: it is written to be read top to bottom.
           </p>
         ),
       },

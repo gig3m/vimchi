@@ -8,6 +8,8 @@ export type RepsFit = { files: string[]; edits: [number, number] };
 
 export const REPS_TABLE: Record<string, RepsFit> = {
   "change-words": { files: ["lcs.ts","quick_select.ts","stack.ts","query.ts","version1.go","kmp.go","util.go","version.lua","permissions.lua","minicyan.lua"], edits: [10, 15] },
+  "search-forward": { files: ["lcs.ts","quick_select.ts","stack.ts","query.ts","version1.go","kmp.go","util.go","version.lua","permissions.lua","minicyan.lua"], edits: [10, 15] },
+  "word-under-cursor": { files: ["lcs.ts","quick_select.ts","stack.ts","query.ts","version1.go","kmp.go","util.go","version.lua","permissions.lua","minicyan.lua"], edits: [10, 15] },
   "intro-operators": { files: ["lcs.ts","quick_select.ts","stack.ts","query.ts","version1.go","kmp.go","util.go","version.lua","permissions.lua","minicyan.lua"], edits: [10, 15] },
   "delete-words": { files: ["lcs.ts","quick_select.ts","stack.ts","query.ts","version1.go","kmp.go","util.go","version.lua","permissions.lua","minicyan.lua"], edits: [10, 15] },
   "delete-lines": { files: ["lcs.ts","quick_select.ts","stack.ts","query.ts","version1.go","kmp.go","util.go","version.lua","permissions.lua","minicyan.lua"], edits: [10, 15] },
@@ -16,8 +18,6 @@ export const REPS_TABLE: Record<string, RepsFit> = {
   "word-objects": { files: ["lcs.ts","stack.ts","query.ts","version1.go","kmp.go","util.go","version.lua","permissions.lua","minicyan.lua"], edits: [10, 15] },
   "text-objects-quotes": { files: ["reps.lua"], edits: [10, 15] },
   "text-objects-parens": { files: ["reps.ts","reps.go"], edits: [10, 15] },
-  "search-forward": { files: ["lcs.ts","stack.ts","query.ts","version1.go","kmp.go","util.go","version.lua","permissions.lua","minicyan.lua"], edits: [10, 15] },
-  "word-under-cursor": { files: ["lcs.ts","stack.ts","query.ts","version1.go","kmp.go","util.go","version.lua","permissions.lua","minicyan.lua"], edits: [10, 15] },
   "argument-objects": { files: ["reps.ts","reps.go"], edits: [10, 15] },
   "indent-objects": { files: ["reps.ts","reps.go","reps.lua"], edits: [10, 15] },
   "function-class-objects": { files: ["reps.ts"], edits: [9, 11] },

@@ -21,7 +21,7 @@ import { buffersFiles } from './sections/buffers-files';
 import { windowsTabs } from './sections/windows-tabs';
 import { quickfix } from './sections/quickfix';
 import { insertPower } from './sections/insert-power';
-import { neovimBuiltins } from './sections/neovim-builtins';
+import { codeNavigation, neovimBuiltins } from './sections/neovim-builtins';
 import { surround } from './sections/surround';
 import { moreTextObjects } from './sections/more-text-objects';
 import { jumping } from './sections/jumping';
@@ -35,7 +35,7 @@ export const SECTIONS: Section[] = [
   gettingAround, smallEdits, nextSteps, insertLikeAPro, essentialMotions, screenMovement,
   basicOperators, textObjects, visualMode, search, indentCase,
   registers, macros,
-  buffersFiles, windowsTabs, marksJumps, quickfix, findingThings, fileNavigation,
+  buffersFiles, windowsTabs, marksJumps, quickfix, codeNavigation, findingThings, fileNavigation,
   commandLine, substitute, globalCommands,
   neovimBuiltins, moreTextObjects, jumping, surround, insertPower, git,
   challenges,
