@@ -43,6 +43,17 @@ describe('a charwise motion that becomes linewise sets a linewise register', () 
     ['|one\n  two x', 'd/x<CR>', '|x', 'one\n  two ', 'char'],
     ['# vimchi\n\n|## Install (old)\n\nDownload the zip.\n\n## Usage\n\nRun vimchi.', 'd/## Usage<CR>',
       '# vimchi\n\n|## Usage\n\nRun vimchi.', '## Install (old)\n\nDownload the zip.\n\n', 'line'],
+    ['|a\nb\n\nc', 'y}', '|a\nb\n\nc', 'a\nb\n', 'line'],
+    ['  |f(\n  a\n)\nz', 'd/)/e<CR>', '|z', '  f(\n  a\n)\n', 'line'],
+    // nvim's matchit maps o_% through a forced charwise selection: d% stays characterwise.
+    ['  |f(\n  a\n)\nz', 'd%', ' | \nz', 'f(\n  a\n)', 'char'],
+    ['|(\n  a\n)\nz', 'd%', '|\nz', '(\n  a\n)', 'char'],
+    // [( [{ ]) ]} are exclusive.
+    ['f(a, |(b), c)', 'd])', 'f(a, |), c)', '(b', 'char'],
+    ['f(a, (b),| c)', 'd[(', 'f| c)', '(a, (b),', 'char'],
+    ['if (a) {\n  x; |y;\n}', 'd]}', 'if (a) {\n  x;| \n}', 'y;', 'char'],
+    ['if (a) {\n  |x;\n}\ny', 'd]}', 'if (a) {\n|}\ny', '  x;\n', 'line'],
+    ['if (a) {\n  |x;\n}\ny', 'y]}', 'if (a) {\n  |x;\n}\ny', '  x;\n', 'line'],
   ])('%j %s', (doc, keys, want, text, kind) => {
     expect(S(doc, keys)).toEqual([want, text, kind]);
   });

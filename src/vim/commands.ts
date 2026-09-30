@@ -166,8 +166,8 @@ export function installCommands(vim: Vim) {
   M('(', c => { const p = sentenceBackward(L(), cur(), c.count); return p ? { pos: p, jump: true } : null; });
   M('[(', () => { const p = unmatchedOpen(L(), cur(), '(', ')'); return p ? { pos: p, jump: true } : null; });
   M('[{', () => { const p = unmatchedOpen(L(), cur(), '{', '}'); return p ? { pos: p, jump: true } : null; });
-  M('])', () => { const p = unmatchedClose(L(), cur(), '(', ')'); return p ? { pos: p, inclusive: true, jump: true } : null; });
-  M(']}', () => { const p = unmatchedClose(L(), cur(), '{', '}'); return p ? { pos: p, inclusive: true, jump: true } : null; });
+  M('])', () => { const p = unmatchedClose(L(), cur(), '(', ')'); return p ? { pos: p, jump: true } : null; });
+  M(']}', () => { const p = unmatchedClose(L(), cur(), '{', '}'); return p ? { pos: p, jump: true } : null; });
   const funcJump = (dir: 1 | -1) => (c: MotionCtx): MotionResult | null => {
     const starts = functionStarts(L());
     let line = cur().line;
