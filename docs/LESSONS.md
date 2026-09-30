@@ -88,7 +88,7 @@ challenge: {
   way *using this lesson's keys*.
 - **Setup**: `text` + `name` (the name picks syntax colours: `.ts .js .lua .md .json .py .go .csv`),
   or `files` + `open` for multi-file lessons. Also `cursor`, `options`, `registers`, `marks`, `folds`,
-  `search`, `height` (editor rows; use a long file + `height: 12` for scrolling lessons), `plugins`,
+  `search`, `height` (editor rows; use a long file + `height: 12` for scrolling lessons), `plugins` (flash is always on; list it anyway in a lesson that teaches it),
   and `init(vim)` for anything else (splits, quickfix lists, jumplists).
 - Positions are 0-based `{ line, col }`.
 - Use realistic code: TypeScript, Lua (Neovim config), Markdown, JSON, CSV, shell. Vary domains.
