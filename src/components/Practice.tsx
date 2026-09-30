@@ -35,6 +35,8 @@ type Props = {
   onStats: () => void;
   /** Warm-up: "New file" is a whole new Warm-up (its file is pinned to the seed it was checked on). */
   onNewWarmUp?: () => void;
+  /** Warm-up only: the lesson ids the run drew from (coach vocabulary). */
+  picks?: readonly string[];
 };
 
 type Finished = { result: ReturnType<Session['result']>; prevBestTime: number | null; prevBestScore: number | null; report?: Report; callouts?: Record<string, string> };
@@ -66,6 +68,7 @@ export function Practice(p: Props) {
   }
   if (!session.current || session.current.challenge !== challenge) session.current = new Session(challenge, { seed: seedRef.current ?? undefined });
   const s = session.current;
+  s.picks = p.picks;
   const [focused, setFocused] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
