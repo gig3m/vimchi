@@ -364,7 +364,8 @@ export class Session {
       }
       this.checkTarget(c, now);
     } else if (c.kind === 'fix' || c.kind === 'replace') {
-      if (vim.buf.text() !== beforeText) this.checkEdit(c, beforeLines);
+      // An undo restores text; it is neither an edit nor a mistake (the lesson told them to press u).
+      if (vim.buf.text() !== beforeText && vim.lastCommand?.kind !== 'undo') this.checkEdit(c, beforeLines);
       if (vim.buf.text() === c.correct.join('\n') && vim.mode === 'normal') this.finish(now);
     } else if (c.kind === 'rounds') {
       if (goalMet(vim, round!.goal)) {
