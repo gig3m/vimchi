@@ -626,9 +626,9 @@ export const marksJumps: Section = {
         base: { name: 'cart.ts', text: SHOP },
         rounds: [
           {
-            prompt: 'You yanked the return object. Jump to the end of it.',
-            setup: { cursor: { line: 6, col: 2 }, init: history('y%') },
-            goal: { cursor: { line: 10, col: 2 } },
+            prompt: 'You yanked the arguments of formatPrice. Jump to the end of them.',
+            setup: { cursor: { line: 8, col: 22 }, init: history('yi(') },
+            goal: { cursor: { line: 8, col: 38 } },
             solution: '`]',
           },
           {
@@ -642,8 +642,8 @@ export const marksJumps: Section = {
             solution: '`]',
           },
           {
-            prompt: 'You replaced 5000 with a constant. Jump to its first character.',
-            setup: { cursor: { line: 5, col: 27 }, init: history('ciwFREE_SHIPPING_MIN<Esc>') },
+            prompt: 'You replaced 5000 with an expression. Jump to its first character.',
+            setup: { cursor: { line: 5, col: 27 }, init: history('ciwFREE_MIN * 2<Esc>') },
             goal: { cursor: { line: 5, col: 27 } },
             solution: '`[',
           },
@@ -654,9 +654,9 @@ export const marksJumps: Section = {
             solution: "'[",
           },
           {
-            prompt: 'You yanked the whole function. Jump to its last character.',
-            setup: { cursor: { line: 2, col: 0 }, init: history('y}') },
-            goal: { cursor: { line: 11, col: 0 } },
+            prompt: 'You yanked three lines. Jump to the last character of the yank.',
+            setup: { cursor: { line: 4, col: 2 }, init: history('y2j') },
+            goal: { cursor: { line: 6, col: 9 } },
             solution: '`]',
           },
         ],
@@ -715,8 +715,8 @@ export const marksJumps: Section = {
             solution: "''",
           },
           {
-            prompt: 'You jumped to the closing brace with %. Go back.',
-            setup: { cursor: { line: 8, col: 42 }, init: history('%') },
+            prompt: 'You jumped to the next blank line with }. Go back.',
+            setup: { cursor: { line: 8, col: 42 }, init: history('}') },
             goal: { cursor: { line: 8, col: 42 } },
             solution: '``',
           },
@@ -850,14 +850,14 @@ export const marksJumps: Section = {
         rounds: [
           {
             prompt: 'Go to your most recent change.',
-            setup: { cursor: { line: 5, col: 29 }, init: history('ciw10000<Esc>gg') },
-            goal: { cursor: { line: 5, col: 31 } },
+            setup: { cursor: { line: 8, col: 23 }, init: history('ciwsubtotal<Esc>gg') },
+            goal: { cursor: { line: 8, col: 30 } },
             solution: 'g;',
           },
           {
             prompt: 'Go to the change before the last one.',
-            setup: { cursor: { line: 3, col: 8 }, init: history('ciwitemCount<Esc>2jA // cents<Esc>G') },
-            goal: { cursor: { line: 3, col: 16 } },
+            setup: { cursor: { line: 4, col: 8 }, init: history('ciwsubtotal<Esc>jA // cents<Esc>G') },
+            goal: { cursor: { line: 4, col: 15 } },
             solution: 'g;g;',
           },
           {

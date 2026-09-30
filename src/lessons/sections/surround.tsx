@@ -324,32 +324,48 @@ export const surround: Section = {
         rounds: [
           {
             prompt: 'Jump to the closing parenthesis of the call.',
-            setup: { text: ['const total = sum(prices, taxFor(region));', 'const label = `${total} due`;', 'send(label);'], cursor: { line: 0, col: 22 } },
-            goal: { cursor: { line: 0, col: 40 } },
+            setup: {
+              text: ['const total = round(sum(subtotal,', '  shipping, handling, duty,', '  fees + tips) * rate);', 'send(total);'],
+              cursor: { line: 1, col: 24 },
+            },
+            goal: { cursor: { line: 2, col: 13 } },
             solution: 'sf)',
           },
           {
             prompt: 'Jump to the opening parenthesis of the inner call.',
-            setup: { text: ['const total = sum(prices, taxFor(region));', 'const label = `${total} due`;', 'send(label);'], cursor: { line: 0, col: 35 } },
+            setup: {
+              text: ['const total = sum(prices, taxFor(region,', '  zone, rate, discount,', '  tier), fees);'],
+              cursor: { line: 1, col: 8 },
+            },
             goal: { cursor: { line: 0, col: 32 } },
             solution: 'sF)',
           },
           {
-            prompt: 'Jump to the end of the string.',
-            setup: { text: ['const total = sum(prices, taxFor(region));', "const label = 'total due in 30 days';", 'send(label);'], cursor: { line: 1, col: 20 } },
-            goal: { cursor: { line: 1, col: 35 } },
-            solution: "sf'",
+            prompt: 'Jump to the closing tag of the paragraph.',
+            setup: {
+              name: 'note.html',
+              text: ['<p class="note">Thanks for your order.', '  It ships today.</p> <a href="/track">Track</a>', '<hr>'],
+              cursor: { line: 0, col: 26 },
+            },
+            goal: { cursor: { line: 1, col: 17 } },
+            solution: 'sft',
           },
           {
             prompt: 'Jump to the opening brace of the object.',
-            setup: { text: ['export const opts = {', '  retries: 3,', '  timeout: 500,', '};'], cursor: { line: 2, col: 4 } },
-            goal: { cursor: { line: 0, col: 20 } },
+            setup: {
+              text: ["const opts = { name: 'api',", "  retries: 3, backoff: 'exp',", '  timeout: 500,', '};', 'export default opts;'],
+              cursor: { line: 1, col: 24 },
+            },
+            goal: { cursor: { line: 0, col: 13 } },
             solution: 'sF{',
           },
           {
             prompt: 'Jump to the closing bracket.',
-            setup: { text: ['const ports = [80, 443, 8080];', 'const hosts = ["a", "b"];', 'listen(ports);'], cursor: { line: 0, col: 18 } },
-            goal: { cursor: { line: 0, col: 28 } },
+            setup: {
+              text: ['const ports = new Set([80, 443,', '  8080, 9000]); // http and https', 'listen(ports);'],
+              cursor: { line: 0, col: 27 },
+            },
+            goal: { cursor: { line: 1, col: 12 } },
             solution: 'sf]',
           },
         ],

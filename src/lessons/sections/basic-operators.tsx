@@ -200,11 +200,11 @@ export const basicOperators: Section = {
         base: { name: 'user.ts' },
         rounds: [
           {
-            prompt: 'Delete the second "await".',
+            prompt: 'Delete the stray "user" after "await".',
             setup: {
               text: [
                 'export async function loadUser(id: string) {',
-                '  const user = await await getUser(id);',
+                '  const user = await user getUser(id);',
                 '  return user;',
                 '}',
               ],

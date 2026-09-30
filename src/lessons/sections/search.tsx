@@ -162,9 +162,9 @@ export const search: Section = {
         showGoal: false,
         base: { ...retry, cursor: { line: 15, col: 2 } },
         rounds: [
-          { goal: { cursor: { line: 9, col: 19 } }, solution: '?fn<CR>' },
-          { goal: { cursor: { line: 8, col: 4 } }, solution: '?try<CR>' },
-          { setup: { cursor: { line: 12, col: 6 } }, goal: { cursor: { line: 7, col: 7 } }, solution: '?let<CR>' },
+          { goal: { cursor: { line: 2, col: 22 } }, solution: '?wi<CR>' },
+          { goal: { cursor: { line: 12, col: 12 } }, solution: '?sl<CR>' },
+          { setup: { cursor: { line: 12, col: 6 } }, goal: { cursor: { line: 6, col: 17 } }, solution: '?un<CR>' },
           { setup: { cursor: { line: 11, col: 6 } }, goal: { cursor: { line: 0, col: 0 } }, solution: '?import<CR>' },
           { goal: { cursor: { line: 9, col: 13 } }, solution: '?await<CR>n' },
           { setup: { cursor: { line: 7, col: 8 } }, goal: { cursor: { line: 5, col: 3 } }, solution: '?Promise<CR>' },
