@@ -1238,7 +1238,7 @@ function installVisual(V: Vim, h: {
       const toEol = v.toEol;
       V.exitVisual();
       const col = append ? (toEol ? ln(r.start.line).length : Math.max(r.start.col, r.end.col) + 1) : Math.min(r.start.col, r.end.col);
-      V.startInsert(append ? 'A' : 'I', pos(r.start.line, col), 1, { block: { first: r.start.line, last: r.end.line, col, append, toEol } });
+      V.startInsert(append ? 'A' : 'I', pos(r.start.line, col), 1, { block: { first: r.start.line, last: r.end.line, col, append, toEol, left: Math.min(r.start.col, r.end.col) } });
       return;
     }
     V.exitVisual();

@@ -124,7 +124,8 @@ type InsertState = {
   keys: Key[];
   count: number;
   /** Visual block insert: lines and column to replicate into on <Esc>. */
-  block?: { first: number; last: number; col: number; append: boolean; toEol: boolean };
+  /** left: the block's left column, where Vim puts the cursor after a block I / A (not c). */
+  block?: { first: number; last: number; col: number; append: boolean; toEol: boolean; left?: number };
   /** Original line texts for replace mode backspacing. */
   replaced?: Map<string, string>;
   /** Pending multi-key input: <C-r>, <C-v>, <C-k>, <C-x>, <C-o>. */
@@ -1719,8 +1720,10 @@ export class Vim {
       }
       ins.typed = typed;
     }
+    let blockStart: Pos | null = null;
     if (ins.block && ins.typed && !ins.typed.includes('\n')) {
-      const { first, last, col, append, toEol } = ins.block;
+      const { first, last, col, append, toEol, left } = ins.block;
+      if (left !== undefined) blockStart = pos(first, left);
       for (let l = first + 1; l <= last; l++) {
         const t = this.line(l);
         if (append && toEol) this.buf.setLine(l, t + ins.typed);
@@ -1735,7 +1738,8 @@ export class Vim {
     this.buf.marks.set(']', pos(this.cursor.line, Math.max(0, this.cursor.col - 1)));
     this.insert = null;
     this.mode = 'normal';
-    if (this.cursor.col > 0) this.win.cursor.col--;
+    if (blockStart) this.win.cursor = blockStart; // op_insert(): back to the block's top-left
+    else if (this.cursor.col > 0) this.win.cursor.col--;
     this.clampCursor(false);
     this.win.want = this.cursor.col;
     if (this.pendingDot && this.dotCapture) {

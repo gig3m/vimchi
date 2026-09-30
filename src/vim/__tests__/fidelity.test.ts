@@ -68,3 +68,24 @@ describe('a failed word object leaves the cursor where the search stopped', () =
     expect(C('|abc def', 'c5iwX')).toBe('abc d|f');
   });
 });
+
+describe('block I / A leave the cursor at the block top-left', () => {
+  it.each([
+    ['ab|cd\nefgh', '<C-v>jIxy<Esc>', 'ab|xycd\nefxygh'],
+    ['ab|cd\nefgh', '<C-v>Ixy<Esc>', 'ab|xycd\nefgh'], // a one-line block too
+    ['ab|cd\nefgh', '<C-v>jI<Esc>', 'a|bcd\nefgh'], // nothing typed: plain <Esc>
+    ['ab|cd\nefgh', '<C-v>jIx<CR>y<Esc>', 'abx\n|ycd\nefgh'], // a line break: no block insert
+    ['a|bcd\nefgh', '<C-v>jlcXY<Esc>', 'aX|Yd\neXYh'], // block c is a plain <Esc>
+    ['a|bcd\nefgh', 'l<C-v>jAXY<Esc>', 'ab|cXYd\nefgXYh'],
+    ['a|bcd\nefgh', '<C-v>jlAXY<Esc>', 'a|bcXYd\nefgXYh'],
+    ['|abcd\nefgh', 'l<C-v>jIXY<Esc>j.', 'aXYbcd\ne|XYXYfgh'],
+    ['a|b\nefgh', '<C-v>j$AXY<Esc>', 'a|bXY\nefghXY'],
+    ['ab|cd\nefgh\nij', '<C-v>jIX<Esc>jj.', 'abXcd\nefXgh\ni|Xj'],
+    ['-- globals leak\nwidth = 80\nheight = 24\n|wrap = false\nreturn width', '<C-v>kkIlocal <Esc>',
+      '-- globals leak\n|local width = 80\nlocal height = 24\nlocal wrap = false\nreturn width'],
+    ['|const app = express()\napp.use(cors())\n// then\napp.use(auth)\napp.listen(3000)', '<C-v>j$A;<Esc>3j.',
+      'const app = express();\napp.use(cors());\n// then\n|app.use(auth);\napp.listen(3000);'],
+  ])('%j %s', (doc, keys, want) => {
+    expect(C(doc, keys)).toBe(want);
+  });
+});

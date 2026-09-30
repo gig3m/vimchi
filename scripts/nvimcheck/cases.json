@@ -32,5 +32,13 @@
   { "id": "diw-fail-mid", "src": "p3-ex", "text": "a b", "cursor": { "line": 0, "col": 2 }, "keys": "9diw" },
   { "id": "v-iw-fail-d", "src": "p3-ex", "text": "abc def", "keys": "v5iwd" },
   { "id": "v-iw-fail-esc", "src": "p3-ex", "text": "abc def", "keys": "v5iw<Esc>" },
-  { "id": "c-iw-fail-X", "src": "p3-ex", "text": "abc def", "keys": "c5iwX" }
+  { "id": "c-iw-fail-X", "src": "p3-ex", "text": "abc def", "keys": "c5iwX" },
+  { "id": "block-I-cursor", "src": "p3-ex", "text": "abcd\nefgh", "cursor": { "line": 0, "col": 2 }, "keys": "<C-v>jIxy<Esc>" },
+  { "id": "block-I-oneline", "src": "p3-ex", "text": "abcd\nefgh", "cursor": { "line": 0, "col": 2 }, "keys": "<C-v>Ixy<Esc>" },
+  { "id": "block-I-empty", "src": "p3-ex", "text": "abcd\nefgh", "cursor": { "line": 0, "col": 2 }, "keys": "<C-v>jI<Esc>" },
+  { "id": "block-I-newline", "src": "p3-ex", "text": "abcd\nefgh", "cursor": { "line": 0, "col": 2 }, "keys": "<C-v>jIx<CR>y<Esc>" },
+  { "id": "block-c-cursor", "src": "p3-ex", "text": "abcd\nefgh", "cursor": { "line": 0, "col": 1 }, "keys": "<C-v>jlcXY<Esc>" },
+  { "id": "block-A-cursor", "src": "p3-ex", "text": "abcd\nefgh", "cursor": { "line": 0, "col": 1 }, "keys": "<C-v>jlAXY<Esc>" },
+  { "id": "block-I-dot", "src": "p3-ex", "text": "abcd\nefgh", "keys": "l<C-v>jIXY<Esc>j." },
+  { "id": "block-A-dollar", "src": "p3-ex", "text": "ab\nefgh", "cursor": { "line": 0, "col": 1 }, "keys": "<C-v>j$AXY<Esc>" }
 ]
