@@ -178,6 +178,12 @@ ON CONFLICT (user_id, lesson, at) DO NOTHING`)
 			return err
 		}
 	}
+	// Keep only the newest MaxRunsPerUser (by time, then insertion order).
+	if _, err := tx.ExecContext(ctx, `
+DELETE FROM runs WHERE user_id = ? AND id NOT IN (
+  SELECT id FROM runs WHERE user_id = ? ORDER BY at DESC, id DESC LIMIT ?)`, userID, userID, MaxRunsPerUser); err != nil {
+		return err
+	}
 	return tx.Commit()
 }
 

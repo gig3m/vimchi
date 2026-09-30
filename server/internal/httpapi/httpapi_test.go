@@ -68,6 +68,7 @@ type reqOpt func(*http.Request)
 
 func withCookie(c *http.Cookie) reqOpt { return func(r *http.Request) { r.AddCookie(c) } }
 func withHeader(k, v string) reqOpt    { return func(r *http.Request) { r.Header.Set(k, v) } }
+func withRemote(addr string) reqOpt    { return func(r *http.Request) { r.RemoteAddr = addr } }
 
 func do(t *testing.T, h http.Handler, method, target, body string, opts ...reqOpt) *httptest.ResponseRecorder {
 	t.Helper()
@@ -377,8 +378,75 @@ func TestHealthz(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Fatalf("status = %d, want 200", w.Code)
 	}
-	var body struct{ OK bool `json:"ok"` }
+	var body struct {
+		OK bool `json:"ok"`
+	}
 	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil || !body.OK {
 		t.Fatalf("body = %q, want {\"ok\":true}", w.Body.String())
+	}
+}
+
+// Public deployments sit behind a reverse proxy; abusive clients are throttled
+// per IP on the auth routes and on run writes.
+func TestRateLimits(t *testing.T) {
+	s, h := newServer(t, nil)
+	alice := signIn(t, s, 1, "alice")
+	at := testNow.UnixMilli()
+
+	// Run writes: the burst is generous (a run every keystroke is not a use case).
+	var last int
+	for i := 0; i < runWriteBurst+1; i++ {
+		w := do(t, h, "POST", "/api/runs", runJSON("hjkl", at+int64(i), 50), withCookie(alice))
+		last = w.Code
+		if i < runWriteBurst && w.Code != http.StatusNoContent {
+			t.Fatalf("write %d = %d, want 204", i, w.Code)
+		}
+	}
+	if last != http.StatusTooManyRequests {
+		t.Fatalf("write past the burst = %d, want 429", last)
+	}
+	// Another client is unaffected.
+	if w := do(t, h, "POST", "/api/runs", runJSON("hjkl", at+999, 50), withCookie(alice), withRemote("10.9.9.9:1234")); w.Code != http.StatusNoContent {
+		t.Fatalf("other IP = %d, want 204", w.Code)
+	}
+	// Time passing refills the bucket.
+	s.Now = func() time.Time { return testNow.Add(2 * time.Minute) }
+	if w := do(t, h, "POST", "/api/runs", runJSON("hjkl", at+1000, 50), withCookie(alice)); w.Code != http.StatusNoContent {
+		t.Fatalf("after refill = %d, want 204", w.Code)
+	}
+
+	// Auth routes: a tight limit; the unconfigured login answers 503, not 429, until the limit trips.
+	s.Now = func() time.Time { return testNow }
+	var code int
+	for i := 0; i < authBurst+1; i++ {
+		code = do(t, h, "GET", "/auth/github/login", "").Code
+	}
+	if code != http.StatusTooManyRequests {
+		t.Fatalf("login past the burst = %d, want 429", code)
+	}
+	// Reads are never limited.
+	for i := 0; i < 3*runWriteBurst; i++ {
+		if w := do(t, h, "GET", "/api/runs", "", withCookie(alice)); w.Code != http.StatusOK {
+			t.Fatalf("read %d = %d, want 200", i, w.Code)
+		}
+	}
+}
+
+// Behind a trusted proxy the client is the first X-Forwarded-For hop; without
+// one the header is ignored so it cannot be used to dodge the limit.
+func TestRateLimitClientIP(t *testing.T) {
+	s, h := newServer(t, nil)
+	alice := signIn(t, s, 1, "alice")
+	at := testNow.UnixMilli()
+	for i := 0; i < runWriteBurst; i++ {
+		do(t, h, "POST", "/api/runs", runJSON("hjkl", at+int64(i), 50), withCookie(alice))
+	}
+	if w := do(t, h, "POST", "/api/runs", runJSON("hjkl", at+500, 50), withCookie(alice), withHeader("X-Forwarded-For", "203.0.113.7")); w.Code != http.StatusTooManyRequests {
+		t.Fatalf("spoofed XFF without a trusted proxy = %d, want 429", w.Code)
+	}
+	s.TrustProxy = true
+	h = s.Handler()
+	if w := do(t, h, "POST", "/api/runs", runJSON("hjkl", at+501, 50), withCookie(alice), withHeader("X-Forwarded-For", "203.0.113.7, 10.0.0.1")); w.Code != http.StatusNoContent {
+		t.Fatalf("real client behind the proxy = %d, want 204", w.Code)
 	}
 }

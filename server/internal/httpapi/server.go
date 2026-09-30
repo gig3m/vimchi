@@ -28,6 +28,7 @@ type Server struct {
 	BaseURL       string // public origin, e.g. http://localhost:5317
 	StaticDir     string // built SPA
 	SecureCookies bool   // force Secure cookies even over plain HTTP
+	TrustProxy    bool   // take the client IP from X-Forwarded-For (behind Caddy/NPM)
 	Log           *slog.Logger
 	Now           func() time.Time // defaults to time.Now
 }
@@ -41,17 +42,20 @@ func (s *Server) Handler() http.Handler {
 		s.Log = slog.Default()
 	}
 
+	authLimit := newLimiter(authBurst, authPerMinute, func() time.Time { return s.Now() })
+	writeLimit := newLimiter(runWriteBurst, runWritePerMin, func() time.Time { return s.Now() })
+
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /auth/github/login", s.handleLogin)
-	mux.HandleFunc("GET /auth/github/callback", s.handleCallback)
-	mux.HandleFunc("POST /auth/logout", s.handleLogout)
+	mux.HandleFunc("GET /auth/github/login", s.limited(authLimit, s.handleLogin))
+	mux.HandleFunc("GET /auth/github/callback", s.limited(authLimit, s.handleCallback))
+	mux.HandleFunc("POST /auth/logout", s.limited(authLimit, s.handleLogout))
 
 	mux.HandleFunc("GET /healthz", s.handleHealth)
 
 	mux.HandleFunc("GET /api/me", s.requireUser(s.handleMe))
 	mux.HandleFunc("GET /api/runs", s.requireUser(s.handleRuns))
-	mux.HandleFunc("POST /api/runs", s.requireUser(s.handleAddRun))
-	mux.HandleFunc("POST /api/runs/import", s.requireUser(s.handleImportRuns))
+	mux.HandleFunc("POST /api/runs", s.limited(writeLimit, s.requireUser(s.handleAddRun)))
+	mux.HandleFunc("POST /api/runs/import", s.limited(writeLimit, s.requireUser(s.handleImportRuns)))
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotFound, "not found")
 	})
