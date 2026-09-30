@@ -1,5 +1,8 @@
 import { type Pos, pos } from './types';
 
+/** Neovim's default 'undolevels': how many changes undo can take back. */
+const UNDO_LEVELS = 1000;
+
 /** One state in the undo tree: the text after change `seq` (0 = the text as loaded). */
 type UndoNode = {
   seq: number;
@@ -106,6 +109,7 @@ export class Buffer {
   private undoRoot: UndoNode = { seq: 0, lines: [], parent: null, next: null, cursor: pos(0, 0) };
   private undoCur: UndoNode = this.undoRoot;
   private undoNodes: UndoNode[] = [this.undoRoot];
+  private undoSeq = 0;
   private pending: Pending | null = null;
 
   /**
@@ -178,10 +182,27 @@ export class Buffer {
     const parent = this.undoCur;
     // Text changed outside undo (a plugin assigning lines) belongs to the parent state.
     parent.lines = pd.before;
-    const node: UndoNode = { seq: this.undoNodes.length, lines: this.lines.slice(), parent, next: null, cursor: pd.cursor };
+    const node: UndoNode = { seq: ++this.undoSeq, lines: this.lines.slice(), parent, next: null, cursor: pd.cursor };
     this.undoNodes.push(node);
     parent.next = node;
     this.undoCur = node;
+    while (this.undoNodes.length > UNDO_LEVELS + 1) this.dropOldestUndo();
+  }
+
+  /**
+   * 'undolevels': over the limit, the oldest state goes. The root's child on the way to the
+   * current state becomes the new root; the root's other branches go with it (Vim frees the
+   * oldest header and its alternates the same way).
+   */
+  private dropOldestUndo() {
+    let keep = this.undoCur;
+    while (keep.parent && keep.parent !== this.undoRoot) keep = keep.parent;
+    if (keep === this.undoRoot) return;
+    const gone = new Set<UndoNode>([this.undoRoot]);
+    for (const n of this.undoNodes) if (n.parent && gone.has(n.parent) && n !== keep) gone.add(n);
+    keep.parent = null;
+    this.undoRoot = keep;
+    this.undoNodes = this.undoNodes.filter(n => !gone.has(n));
   }
 
   get canUndo() {
@@ -213,8 +234,9 @@ export class Buffer {
   undoTime(steps: number, cursor: Pos, want = cursor.col): Pos | null {
     this.commitPending();
     const from = this.undoCur;
-    const seq = Math.max(0, Math.min(this.undoNodes.length - 1, from.seq + steps));
-    const target = this.undoNodes[seq];
+    // Nodes stay in time order; once old ones are dropped a node's seq is no longer its index.
+    const idx = Math.max(0, Math.min(this.undoNodes.length - 1, this.undoNodes.indexOf(from) + steps));
+    const target = this.undoNodes[idx];
     if (target === from) return null;
     // Point every redo link from the root down at the target, so <C-r> continues its branch.
     for (let n = target; n.parent; n = n.parent) n.parent.next = n;

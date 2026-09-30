@@ -400,6 +400,7 @@ export function installCommands(vim: Vim) {
   });
 
   const shift = (dir: 1 | -1) => (r: Range, c: OpCtx) => {
+    V.buf.markUndoEntry(); // an undo step even when no line moves (>> on a blank line)
     const sw = Number(V.opt('shiftwidth')) || 8;
     const times = c.visual ? c.count : 1;
     for (let l = r.start.line; l <= r.end.line; l++) {
@@ -419,6 +420,7 @@ export function installCommands(vim: Vim) {
   V.defineOperator('=', {
     change: true,
     run: r => {
+      V.buf.markUndoEntry(); // an undo step even when the indent was already right
       const out = reindentLines(L(), r.start.line, r.end.line, V.buf.filetype, Number(V.opt('shiftwidth')) || 2);
       V.buf.splice(r.start.line, r.end.line - r.start.line + 1, out);
       V.setCursor(landOn(r.start.line), V.win.want);
@@ -428,6 +430,7 @@ export function installCommands(vim: Vim) {
   });
 
   const caseOp = (f: (s: string) => string) => (r: Range) => {
+    V.buf.markUndoEntry(); // an undo step even when no letter changes case (g~ on a digit)
     if (r.kind === 'line') {
       for (let l = r.start.line; l <= r.end.line; l++) V.buf.setLine(l, f(ln(l)));
       V.setCursor(pos(r.start.line, cur().line === r.start.line ? cur().col : 0));
@@ -609,6 +612,7 @@ export function installCommands(vim: Vim) {
   A('~', c => {
     const p = cur(), t = ln();
     if (!t.length) fail();
+    V.buf.markUndoEntry(); // an undo step even over non-letters
     const e = Math.min(t.length, p.col + c.count);
     V.buf.setLine(p.line, t.slice(0, p.col) + swapCase(t.slice(p.col, e)) + t.slice(e));
     V.buf.recordChange(p);
@@ -667,6 +671,7 @@ export function installCommands(vim: Vim) {
   // ---- put ---------------------------------------------------------------------------------------------
   const doPut = (after: boolean, gp: boolean, indentAdjust = false) => (c: ActionCtx) => {
     const v = V.getRegister(c.reg);
+    if (!v.text) V.buf.markUndoEntry(); // Vim saves undo before it finds the register empty
     if (!v.text && c.reg !== '_') fail(c.reg ? `E353: Nothing in register ${c.reg}` : 'E353: Nothing in register "');
     putValue(v, after, gp, c.count, indentAdjust);
   };

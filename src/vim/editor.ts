@@ -134,11 +134,15 @@ type InsertState = {
   /** Text typed so far (for ". and <C-a>). */
   typed: string;
   completion?: { items: string[]; idx: number; startCol: number; line: number; orig: string };
+  /** Moved by <C-g>j / <C-g>k and nothing typed since: the next edit restarts the insert. */
+  arrowed?: boolean;
   /** Came from <C-o>: return here after one command. */
 };
 
 /** Commands the coach counts as undo: u, <C-r>, the time-travel g- / g+, and U. */
 const UNDO_KEYS = new Set(['u', '<C-r>', 'g-', 'g+', 'U']);
+/** Insert keys that do not end an arrow move (they neither type nor delete). */
+const ARROW_KEEPS = new Set(['<Esc>', '<C-c>', '<C-g>', '<C-o>', '<Left>', '<Right>', '<Up>', '<Down>', '<Home>', '<End>']);
 export type CommandKind = 'motion' | 'operator' | 'action' | 'insert' | 'visual' | 'cmdline' | 'modal' | 'undo' | 'other';
 export type LastCommand = { keys: Key[]; kind: CommandKind; error: boolean };
 
@@ -681,7 +685,8 @@ export class Vim {
 
   private resetAfterError(e: VimError) {
     this.pending = [];
-    this.dotCapture = null;
+    // A failed <C-o> command has already resumed the insert, which records a fresh repeat.
+    if (this.mode !== 'insert' && this.mode !== 'replace') this.dotCapture = null;
     if (e.message) this.msg(e.message, 'error');
     if (this.mode === 'visual' && !this.visual) this.mode = 'normal';
     this.emit('error');
@@ -714,7 +719,11 @@ export class Vim {
       case 'cmdline':
         if (this.dotCapture && (this.cmdline?.type === '=' || this.pendingSearchOp)) this.dotCapture.keys.push(key);
         if (this.depth === 0) this.cmdKeys.push(key);
-        return this.cmdlineKey(key);
+        try {
+          return this.cmdlineKey(key);
+        } finally {
+          if (this.mode !== 'cmdline') this.resumeOneShot(); // a :, / or ? typed after <C-o>
+        }
       default:
         return this.normalKey(key);
     }
@@ -751,26 +760,37 @@ export class Vim {
     if (key === '<Esc>' && this.pending.length > 1 && !completesBefore && !takesEsc) {
       this.pending = [];
       if (this.depth === 0) this.finishCommand('other'); // a cancelled command is not part of the next one
+      this.resumeOneShot();
       return;
     }
     if (res === 'incomplete') return;
     const keys = this.pending;
     this.pending = [];
-    if (res === 'invalid') {
-      if (keys.length === 1 && keys[0] === '<Esc>') {
-        if (this.visual) this.exitVisual();
-        if (this.depth === 0) this.finishCommand('other');
-        return;
+    // After a <C-o> command Insert resumes however the command ended: done, cancelled or failed.
+    // One that opened the command line resumes when that line is submitted or cancelled.
+    try {
+      if (res === 'invalid') {
+        if (keys.length === 1 && keys[0] === '<Esc>') {
+          if (this.visual) this.exitVisual();
+          if (this.depth === 0) this.finishCommand('other');
+          return;
+        }
+        fail();
       }
-      fail();
+      const rest = res.rest ?? [];
+      if (rest.length) {
+        if (this.depth === 0) this.cmdKeys.splice(-rest.length);
+        this.dotCapture?.keys.splice(-rest.length);
+      }
+      this.execute(res, keys.slice(0, keys.length - rest.length));
+      for (const k of rest) this.handleKey(k); // same depth and bookkeeping as the key that arrived
+    } finally {
+      this.resumeOneShot();
     }
-    const rest = res.rest ?? [];
-    if (rest.length) {
-      if (this.depth === 0) this.cmdKeys.splice(-rest.length);
-      this.dotCapture?.keys.splice(-rest.length);
-    }
-    this.execute(res, keys.slice(0, keys.length - rest.length));
-    for (const k of rest) this.handleKey(k); // same depth and bookkeeping as the key that arrived
+  }
+
+  /** Back to Insert after the one Normal command a <C-o> allowed, if it has ended. */
+  private resumeOneShot() {
     if (this.oneShot && this.mode === 'normal' && this.insert) {
       this.oneShot = false;
       if (!this.dotReplaying) {
@@ -778,7 +798,7 @@ export class Vim {
         // dropped, and . repeats only what is typed from here on, as an `i`.
         this.endChange();
         this.beginChange();
-        Object.assign(this.insert, { count: 1, typed: '', kind: 'i', block: undefined });
+        Object.assign(this.insert, { count: 1, typed: '', kind: 'i', block: undefined, arrowed: false });
         this.pendingDot = { reg: null, count: null, body: ['i'], insert: [] };
         this.dotCapture = { keys: [], replaying: false };
       }
@@ -1437,6 +1457,7 @@ export class Vim {
   private insertKey(key: Key): void {
     const ins = this.insert!;
     if (ins.pending) return this.insertPending(key);
+    if (ins.arrowed && !ARROW_KEEPS.has(key)) this.restartAfterArrow(key);
     const mapped = this.insertMaps.get(key);
     if (mapped && mapped(this) !== false) return;
     if (ins.completion && !['<C-n>', '<C-p>', '<C-y>', '<C-e>', '<Down>', '<Up>'].includes(key)) ins.completion = undefined;
@@ -1511,22 +1532,30 @@ export class Vim {
         typeChar(this.opt('expandtab') ? ' '.repeat(sw - (c.col % sw)) : '\t');
         return;
       }
+      // Neovim maps both to <C-g>u first (default-mappings), so each is its own undo step. Like
+      // <BS> they stop at the insert start (Vim's Insstart_orig, which <C-g>u leaves alone) unless
+      // they begin there; deleting past it moves it.
       case '<C-w>': {
+        this.insertUndoBreak();
         const t = this.line();
         const before = t.slice(0, c.col);
         const m = /(\w+|[^\w\s]+)?\s*$/.exec(before)!;
-        const cut = m[0].length || (c.col > 0 ? 1 : 0);
+        let cut = m[0].length || (c.col > 0 ? 1 : 0);
         if (cut === 0 && c.line > 0) return this.insertKey('<BS>');
+        if (ins.start.line === c.line && ins.start.col < c.col) cut = Math.min(cut, c.col - ins.start.col);
         b.setLine(c.line, before.slice(0, before.length - cut) + t.slice(c.col));
         c.col -= cut;
+        if (ins.start.line === c.line && c.col < ins.start.col) ins.start = { ...c };
         ins.keys.push(key);
         return;
       }
       case '<C-u>': {
+        this.insertUndoBreak();
         const t = this.line();
         const stop = ins.start.line === c.line && ins.start.col < c.col ? ins.start.col : indentOf(t).length < c.col ? indentOf(t).length : 0;
         b.setLine(c.line, t.slice(0, stop) + t.slice(c.col));
         c.col = stop;
+        if (ins.start.line === c.line && c.col < ins.start.col) ins.start = { ...c };
         ins.keys.push(key);
         return;
       }
@@ -1596,6 +1625,47 @@ export class Vim {
     // Unknown special keys are ignored in insert mode.
   }
 
+  /**
+   * An arrow-style move in Insert (Vim's start_arrow): what was typed so far is one finished
+   * change, for undo and for . (a count is dropped). The insert restarts, as an i, only when
+   * something is typed next (stop_arrow); leaving straight away keeps the change so far for .
+   */
+  private insertLineArrow(dir: 1 | -1) {
+    const ins = this.insert!, c = this.win.cursor;
+    const line = c.line + dir;
+    if (line < 0 || line >= this.buf.lineCount) return;
+    if (!ins.arrowed && !this.dotReplaying) {
+      if (this.pendingDot && this.dotCapture) {
+        // The capture ends in this <C-g> and its key: the change repeats as if <Esc> came here.
+        this.lastChange = { ...this.pendingDot, insert: [...this.dotCapture.keys.slice(0, -2), '<Esc>'] };
+      }
+      this.pendingDot = null;
+      this.dotCapture = null;
+      this.endChange();
+    }
+    Object.assign(ins, { arrowed: true, count: 1, block: undefined });
+    this.win.cursor = pos(line, Math.min(ins.start.col, this.line(line).length));
+  }
+
+  /** The first edit after an arrow move: a new undo step, repeated by . as an i. */
+  private restartAfterArrow(key: Key) {
+    const ins = this.insert!;
+    if (!this.dotReplaying) {
+      this.beginChange();
+      this.pendingDot = { reg: null, count: null, body: [this.mode === 'replace' ? 'R' : 'i'], insert: [] };
+      this.dotCapture = { keys: [key], replaying: false };
+    }
+    Object.assign(ins, { arrowed: false, typed: '', kind: this.mode === 'replace' ? 'R' : 'i', start: { ...this.cursor } });
+  }
+
+  /** <C-g>u: close the undo block so far and start a new one here. */
+  private insertUndoBreak() {
+    if (this.snapshotTaken && !this.dotReplaying) {
+      this.buf.dropSnapshotIfUnchanged();
+      this.buf.snapshot(this.cursor, () => this.cursor);
+    }
+  }
+
   private insertPending(key: Key) {
     const ins = this.insert!;
     ins.keys.push(key);
@@ -1608,10 +1678,11 @@ export class Vim {
       ins.pending = '';
       // <C-g>u: close the undo block so far and start a new one here. A dot repeat replays
       // the whole insert as one change, as in Vim.
-      if (key === 'u' && this.snapshotTaken && !this.dotReplaying) {
-        this.buf.dropSnapshotIfUnchanged();
-        this.buf.snapshot(this.cursor, () => this.cursor);
-      }
+      if (key === 'u') this.insertUndoBreak();
+      // <C-g>j / <C-g>k: to the column the insert started in, a line down / up. Other keys
+      // are swallowed with the <C-g>, as in Vim.
+      const dir = ['j', '<C-j>', '<Down>'].includes(key) ? 1 : ['k', '<C-k>', '<Up>'].includes(key) ? -1 : 0;
+      if (dir) this.insertLineArrow(dir);
       return;
     }
     if (kind === 'ctrl-r') {
