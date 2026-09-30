@@ -20,6 +20,23 @@ export type Mutation = {
   /** Time allowance for the edit itself, ms (motion time is added by the generator). */
   parMs: number;
   checklist: string;
+  /**
+   * The fix is more than one change (a yank and a put, a macro, several `cgn`s, an Ex command),
+   * so `.` cannot replay it: the par never turns a repeat of it into `.`.
+   */
+  multi?: boolean;
+  /** The fix works from any cursor position (an Ex command over the file): the par adds no motion. */
+  anywhere?: boolean;
+  /**
+   * The fix records macro `a` with this body and runs it over `runs` lines. A later item with the
+   * same body replays the register (`<runs>@a`) instead of recording it again.
+   */
+  macro?: { body: string; runs: number };
+  /**
+   * Text this mutation's fix searches for across the file (a misspelt name for `*` / `:%s`). No
+   * other item of the run may put this text in the file, nor may this one put theirs.
+   */
+  claims?: string[];
 };
 
 export type MutationKind = {
@@ -38,6 +55,16 @@ export type MutationKind = {
   repeatP?: number;
   /** Plugins the fix needs (the editor and the tests enable them). */
   plugins?: string[];
+  /**
+   * At most one item of this kind per run: its fix acts on the whole file (`:g`, `:%s` over a
+   * shared pattern), so a second item of the kind would be fixed by the first one's command.
+   */
+  once?: boolean;
+  /**
+   * Relative chance of being drawn (default 1). The ladder's own kinds are drawn more often than
+   * the kinds they keep from earlier rungs, and big multi-line kinds need the early picks to fit.
+   */
+  weight?: number;
 };
 
 /** The mutated file: original with lines site.line .. site.line + span - 1 replaced by m.lines. */
