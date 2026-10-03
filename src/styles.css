@@ -476,6 +476,10 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 .ann-newline.above { top: 0; }
 .ann-dash { border-top: 1.5px dashed var(--green); }
 .ann-tag-line { display: block; }
+.ann-del-blank {
+  display: inline-block; margin-left: 1ch; padding: 0 5px; font-size: 12.5px; line-height: 18px; pointer-events: none;
+  color: var(--red); background: rgba(255,85,85,.2); border: 1.5px solid var(--red); border-radius: 4px; text-decoration: line-through;
+}
 /* Insert hint: a zero-width anchor between two cells, a dotted line marking the boundary,
    and the text to type floating above it (below on the first row, which the pane would clip). */
 .ann-ins { position: relative; display: inline; pointer-events: none; --ann-lead: 5px; }

@@ -30,6 +30,14 @@ describe('diffGoal', () => {
     expect(diffGoal(['c', 'a', 'd', 'b', 'f', 'e', 'h', 'g'], ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']).mode).toBe('pane');
     expect(diffGoal(['x', 'y'], ['  x', '  y']).mode).toBe('pane');
   });
+  it('a repeated word is struck whole, not across the seam', () => {
+    const a = inline(['- [ ] Write the the tests'], ['- [ ] Write the tests']);
+    expect(a.del.get(0)).toEqual([[16, 19]]); // the second "the "
+  });
+  it('a repeated word is ghosted whole', () => {
+    const a = inline(['Write the tests'], ['Write the the tests']);
+    expect(a.ins.get(0)).toEqual([{ col: 10, text: 'the ' }]);
+  });
   it('done means none', () => expect(diffGoal(['a'], ['a']).mode).toBe('none'));
 });
 
