@@ -490,6 +490,8 @@ function AnnMarks({ ann, line, text, next, first, tabstop }: { ann: Annotations;
     );
     void after;
   };
+  // An empty line has no characters to strike through, so it gets a tag of its own.
+  if (ann.delLines.has(line) && !text) out.push(<span key="d" className="ann-del-blank" aria-label="delete this blank line">(blank line)</span>);
   const nl = ann.newLines.get(line);
   if (nl) marker(line, nl, 'n', false);
   if (first && ann.newLines.get(-1)) marker(-1, ann.newLines.get(-1)!, 'n0', true);

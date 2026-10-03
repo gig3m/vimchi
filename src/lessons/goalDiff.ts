@@ -36,6 +36,23 @@ function push<K, V>(m: Map<K, V[]>, k: K, v: V) {
   else m.set(k, [v]);
 }
 
+/**
+ * Best start for a span of `len` characters at `p` in `str`, among the equivalent positions
+ * to its left (each removes or adds the same text): prefer one bounded by word edges on
+ * both sides, then on its start, keeping the rightmost on a tie.
+ */
+export function slide(str: string, p: number, len: number): number {
+  const isW = (ch: string | undefined) => !!ch && /\w/.test(ch);
+  const edge = (i: number) => i === 0 || i === str.length || isW(str[i - 1]) !== isW(str[i]);
+  let best = p, bestScore = -1;
+  for (let q = p; q >= 0; q--) {
+    const score = (edge(q) ? 2 : 0) + (edge(q + len) ? 1 : 0);
+    if (score > bestScore) { best = q; bestScore = score; }
+    if (q === 0 || str[q - 1] !== str[q - 1 + len]) break;
+  }
+  return best;
+}
+
 /** Character-level edit for one changed line: common prefix/suffix, then delete + insert. */
 function lineEdit(cur: string, goal: string, line: number, out: Annotations) {
   let p = 0;
@@ -47,6 +64,14 @@ function lineEdit(cur: string, goal: string, line: number, out: Annotations) {
   if (cur.length - s - p > 0 && goal.length - s - p > 0) {
     while (p > 0 && isW(cur[p - 1])) p--;
     while (s > 0 && isW(cur[cur.length - s]) && isW(goal[goal.length - s])) s--;
+  }
+  // A pure deletion or insertion can sit anywhere along a repeated run ("the the tests"
+  // loses "he t" as readily as "the "): slide it to word boundaries, as a person reads it.
+  if (cur.length - s - p === 0 || goal.length - s - p === 0) {
+    const str = cur.length > goal.length ? cur : goal;
+    const q = slide(str, p, Math.abs(cur.length - goal.length));
+    s += p - q;
+    p = q;
   }
   const delEnd = cur.length - s - 1;
   const insText = goal.slice(p, goal.length - s);
