@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # One-shot: create the vimchi droplet on DigitalOcean with cloud-init, wait for
 # its public IP, point vimchi.dev (+ www) at it on Porkbun. Run from sleepwalker
-# (needs DIGITALOCEAN_TOKEN, TAILSCALE_API_SEPT22, PORKBUN_* in keys).
+# (needs DIGITALOCEAN_TOKEN, TAILSCALE_API_KEY_EXP20260922, PORKBUN_* in keys).
 set -euo pipefail
 cd "$(dirname "$0")"
-: "${DIGITALOCEAN_TOKEN:?}" "${TAILSCALE_API_SEPT22:?}" "${PORKBUN_API_KEY:?}" "${PORKBUN_SECRET_API_KEY:?}"
+: "${DIGITALOCEAN_TOKEN:?}" "${TAILSCALE_API_KEY_EXP20260922:?}" "${PORKBUN_API_KEY:?}" "${PORKBUN_SECRET_API_KEY:?}"
 DO="https://api.digitalocean.com/v2"
 do_api() { curl -fsS -H "Authorization: Bearer $DIGITALOCEAN_TOKEN" -H "Content-Type: application/json" "$@"; }
 
@@ -13,7 +13,7 @@ if do_api "$DO/droplets?per_page=100" | python3 -c 'import json,sys; sys.exit(0 
 fi
 
 # A one-use, pre-authorized Tailscale auth key so the box joins the tailnet on first boot.
-ts_key=$(curl -fsS -u "$TAILSCALE_API_SEPT22:" -H "Content-Type: application/json" \
+ts_key=$(curl -fsS -u "$TAILSCALE_API_KEY_EXP20260922:" -H "Content-Type: application/json" \
   https://api.tailscale.com/api/v2/tailnet/-/keys \
   -d '{"capabilities":{"devices":{"create":{"reusable":false,"ephemeral":false,"preauthorized":true}}},"expirySeconds":3600,"description":"vimchi droplet first boot"}' \
   | python3 -c 'import json,sys; print(json.load(sys.stdin)["key"])')
