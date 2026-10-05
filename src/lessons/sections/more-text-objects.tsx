@@ -1,5 +1,6 @@
 import { Code, Mono } from '../../components/Code';
 import { PluginObjects } from '../../components/pluginDiagrams';
+import { yanked } from '../runtime';
 import type { Vim } from '../../vim/editor';
 import type { Section } from '../types';
 
@@ -406,11 +407,18 @@ export const moreTextObjects: Section = {
             solution: 'cicn = 0;<Esc>',
           },
           {
-            prompt: 'Make a second copy of add() and its body.',
             setup: {
               text: ['class Cart {', '  add(item: Item) {', '    this.items.push(item);', '  }', '}'],
               cursor: { line: 2, col: 6 },
             },
+            steps: [
+              {
+                prompt: 'Yank add() and its body.',
+                goal: yanked('  add(item: Item) {\n    this.items.push(item);\n  }\n', 'line'),
+                mark: { start: { line: 1, col: 0 }, end: { line: 3, col: 2 } },
+              },
+            ],
+            prompt: 'Put the copy above it.',
             goal: {
               text: ['class Cart {', '  add(item: Item) {', '    this.items.push(item);', '  }', '  add(item: Item) {', '    this.items.push(item);', '  }', '}'],
             },
@@ -602,8 +610,15 @@ export const moreTextObjects: Section = {
               solution: 'za',
             },
             {
-              prompt: 'Without opening a fold, copy the whole listOrders function to the end of the file.',
               setup: { cursor: { line: 0, col: 0 } },
+              steps: [
+                {
+                  prompt: 'Without opening a fold, yank the whole listOrders function.',
+                  goal: yanked('export async function listOrders(userId: string) {\n  const rows = await db.orders.find({ userId });\n  return rows.map(toOrder);\n}\n', 'line'),
+                  mark: { start: { line: 2, col: 0 }, end: { line: 5, col: 0 } },
+                },
+              ],
+              prompt: 'Put it at the end of the file.',
               goal: { text: [...orders, ...orders.slice(2, 6)] },
               solution: '2jyyGp',
             },

@@ -1,5 +1,6 @@
 import { Code } from '../../components/Code';
 import { BeforeAfter } from '../../components/diagrams';
+import { yanked } from '../runtime';
 import type { Vim } from '../../vim/editor';
 import type { Section } from '../types';
 
@@ -239,7 +240,6 @@ export const marksJumps: Section = {
             solution: "d'a",
           },
           {
-            prompt: 'Yank from mark a to the cursor, then put it inside the empty console.log().',
             setup: {
               text: [
                 'function greet(first: string, last: string) {',
@@ -251,6 +251,14 @@ export const marksJumps: Section = {
               marks: { a: { line: 1, col: 15 } },
               cursor: { line: 1, col: 38 },
             },
+            steps: [
+              {
+                prompt: 'Yank from mark a to the cursor.',
+                goal: yanked("[first, last].join(' ')"),
+                mark: { start: { line: 1, col: 15 }, end: { line: 1, col: 37 } },
+              },
+            ],
+            prompt: 'Put it inside the empty console.log().',
             goal: {
               text: [
                 'function greet(first: string, last: string) {',
@@ -311,7 +319,6 @@ export const marksJumps: Section = {
             solution: 'd`a',
           },
           {
-            prompt: 'Copy the lines from mark a to the cursor line to the end of the file.',
             setup: {
               name: 'RELEASING.md',
               text: [
@@ -325,6 +332,14 @@ export const marksJumps: Section = {
               marks: { a: { line: 1, col: 0 } },
               cursor: { line: 3, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the lines from mark a to the cursor line.',
+                goal: yanked('- [ ] tests pass\n- [ ] changelog updated\n- [ ] version bumped\n', 'line'),
+                mark: { start: { line: 1, col: 0 }, end: { line: 3, col: 19 } },
+              },
+            ],
+            prompt: 'Put them at the end of the file.',
             goal: {
               text: [
                 '## Checklist',

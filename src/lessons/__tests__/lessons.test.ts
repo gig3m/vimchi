@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { SECTIONS } from '..';
 import { Session, createVim, goalMet, marksOf, mergeSetup, solutionKeys, stepsOf } from '../runtime';
-import type { Lesson } from '../types';
+import type { Lesson, Setup } from '../types';
 import { diffGoal } from '../goalDiff';
 
 const only = process.env.LESSON_SECTION;
@@ -54,6 +54,41 @@ describe('rounds start where a person would be', () => {
     for (const k of ['vt,d', '<C-v>3j4ld', 'cwuser<Esc>', 'gUt=', 'd/Then<CR>', 'gsa3e)', 'x', 'RDONE<Esc>']) expect(startsAtCursor(k), k).toBe(true);
     for (const k of ['wcwuser<Esc>', 'f.vf)d', 'ciw', 'vi(d', 'dd', 'yj', 'gsaiw"', 'Vjd']) expect(startsAtCursor(k), k).toBe(false);
   });
+});
+
+/** Does the solution yank (buffer untouched) and later put that yank? */
+function yanksThenPuts(setup: Setup, solution: string): boolean {
+  const vim = createVim(setup);
+  const start = vim.buf.text();
+  let yankedClean = false;
+  for (const k of solutionKeys(solution)) {
+    const reg = vim.getRegister('0').text, before = vim.buf.text();
+    // p as a command, not the argument of f, r, m…: those leave keys pending before it.
+    const command = vim.pending.length === 0 || /^\d*"?.?\d*g?$/.test(vim.pending.join(''));
+    vim.feed(k);
+    if (vim.getRegister('0').text !== reg && vim.buf.text() === start) yankedClean = true;
+    else if (yankedClean && command && /^[pP]$/.test(k) && vim.buf.text() !== before) return true;
+  }
+  return false;
+}
+
+describe('yank then put is two steps', () => {
+  // A round that yanks and then puts shows only the final text, so the learner sees where it lands
+  // but not what to take (the ghost text can even cover it). Split it: "yank this", then "put it there".
+  it('spots a yank then put', () => {
+    const setup = { text: ['a b', 'c'], name: 'a.txt' };
+    expect(yanksThenPuts(setup, 'yyjp')).toBe(true);
+    expect(yanksThenPuts(setup, 'yiwwviwp')).toBe(true);
+    expect(yanksThenPuts(setup, 'ddp')).toBe(false);
+  });
+  for (const [, lesson] of all) {
+    const c = lesson.challenge;
+    if (c.kind !== 'rounds' || lesson.id.includes('macro')) continue;
+    c.rounds.forEach((r, i) => {
+      if (r.steps?.length || !yanksThenPuts(mergeSetup(c.base, r.setup), r.solution)) return;
+      it(`${lesson.id} round ${i + 1}: ${r.solution}`, () => expect.fail('yanks then puts in one step; give it a yank step'));
+    });
+  }
 });
 
 describe('cc and C rounds: the marks strike what the command clears', () => {

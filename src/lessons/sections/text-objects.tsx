@@ -1,5 +1,6 @@
 import { Code } from '../../components/Code';
 import { BeforeAfter, Objects } from '../../components/diagrams';
+import { yanked } from '../runtime';
 import type { Section } from '../types';
 
 export const textObjects: Section = {
@@ -1248,7 +1249,6 @@ export const textObjects: Section = {
             solution: 'dap',
           },
           {
-            prompt: 'Duplicate the first paragraph, blank line included, above itself.',
             setup: {
               name: 'keymaps.lua',
               text: [
@@ -1259,6 +1259,14 @@ export const textObjects: Section = {
               ],
               cursor: { line: 1, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the first paragraph, blank line included.',
+                goal: yanked("map('n', '<C-d>', '<C-d>zz')\nmap('n', '<C-u>', '<C-u>zz')\n\n", 'line'),
+                mark: { start: { line: 0, col: 0 }, end: { line: 2, col: 0 } },
+              },
+            ],
+            prompt: 'Put the copy above it.',
             goal: {
               text: [
                 "map('n', '<C-d>', '<C-d>zz')",

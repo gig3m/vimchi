@@ -1,5 +1,6 @@
 import { Code } from '../../components/Code';
 import { BeforeAfter } from '../../components/diagrams';
+import { yanked } from '../runtime';
 import type { Section } from '../types';
 
 const INIT_LUA = [
@@ -247,12 +248,19 @@ export const commandLine: Section = {
             solution: ':6d<CR>',
           },
           {
-            prompt: 'Yank line 1 and put it below the cursor.',
             setup: {
               name: 'prices.csv',
               text: ['sku,name,price', 'A-100,desk lamp,24.00', 'A-101,monitor arm,79.00', '', '# discontinued'],
               cursor: { line: 4, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank line 1 without moving the cursor.',
+                goal: yanked('sku,name,price\n', 'line'),
+                mark: { start: { line: 0, col: 0 }, end: { line: 0, col: 13 } },
+              },
+            ],
+            prompt: 'Put it below the cursor.',
             goal: {
               text: ['sku,name,price', 'A-100,desk lamp,24.00', 'A-101,monitor arm,79.00', '', '# discontinued', 'sku,name,price'],
             },
