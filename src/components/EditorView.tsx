@@ -211,7 +211,6 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
         if (cmpPos(m.start, here) <= 0 && cmpPos(here, m.end) <= 0 && chars[c] !== undefined) { bg = 'rgba(241,250,140,.28)'; break; }
       }
       if (inc && cmpPos(inc.start, here) <= 0 && cmpPos(here, inc.end) <= 0) { bg = C.orange; color = C.bg; }
-      if (visualRange && inVisual(visualRange, here, t.length)) bg = '#44475a';
       let over: string | undefined;
       for (const d of decos) for (const h of d.hl ?? []) if (!h.inline && h.line === l && c >= h.start && c < h.end) { color = h.color; if (h.bg) bg = h.bg; if (h.text) over = h.text[c - h.start]; }
       if (overlay) {
@@ -228,6 +227,8 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
           bg = 'rgba(80,250,123,.14)'; shadow = 'inset 0 0 0 2px #50fa7b'; color = C.green;
         }
       }
+      // The selection wins over goal marks: in a lesson the text you select is usually the struck text.
+      if (visualRange && inVisual(visualRange, here, t.length)) { bg = VISUAL_BG; shadow = 'none'; }
       const isCursor = current && cursorVisible && cur.line === l && cur.col === c && vim.mode !== 'cmdline' && vim.mode !== 'confirm';
       let cls = 'cell';
       // In insert mode the caret is its own element, placed before any ghost text at this column.
@@ -287,6 +288,9 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
     </div>
   );
 }
+
+/** Visual selection: brighter than Dracula's #44475a, which vanishes on the cursorline. */
+const VISUAL_BG = 'rgba(189,147,249,.42)';
 
 function inVisual(r: ReturnType<Vim['visualRange']>, p: Pos, lineLen: number) {
   if (p.line < r.start.line || p.line > r.end.line) return false;

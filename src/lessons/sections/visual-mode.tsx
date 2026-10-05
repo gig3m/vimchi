@@ -81,21 +81,21 @@ export const visualMode: Section = {
             solution: 'vf dj.',
           },
           {
-            prompt: 'Delete " // ms" after "5000,".',
+            prompt: 'Delete " * 1000" after "5000".',
             setup: {
               text: [
                 'export const config = {',
                 '  retries: 3,',
-                '  timeout: 5000, // ms',
+                '  timeout: 5000 * 1000, // ms',
                 '  verbose: false,',
                 '};',
               ],
-              cursor: { line: 0, col: 0 },
+              cursor: { line: 2, col: 0 },
             },
             goal: {
-              text: ['export const config = {', '  retries: 3,', '  timeout: 5000,', '  verbose: false,', '};'],
+              text: ['export const config = {', '  retries: 3,', '  timeout: 5000, // ms', '  verbose: false,', '};'],
             },
-            solution: 'jj$vT,d',
+            solution: 'f*hvt,d',
           },
           {
             prompt: 'Remove both ".map(String)"s, dot included.',
