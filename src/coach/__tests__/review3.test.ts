@@ -18,11 +18,11 @@ function playLesson(lessonId: string, keys: string) {
 const suggested = (r: ReturnType<typeof coach>) => r.critiques.flatMap(c => c.better.map(b => b.keys));
 
 describe('typed text is compared net of Backspace', () => {
-  it('control: xxxiuser<Esc> → cwuser<Esc>', () => {
-    expect(suggested(playLesson('change-words', 'xxxiuser<Esc>'))).toContain('cwuser<Esc>');
+  it('control: wxxxiuser<Esc> → cwuser<Esc>', () => {
+    expect(suggested(playLesson('change-words', 'wxxxiuser<Esc>'))).toContain('cwuser<Esc>');
   });
-  it('a typo fixed with <BS> still gets the real critique: xxxiuse<BS>er<Esc> → cwuser<Esc>', () => {
-    expect(suggested(playLesson('change-words', 'xxxiuse<BS>er<Esc>'))).toContain('cwuser<Esc>');
+  it('a typo fixed with <BS> still gets the real critique: wxxxiuse<BS>er<Esc> → cwuser<Esc>', () => {
+    expect(suggested(playLesson('change-words', 'wxxxiuse<BS>er<Esc>'))).toContain('cwuser<Esc>');
   });
 });
 

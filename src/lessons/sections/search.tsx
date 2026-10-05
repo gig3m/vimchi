@@ -70,13 +70,13 @@ export const search: Section = {
                 'on a slow network. Then run vimchi init.',
                 'The tutor opens in your browser.',
               ],
-              cursor: { line: 1, col: 17 },
+              cursor: { line: 1, col: 0 },
             },
             goal: { text: ['# vimchi', 'Install the CLI. Then run vimchi init.', 'The tutor opens in your browser.'] },
-            solution: 'd/Then<CR>',
+            solution: 'f.wd/Then<CR>',
           },
           {
-            prompt: 'Delete from the cursor up to the second "user" on the line.',
+            prompt: 'Delete "user.role === \'admin\' || " from the if line.',
             setup: {
               text: [
                 'function canEdit(user: User) {',
@@ -86,7 +86,7 @@ export const search: Section = {
                 '  return false;',
                 '}',
               ],
-              cursor: { line: 1, col: 6 },
+              cursor: { line: 1, col: 2 },
             },
             goal: {
               text: [
@@ -98,7 +98,7 @@ export const search: Section = {
                 '}',
               ],
             },
-            solution: 'd/user<CR>',
+            solution: 'fud/user<CR>',
           },
           {
             prompt: 'Change the text before " AS" on both lines to "NULL".',
@@ -114,10 +114,10 @@ export const search: Section = {
             prompt: 'On all three lines, delete from ":" up to " =".',
             setup: {
               text: ['const a: Map<string, number> = new Map();', 'const b: Set<string> = new Set();', 'const c: string[] = [];'],
-              cursor: { line: 0, col: 7 },
+              cursor: { line: 0, col: 0 },
             },
             goal: { text: ['const a = new Map();', 'const b = new Set();', 'const c = [];'] },
-            solution: 'd/ =<CR>j.j.',
+            solution: 'f:d/ =<CR>j.j.',
           },
           {
             prompt: 'Delete from "## Install (old)" up to "## Usage".',

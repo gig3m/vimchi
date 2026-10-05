@@ -9,7 +9,7 @@ import { type Key, parseKeys } from '../vim/keys';
 import { align } from './goalDiff';
 import { wordBackward, wordEnd, wordForward } from '../vim/motions';
 import { type Pos, cmpPos, eqPos, pos } from '../vim/types';
-import type { Challenge, Goal, MarksChallenge, QuizChallenge, Round, RoundsChallenge, Setup, TargetChallenge } from './types';
+import type { Challenge, Goal, MarksChallenge, QuizChallenge, Round, RoundsChallenge, Setup, Span, Step, TargetChallenge } from './types';
 
 // ---- editor setup --------------------------------------------------------------------------------
 
@@ -99,6 +99,35 @@ export function goalMet(vim: Vim, g: Goal): boolean {
 
 export const solutionKeys = (s: string): Key[] => parseKeys(s);
 
+/** A round's steps in order, the round's own prompt and goal last. */
+export const stepsOf = (r: Round): Step[] => [...(r.steps ?? []), { prompt: r.prompt ?? '', goal: r.goal, mark: r.mark }];
+
+/** Step goal: a characterwise (or linewise) Visual selection covering exactly this span. */
+export function selecting(start: Pos, end: Pos, kind: 'char' | 'line' = 'char'): Goal {
+  return {
+    mode: 'any',
+    check: v => {
+      if (v.mode !== 'visual' || !v.visual) return false;
+      const r = v.visualRange();
+      if (r.kind !== kind) return false;
+      return kind === 'line' ? r.start.line === start.line && r.end.line === end.line : eqPos(r.start, start) && eqPos(r.end, end);
+    },
+  };
+}
+
+/**
+ * Step goal: back in Normal mode with this text yanked (register 0) as characters or whole lines,
+ * and the buffer untouched. The kind matters: it decides where the put lands.
+ */
+export function yanked(text: string, kind: 'char' | 'line' = 'char'): Goal {
+  return {
+    check: v => {
+      const r = v.getRegister('0');
+      return r.text === text && r.kind === kind && !v.buf.modified;
+    },
+  };
+}
+
 // ---- scoring -------------------------------------------------------------------------------------
 
 export type Result = {
@@ -135,6 +164,10 @@ export type SessionView = {
   brokenLines: Set<number>;
   goalText: string[] | null;
   prompt: string | null;
+  /** Text the current step points at (what to yank or select), outlined. */
+  span: Span | null;
+  /** Step within the round; the prompt changes as it advances. */
+  step: number;
   hits: number;
   total: number;
   keys: number;
@@ -197,6 +230,8 @@ export class Session {
   private mistakes = 0;
   // rounds
   roundIdx = 0;
+  /** Step within the current round (see Round.steps). */
+  stepIdx = 0;
   private roundKeys = 0;
   private roundStats: { keys: number; par: number }[] = [];
   // quiz
@@ -279,7 +314,8 @@ export class Session {
     const setup = mergeSetup(c.base, r.setup);
     this.vim = createVim(setup);
     this.installReset();
-    this.target = r.goal.cursor ?? null;
+    this.stepIdx = 0;
+    this.target = stepsOf(r)[0].goal.cursor ?? null;
     this.roundKeys = 0;
     this.carryExtra = 0;
     // Leave the cursor where the learner is, rather than making them find it again. Not when the
@@ -293,7 +329,7 @@ export class Session {
       this.vim.win.cursor = { line, col };
       this.vim.win.want = col;
       this.vim.scrollToCursor();
-      if (goalMet(this.vim, r.goal)) {
+      if (goalMet(this.vim, stepsOf(r)[0].goal)) {
         this.vim.win.cursor = start;
         this.vim.win.want = start.col;
         this.vim.scrollToCursor();
@@ -387,7 +423,13 @@ export class Session {
       if (vim.buf.text() !== beforeText && vim.lastCommand?.kind !== 'undo') this.checkEdit(c, beforeLines);
       if (vim.buf.text() === c.correct.join('\n') && vim.mode === 'normal') this.finish(now);
     } else if (c.kind === 'rounds') {
-      if (goalMet(vim, round!.goal)) {
+      const steps = stepsOf(round!), last = steps.length - 1;
+      while (this.stepIdx < last && goalMet(vim, steps[this.stepIdx].goal)) {
+        this.stepIdx++;
+        this.target = steps[this.stepIdx].goal.cursor ?? null;
+      }
+      // Reaching the final goal by another route still finishes the round.
+      if (goalMet(vim, steps[last].goal)) {
         this.hits++;
         this.roundStats.push({ keys: this.roundKeys, par: solutionKeys(round!.solution).length + this.carryExtra });
         if (this.roundIdx >= c.rounds.length - 1) this.finish(now);
@@ -535,9 +577,10 @@ export class Session {
       brokenLines = m.broken;
     }
     const round = this.round;
-    const showGoal = c.kind === 'rounds' && c.showGoal !== false && round?.goal.text != null;
+    const step = round ? stepsOf(round)[this.stepIdx] : null;
+    const showGoal = c.kind === 'rounds' && c.showGoal !== false && step?.goal.text != null;
     const g = c.kind === 'generated' ? this.generated! : null;
-    const goalText = g ? g.goal : showGoal ? (Array.isArray(round!.goal.text) ? round!.goal.text : round!.goal.text!.split('\n')) : null;
+    const goalText = g ? g.goal : showGoal ? (Array.isArray(step!.goal.text) ? step!.goal.text : step!.goal.text!.split('\n')) : null;
     let items: SessionView['items'] = [];
     if (g && this.vim) {
       const cur = this.vim.buf.lines;
@@ -567,7 +610,8 @@ export class Session {
     if ((c.kind === 'fix' || c.kind === 'replace') && this.vim) hits = Math.max(0, this.total - marks.size - brokenLines.size);
     const quiz = c.kind === 'quiz' && !this.done ? { q: c.questions[this.roundIdx], index: this.roundIdx, picked: this.picked, sel: this.sel } : null;
     return {
-      vim: this.vim, target: this.done ? null : this.target, marks, brokenLines, goalText, prompt: round?.prompt ?? null,
+      vim: this.vim, target: this.done ? null : this.target, marks, brokenLines, goalText, prompt: step?.prompt || null,
+      span: !this.done && !this.roundDone ? step?.mark ?? null : null, step: this.stepIdx,
       hits, total: this.total, keys: this.keys, startAt: this.startAt, endAt: this.endAt, done: this.done,
       roundDone: this.roundDone, msg: this.msg, msgKind: this.msgKind, quiz,
       items, seed: g?.seed ?? null,

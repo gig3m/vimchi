@@ -66,26 +66,26 @@ export const surround: Section = {
             prompt: 'Put "width * height" in parentheses.',
             setup: {
               text: ['function area(width: number, height: number) {', '  const half = width * height / 2;', '  return Math.round(half);', '}'],
-              cursor: { line: 1, col: 15 },
+              cursor: { line: 1, col: 2 },
             },
             goal: { text: ['function area(width: number, height: number) {', '  const half = (width * height) / 2;', '  return Math.round(half);', '}'] },
-            solution: 'gsa3e)',
+            solution: 'fwgsa3e)',
           },
           {
             prompt: 'Put the three numbers in square brackets.',
-            setup: { text: ["const host = 'localhost';", 'const ports = 3000, 3001, 3002;', 'server.listen(host, ports);'], cursor: { line: 1, col: 14 } },
+            setup: { text: ["const host = 'localhost';", 'const ports = 3000, 3001, 3002;', 'server.listen(host, ports);'], cursor: { line: 1, col: 0 } },
             goal: { text: ["const host = 'localhost';", 'const ports = [3000, 3001, 3002];', 'server.listen(host, ports);'] },
-            solution: 'gsat;]',
+            solution: 'f3gsat;]',
           },
           {
             prompt: 'Wrap "silent = true" in braces, with spaces inside.',
             setup: {
               name: 'init.lua',
               text: ['local map = vim.keymap.set', "map('n', '<leader>w', ':w<CR>', silent = true)", "map('n', '<leader>q', ':q<CR>')"],
-              cursor: { line: 1, col: 32 },
+              cursor: { line: 1, col: 0 },
             },
             goal: { text: ['local map = vim.keymap.set', "map('n', '<leader>w', ':w<CR>', { silent = true })", "map('n', '<leader>q', ':q<CR>')"] },
-            solution: 'gsat){',
+            solution: 'fsgsat){',
           },
           {
             prompt: 'Put backticks around "npm install".',
@@ -421,21 +421,21 @@ export const surround: Section = {
         rounds: [
           {
             prompt: 'Put "lo + hi" in parentheses.',
-            setup: { text: ['function bisect(lo: number, hi: number) {', '  const mid = lo + hi / 2;', '  return Math.floor(mid);', '}'], cursor: { line: 1, col: 14 } },
+            setup: { text: ['function bisect(lo: number, hi: number) {', '  const mid = lo + hi / 2;', '  return Math.floor(mid);', '}'], cursor: { line: 1, col: 2 } },
             goal: { text: ['function bisect(lo: number, hi: number) {', '  const mid = (lo + hi) / 2;', '  return Math.floor(mid);', '}'] },
-            solution: 'v3egsa)',
+            solution: 'flv3egsa)',
           },
           {
             prompt: 'Put "string | null" in parentheses.',
-            setup: { text: ['type Row = { id: number };', 'let names: string | null[];', 'let rows: Row[] = [];'], cursor: { line: 1, col: 11 } },
+            setup: { text: ['type Row = { id: number };', 'let names: string | null[];', 'let rows: Row[] = [];'], cursor: { line: 1, col: 0 } },
             goal: { text: ['type Row = { id: number };', 'let names: (string | null)[];', 'let rows: Row[] = [];'] },
-            solution: 'vt[gsa)',
+            solution: 'f:wvt[gsa)',
           },
           {
             prompt: 'Put "migration guide" in square brackets.',
-            setup: { name: 'README.md', text: ['# Upgrading', '', 'Read the migration guide first.', 'Then bump the version.'], cursor: { line: 2, col: 9 } },
+            setup: { name: 'README.md', text: ['# Upgrading', '', 'Read the migration guide first.', 'Then bump the version.'], cursor: { line: 2, col: 0 } },
             goal: { text: ['# Upgrading', '', 'Read the [migration guide] first.', 'Then bump the version.'] },
-            solution: 'veegsa]',
+            solution: 'fmveegsa]',
           },
           {
             prompt: 'Wrap all three lines in braces.',
@@ -445,9 +445,9 @@ export const surround: Section = {
           },
           {
             prompt: 'Put double quotes around $HOME/My Apps/.',
-            setup: { name: 'deploy.sh', text: ['#!/bin/sh', 'npm run build', 'cp dist/app.js $HOME/My Apps/', 'echo done'], cursor: { line: 2, col: 15 } },
+            setup: { name: 'deploy.sh', text: ['#!/bin/sh', 'npm run build', 'cp dist/app.js $HOME/My Apps/', 'echo done'], cursor: { line: 2, col: 0 } },
             goal: { text: ['#!/bin/sh', 'npm run build', 'cp dist/app.js "$HOME/My Apps/"', 'echo done'] },
-            solution: 'vg_gsa"',
+            solution: 'f$vg_gsa"',
           },
         ],
       },

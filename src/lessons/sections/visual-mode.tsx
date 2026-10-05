@@ -1,5 +1,6 @@
 import { Code } from '../../components/Code';
 import { BeforeAfter, Objects } from '../../components/diagrams';
+import { selecting, yanked } from '../runtime';
 import type { Section } from '../types';
 
 export const visualMode: Section = {
@@ -22,17 +23,18 @@ export const visualMode: Section = {
             <Code>t;</Code>, <Code>j</Code>. Press <Code>d</Code> to delete what's selected, or <Code>esc</Code> to drop it.
           </p>
           <p>
-            Only one end of the selection moves. <Code>o</Code> jumps the cursor to the other end, so you can grow the
-            selection backwards when you started a little too far right.
+            Only one end of the selection moves. <Code>o</Code> jumps the cursor to the other end, so when you've
+            selected a word and then see the text before it should go too, you grow the selection back instead of
+            starting over.
           </p>
           <BeforeAfter
             lines={["const name = first + ' ' + last;"]}
-            cursor={19}
-            keys="vt;ohd"
+            cursor={27}
+            keys="veoTtd"
             caption={
               <>
-                <Code>vt;</Code> selects up to the semicolon, <Code>o</Code> swaps ends, <Code>h</Code> takes the
-                space too.
+                <Code>ve</Code> selects <Code>last</Code>, <Code>o</Code> swaps ends, <Code>Tt</Code> stretches it
+                back to just after <Code>first</Code>.
               </>
             }
           />
@@ -40,8 +42,9 @@ export const visualMode: Section = {
       ),
       practice: total => (
         <p>
-          Select the text the goal no longer has, then press <Code>d</Code>. Where the edit repeats,{' '}
-          <Code>.</Code> redoes it on as many characters from the cursor. {total} rounds.
+          Get to the start, select the text the goal no longer has, then press <Code>d</Code>. Where the edit
+          repeats, <Code>.</Code> redoes it on as many characters from the cursor. Some rounds change their mind
+          once you've selected: that's what <Code>o</Code> is for. {total} rounds.
         </p>
       ),
       aside: {
@@ -67,7 +70,7 @@ export const visualMode: Section = {
                 '  return api.get(user.id);',
                 '}',
               ],
-              cursor: { line: 1, col: 14 },
+              cursor: { line: 1, col: 2 },
             },
             goal: {
               text: [
@@ -78,7 +81,7 @@ export const visualMode: Section = {
                 '}',
               ],
             },
-            solution: 'vf dj.',
+            solution: "f'vf dj.",
           },
           {
             prompt: 'Delete " * 1000" after "5000".',
@@ -90,12 +93,29 @@ export const visualMode: Section = {
                 '  verbose: false,',
                 '};',
               ],
-              cursor: { line: 2, col: 0 },
+              cursor: { line: 2, col: 2 },
             },
             goal: {
               text: ['export const config = {', '  retries: 3,', '  timeout: 5000, // ms', '  verbose: false,', '};'],
             },
             solution: 'f*hvt,d',
+          },
+          {
+            setup: {
+              name: 'README.md',
+              text: ['# vimchi', '', 'The tutor runs in a browser.', 'Each lesson takes a minute.'],
+              cursor: { line: 2, col: 0 },
+            },
+            steps: [
+              {
+                prompt: 'Select "browser".',
+                goal: selecting({ line: 2, col: 20 }, { line: 2, col: 26 }),
+                mark: { start: { line: 2, col: 20 }, end: { line: 2, col: 26 } },
+              },
+            ],
+            prompt: 'On second thought, " in a browser" all goes. Grow the selection back, then delete.',
+            goal: { text: ['# vimchi', '', 'The tutor runs.', 'Each lesson takes a minute.'] },
+            solution: '$bveoTsd',
           },
           {
             prompt: 'Remove both ".map(String)"s, dot included.',
@@ -107,7 +127,7 @@ export const visualMode: Section = {
                 '  return [a, b];',
                 '}',
               ],
-              cursor: { line: 1, col: 15 },
+              cursor: { line: 1, col: 2 },
             },
             goal: {
               text: [
@@ -118,18 +138,25 @@ export const visualMode: Section = {
                 '}',
               ],
             },
-            solution: 'vf)ohdj.',
+            solution: 'f.vf)dj.',
           },
           {
-            prompt: "Delete \" + ' ' + last\" after \"first\".",
             setup: {
               text: [
                 'function welcome(first: string, last: string) {',
                 "  return greet(first + ' ' + last, 'en');",
                 '}',
               ],
-              cursor: { line: 1, col: 21 },
+              cursor: { line: 1, col: 2 },
             },
+            steps: [
+              {
+                prompt: 'Select "last".',
+                goal: selecting({ line: 1, col: 29 }, { line: 1, col: 32 }),
+                mark: { start: { line: 1, col: 29 }, end: { line: 1, col: 32 } },
+              },
+            ],
+            prompt: "Take \" + ' ' + \" with it, back to \"first\", then delete.",
             goal: {
               text: [
                 'function welcome(first: string, last: string) {',
@@ -137,10 +164,10 @@ export const visualMode: Section = {
                 '}',
               ],
             },
-            solution: 'vt,ohd',
+            solution: 'flveoTtd',
           },
           {
-            prompt: 'Delete the middle sentence, "It takes a minute."',
+            prompt: 'Delete the middle sentence, "It takes a minute. "',
             setup: {
               name: 'README.md',
               text: [
@@ -149,12 +176,12 @@ export const visualMode: Section = {
                 'Install the CLI. It takes a minute. Then run vimchi init.',
                 'The tutor opens in your browser.',
               ],
-              cursor: { line: 2, col: 16 },
+              cursor: { line: 2, col: 0 },
             },
             goal: {
               text: ['# vimchi', '', 'Install the CLI. Then run vimchi init.', 'The tutor opens in your browser.'],
             },
-            solution: 'vf.d',
+            solution: 'f.wvtTd',
           },
         ],
       },
@@ -435,19 +462,26 @@ export const visualMode: Section = {
             prompt: 'Delete "!user || " from the if line.',
             setup: {
               text: ['function greet(user?: User) {', '  if (!user || !user.active) return;', '  say(user.name);', '}'],
-              cursor: { line: 1, col: 6 },
+              cursor: { line: 1, col: 2 },
             },
             goal: { text: ['function greet(user?: User) {', '  if (!user.active) return;', '  say(user.name);', '}'] },
-            solution: 'v2f d',
+            solution: 'f!v2f d',
           },
           {
-            prompt: 'Copy "order.id" into the gap before ")" on the buy line.',
             setup: {
               text: ['const id = order.id;', "track('view', order.id);", "track('buy', );", 'await flush();'],
-              cursor: { line: 0, col: 11 },
+              cursor: { line: 0, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank "order.id" from the first line.',
+                goal: yanked('order.id'),
+                mark: { start: { line: 0, col: 11 }, end: { line: 0, col: 18 } },
+              },
+            ],
+            prompt: 'Put it in the gap before ")" on the buy line.',
             goal: { text: ['const id = order.id;', "track('view', order.id);", "track('buy', order.id);", 'await flush();'] },
-            solution: 'vt;yjjf)P',
+            solution: '3wvt;yjjf)P',
           },
           {
             prompt: 'Replace the three lines inside the braces with "todo()".',
@@ -468,11 +502,18 @@ export const visualMode: Section = {
             solution: 'jvi"cno<Esc>',
           },
           {
-            prompt: 'Copy the port and host lines to just above the last "};".',
             setup: {
               text: ['export const dev = {', '  port: 3000,', "  host: 'localhost',", '};', '', 'export const test = {', '};'],
-              cursor: { line: 1, col: 2 },
+              cursor: { line: 0, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the port and host lines.',
+                goal: yanked("  port: 3000,\n  host: 'localhost',\n", 'line'),
+                mark: { start: { line: 1, col: 2 }, end: { line: 2, col: 19 } },
+              },
+            ],
+            prompt: 'Put them just above the last "};".',
             goal: {
               text: [
                 'export const dev = {',
@@ -486,7 +527,7 @@ export const visualMode: Section = {
                 '};',
               ],
             },
-            solution: 'VjyGP',
+            solution: 'jVjyGP',
           },
         ],
       },
@@ -545,12 +586,12 @@ export const visualMode: Section = {
             setup: {
               name: 'todo.md',
               text: ['## Today', '- [ ] write tests', '- [ ] update docs', '## Later', '- [ ] tag release', '- [ ] blog'],
-              cursor: { line: 1, col: 3 },
+              cursor: { line: 1, col: 0 },
             },
             goal: {
               text: ['## Today', '- [x] write tests', '- [x] update docs', '## Later', '- [x] tag release', '- [x] blog'],
             },
-            solution: '<C-v>jrx3j.',
+            solution: 'f[l<C-v>jrx3j.',
           },
           {
             prompt: 'Change every "var" to "let".',
@@ -566,20 +607,20 @@ export const visualMode: Section = {
             setup: {
               name: 'stock.txt',
               text: ['name     qty  price', 'apple    3    0.50', 'pear     12   0.75', 'plum     40   0.30'],
-              cursor: { line: 0, col: 9 },
+              cursor: { line: 0, col: 0 },
             },
             goal: { text: ['name     price', 'apple    0.50', 'pear     0.75', 'plum     0.30'] },
-            solution: '<C-v>3j4ld',
+            solution: 'w<C-v>3j4ld',
           },
           {
             prompt: 'Rename the "old_" prefix to "new_" on the lower two lines.',
             setup: {
               name: 'keys.lua',
               text: ['local keep_a = 1', 'local old_b = 2', 'local old_c = 3'],
-              cursor: { line: 1, col: 6 },
+              cursor: { line: 1, col: 0 },
             },
             goal: { text: ['local keep_a = 1', 'local new_b = 2', 'local new_c = 3'] },
-            solution: '<C-v>j3lcnew_<Esc>',
+            solution: 'w<C-v>j3lcnew_<Esc>',
           },
         ],
       },
@@ -653,9 +694,9 @@ export const visualMode: Section = {
           },
           {
             prompt: 'Add "-alt" after "sm", "md" and "lg".',
-            setup: { name: 'buttons.css', text: ['.btn-sm {}', '.btn-md {}', '.btn-lg {}'], cursor: { line: 0, col: 6 } },
+            setup: { name: 'buttons.css', text: ['.btn-sm {}', '.btn-md {}', '.btn-lg {}'], cursor: { line: 0, col: 0 } },
             goal: { text: ['.btn-sm-alt {}', '.btn-md-alt {}', '.btn-lg-alt {}'] },
-            solution: '<C-v>jjA-alt<Esc>',
+            solution: 'fm<C-v>jjA-alt<Esc>',
           },
           {
             prompt: 'Add ";" to the end of every line except "// then".',

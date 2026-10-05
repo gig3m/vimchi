@@ -1,5 +1,6 @@
 import { Code } from '../../components/Code';
 import { BeforeAfter } from '../../components/diagrams';
+import { yanked } from '../runtime';
 import type { Section } from '../types';
 
 export const basicOperators: Section = {
@@ -750,22 +751,36 @@ export const basicOperators: Section = {
             solution: 'ddggP',
           },
           {
-            prompt: 'Copy "name,score" to the end of the file.',
             setup: {
               name: 'scores.csv',
               text: ['name,score', 'ada,92', 'grace,88', 'linus,75'],
               cursor: { line: 3, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the "name,score" header line.',
+                goal: yanked('name,score\n', 'line'),
+                mark: { start: { line: 0, col: 0 }, end: { line: 0, col: 9 } },
+              },
+            ],
+            prompt: 'Now put it at the end of the file.',
             goal: { text: ['name,score', 'ada,92', 'grace,88', 'linus,75', 'name,score'] },
             solution: 'ggyyGp',
           },
           {
-            prompt: 'Copy the two "map(" lines to below the last line.',
             setup: {
               name: 'keymaps.lua',
               text: ['local map = vim.keymap.set', "map('n', '<C-h>', '<C-w>h')", "map('n', '<C-l>', '<C-w>l')"],
               cursor: { line: 0, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the two "map(" lines.',
+                goal: yanked("map('n', '<C-h>', '<C-w>h')\nmap('n', '<C-l>', '<C-w>l')\n", 'line'),
+                mark: { start: { line: 1, col: 0 }, end: { line: 2, col: 26 } },
+              },
+            ],
+            prompt: 'Put them below the last line.',
             goal: {
               text: [
                 'local map = vim.keymap.set',
@@ -817,11 +832,18 @@ export const basicOperators: Section = {
         base: { name: 'theme.ts' },
         rounds: [
           {
-            prompt: 'Copy the colour after "primary = " to the end of the accent line.',
             setup: {
               text: ['// Catppuccin Latte', "const primary = '#1e66f5';", 'const accent = ', "const text = '#4c4f69';"],
               cursor: { line: 0, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the colour after "primary = ", through the semicolon.',
+                goal: yanked("'#1e66f5';"),
+                mark: { start: { line: 1, col: 16 }, end: { line: 1, col: 25 } },
+              },
+            ],
+            prompt: 'Put it at the end of the accent line.',
             goal: {
               text: ['// Catppuccin Latte', "const primary = '#1e66f5';", "const accent = '#1e66f5';", "const text = '#4c4f69';"],
             },
@@ -850,7 +872,6 @@ export const basicOperators: Section = {
             solution: 'kkfbYj$p',
           },
           {
-            prompt: 'Copy "await db.users.findOne({ id });" to the end of the admin line.',
             setup: {
               name: 'users.ts',
               text: [
@@ -862,6 +883,14 @@ export const basicOperators: Section = {
               ],
               cursor: { line: 0, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank "await db.users.findOne({ id });" from the user line.',
+                goal: yanked('await db.users.findOne({ id });'),
+                mark: { start: { line: 1, col: 15 }, end: { line: 1, col: 45 } },
+              },
+            ],
+            prompt: 'Put it at the end of the admin line.',
             goal: {
               text: [
                 'export async function loadPair(id: string) {',

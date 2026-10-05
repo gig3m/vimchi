@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createVim, Session, marksOf, solutionKeys } from '../runtime';
+import { createVim, goalMet, Session, marksOf, selecting, solutionKeys, yanked } from '../runtime';
 import { LESSONS } from '../index';
 import type { MarksChallenge, RoundsChallenge } from '../types';
 
@@ -120,5 +120,61 @@ describe('cursor carry and folds', () => {
       if (!s.done) s.advance();
     });
     expect(s.done).toBe(true);
+  });
+});
+
+describe('round steps', () => {
+  const twoStep: RoundsChallenge = {
+    kind: 'rounds', base: { name: 'README.md' },
+    rounds: [
+      {
+        setup: { text: ['# x', '', 'The tutor runs in a browser.'], cursor: { line: 2, col: 0 } },
+        steps: [{
+          prompt: 'Select "browser".',
+          goal: selecting({ line: 2, col: 20 }, { line: 2, col: 26 }),
+          mark: { start: { line: 2, col: 20 }, end: { line: 2, col: 26 } },
+        }],
+        prompt: 'Now " in a browser" goes too.',
+        goal: { text: ['# x', '', 'The tutor runs.'] },
+        solution: '$bveoTsd',
+      },
+      { setup: { text: ['a b', 'c', 'd'] }, goal: { text: ['b', 'c', 'd'] }, solution: 'dw' },
+    ],
+  };
+  it('moves through the steps in one editor, swapping prompt, marks and goal', () => {
+    const s = new Session(twoStep);
+    expect(s.view().prompt).toBe('Select "browser".');
+    expect(s.view().span).toEqual({ start: { line: 2, col: 20 }, end: { line: 2, col: 26 } });
+    expect(s.view().goalText).toBeNull(); // a selection step has no text goal, so no diff marks yet
+    for (const k of solutionKeys('$bve')) s.key(k, 100);
+    expect(s.view().step).toBe(1);
+    expect(s.view().prompt).toBe('Now " in a browser" goes too.');
+    expect(s.view().span).toBeNull();
+    expect(s.vim!.mode).toBe('visual'); // the selection survives the step change
+    expect(s.view().goalText).toEqual(['# x', '', 'The tutor runs.']);
+    for (const k of solutionKeys('oTsd')) s.key(k, 200);
+    expect(s.roundDone).toBe(true);
+    expect(s.roundPar(0)).toBe(8);
+  });
+  it('a reset goes back to the first step', () => {
+    const s = new Session(twoStep);
+    for (const k of solutionKeys('$bve')) s.key(k, 100);
+    s.resetRound();
+    expect(s.view().step).toBe(0);
+  });
+  it('the final goal reached another way still finishes the round', () => {
+    const s = new Session(twoStep);
+    for (const k of solutionKeys('fsldt.')) s.key(k, 100);
+    expect(s.roundDone).toBe(true);
+  });
+  it('yanked() wants the right kind and an untouched buffer', () => {
+    const v = createVim({ text: ['alpha beta', 'gamma'], name: 'a.ts' });
+    v.feedKeys('yy');
+    expect(goalMet(v, yanked('alpha beta\n', 'line'))).toBe(true);
+    expect(goalMet(v, yanked('alpha', 'char'))).toBe(false);
+    v.feedKeys('yiw');
+    expect(goalMet(v, yanked('alpha', 'char'))).toBe(true);
+    v.feedKeys('x');
+    expect(goalMet(v, yanked('alpha', 'char'))).toBe(false);
   });
 });

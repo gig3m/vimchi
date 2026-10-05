@@ -421,20 +421,20 @@ export const indentCase: Section = {
             setup: {
               name: 'CONTRIBUTING.md',
               text: ['## Questions', '', 'Contact: Lin@Example.COM', 'Replies within a week.'],
-              cursor: { line: 2, col: 9 },
+              cursor: { line: 2, col: 0 },
             },
             goal: { text: ['## Questions', '', 'Contact: lin@example.com', 'Replies within a week.'] },
-            solution: 'gu$',
+            solution: 'fLgu$',
           },
           {
             prompt: 'Uppercase the variable name, up to the "=".',
             setup: {
               name: 'env.sh',
               text: ['#!/bin/sh', 'export database_url=postgres://localhost/app', 'export PORT=3000'],
-              cursor: { line: 1, col: 7 },
+              cursor: { line: 1, col: 0 },
             },
             goal: { text: ['#!/bin/sh', 'export DATABASE_URL=postgres://localhost/app', 'export PORT=3000'] },
-            solution: 'gUt=',
+            solution: 'wgUt=',
           },
           {
             prompt: 'Flip the case of every letter in "hELLO, wORLD".',
@@ -727,9 +727,9 @@ export const indentCase: Section = {
           },
           {
             prompt: 'Set the values to 1, 2, 3 without touching h1, h2, h3.',
-            setup: { name: 'levels.ts', text: ['const h1 = 0;', 'const h2 = 0;', 'const h3 = 0;'], cursor: { line: 0, col: 11 } },
+            setup: { name: 'levels.ts', text: ['const h1 = 0;', 'const h2 = 0;', 'const h3 = 0;'], cursor: { line: 0, col: 0 } },
             goal: { text: ['const h1 = 1;', 'const h2 = 2;', 'const h3 = 3;'] },
-            solution: '<C-v>jjg<C-a>',
+            solution: 'f0<C-v>jjg<C-a>',
           },
           {
             prompt: 'Set the z-index values to 10, 20 and 30.',

@@ -371,7 +371,7 @@ export const nextSteps: Section = {
                 '  return user.profile;',
                 '}',
               ],
-              cursor: { line: 1, col: 8 },
+              cursor: { line: 1, col: 2 },
             },
             goal: {
               text: [
@@ -381,7 +381,7 @@ export const nextSteps: Section = {
                 '}',
               ],
             },
-            solution: 'cwuser<Esc>',
+            solution: 'wcwuser<Esc>',
           },
           {
             prompt: 'Change "let" to "const".',

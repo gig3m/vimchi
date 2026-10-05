@@ -257,9 +257,9 @@ export function Practice(p: Props) {
   const showPane = !!v.goalText && !inline && goalView.mode !== 'none';
   const overlay = useMemo(() => ({
     ann: inline,
-    target: v.target, marks: v.marks, brokenLines: v.brokenLines,
+    target: v.target, marks: v.marks, brokenLines: v.brokenLines, span: v.span,
     markKind: s.challenge.kind === 'fix' ? 'fix' as const : s.challenge.kind === 'replace' ? 'replace' as const : null,
-  }), [inline, v.target, v.marks, v.brokenLines, s.challenge.kind]);
+  }), [inline, v.target, v.marks, v.brokenLines, v.span, s.challenge.kind]);
 
   const elapsed = v.startAt ? (v.endAt ?? Date.now()) - v.startAt : 0;
   const status = { keys: v.keys, time: fmtClock(elapsed) };
@@ -299,7 +299,7 @@ export function Practice(p: Props) {
         </div>
 
         {!v.done && v.prompt && (
-          <div className={'ed-prompt' + (v.roundDone ? ' ok' : '')}>
+          <div key={`${v.hits}.${v.step}`} className={'ed-prompt' + (v.roundDone ? ' ok' : v.step > 0 ? ' next' : '')}>
             <span className="ed-prompt-n">{v.roundDone ? '✓' : `${v.hits + 1}.`}</span>
             {v.prompt}
           </div>
