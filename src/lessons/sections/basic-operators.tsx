@@ -703,11 +703,18 @@ export const basicOperators: Section = {
         base: { name: 'math.test.ts' },
         rounds: [
           {
-            prompt: 'Duplicate the "[1, 2, 3]," line.',
             setup: {
               text: ['const cases = [', '  [1, 2, 3],', '  [2, 2, 4],', '];'],
               cursor: { line: 3, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the "[1, 2, 3]," line.',
+                goal: yanked('  [1, 2, 3],\n', 'line'),
+                mark: { start: { line: 1, col: 0 }, end: { line: 1, col: 11 } },
+              },
+            ],
+            prompt: 'Put the copy below it.',
             goal: { text: ['const cases = [', '  [1, 2, 3],', '  [1, 2, 3],', '  [2, 2, 4],', '];'] },
             solution: 'kkyyp',
           },
@@ -845,7 +852,6 @@ export const basicOperators: Section = {
             solution: "jf'Yj$p",
           },
           {
-            prompt: 'Copy "builtin.find_files)" to the end of the <C-p> line.',
             setup: {
               name: 'telescope.lua',
               text: [
@@ -856,6 +862,14 @@ export const basicOperators: Section = {
               ],
               cursor: { line: 3, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank "builtin.find_files)" from the <leader>ff line.',
+                goal: yanked('builtin.find_files)'),
+                mark: { start: { line: 1, col: 23 }, end: { line: 1, col: 41 } },
+              },
+            ],
+            prompt: 'Put it at the end of the <C-p> line.',
             goal: {
               text: [
                 "local builtin = require('telescope.builtin')",
@@ -898,12 +912,19 @@ export const basicOperators: Section = {
             solution: 'jfaYj$p',
           },
           {
-            prompt: 'Copy the docs URL to the end of the "[manual]: " line.',
             setup: {
               name: 'links.md',
               text: ['Read the [docs] or the [manual].', '', '[docs]: https://neovim.io/doc/user/', '[manual]: '],
               cursor: { line: 0, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the docs URL.',
+                goal: yanked('https://neovim.io/doc/user/'),
+                mark: { start: { line: 2, col: 8 }, end: { line: 2, col: 34 } },
+              },
+            ],
+            prompt: 'Put it at the end of the "[manual]: " line.',
             goal: {
               text: [
                 'Read the [docs] or the [manual].',
@@ -1193,12 +1214,19 @@ export const basicOperators: Section = {
             solution: 'jjfvd3w',
           },
           {
-            prompt: 'Copy the last two lines and put the copy below them.',
             setup: {
               name: 'options.lua',
               text: ['vim.opt.number = true', '-- Indent with two spaces', 'vim.opt.shiftwidth = 2'],
               cursor: { line: 0, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the last two lines.',
+                goal: yanked('-- Indent with two spaces\nvim.opt.shiftwidth = 2\n', 'line'),
+                mark: { start: { line: 1, col: 0 }, end: { line: 2, col: 21 } },
+              },
+            ],
+            prompt: 'Put the copy below them.',
             goal: {
               text: [
                 'vim.opt.number = true',

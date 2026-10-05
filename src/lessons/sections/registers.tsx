@@ -1,5 +1,6 @@
 import { Code, Mono } from '../../components/Code';
 import { BeforeAfter } from '../../components/diagrams';
+import { yanked } from '../runtime';
 import type { Section } from '../types';
 
 export const registers: Section = {
@@ -192,7 +193,6 @@ export const registers: Section = {
         base: { name: 'config.ts' },
         rounds: [
           {
-            prompt: 'Replace the "retries: 1" line with a copy of "retries: 5".',
             setup: {
               text: [
                 'const prod = {',
@@ -206,6 +206,14 @@ export const registers: Section = {
               ],
               cursor: { line: 2, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the "retries: 5" line.',
+                goal: yanked('  retries: 5,\n', 'line'),
+                mark: { start: { line: 2, col: 0 }, end: { line: 2, col: 12 } },
+              },
+            ],
+            prompt: 'Delete the "retries: 1" line, then put the yank where it was.',
             goal: {
               text: [
                 'const prod = {',
@@ -221,7 +229,6 @@ export const registers: Section = {
             solution: 'yy4jdd"0P',
           },
           {
-            prompt: 'Replace the TODO with a copy of the first expect line.',
             setup: {
               name: 'math.test.ts',
               text: [
@@ -234,6 +241,14 @@ export const registers: Section = {
               ],
               cursor: { line: 1, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the first expect line.',
+                goal: yanked('  expect(add(1, 2)).toBe(3);\n', 'line'),
+                mark: { start: { line: 1, col: 0 }, end: { line: 1, col: 27 } },
+              },
+            ],
+            prompt: 'Delete the TODO line, then put the yank where it was.',
             goal: {
               text: [
                 "it('adds', () => {",
@@ -247,17 +262,23 @@ export const registers: Section = {
             solution: 'yy3jdd"0P',
           },
           {
-            prompt: 'Change "^18.3.1" to "^19.1.0", copied from the line above.',
             setup: {
               name: 'package.json',
               text: ['{', '  "dependencies": {', '    "react": "^19.1.0",', '    "react-dom": "^18.3.1"', '  }', '}'],
               cursor: { line: 2, col: 4 },
             },
+            steps: [
+              {
+                prompt: 'Yank "^19.1.0" from inside its quotes.',
+                goal: yanked('^19.1.0'),
+                mark: { start: { line: 2, col: 14 }, end: { line: 2, col: 20 } },
+              },
+            ],
+            prompt: 'Delete "^18.3.1" and put the yank in its place.',
             goal: { text: ['{', '  "dependencies": {', '    "react": "^19.1.0",', '    "react-dom": "^19.1.0"', '  }', '}'] },
             solution: 'f^yi"jf^di""0P',
           },
           {
-            prompt: 'Replace "vim.keymap.set" with "map" on the last two lines. The cursor is on "map".',
             setup: {
               name: 'keymaps.lua',
               text: [
@@ -268,6 +289,14 @@ export const registers: Section = {
               ],
               cursor: { line: 1, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank "map". The cursor is on it.',
+                goal: yanked('map'),
+                mark: { start: { line: 1, col: 0 }, end: { line: 1, col: 2 } },
+              },
+            ],
+            prompt: 'Replace "vim.keymap.set" with it on the last two lines.',
             goal: {
               text: [
                 'local map = vim.keymap.set',
@@ -279,7 +308,6 @@ export const registers: Section = {
             solution: 'yiwjvt(pj0vt("0p',
           },
           {
-            prompt: 'Replace the last two lines with one copy of the first line.',
             setup: {
               name: 'index.ts',
               text: [
@@ -290,6 +318,14 @@ export const registers: Section = {
               ],
               cursor: { line: 0, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the first line.',
+                goal: yanked("export * from './client';\n", 'line'),
+                mark: { start: { line: 0, col: 0 }, end: { line: 0, col: 24 } },
+              },
+            ],
+            prompt: 'Delete the last two lines, then put the yank in their place.',
             goal: { text: ["export * from './client';", '', "export * from './client';"] },
             solution: 'yyGdk"0p',
           },
@@ -727,7 +763,6 @@ export const registers: Section = {
         base: { name: 'handler.go' },
         rounds: [
           {
-            prompt: 'Replace the log.Println and os.Exit lines with a copy of the return line.',
             setup: {
               text: [
                 'if err != nil {',
@@ -740,6 +775,14 @@ export const registers: Section = {
               ],
               cursor: { line: 1, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the return line.',
+                goal: yanked('\treturn fmt.Errorf("load config: %w", err)\n', 'line'),
+                mark: { start: { line: 1, col: 0 }, end: { line: 1, col: 41 } },
+              },
+            ],
+            prompt: 'Replace the log.Println and os.Exit lines with it.',
             goal: {
               text: [
                 'if err != nil {',
@@ -753,7 +796,6 @@ export const registers: Section = {
             solution: 'yy3j"_2ddP',
           },
           {
-            prompt: 'Replace "ctx2" with "ctx", copied from the line above. The cursor is on it.',
             setup: {
               text: [
                 '// Get loads one user by id.',
@@ -763,6 +805,14 @@ export const registers: Section = {
               ],
               cursor: { line: 1, col: 20 },
             },
+            steps: [
+              {
+                prompt: 'Yank "ctx". The cursor is on it.',
+                goal: yanked('ctx'),
+                mark: { start: { line: 1, col: 20 }, end: { line: 1, col: 22 } },
+              },
+            ],
+            prompt: 'Replace "ctx2" with it.',
             goal: {
               text: [
                 '// Get loads one user by id.',
@@ -774,7 +824,6 @@ export const registers: Section = {
             solution: 'yiwjfc"_diwP',
           },
           {
-            prompt: 'Replace "tmp" with "start_date". The cursor is on start_date.',
             setup: {
               name: 'dates.py',
               text: [
@@ -785,6 +834,14 @@ export const registers: Section = {
               ],
               cursor: { line: 0, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank "start_date". The cursor is on it.',
+                goal: yanked('start_date'),
+                mark: { start: { line: 0, col: 0 }, end: { line: 0, col: 9 } },
+              },
+            ],
+            prompt: 'Replace "tmp" with it.',
             goal: {
               text: [
                 'start_date = parse(args.start)',
@@ -796,7 +853,6 @@ export const registers: Section = {
             solution: 'yiw2jf(l"_dt,P',
           },
           {
-            prompt: 'Replace the "Lorem ipsum" paragraph with a copy of the line the cursor is on.',
             setup: {
               name: 'README.md',
               text: [
@@ -809,6 +865,14 @@ export const registers: Section = {
               ],
               cursor: { line: 2, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the line the cursor is on.',
+                goal: yanked('A browser Vim tutor built from short lessons.\n', 'line'),
+                mark: { start: { line: 2, col: 0 }, end: { line: 2, col: 44 } },
+              },
+            ],
+            prompt: 'Replace the "Lorem ipsum" paragraph with it.',
             goal: {
               text: ['# vimchi', '', 'A browser Vim tutor built from short lessons.', '', 'A browser Vim tutor built from short lessons.'],
             },
