@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { SECTIONS } from '..';
 import { Session, createVim, goalMet, marksOf, mergeSetup, solutionKeys, stepsOf } from '../runtime';
 import type { Lesson } from '../types';
+import { diffGoal } from '../goalDiff';
 
 const only = process.env.LESSON_SECTION;
 
@@ -53,6 +54,34 @@ describe('rounds start where a person would be', () => {
     for (const k of ['vt,d', '<C-v>3j4ld', 'cwuser<Esc>', 'gUt=', 'd/Then<CR>', 'gsa3e)', 'x', 'RDONE<Esc>']) expect(startsAtCursor(k), k).toBe(true);
     for (const k of ['wcwuser<Esc>', 'f.vf)d', 'ciw', 'vi(d', 'dd', 'yj', 'gsaiw"', 'Vjd']) expect(startsAtCursor(k), k).toBe(false);
   });
+});
+
+describe('cc and C rounds: the marks strike what the command clears', () => {
+  // The inline goal marks show the smallest edit. When that keeps part of the line (a shared ";" or
+  // ") {"), they point at a smaller edit than the lesson's, and a learner reads them as the intent.
+  for (const [, lesson] of all) {
+    const c = lesson.challenge;
+    if (c.kind !== 'rounds' || !['change-lines', 'change-in-place'].includes(lesson.id)) continue;
+    c.rounds.forEach((r, i) => {
+      const keys = solutionKeys(r.solution);
+      const vim = createVim(mergeSetup(c.base, r.setup));
+      let at = -1;
+      for (let k = 0; k < keys.length; k++) {
+        if (vim.mode === 'normal' && !vim.pending.length && (keys[k] === 'C' || (keys[k] === 'c' && keys[k + 1] === 'c'))) { at = k; break; }
+        vim.feed(keys[k]);
+      }
+      if (at < 0) return;
+      it(`${lesson.id} round ${i + 1}: ${r.solution}`, () => {
+        const goal = Array.isArray(r.goal.text) ? r.goal.text : r.goal.text!.split('\n');
+        const view = diffGoal(vim.buf.lines, goal, { force: true });
+        expect(view.mode).toBe('inline');
+        const line = vim.cursor.line, text = vim.buf.line(line);
+        const from = keys[at] === 'C' ? vim.cursor.col : text.search(/\S|$/);
+        const spans = view.mode === 'inline' ? view.ann.del.get(line) ?? [] : [];
+        expect(spans, `struck spans on ${JSON.stringify(text)}`).toEqual([[from, text.length - 1]]);
+      });
+    });
+  }
 });
 
 describe.each(all)('%s / %s', (_section, lesson) => {
