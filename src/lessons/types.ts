@@ -141,9 +141,22 @@ export type Round = {
   prompt?: string;
   setup?: Setup;
   goal: Goal;
-  /** Reference keys in Vim notation, e.g. "d2w" or ":%s/a/b/g<CR>". */
+  /** Text to point at for the final step (what to yank or select), outlined in the editor. */
+  mark?: Span;
+  /**
+   * Earlier steps of the same round, in order, before `prompt`/`goal`. Each is met in the same
+   * editor (buffer, mode and selection carry on), and the next prompt and marks appear only
+   * then: "yank this" → "now put it there", "select this" → "actually, include that too".
+   */
+  steps?: Step[];
+  /** Reference keys in Vim notation, e.g. "d2w" or ":%s/a/b/g<CR>". Covers every step. */
   solution: string;
 };
+
+export type Step = { prompt: string; goal: Goal; mark?: Span };
+
+/** Inclusive span of buffer text. */
+export type Span = { start: Pos; end: Pos };
 
 export type Goal = {
   /** Buffer text must equal this (current buffer). */

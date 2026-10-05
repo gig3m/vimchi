@@ -18,6 +18,8 @@ export type Overlay = {
   brokenLines: Set<number>;
   /** Inline goal annotations (what to add and remove). */
   ann?: Annotations | null;
+  /** Text the step points at (what to yank or select): underlined in cyan. */
+  span?: { start: Pos; end: Pos } | null;
 };
 
 type Props = {
@@ -223,12 +225,15 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
         if (ann && chars[c] !== undefined && (ann.delLines.has(l) || ann.del.get(l)?.some(([a, b]) => c >= a && c <= b))) {
           bg = 'rgba(255,85,85,.2)'; color = C.red; deco = 'line-through';
         }
+        if (overlay.span && chars[c] !== undefined && cmpPos(overlay.span.start, here) <= 0 && cmpPos(here, overlay.span.end) <= 0) {
+          bg = 'rgba(139,233,253,.14)'; shadow = SPAN_LINE;
+        }
         if (overlay.target && overlay.target.line === l && overlay.target.col === c) {
           bg = 'rgba(80,250,123,.14)'; shadow = 'inset 0 0 0 2px #50fa7b'; color = C.green;
         }
       }
       // The selection wins over goal marks: in a lesson the text you select is usually the struck text.
-      if (visualRange && inVisual(visualRange, here, t.length)) { bg = VISUAL_BG; shadow = 'none'; }
+      if (visualRange && inVisual(visualRange, here, t.length)) { bg = VISUAL_BG; if (shadow !== SPAN_LINE) shadow = 'none'; }
       const isCursor = current && cursorVisible && cur.line === l && cur.col === c && vim.mode !== 'cmdline' && vim.mode !== 'confirm';
       let cls = 'cell';
       // In insert mode the caret is its own element, placed before any ghost text at this column.
@@ -291,6 +296,8 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
 
 /** Visual selection: brighter than Dracula's #44475a, which vanishes on the cursorline. */
 const VISUAL_BG = 'rgba(189,147,249,.42)';
+/** Underline for a step's pointed-at text; it stays under a selection so the two can be compared. */
+const SPAN_LINE = 'inset 0 -2px 0 #8be9fd';
 
 function inVisual(r: ReturnType<Vim['visualRange']>, p: Pos, lineLen: number) {
   if (p.line < r.start.line || p.line > r.end.line) return false;

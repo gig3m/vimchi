@@ -399,10 +399,10 @@ export const insertLikeAPro: Section = {
             prompt: 'Change the "=" in "user.role = ADMIN" to "===".',
             setup: {
               text: ['function authorize(user: User) {', '  if (user.role = ADMIN) grant(user);', '  else deny(user);', '}'],
-              cursor: { line: 1, col: 16 },
+              cursor: { line: 1, col: 2 },
             },
             goal: { text: ['function authorize(user: User) {', '  if (user.role === ADMIN) grant(user);', '  else deny(user);', '}'] },
-            solution: 'cl===<Esc>',
+            solution: 'f=cl===<Esc>',
           },
           {
             prompt: 'Change "&" to "and".',
@@ -529,10 +529,10 @@ export const insertLikeAPro: Section = {
             setup: {
               name: 'notes.ts',
               text: ['// TODO', 'export const retries = 3;', 'export const timeoutMs = 5_000;'],
-              cursor: { line: 0, col: 3 },
+              cursor: { line: 0, col: 0 },
             },
             goal: { text: ['// DONE', 'export const retries = 3;', 'export const timeoutMs = 5_000;'] },
-            solution: 'RDONE<Esc>',
+            solution: 'wRDONE<Esc>',
           },
           {
             prompt: 'Change "1.4" and "1.7" to "2.0".',
