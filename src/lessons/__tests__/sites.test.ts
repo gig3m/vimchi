@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { diffGoal } from '../goalDiff';
-import { applySites, solutionSites } from '../sites';
+import { applySites, focusTags, solutionSites } from '../sites';
 import type { Round, Setup } from '../types';
 
 const sites = (text: string[], solution: string, goal: string[], cursor = { line: 0, col: 0 }) => {
@@ -68,5 +68,25 @@ describe('applySites while typing', () => {
       expect(a.ins.get(0), cur).toEqual([{ col: 8, text: 'user', done, quiet: false }]);
       expect(a.del.has(0), cur).toBe(struck);
     }
+  });
+});
+
+describe('focusTags', () => {
+  const inline = (cur: string[], goal: string[]) => {
+    const v = diffGoal(cur, goal, { force: true });
+    if (v.mode !== 'inline') throw new Error(v.mode);
+    return v.ann;
+  };
+  it('a diff tag being typed shows the whole text with the typed part counted', () => {
+    // After `o` and typing "fo" of "foo();" on the new line.
+    const cur = ['a', '  fo', 'b'];
+    const a = focusTags(inline(cur, ['a', '  foo();', 'b']), { line: 1, col: 4 }, { line: 1, col: 2 }, cur);
+    expect(a.ins.get(1)).toEqual([{ col: 2, text: 'foo();', done: 2 }]);
+  });
+  it('only the tag nearest the cursor stays; the rest are quiet', () => {
+    const cur = ['x = 1', 'y = 2', 'z = 3'];
+    const a = focusTags(inline(cur, ['x = 1;', 'y = 2', 'z = 3;']), { line: 2, col: 0 }, null, cur);
+    expect(a.ins.get(0)?.[0].quiet).toBe(true);
+    expect(a.ins.get(2)?.[0].quiet).toBeFalsy();
   });
 });

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useReducer, useRef, useState, type KeyboardEvent } from 'react';
 import { diffGoal } from '../lessons/goalDiff';
-import { applySites, solutionSites } from '../lessons/sites';
+import { applySites, focusTags, solutionSites } from '../lessons/sites';
 import { Session } from '../lessons/runtime';
 import type { Lesson } from '../lessons/types';
 import { fmtClock } from '../state/format';
@@ -260,7 +260,9 @@ export function Practice(p: Props) {
     return r && s.challenge.kind === 'rounds' ? solutionSites(s.setupFor(s.roundIdx), r) : [];
   }, [s, s.roundIdx]);
   const diffAnn = goalView.mode === 'inline' && forced !== 'pane' && s.vim?.tab.windows().length === 1 ? goalView.ann : null;
-  const inline = diffAnn && s.vim ? applySites(diffAnn, s.vim.buf.lines, sites, v.step) : null;
+  const inline = diffAnn && s.vim
+    ? focusTags(applySites(diffAnn, s.vim.buf.lines, sites, v.step), s.vim.cursor, s.vim.insert?.start ?? null, s.vim.buf.lines)
+    : null;
   const showPane = !!v.goalText && !inline && goalView.mode !== 'none';
   const overlay = useMemo(() => ({
     ann: inline,

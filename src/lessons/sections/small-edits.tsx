@@ -135,8 +135,8 @@ export const smallEdits: Section = {
       ),
       practice: () => (
         <p>
-          Some names in this class are misspelled. Each <span className="hl-orange">orange</span> character has its correct
-          letter tagged above it. Move there, press <Code>r</Code>, then type the letter.
+          Some names in this class are misspelled. Each <span className="hl-orange">orange</span> character is wrong; the
+          nearest one shows its correct letter above it. Move there, press <Code>r</Code>, then type the letter.
         </p>
       ),
       aside: {
