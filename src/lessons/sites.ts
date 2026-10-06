@@ -91,26 +91,43 @@ export function solutionSites(setup: Setup, round: Round): Site[] {
   return sites;
 }
 
+/** The states a line passes through while a site is being done: untouched, then cut and typed n characters. */
+function stages(site: Site): { text: string; done: number; cut: boolean }[] {
+  const out = [{ text: site.before, done: 0, cut: false }];
+  const head = site.before.slice(0, site.col), tail = site.before.slice(site.del ? site.del[1] + 1 : site.col);
+  for (let n = 0; n < site.ins.length; n++) {
+    const text = head + site.ins.slice(0, n) + tail;
+    if (text !== site.before) out.push({ text, done: n, cut: true });
+  }
+  return out;
+}
+
 /**
  * Redraw the diff's marks for lines that a pending site describes: its exact span and typed text,
- * and its repeat number. Lines with no site (or edited off-script) keep the diff's marks.
+ * and its repeat number. Part way through typing, the tag keeps the whole text and counts what's
+ * typed. Lines with no site (or edited off-script) keep the diff's marks.
  */
 export function applySites(ann: Annotations, cur: readonly string[], sites: readonly Site[], step: number): Annotations {
   const out: Annotations = { ...ann, del: new Map(ann.del), ins: new Map(ann.ins), num: new Map(ann.num) };
   const claimed = new Set<number>();
+  let tagged = false;
   for (const site of sites) {
     if (site.step !== step) continue;
-    let best = -1;
+    const forms = stages(site);
+    let best = -1, form = forms[0];
     cur.forEach((t, i) => {
-      if (t !== site.before || claimed.has(i) || !(ann.del.has(i) || ann.ins.has(i))) return;
-      if (best < 0 || Math.abs(i - site.line) < Math.abs(best - site.line)) best = i;
+      if (claimed.has(i) || !(ann.del.has(i) || ann.ins.has(i))) return;
+      const f = forms.find(x => x.text === t);
+      if (!f) return;
+      if (best < 0 || Math.abs(i - site.line) < Math.abs(best - site.line)) { best = i; form = f; }
     });
     if (best < 0) continue;
     claimed.add(best);
-    out.del.set(best, site.del ? [site.del] : []);
-    out.ins.set(best, site.ins ? [{ col: site.col, text: site.ins }] : []);
-    if (!site.del) out.del.delete(best);
-    if (!site.ins) out.ins.delete(best);
+    out.del.delete(best);
+    out.ins.delete(best);
+    if (site.del && !form.cut) out.del.set(best, [site.del]);
+    if (site.ins) out.ins.set(best, [{ col: site.col, text: site.ins, done: form.done, quiet: tagged }]);
+    if (site.ins) tagged = true;
     if (site.num) out.num.set(best, site.num);
   }
   return out;

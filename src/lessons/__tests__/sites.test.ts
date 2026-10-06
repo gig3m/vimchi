@@ -46,6 +46,27 @@ describe('applySites', () => {
     expect(a.del.get(0)).toBeUndefined();
     expect(a.num.get(1)).toBe(2);
     expect(a.num.get(2)).toBe(3);
-    expect(a.ins.get(1)).toEqual([{ col: 3, text: ' ' }]);
+    expect(a.ins.get(1)).toEqual([{ col: 3, text: ' ', done: 0, quiet: false }]);
+    expect(a.ins.get(2)?.[0].quiet).toBe(true); // only the edit in hand carries a tag
+  });
+});
+
+describe('applySites while typing', () => {
+  it('keeps the whole text in the tag and counts what is typed', () => {
+    const before = ['  const usr = 1;', 'x'];
+    const goal = ['  const user = 1;', 'x'];
+    const r = sites(before, 'wwcwuser<Esc>', goal);
+    for (const [cur, done, struck] of [
+      ['  const usr = 1;', 0, true],
+      ['  const  = 1;', 0, false],
+      ['  const us = 1;', 2, false],
+    ] as const) {
+      const lines = [cur, 'x'];
+      const v = diffGoal(lines, goal, { force: true });
+      if (v.mode !== 'inline') throw new Error(v.mode);
+      const a = applySites(v.ann, lines, r, 0);
+      expect(a.ins.get(0), cur).toEqual([{ col: 8, text: 'user', done, quiet: false }]);
+      expect(a.del.has(0), cur).toBe(struck);
+    }
   });
 });
