@@ -1,4 +1,4 @@
-import { Code } from '../../components/Code';
+import { Code, Mono } from '../../components/Code';
 import { BeforeAfter } from '../../components/diagrams';
 import { yanked } from '../runtime';
 import type { Section } from '../types';
@@ -1060,7 +1060,8 @@ export const basicOperators: Section = {
       ),
       practice: total => (
         <p>
-          Make the first edit, then repeat it with <Code>.</Code> instead of typing it again. {total} rounds.
+          Make the change once at <Mono>1</Mono>, then move to each numbered spot and press <Code>.</Code>. Search
+          (<Code>n</Code>) or <Code>j</Code> gets you there; <Code>.</Code> does the rest. {total} rounds.
         </p>
       ),
       aside: {
@@ -1078,41 +1079,72 @@ export const basicOperators: Section = {
         base: { name: 'legacy.js' },
         rounds: [
           {
-            prompt: 'Add the missing semicolons.',
-            setup: { text: ["const a = require('a')", "const b = require('b')", "const c = require('c')"], cursor: { line: 0, col: 0 } },
-            goal: { text: ["const a = require('a');", "const b = require('b');", "const c = require('c');"] },
-            solution: 'A;<Esc>j.j.',
-          },
-          {
-            prompt: 'Change each var to let.',
-            setup: { text: ['var count = 0;', 'var total = 0;', 'var label = "";'], cursor: { line: 0, col: 0 } },
-            goal: { text: ['let count = 0;', 'let total = 0;', 'let label = "";'] },
-            solution: 'cwlet<Esc>j0.j0.',
-          },
-          {
-            prompt: 'Delete every console.log line.',
+            prompt: 'Add " ?? 0" before the ";" on each opts line.',
             setup: {
-              text: ['function save(doc) {', "  console.log('saving');", '  db.put(doc);', "  console.log('saved');", '}'],
-              cursor: { line: 1, col: 2 },
-            },
-            goal: { text: ['function save(doc) {', '  db.put(doc);', '}'] },
-            solution: 'ddj.',
-          },
-          {
-            prompt: "Delete \"'n', \" from each line.",
-            setup: {
-              name: 'keymaps.lua',
-              text: ["map('<leader>ff', 'n', find_files)", "map('<leader>fg', 'n', live_grep)", "map('<leader>fb', 'n', buffers)"],
+              name: 'size.ts',
+              text: ['function size(opts) {', '  const w = opts.width;', '  const h = opts.height;', '  const d = opts.depth;', '  return w * h * d;', '}'],
               cursor: { line: 0, col: 0 },
             },
-            goal: { text: ["map('<leader>ff', find_files)", "map('<leader>fg', live_grep)", "map('<leader>fb', buffers)"] },
-            solution: 'f,ldf,j.j.',
+            goal: {
+              text: ['function size(opts) {', '  const w = opts.width ?? 0;', '  const h = opts.height ?? 0;', '  const d = opts.depth ?? 0;', '  return w * h * d;', '}'],
+            },
+            solution: 'j$i ?? 0<Esc>j$.j$.',
           },
           {
-            prompt: 'Change each "[x]" to "[ ]".',
-            setup: { name: 'TODO.md', text: ['- [x] Write tests', '- [x] Fix the parser', '- [x] Tag a release'], cursor: { line: 2, col: 0 } },
-            goal: { text: ['- [ ] Write tests', '- [ ] Fix the parser', '- [ ] Tag a release'] },
-            solution: 'fxr k.k.',
+            prompt: 'Change every "var" to "let".',
+            setup: {
+              text: ['var count = 0;', 'for (var i = 0; i < n; i++) {', '  var x = xs[i];', '  count += x;', '}'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['let count = 0;', 'for (let i = 0; i < n; i++) {', '  let x = xs[i];', '  count += x;', '}'] },
+            solution: '*cwlet<Esc>n.n.',
+          },
+          {
+            prompt: 'Comment out the three debug lines with "// ".',
+            setup: {
+              text: ['function run() {', "  debug('start');", '  step();', "  debug('mid');", '  finish();', "  debug('end');", '}'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: ['function run() {', "  // debug('start');", '  step();', "  // debug('mid');", '  finish();', "  // debug('end');", '}'],
+            },
+            solution: 'jI// <Esc>jj.jj.',
+          },
+          {
+            prompt: 'Change every "fetch" call to "load".',
+            setup: {
+              text: [
+                'async function boot() {',
+                "  const user = fetch('/user');",
+                "  log('user');",
+                "  const team = fetch('/team');",
+                "  log('team');",
+                "  const plan = fetch('/plan');",
+                '}',
+              ],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: {
+              text: [
+                'async function boot() {',
+                "  const user = load('/user');",
+                "  log('user');",
+                "  const team = load('/team');",
+                "  log('team');",
+                "  const plan = load('/plan');",
+                '}',
+              ],
+            },
+            solution: '/fetch<CR>cwload<Esc>n.n.',
+          },
+          {
+            prompt: 'Delete ", true" from each render call.',
+            setup: {
+              text: ['render(header, true);', 'layout();', 'render(body, true);', 'paint();', 'render(footer, true);'],
+              cursor: { line: 0, col: 0 },
+            },
+            goal: { text: ['render(header);', 'layout();', 'render(body);', 'paint();', 'render(footer);'] },
+            solution: '/, true<CR>dt)n.n.',
           },
         ],
       },
