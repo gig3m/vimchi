@@ -7,23 +7,25 @@ import { shorterEdit, shorterSegment } from '../shorter';
 import { taughtBy } from '../vocab';
 
 const taught = taughtBy('repeat-last-change');
+// The live search stops at 40 ms; under a loaded test run that's too tight to be deterministic.
+const SLOW = 2000;
 
 describe('shorterEdit', () => {
   it('f)lD on the last character was $x', () => {
     const v = createVim({ text: ['run(a);', 'next();'], name: 'a.ts' });
-    expect(shorterEdit(v, 'run(a)\nnext();', 4, taught)).toMatchObject({ keys: '$x', length: 2 });
+    expect(shorterEdit(v, 'run(a)\nnext();', 4, taught, 2, SLOW)).toMatchObject({ keys: '$x', length: 2 });
   });
   it('a line below: jf;lD was j$x', () => {
     const v = createVim({ text: ['a b c', 'run(a);', 'next();'], name: 'a.ts' });
-    expect(shorterEdit(v, 'a b c\nrun(a)\nnext();', 5, taught)?.keys).toBe('j$x');
+    expect(shorterEdit(v, 'a b c\nrun(a)\nnext();', 5, taught, 2, SLOW)?.keys).toBe('j$x');
   });
   it('nothing when the saving is under two keys', () => {
     const v = createVim({ text: ['run(a);', 'next();'], name: 'a.ts' });
-    expect(shorterEdit(v, 'run(a)\nnext();', 3, taught)).toBeNull();
+    expect(shorterEdit(v, 'run(a)\nnext();', 3, taught, 2, SLOW)).toBeNull();
   });
   it('only keys the learner has been taught', () => {
     const v = createVim({ text: ['run(a);', 'next();'], name: 'a.ts' });
-    expect(shorterEdit(v, 'run(a)\nnext();', 4, new Set(['f', 'l', 'D', 'x']))).toBeNull();
+    expect(shorterEdit(v, 'run(a)\nnext();', 4, new Set(['f', 'l', 'D', 'x']), 2, SLOW)).toBeNull();
   });
 });
 
@@ -31,43 +33,43 @@ describe('shorterEdit: typed text, visual, two motions', () => {
   it('xxxiuser<Esc> on usr was cwuser<Esc>', () => {
     const v = createVim({ text: ['let usr = 1;', 'x'], name: 'a.ts' });
     v.feedKeys('w');
-    expect(shorterEdit(v, 'let user = 1;\nx', 10, taught)?.keys).toBe('cwuser<Esc>');
+    expect(shorterEdit(v, 'let user = 1;\nx', 10, taught, 2, SLOW)?.keys).toBe('cwuser<Esc>');
   });
   it('$a;<Esc> after wandering was A;<Esc>', () => {
     const v = createVim({ text: ['run(a)', 'x'], name: 'a.ts' });
-    expect(shorterEdit(v, 'run(a);\nx', 8, taught)?.keys).toBe('A;<Esc>');
+    expect(shorterEdit(v, 'run(a);\nx', 8, taught, 2, SLOW)?.keys).toBe('A;<Esc>');
   });
   it('a new line typed after jjjj$ was o on the line', () => {
     const v = createVim({ text: ['a', 'b', 'c', 'd'], name: 'a.ts' });
-    expect(shorterEdit(v, 'a\nb\nc\nd\ne', 10, taught)?.keys).toBe('Goe<Esc>');
+    expect(shorterEdit(v, 'a\nb\nc\nd\ne', 10, taught, 2, SLOW)?.keys).toBe('Goe<Esc>');
   });
   it('two motions: from the top, the last word of the last line', () => {
     const v = createVim({ text: ['one two', 'three four', 'five six'], name: 'a.ts' });
-    expect(shorterEdit(v, 'one two\nthree four\nfive ', 8, taught)?.keys).toBe('GwD');
+    expect(shorterEdit(v, 'one two\nthree four\nfive ', 8, taught, 2, SLOW)?.keys).toBe('GwD');
   });
 });
 
 describe('shorterEdit: counts and multi-line changes', () => {
   it('xxxx was 4x', () => {
     const v = createVim({ text: ['abcdefg', 'x'], name: 'a.ts' });
-    expect(shorterEdit(v, 'efg\nx', 4, taught)?.keys).toBe('4x');
+    expect(shorterEdit(v, 'efg\nx', 4, taught, 2, SLOW)?.keys).toBe('4x');
   });
   it('dddddd was 3dd', () => {
     const v = createVim({ text: ['a', 'b', 'c', 'd'], name: 'a.ts' });
-    expect(shorterEdit(v, 'd', 6, taught)?.keys).toBe('3dd');
+    expect(shorterEdit(v, 'd', 6, taught, 2, SLOW)?.keys).toBe('3dd');
   });
   it('a counted motion first: jjjjjD was 5jD', () => {
     const v = createVim({ text: ['a', 'b', 'c', 'd', 'e', 'fgh', 'i'], name: 'a.ts' });
-    expect(shorterEdit(v, 'a\nb\nc\nd\ne\n\ni', 7, taught)?.keys).toMatch(/^(5jD|GkD)$/); // equal length
+    expect(shorterEdit(v, 'a\nb\nc\nd\ne\n\ni', 7, taught, 2, SLOW)?.keys).toMatch(/^(5jD|GkD)$/); // equal length
   });
   it('three lines replaced by one typed line was c2j', () => {
     const v = createVim({ text: ['x', 'one', 'two', 'three', 'y'], name: 'a.ts' });
     v.feedKeys('j');
-    expect(shorterEdit(v, 'x\nnew\ny', 14, taught)?.keys).toMatch(/^(c2jnew<Esc>|3ccnew<Esc>)$/);
+    expect(shorterEdit(v, 'x\nnew\ny', 14, taught, 2, SLOW)?.keys).toMatch(/^(c2jnew<Esc>|3ccnew<Esc>)$/);
   });
   it('no counts before counts are taught', () => {
     const v = createVim({ text: ['abcdefg', 'x'], name: 'a.ts' });
-    expect(shorterEdit(v, 'efg\nx', 4, new Set(['x']))).toBeNull();
+    expect(shorterEdit(v, 'efg\nx', 4, new Set(['x']), 2, SLOW)).toBeNull();
   });
 });
 
