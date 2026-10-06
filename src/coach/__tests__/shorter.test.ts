@@ -3,7 +3,7 @@ import { createVim, Session } from '../../lessons/runtime';
 import type { RoundsChallenge } from '../../lessons/types';
 import { parseKeys } from '../../vim/keys';
 import { segment } from '../segment';
-import { shorterEdit, shorterSegment } from '../shorter';
+import { searchVocab, shorterEdit, shorterSegment } from '../shorter';
 import { taughtBy } from '../vocab';
 
 const taught = taughtBy('repeat-last-change');
@@ -70,6 +70,54 @@ describe('shorterEdit: counts and multi-line changes', () => {
   it('no counts before counts are taught', () => {
     const v = createVim({ text: ['abcdefg', 'x'], name: 'a.ts' });
     expect(shorterEdit(v, 'efg\nx', 4, new Set(['x']), 2, SLOW)).toBeNull();
+  });
+});
+
+describe('shorterEdit: the rest of the coverage', () => {
+  const all = searchVocab(taughtBy('cmdline-word'), ['sub-basics']);
+  it('three motions: ggjj$ territory', () => {
+    const v = createVim({ text: ['a b c d', 'e f g h', 'i j k l', 'm n o p', 'q r s t'], name: 'a.ts' });
+    v.feedKeys('G$');
+    // From the end, delete "f" on line 2: needs three moves (gg, j, w) or a counted one.
+    expect(shorterEdit(v, 'a b c d\ne  g h\ni j k l\nm n o p\nq r s t', 12, all, 2, SLOW)?.length).toBeLessThanOrEqual(5);
+  });
+  it('case and indent operators: gUiw, >>', () => {
+    const v = createVim({ text: ['let x = 1;', 'y'], name: 'a.ts' });
+    v.feedKeys('w');
+    expect(shorterEdit(v, 'let X = 1;\ny', 6, all, 2, SLOW)?.keys).toMatch(/^(~|gUl|gUiw)$/);
+    const w = createVim({ text: ['a', 'b', 'c'], name: 'a.ts' });
+    const goal = createVim({ text: ['a', 'b', 'c'], name: 'a.ts' });
+    goal.feedKeys('j>>'); // indented however the editor's shiftwidth says
+    expect(shorterEdit(w, goal.buf.text(), 8, all, 2, SLOW)?.keys).toBe('j>>');
+  });
+  it('r for a one-character fix', () => {
+    const v = createVim({ text: ['cat', 'x'], name: 'a.ts' });
+    expect(shorterEdit(v, 'bat\nx', 6, all, 2, SLOW)?.keys).toBe('rb');
+  });
+  it('moving a line: ddp', () => {
+    const v = createVim({ text: ['two', 'one', 'three'], name: 'a.ts' });
+    expect(shorterEdit(v, 'one\ntwo\nthree', 9, all, 2, SLOW)?.keys).toBe('ddp');
+  });
+  it('swapping two characters: xp', () => {
+    const v = createVim({ text: ['teh', 'x'], name: 'a.ts' });
+    v.feedKeys('l');
+    expect(shorterEdit(v, 'the\nx', 6, all, 2, SLOW)?.keys).toBe('xp');
+  });
+  it('the same change on many lines: :%s', () => {
+    const lines = ['var a = 1;', 'var b = 2;', 'var c = 3;', 'var d = 4;', 'var e = 5;'];
+    const v = createVim({ text: lines, name: 'a.ts' });
+    expect(shorterEdit(v, lines.map(l => l.replace('var', 'let')).join('\n'), 40, all, 2, SLOW)?.keys).toMatch(/^:%s\/var\/let\/g?<CR>$/);
+  });
+  it('the same text at the start of each line: a block insert', () => {
+    const lines = ['alpha', 'beta', 'gamma', 'delta'];
+    const v = createVim({ text: lines, name: 'a.ts' });
+    expect(shorterEdit(v, lines.map(l => '- ' + l).join('\n'), 30, all, 2, SLOW)?.keys).toBe('<C-v>3jI- <Esc>');
+  });
+  it(':s is not suggested until a Substitute lesson is in the mix', () => {
+    const lines = ['var a = 1;', 'var b = 2;', 'var c = 3;', 'var d = 4;', 'var e = 5;'];
+    const v = createVim({ text: lines, name: 'a.ts' });
+    const r = shorterEdit(v, lines.map(l => l.replace('var', 'let')).join('\n'), 40, taughtBy('cmdline-word'), 2, SLOW);
+    expect(r?.keys ?? '').not.toMatch(/^:/);
   });
 });
 
