@@ -481,6 +481,15 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 .ann-tag-line { display: block; }
 .ann-typed { opacity: .4; }
 .ann-next { color: #fff; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; }
+/* Coaching tip at the cursor (Warm-up): a shorter way to the edit just made. */
+.coach-tip-at { position: relative; display: inline; pointer-events: none; }
+.coach-tip {
+  position: absolute; z-index: 4; bottom: calc(100% + 6px); left: 0; transform: translateX(-30%); white-space: nowrap;
+  padding: 1px 7px; font-size: 13px; line-height: 18px; color: var(--fg); background: #1e1f29;
+  border: 1.5px solid var(--yellow); border-radius: 5px; animation: tip-in .15s ease-out;
+}
+.coach-tip b { color: var(--yellow); font-weight: 800; margin-right: 4px; }
+@keyframes tip-in { from { opacity: 0; transform: translateX(-30%) translateY(3px); } }
 /* Order of a change and its repeats, in the gutter's right padding. */
 .ev-gutter { position: relative; }
 .ann-num {

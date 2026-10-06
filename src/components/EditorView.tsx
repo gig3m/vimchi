@@ -18,6 +18,8 @@ export type Overlay = {
   brokenLines: Set<number>;
   /** Inline goal annotations (what to add and remove). */
   ann?: Annotations | null;
+  /** A coaching tip, shown as a tag at the cursor. */
+  tip?: string | null;
   /** Text the step points at (what to yank or select): underlined in cyan. */
   span?: { start: Pos; end: Pos } | null;
 };
@@ -265,7 +267,8 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
         } else shadow = 'inset 0 0 0 1px ' + C.fg;
       }
       if (caretHere) cells.push(<span key={`caret${c}`} className={'ev-caret' + (focused ? '' : ' dim')} />);
-      if (hintRow) ghostsHere.forEach((tag, gi) => cells.push(<InsertHint key={`g${c}-${gi}`} text={tag.text} done={tag.done ?? 0} quiet={tag.quiet} />));
+      if (overlay?.tip && current && cur.line === l && cur.col === c) cells.push(<CoachTip key="tip" text={overlay.tip} />);
+      if (hintRow) ghostsHere.forEach((tag, gi) => cells.push(<InsertHint key={`g${c}-${gi}`} text={tag.text} done={tag.done ?? 0} quiet={tag.quiet || !!overlay?.tip} />));
       for (const d of decos) for (const h of d.hl ?? []) if (h.inline && h.line === l && h.start === c) cells.push(<span key={`i${c}-${cells.length}`} className="cell" style={{ color: h.color, background: h.bg }}>{h.text}</span>);
       cells.push(
         <span key={c} className={cls} style={{ color, background: bg, boxShadow: shadow, textDecoration: deco }}
@@ -279,7 +282,7 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
     for (const tag of overlay?.ann?.ins.get(l) ?? []) {
       const span = overlay!.ann!.del.get(l)?.find(([a]) => a === tag.col);
       const at = span ? span[1] + 1 : tag.col;
-      if (at >= nCells && hintRow) cells.push(<InsertHint key={`ge${at}`} text={tag.text} done={tag.done ?? 0} quiet={tag.quiet} />);
+      if (at >= nCells && hintRow) cells.push(<InsertHint key={`ge${at}`} text={tag.text} done={tag.done ?? 0} quiet={tag.quiet || !!overlay?.tip} />);
     }
     const v = virt.get(l);
     rowsOut.push(
@@ -477,6 +480,16 @@ function Completion({ vim, rowPx }: { vim: Vim; rowPx: number }) {
  * and the marker follows the insertion point.
  */
 const show = (t: string) => t.replace(/ /g, '·');
+
+/** A shorter way to the edit just made, in a tag at the cursor: "$x · 2 keys, you used 4". */
+function CoachTip({ text }: { text: string }) {
+  const [keys, rest] = text.split(' · ');
+  return (
+    <span className="coach-tip-at" role="status">
+      <span className="coach-tip"><b>{keys}</b> {rest}</span>
+    </span>
+  );
+}
 
 function InsertHint({ text, done, quiet }: { text: string; done: number; quiet?: boolean }) {
   const tag = useRef<HTMLSpanElement>(null);

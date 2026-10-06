@@ -16,7 +16,8 @@ import { repsChallenge, repsRunId } from '../challenges/reps';
 import { type Critique, type Report, coach, coachSegment, nudgeText } from '../coach';
 import { closedSegments } from '../coach/live';
 import { segment } from '../coach/segment';
-import { coachable } from '../coach/vocab';
+import { WARM_UP, coachable, warmUpTaught } from '../coach/vocab';
+import { shorterSegment } from '../coach/shorter';
 import { type CoachFields, callouts as calloutsFor, coachEvents, calloutPrefix, getCoachProfile, keyMixOf, recordCoachRun, retired, useCoachProfile } from '../state/coach';
 
 type Props = {
@@ -114,8 +115,27 @@ export function Practice(p: Props) {
   /** After a key (or a round/run end), critique a segment that has closed: at most one hint per round. */
   const nudgedEnd = useRef(-1);
   const nudgedUnit = useRef(-1);
+  // Warm-up (trial): the hint is a tag at the cursor the moment an edit closes, kept until the next key.
+  const tipMode = lesson.id === WARM_UP;
+  const [tip, setTip] = useState<string | null>(null);
+  const liveTip = (closing: boolean) => {
+    const log = s.log();
+    const segs = segment(log);
+    for (const i of closedSegments(segs, log, closing).reverse()) {
+      if (segs[i].logEnd <= nudgedEnd.current) break;
+      if (segs[i].logEnd !== log.length - 1 && !closing) break; // only what just closed
+      const c = coachSegment(s, lesson.id, segs[i], segs, i);
+      const idiom = c && c.better[0].saves >= 2 && !retired(coachProfile, c.better[0].pattern) ? { keys: c.better[0].keys, length: c.keys - c.better[0].saves, used: c.keys } : null;
+      const found = shorterSegment(s, segs, i, warmUpTaught(p.picks, challenge));
+      const best = idiom && (!found || idiom.used - idiom.length >= found.used - found.length) ? idiom : found;
+      nudgedEnd.current = segs[i].logEnd;
+      if (best) setTip(`${best.keys} · ${best.length} ${best.length === 1 ? 'key' : 'keys'}, you used ${best.used}`);
+      return;
+    }
+  };
   const liveCoach = (closing: boolean) => {
     if (!p.coachLive || !coachable(lesson.id)) return;
+    if (tipMode) { liveTip(closing); return; }
     const log = s.log();
     const segs = segment(log);
     if (!segs.length) return;
@@ -213,9 +233,10 @@ export function Practice(p: Props) {
     const now = Date.now();
     const wasDone = s.done;
     clearTimeout(advanceT.current);
+    setTip(null);
     const flash = s.key(key, now);
     if (flash) p.onFlash(flash);
-    if (!s.vim?.message) liveCoach(s.roundDone || s.done); // a hint never competes with Vim's own message
+    if (tipMode || !s.vim?.message) liveCoach(s.roundDone || s.done); // a cmd-line hint never competes with Vim's own message
     // The round's closing hint stays through the advance (it names keys, not text); the 4 s timer clears it.
     if (s.roundDone) advanceT.current = window.setTimeout(() => { s.advance(); rerender(); }, 450);
     if (s.done && !wasDone) { complete(now); clearNudge(); }
@@ -266,9 +287,9 @@ export function Practice(p: Props) {
   const showPane = !!v.goalText && !inline && goalView.mode !== 'none';
   const overlay = useMemo(() => ({
     ann: inline,
-    target: v.target, marks: v.marks, brokenLines: v.brokenLines, span: v.span,
+    target: v.target, marks: v.marks, brokenLines: v.brokenLines, span: v.span, tip,
     markKind: s.challenge.kind === 'fix' ? 'fix' as const : s.challenge.kind === 'replace' ? 'replace' as const : null,
-  }), [inline, v.target, v.marks, v.brokenLines, v.span, s.challenge.kind]);
+  }), [inline, v.target, v.marks, v.brokenLines, v.span, tip, s.challenge.kind]);
 
   const elapsed = v.startAt ? (v.endAt ?? Date.now()) - v.startAt : 0;
   const status = { keys: v.keys, time: fmtClock(elapsed) };
