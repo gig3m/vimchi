@@ -5,8 +5,12 @@
 export type Annotations = {
   /** Characters to delete: line → [start, end] inclusive column spans. */
   del: Map<number, [number, number][]>;
-  /** Text to insert inside a line: line → ghost text shown before a column (after any deletion there). */
-  ins: Map<number, { col: number; text: string }[]>;
+  /**
+   * Text to insert inside a line: line → ghost text shown before a column (after any deletion
+   * there). `done` characters of it are already typed, starting at `col`. A `quiet` one shows only
+   * where (a `.` repeat brings its own text), so only the edit in hand carries a tag.
+   */
+  ins: Map<number, { col: number; text: string; done?: number; quiet?: boolean }[]>;
   /** Whole lines to insert after a line (-1 = before the first line). */
   newLines: Map<number, string[]>;
   /** Whole lines to delete. */

@@ -471,23 +471,36 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 
 /* ---------- inline goal annotations ---------- */
 .ev-text { position: relative; }
-.ann-del-blank {
-  display: inline-block; margin-left: 1ch; padding: 0 5px; font-size: 12.5px; line-height: 18px; pointer-events: none;
-  color: var(--red); background: rgba(255,85,85,.2); border: 1.5px solid var(--red); border-radius: 4px; text-decoration: line-through;
+.ann-tag {
+  display: inline-flex; flex-direction: column; padding: 0 5px; font-size: 12.5px; line-height: 18px; white-space: pre;
+  color: var(--green); background: #1e1f29; border: 1.5px solid var(--green); border-radius: 4px;
 }
-/* Text to type: a chip in the line's own flow, so it never covers a neighbouring row. */
-.ann-chip {
-  display: inline-block; margin: 0 1px; padding: 0 3px; border-radius: 4px; line-height: 1.25; pointer-events: none;
-  color: var(--green); background: rgba(80, 250, 123, .14); box-shadow: inset 0 0 0 1px rgba(80, 250, 123, .55);
-}
-/* A goal line to add: a row of its own between buffer rows. */
-.ev-row.ann-phantom { color: var(--green); background: rgba(80, 250, 123, .07); }
-.ev-row.ann-phantom .ev-gutter { color: var(--green); }
+.ann-newline { position: absolute; top: 100%; z-index: 2; display: flex; align-items: center; transform: translateY(-50%); pointer-events: none; }
+.ann-newline.above { top: 0; }
+.ann-dash { border-top: 1.5px dashed var(--green); }
+.ann-tag-line { display: block; }
+.ann-typed { opacity: .4; }
+.ann-next { color: #fff; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; }
 /* Order of a change and its repeats, in the gutter's right padding. */
 .ev-gutter { position: relative; }
 .ann-num {
   position: absolute; right: 2px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; border-radius: 50%;
   font-size: 10px; line-height: 14px; text-align: center; font-weight: 700; color: #1e1f29; background: var(--orange);
+}
+.ann-del-blank {
+  display: inline-block; margin-left: 1ch; padding: 0 5px; font-size: 12.5px; line-height: 18px; pointer-events: none;
+  color: var(--red); background: rgba(255,85,85,.2); border: 1.5px solid var(--red); border-radius: 4px; text-decoration: line-through;
+}
+/* Insert hint: a zero-width anchor between two cells, a dotted line marking the boundary,
+   and the text to type floating above it (below on the first row, which the pane would clip). */
+.ann-ins { position: relative; display: inline; pointer-events: none; --ann-lead: 5px; }
+.ann-ins-line { position: absolute; z-index: 1; left: -1px; top: calc(-1 * var(--ann-lead)); bottom: -3px; border-left: 2px dotted var(--green); }
+/* The tag overlaps the row above, so it must not read as buffer text there ("export as[e]c" looks
+   like a typo): a small filled pill, sitting low in the gap between the rows. */
+.ann-ins .ann-tag {
+  position: absolute; z-index: 2; bottom: calc(100% + var(--ann-lead)); left: 0; --ann-shift: 0px; transform: translateX(calc(-50% + var(--ann-shift)));
+  flex-direction: row; padding: 0 5px; font-size: 13px; line-height: 17px; font-weight: 600; color: var(--green); background: #1e1f29; border-color: var(--green); border-radius: 5px;
+  box-shadow: 0 0 0 2px var(--bg-editor);
 }
 
 
