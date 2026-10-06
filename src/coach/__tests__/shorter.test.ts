@@ -27,6 +27,46 @@ describe('shorterEdit', () => {
   });
 });
 
+describe('shorterEdit: typed text, visual, two motions', () => {
+  it('xxxiuser<Esc> on usr was cwuser<Esc>', () => {
+    const v = createVim({ text: ['let usr = 1;', 'x'], name: 'a.ts' });
+    v.feedKeys('w');
+    expect(shorterEdit(v, 'let user = 1;\nx', 10, taught)?.keys).toBe('cwuser<Esc>');
+  });
+  it('$a;<Esc> after wandering was A;<Esc>', () => {
+    const v = createVim({ text: ['run(a)', 'x'], name: 'a.ts' });
+    expect(shorterEdit(v, 'run(a);\nx', 8, taught)?.keys).toBe('A;<Esc>');
+  });
+  it('a new line typed after jjjj$ was o on the line', () => {
+    const v = createVim({ text: ['a', 'b', 'c', 'd'], name: 'a.ts' });
+    expect(shorterEdit(v, 'a\nb\nc\nd\ne', 10, taught)?.keys).toBe('Goe<Esc>');
+  });
+  it('two motions: from the top, the last word of the last line', () => {
+    const v = createVim({ text: ['one two', 'three four', 'five six'], name: 'a.ts' });
+    expect(shorterEdit(v, 'one two\nthree four\nfive ', 8, taught)?.keys).toBe('GwD');
+  });
+});
+
+describe('shorterSegment: visual and speed', () => {
+  const play = (text: string[], keys: string) => {
+    const c: RoundsChallenge = { kind: 'rounds', base: { name: 'a.ts' }, rounds: [{ setup: { text }, goal: { text: ['__'] }, solution: 'x' }] };
+    const s = new Session(c);
+    let t = 0;
+    for (const k of parseKeys(keys)) s.key(k, (t += 50));
+    const segs = segment(s.log());
+    return shorterSegment(s, segs, segs.length - 1, taught);
+  };
+  it('a visual selection deleted (vllllld) was a normal-mode delete', () => {
+    expect(play(['alpha beta gamma', 'x', 'y'], 'vllllld')?.keys).toBe('dw');
+  });
+  it('stays within its time budget on a long, varied line', () => {
+    const long = 'const result = await client.fetchAll({ page: 2, size: 50, sort: "name", order: "asc" });';
+    const t0 = performance.now();
+    play([long, long, long, long], 'wwwwwwwwwwwwwwwwwwwwD');
+    expect(performance.now() - t0).toBeLessThan(400);
+  });
+});
+
 describe('shorterSegment', () => {
   it('finds it from a live session log', () => {
     const c: RoundsChallenge = { kind: 'rounds', base: { name: 'a.ts' }, rounds: [{ setup: { text: ['run(a);', 'next();', 'end();'] }, goal: { text: ['__'] }, solution: 'x' }] };
