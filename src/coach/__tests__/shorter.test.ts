@@ -47,6 +47,30 @@ describe('shorterEdit: typed text, visual, two motions', () => {
   });
 });
 
+describe('shorterEdit: counts and multi-line changes', () => {
+  it('xxxx was 4x', () => {
+    const v = createVim({ text: ['abcdefg', 'x'], name: 'a.ts' });
+    expect(shorterEdit(v, 'efg\nx', 4, taught)?.keys).toBe('4x');
+  });
+  it('dddddd was 3dd', () => {
+    const v = createVim({ text: ['a', 'b', 'c', 'd'], name: 'a.ts' });
+    expect(shorterEdit(v, 'd', 6, taught)?.keys).toBe('3dd');
+  });
+  it('a counted motion first: jjjjjD was 5jD', () => {
+    const v = createVim({ text: ['a', 'b', 'c', 'd', 'e', 'fgh', 'i'], name: 'a.ts' });
+    expect(shorterEdit(v, 'a\nb\nc\nd\ne\n\ni', 7, taught)?.keys).toMatch(/^(5jD|GkD)$/); // equal length
+  });
+  it('three lines replaced by one typed line was c2j', () => {
+    const v = createVim({ text: ['x', 'one', 'two', 'three', 'y'], name: 'a.ts' });
+    v.feedKeys('j');
+    expect(shorterEdit(v, 'x\nnew\ny', 14, taught)?.keys).toMatch(/^(c2jnew<Esc>|3ccnew<Esc>)$/);
+  });
+  it('no counts before counts are taught', () => {
+    const v = createVim({ text: ['abcdefg', 'x'], name: 'a.ts' });
+    expect(shorterEdit(v, 'efg\nx', 4, new Set(['x']))).toBeNull();
+  });
+});
+
 describe('shorterSegment: visual and speed', () => {
   const play = (text: string[], keys: string) => {
     const c: RoundsChallenge = { kind: 'rounds', base: { name: 'a.ts' }, rounds: [{ setup: { text }, goal: { text: ['__'] }, solution: 'x' }] };
@@ -58,6 +82,9 @@ describe('shorterSegment: visual and speed', () => {
   };
   it('a visual selection deleted (vllllld) was a normal-mode delete', () => {
     expect(play(['alpha beta gamma', 'x', 'y'], 'vllllld')?.keys).toBe('dw');
+  });
+  it('a change typed again was .', () => {
+    expect(play(['run(a)', 'run(b)', 'z'], 'A;<Esc>jA;<Esc>')?.keys).toBe('j.');
   });
   it('stays within its time budget on a long, varied line', () => {
     const long = 'const result = await client.fetchAll({ page: 2, size: 50, sort: "name", order: "asc" });';
