@@ -17,7 +17,7 @@ import { type Critique, type Report, coach, coachSegment, nudgeText } from '../c
 import { closedSegments } from '../coach/live';
 import { segment } from '../coach/segment';
 import { WARM_UP, coachable, warmUpTaught } from '../coach/vocab';
-import { shorterSegment } from '../coach/shorter';
+import { searchVocab, shorterSegment } from '../coach/shorter';
 import { type CoachFields, callouts as calloutsFor, coachEvents, calloutPrefix, getCoachProfile, keyMixOf, recordCoachRun, retired, useCoachProfile } from '../state/coach';
 
 type Props = {
@@ -126,7 +126,7 @@ export function Practice(p: Props) {
       if (segs[i].logEnd !== log.length - 1 && !closing) break; // only what just closed
       const c = coachSegment(s, lesson.id, segs[i], segs, i);
       const idiom = c && c.better[0].saves >= 2 && !retired(coachProfile, c.better[0].pattern) ? { keys: c.better[0].keys, length: c.keys - c.better[0].saves, used: c.keys } : null;
-      const found = shorterSegment(s, segs, i, warmUpTaught(p.picks, challenge));
+      const found = shorterSegment(s, segs, i, searchVocab(warmUpTaught(p.picks, challenge), p.picks));
       const best = idiom && (!found || idiom.used - idiom.length >= found.used - found.length) ? idiom : found;
       nudgedEnd.current = segs[i].logEnd;
       if (best) setTip(`${best.keys} · ${best.length} ${best.length === 1 ? 'key' : 'keys'}, you used ${best.used}`);
