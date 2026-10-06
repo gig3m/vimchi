@@ -166,6 +166,16 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
 
   const rowsOut: ReactNode[] = [];
   const ts = Number(vim.options.tabstop) || 8;
+  // Replace drills: only the mark nearest the cursor shows its letter, like the one insert tag.
+  let nearMark: string | null = null;
+  if (overlay?.markKind === 'replace') {
+    let best = Infinity;
+    for (const k of overlay.marks.keys()) {
+      const [ml, mc] = k.split(':').map(Number);
+      const d = Math.abs(ml - cur.line) * 1000 + Math.abs(mc - cur.col);
+      if (d < best) { best = d; nearMark = k; }
+    }
+  }
   shown.forEach((l, rowIdx) => {
     pushVirt(l);
     // Insert hints float just above their row. The single pane has headroom for its first row;
@@ -220,7 +230,7 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
         const mk = overlay.marks.get(`${l}:${c}`);
         if (mk !== undefined) {
           if (overlay.markKind === 'fix') { bg = 'rgba(255,85,85,.22)'; color = C.red; deco = 'line-through'; }
-          else { bg = 'rgba(255,184,108,.22)'; color = C.orange; hint = mk; }
+          else { bg = 'rgba(255,184,108,.22)'; color = C.orange; hint = `${l}:${c}` === nearMark ? mk : ''; }
         }
         const ann = overlay.ann;
         if (ann && chars[c] !== undefined && (ann.delLines.has(l) || ann.del.get(l)?.some(([a, b]) => c >= a && c <= b))) {

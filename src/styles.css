@@ -160,8 +160,8 @@ button.nav-item:hover { background: var(--hover); }
 .cell { position: relative; border-radius: 2px; }
 .hint {
   position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, 2px); padding: 1px 4px;
-  font-size: 10px; line-height: 13px; font-weight: 700; background: var(--orange); color: var(--bg);
-  border-radius: 3px; pointer-events: none;
+  font-size: 13px; line-height: 17px; font-weight: 700; background: #1e1f29; color: var(--orange);
+  border: 1.5px solid var(--orange); border-radius: 5px; pointer-events: none; z-index: 2;
 }
 .status { display: flex; align-items: stretch; font-size: 12px; line-height: 26px; background: var(--bg-bar); }
 .status > span { padding: 0 12px; color: var(--muted); }

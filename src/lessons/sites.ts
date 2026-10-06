@@ -132,3 +132,27 @@ export function applySites(ann: Annotations, cur: readonly string[], sites: read
   }
   return out;
 }
+
+/**
+ * Finish the marks for display, whatever the challenge: while typing, the tag at the cursor shows
+ * the whole text with the typed part counted (the diff alone only knows what's left); then only the
+ * edit in hand, nearest the cursor, keeps its tag, so tags never stack on neighbouring rows.
+ */
+export function focusTags(ann: Annotations, cursor: { line: number; col: number }, insertStart: { line: number; col: number } | null, lines: readonly string[]): Annotations {
+  const out: Annotations = { ...ann, ins: new Map() };
+  for (const [l, tags] of ann.ins) {
+    out.ins.set(l, tags.map(t => {
+      if (t.done != null || !insertStart || insertStart.line !== l || l !== cursor.line || t.col !== cursor.col || insertStart.col > cursor.col) return { ...t };
+      const typed = lines[l].slice(insertStart.col, cursor.col);
+      return typed ? { col: insertStart.col, text: typed + t.text, done: typed.length } : { ...t };
+    }));
+  }
+  let keep: { l: number; i: number; d: number } | null = null;
+  for (const [l, tags] of out.ins) tags.forEach((t, i) => {
+    if (t.quiet) return;
+    const d = (t.done ? 0 : 1) * 1e6 + Math.abs(l - cursor.line) * 1000 + Math.abs(t.col - cursor.col);
+    if (!keep || d < keep.d) keep = { l, i, d };
+  });
+  for (const [l, tags] of out.ins) tags.forEach((t, i) => { if (!(keep && keep.l === l && keep.i === i)) t.quiet = true; });
+  return out;
+}
