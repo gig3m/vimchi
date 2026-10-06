@@ -3,8 +3,9 @@
 import { describe, expect, it } from 'vitest';
 import { SECTIONS } from '..';
 import { Session, createVim, goalMet, marksOf, mergeSetup, solutionKeys, stepsOf } from '../runtime';
-import type { Lesson, Setup } from '../types';
+import type { Lesson, RoundsChallenge, Setup } from '../types';
 import { diffGoal } from '../goalDiff';
+import { solutionSites } from '../sites';
 
 const only = process.env.LESSON_SECTION;
 
@@ -89,6 +90,21 @@ describe('yank then put is two steps', () => {
       it(`${lesson.id} round ${i + 1}: ${r.solution}`, () => expect.fail('yanks then puts in one step; give it a yank step'));
     });
   }
+});
+
+describe('the lesson key pays off', () => {
+  // A round should make its key worth reaching for. For `.`: a change of 3+ keys, made once and
+  // repeated at 2+ more places. Repeating "r<Space>" saves a key a line, which teaches nothing.
+  const lesson = all.find(([, l]) => l.id === 'repeat-last-change')![1];
+  const c = lesson.challenge as RoundsChallenge;
+  c.rounds.forEach((r, i) => {
+    it(`repeat-last-change round ${i + 1}: ${r.solution}`, () => {
+      const sites = solutionSites(mergeSetup(c.base, r.setup), r);
+      const repeated = sites.filter(s => s.num > 0);
+      expect(repeated.length, 'places the change is made').toBeGreaterThanOrEqual(3);
+      expect(repeated[0].keys, 'keys in the change . repeats').toBeGreaterThanOrEqual(3);
+    });
+  });
 });
 
 describe('cc and C rounds: the marks strike what the command clears', () => {

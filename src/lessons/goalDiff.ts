@@ -11,9 +11,11 @@ export type Annotations = {
   newLines: Map<number, string[]>;
   /** Whole lines to delete. */
   delLines: Set<number>;
+  /** Repeat order of the edit on a line (1, 2, 3… for a change and its `.` repeats), shown in the gutter. */
+  num: Map<number, number>;
 };
 
-const EMPTY = (): Annotations => ({ del: new Map(), ins: new Map(), newLines: new Map(), delLines: new Set() });
+const EMPTY = (): Annotations => ({ del: new Map(), ins: new Map(), newLines: new Map(), delLines: new Set(), num: new Map() });
 
 /** Longest common subsequence alignment of two line arrays. */
 export function align(a: readonly string[], b: readonly string[]): [number, number][] {

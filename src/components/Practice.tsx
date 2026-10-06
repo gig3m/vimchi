@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useReducer, useRef, useState, type KeyboardEvent } from 'react';
 import { diffGoal } from '../lessons/goalDiff';
+import { applySites, solutionSites } from '../lessons/sites';
 import { Session } from '../lessons/runtime';
 import type { Lesson } from '../lessons/types';
 import { fmtClock } from '../state/format';
@@ -253,7 +254,13 @@ export function Practice(p: Props) {
   // Show the goal inline where the diff is small; fall back to the pane below.
   const forced = s.challenge.kind === 'rounds' ? s.challenge.showGoal : s.challenge.kind === 'generated' ? 'inline' : undefined;
   const goalView = v.goalText && s.vim ? diffGoal(s.vim.buf.lines, v.goalText, { force: forced === 'inline' }) : { mode: 'none' as const };
-  const inline = goalView.mode === 'inline' && forced !== 'pane' && s.vim?.tab.windows().length === 1 ? goalView.ann : null;
+  // Rounds draw their marks from what the reference solution's commands did, where that's known.
+  const sites = useMemo(() => {
+    const r = s.round;
+    return r && s.challenge.kind === 'rounds' ? solutionSites(s.setupFor(s.roundIdx), r) : [];
+  }, [s, s.roundIdx]);
+  const diffAnn = goalView.mode === 'inline' && forced !== 'pane' && s.vim?.tab.windows().length === 1 ? goalView.ann : null;
+  const inline = diffAnn && s.vim ? applySites(diffAnn, s.vim.buf.lines, sites, v.step) : null;
   const showPane = !!v.goalText && !inline && goalView.mode !== 'none';
   const overlay = useMemo(() => ({
     ann: inline,
