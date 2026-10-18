@@ -39,6 +39,12 @@ type Props = {
   onNewWarmUp?: () => void;
   /** Warm-up only: the lesson ids the run drew from (coach vocabulary). */
   picks?: readonly string[];
+  /** Coach the run as this lesson (the Daily is coached as the ladder rung it draws from). */
+  coachAs?: string;
+  /** The file is fixed (the Daily): no new file, no seed link. */
+  fixedSeed?: boolean;
+  /** Called with the finished session, before onRun. */
+  onFinish?: (s: Session) => void;
 };
 
 type Finished = { result: ReturnType<Session['result']>; prevBestTime: number | null; prevBestScore: number | null; report?: Report; callouts?: Record<string, string> };
@@ -61,6 +67,7 @@ export function Practice(p: Props) {
   const challenge = inReps ? repsChallenge(lesson) : lesson.challenge;
   const runId = inReps ? repsRunId(lesson.id) : lesson.id;
   const wanted = inReps ? p.reps : p.seed;
+  const coachId = p.coachAs ?? lesson.id;
   const lessonRef = useRef(runId);
   if (lessonRef.current !== runId) {
     lessonRef.current = runId;
@@ -124,7 +131,7 @@ export function Practice(p: Props) {
     for (const i of closedSegments(segs, log, closing).reverse()) {
       if (segs[i].logEnd <= nudgedEnd.current) break;
       if (segs[i].logEnd !== log.length - 1 && !closing) break; // only what just closed
-      const c = coachSegment(s, lesson.id, segs[i], segs, i);
+      const c = coachSegment(s, coachId, segs[i], segs, i);
       const idiom = c && c.better[0].saves >= 2 && !retired(coachProfile, c.better[0].pattern) ? { keys: c.better[0].keys, length: c.keys - c.better[0].saves, used: c.keys } : null;
       const found = shorterSegment(s, segs, i, searchVocab(warmUpTaught(p.picks, challenge), p.picks));
       const best = idiom && (!found || idiom.used - idiom.length >= found.used - found.length) ? idiom : found;
@@ -134,7 +141,7 @@ export function Practice(p: Props) {
     }
   };
   const liveCoach = (closing: boolean) => {
-    if (!p.coachLive || !coachable(lesson.id)) return;
+    if (!p.coachLive || !coachable(coachId)) return;
     if (tipMode) { liveTip(closing); return; }
     const log = s.log();
     const segs = segment(log);
@@ -145,7 +152,7 @@ export function Practice(p: Props) {
     // Newest closed segment first; never a run still being typed, never one already critiqued.
     for (const i of closedSegments(segs, log, closing).reverse()) {
       if (segs[i].logStart < unitStart || segs[i].logEnd <= nudgedEnd.current) continue;
-      const c = coachSegment(s, lesson.id, segs[i], segs, i);
+      const c = coachSegment(s, coachId, segs[i], segs, i);
       if (!c || retired(coachProfile, c.better[0].pattern)) continue; // mastered: the report still lists it
       nudgedEnd.current = c.logEnd;
       nudgedUnit.current = unit;
@@ -192,7 +199,7 @@ export function Practice(p: Props) {
   const complete = (now: number) => {
     const result = s.result();
     const times = p.history.map(r => r.time), scores = p.history.map(r => r.score);
-    const report = coachable(lesson.id) ? coach(s, lesson.id) : undefined;
+    const report = coachable(coachId) ? coach(s, coachId) : undefined;
     // Coach memory: one event per critique (patterns and counts only) and the key mix ride on
     // the run; callouts compare against the profile as it was before this run.
     const events = report ? coachEvents(report, runId, now) : [];
@@ -209,6 +216,7 @@ export function Practice(p: Props) {
       speed: result.speed, acc: result.acc, correct: result.correct, score: result.score,
       ...(report ? { coach: events, mix } : {}),
     };
+    p.onFinish?.(s);
     p.onRun(run);
     if (report) recordCoachRun({ lesson: runId, at: now, mix, events });
   };
@@ -216,7 +224,7 @@ export function Practice(p: Props) {
   const handle = (key: string) => {
     if (s.done) {
       const action = resultsShortcut(key, {
-        inReps, inWarmUp: !!p.onNewWarmUp, hasReps: !!lesson.reps, hasSeed: s.view().seed != null, hasNext: !!p.nextTitle,
+        inReps, inWarmUp: !!p.onNewWarmUp, hasReps: !!lesson.reps, hasSeed: s.view().seed != null && !p.fixedSeed, hasNext: !!p.nextTitle,
       });
       if (action === 'reps-again' || action === 'reps') goReps();
       else if (action === 'back-to-lesson') backToLesson();
@@ -349,9 +357,9 @@ export function Practice(p: Props) {
           <Results
             {...finished}
             nextTitle={inReps ? null : p.nextTitle}
-            seed={v.seed}
-            replayHref={v.seed != null ? (inReps ? repsHref : seedHref)(lesson.id, v.seed) : undefined}
-            onNewSeed={v.seed != null && !inReps ? (p.onNewWarmUp ?? newFile) : undefined}
+            seed={p.fixedSeed ? null : v.seed}
+            replayHref={v.seed != null && !p.fixedSeed ? (inReps ? repsHref : seedHref)(lesson.id, v.seed) : undefined}
+            onNewSeed={v.seed != null && !inReps && !p.fixedSeed ? (p.onNewWarmUp ?? newFile) : undefined}
             reps={inReps ? { onAgain: goReps, onBack: backToLesson } : undefined}
             onReps={!inReps && lesson.reps ? goReps : undefined}
             unitLabel={unitLabel}

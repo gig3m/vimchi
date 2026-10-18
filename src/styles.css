@@ -626,6 +626,15 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 .wu-empty { margin-top: 20px; padding: 16px 18px; border: 1px dashed var(--sel); border-radius: 8px; color: var(--soft); }
 .wu-empty p { margin: 0; }
 
+/* ---------- daily ---------- */
+.daily-mark { color: var(--orange); }
+.daily-mark.done { color: var(--green); }
+.daily-card { margin: 18px 0 6px; padding: 14px 16px; border: 1px solid var(--sel); border-radius: 8px; background: var(--bg-side); }
+.daily-card-text { margin: 0 0 12px; font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--fg); white-space: pre-wrap; }
+.daily-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.daily-newer { margin: 14px 0 0; padding: 10px 14px; border-left: 3px solid var(--orange); background: var(--bg-side); border-radius: 0 8px 8px 0; }
+.daily-card-note { font-size: 12px; color: var(--muted); }
+
 /* Coach memory: recurring callouts on the results screen, the Coach section of the profile. */
 .cp-recur { list-style: none; margin: 0 0 10px; padding: 8px 12px; border-left: 3px solid var(--orange); background: var(--bg-side); border-radius: 0 8px 8px 0; font-size: 13px; }
 .cp-recur li { padding: 2px 0; }

@@ -2,6 +2,7 @@ import { lessonOfRepsRun, repsRunId } from '../challenges/reps';
 import { COUNTED, LESSONS, ORDER } from '../lessons';
 import { fmtMin, fmtS } from '../state/format';
 import { WARMUP_ROUTE } from '../state/seed';
+import { isDailyRun } from '../daily';
 import type { Run } from '../state/store';
 import { Avatar, type Who } from './Avatar';
 import { Bars } from './Bars';
@@ -14,6 +15,7 @@ type Props = { who: Who; sub: string; runs: Run[]; onGo: (id: string) => void; o
 export function runTitle(runId: string): string {
   if (LESSONS[runId]) return LESSONS[runId].title;
   if (runId === WARMUP_ROUTE) return 'Warm-up';
+  if (isDailyRun(runId)) return `Daily #${runId.slice('daily-'.length)}`;
   const of = lessonOfRepsRun(runId);
   return of && LESSONS[of] ? `${LESSONS[of].title} reps` : runId;
 }

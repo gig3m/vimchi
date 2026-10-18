@@ -30,9 +30,11 @@ export const isWarmUpHash = (hash: string) => lessonIdFromHash(hash) === WARMUP_
 export const PROFILE_HREF = '#profile';
 /** The About page: what the tutor is built on, with links to the real plugins. */
 export const ABOUT_HREF = '#about';
+/** Today's Daily (src/daily). */
+export const DAILY_HREF = '#daily';
 
 export type Route = {
-  view: 'lesson' | 'profile' | 'warm-up' | 'about';
+  view: 'lesson' | 'profile' | 'warm-up' | 'about' | 'daily';
   /** The lesson a lesson route names; null = the app picks one (the last lesson, or the first). */
   id: string | null;
   /** False for an empty or unknown hash: the app should replace it with the page it shows. */
@@ -44,6 +46,7 @@ export function routeFromHash(hash: string, isLesson: (id: string) => boolean): 
   if (id === WARMUP_ROUTE) return { view: 'warm-up', id: null, canonical: true };
   if ('#' + id === PROFILE_HREF) return { view: 'profile', id: null, canonical: true };
   if ('#' + id === ABOUT_HREF) return { view: 'about', id: null, canonical: true };
+  if ('#' + id === DAILY_HREF) return { view: 'daily', id: null, canonical: true };
   if (id && isLesson(id)) return { view: 'lesson', id, canonical: true };
   return { view: 'lesson', id: null, canonical: false };
 }

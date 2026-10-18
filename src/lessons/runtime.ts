@@ -241,6 +241,12 @@ export class Session {
 
   // generated
   generated: Generated | null = null;
+  /**
+   * Per checklist item: the key count at which it was last seen done in Normal mode (0 = not done).
+   * An Insert-mode fix matches on its last typed character; its Esc is part of it. Breaking the
+   * item again (undo) clears it.
+   */
+  ticks: number[] = [];
   private collateralMax = 0;
   // coach log
   private entries: LogEntry[] = [];
@@ -438,7 +444,10 @@ export class Session {
     } else if (c.kind === 'generated') {
       const g = this.generated!;
       this.collateralMax = Math.max(this.collateralMax, collateral(g.items, vim.buf.lines, g.goal));
-      this.hits = g.items.filter(it => itemDone(it, vim.buf.lines, g.goal)).length;
+      const doneNow = g.items.map(it => itemDone(it, vim.buf.lines, g.goal));
+      const settled = vim.mode === 'normal' && !vim.pending.length;
+      doneNow.forEach((d, i) => { if (!d) this.ticks[i] = 0; else if (settled && !this.ticks[i]) this.ticks[i] = this.keys; });
+      this.hits = doneNow.filter(Boolean).length;
       if (goalMet(vim, { text: g.goal })) this.finish(now);
     }
     if (!this.msg && vim.message) {
