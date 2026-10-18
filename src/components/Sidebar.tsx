@@ -10,6 +10,8 @@ type Props = {
   completedText: string;
   /** The Warm-up entry above the bands: its subtitle, whether it is open, and how to open it. */
   warmUp: { sub: string; on: boolean; onOpen: () => void };
+  /** Today's Daily, under the Warm-up. */
+  daily: { title: string; sub: string; done: boolean; on: boolean; onOpen: () => void };
   profileOn: boolean;
   who: Who;
   userSub: string;
@@ -81,6 +83,13 @@ export function Sidebar(p: Props) {
             <span className="wu-nav-text">
               <span className="nav-title">Warm-up</span>
               <span className="wu-nav-sub">{p.warmUp.sub}</span>
+            </span>
+          </button>
+          <button className={'nav-item wu-nav' + (p.daily.on ? ' on' : '')} onClick={p.daily.onOpen} aria-current={p.daily.on ? 'page' : undefined}>
+            <span className={'wu-nav-mark daily-mark' + (p.daily.done ? ' done' : '')} aria-hidden="true">{p.daily.done ? '✓' : '◆'}</span>
+            <span className="wu-nav-text">
+              <span className="nav-title">{p.daily.title}</span>
+              <span className="wu-nav-sub">{p.daily.sub}</span>
             </span>
           </button>
         </div>

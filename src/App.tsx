@@ -5,10 +5,12 @@ import { About } from './components/About';
 import { Sidebar } from './components/Sidebar';
 import { SignIn } from './components/SignIn';
 import { WarmUp } from './components/WarmUp';
+import { Daily } from './components/Daily';
+import { daily, dailyNumber, firstRun } from './daily';
 import type { Who } from './components/Avatar';
 import { COUNTED, LESSONS, ORDER } from './lessons';
 import { repsRunId } from './challenges/reps';
-import { ABOUT_HREF, PROFILE_HREF, type Route, newSeed, repsFromHash, repsHref, routeFromHash, seedFromHash, warmUpHref } from './state/seed';
+import { ABOUT_HREF, DAILY_HREF, PROFILE_HREF, type Route, newSeed, repsFromHash, repsHref, routeFromHash, seedFromHash, warmUpHref } from './state/seed';
 import { useSettings } from './state/settings';
 import { useProgress } from './state/store';
 import { WARMUP_ID, todaysWarmUp, warmUpSub } from './warmup';
@@ -48,6 +50,8 @@ export function App() {
       setSeed(seedFromHash(location.hash));
       setReps(repsFromHash(location.hash));
       setView(r.view);
+      // A Daily reached by Back or a typed URL is today's; only one already open stays pinned.
+      if (r.view === 'daily') setDailyN(dailyNumber(Date.now()));
       if (r.id) {
         setLessonId(r.id);
         setLastLesson.current(r.id); // a sign-in or a reload without a hash comes back here
@@ -79,6 +83,12 @@ export function App() {
     if (location.hash !== warmUpHref()) history.pushState(null, '', warmUpHref());
     main.current?.scrollTo(0, 0);
   };
+  const openDaily = () => {
+    setDailyN(dailyNumber(Date.now()));
+    setView('daily');
+    if (location.hash !== DAILY_HREF) history.pushState(null, '', DAILY_HREF);
+    main.current?.scrollTo(0, 0);
+  };
   /** A lesson's Reps on a fresh seed (the hash change routes it). */
   const goReps = (id: string) => { location.hash = repsHref(id, newSeed()); };
 
@@ -97,9 +107,27 @@ export function App() {
   // Today's Warm-up: fixed for the day; recomputed as runs arrive (a warm-up run never changes it).
   const lessonRuns = prog.runs.filter(r => r.lesson !== WARMUP_ID);
   const runsKey = lessonRuns.length ? lessonRuns[lessonRuns.length - 1].at + ':' + lessonRuns.length : '';
-  const day = new Date().toDateString();
+  // The calendar day, checked each minute so the Warm-up and the Daily roll over at midnight. An
+  // open Warm-up keeps its day (a new plan would swap the file mid-run); leaving it catches up.
+  const [day, setDay] = useState(() => new Date().toDateString());
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  useEffect(() => {
+    const t = setInterval(() => { if (viewRef.current !== 'warm-up') setDay(new Date().toDateString()); }, 60_000);
+    return () => clearInterval(t);
+  }, []);
+  useEffect(() => { if (view !== 'warm-up') setDay(new Date().toDateString()); }, [view]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const warmUp = useMemo(() => todaysWarmUp(lessonRuns, Date.now()), [runsKey, day]);
+  // The Daily on screen is pinned while it is open, so midnight never swaps the file mid-run or
+  // replaces its results; the page offers the new one instead.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const latest = useMemo(() => dailyNumber(Date.now()), [day]);
+  const [dailyN, setDailyN] = useState(latest);
+  useEffect(() => { if (view !== 'daily') setDailyN(latest); }, [latest, view]);
+  const today = daily(dailyN);
+  const todayFirst = firstRun(runsOf(today.id));
+  const dailySub = todayFirst ? `done · ${todayFirst.keys} keys, par ${today.generated.parKeys}` : `${today.rung.title} · par ${today.generated.parKeys}`;
 
   return (
     <div className="app">
@@ -108,6 +136,7 @@ export function App() {
         runsOf={runsOf}
         completedText={`${done} of ${COUNTED.length} done`}
         warmUp={{ sub: warmUpSub(warmUp), on: view === 'warm-up', onOpen: openWarmUp }}
+        daily={{ title: `Daily #${today.n}`, sub: dailySub, done: !!todayFirst, on: view === 'daily', onOpen: openDaily }}
         profileOn={view === 'profile'}
         who={who}
         userSub={userSub}
@@ -133,6 +162,19 @@ export function App() {
               onGo={go}
               onBack={() => go(lessonId)}
               onStats={openProfile}
+            />
+          ) : view === 'daily' ? (
+            <Daily
+              key={today.n}
+              daily={today}
+              runs={runsOf(today.id)}
+              isGuest={!acct}
+              onRun={prog.addRun}
+              onGo={go}
+              onBack={() => go(lessonId)}
+              onStats={openProfile}
+              newer={latest > today.n ? latest : null}
+              onNewer={openDaily}
             />
           ) : view === 'about' ? (
             <About />

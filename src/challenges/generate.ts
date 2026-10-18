@@ -26,6 +26,10 @@ export type ChecklistItem = {
   below?: number;
   /** An Ex fix (`:%s`, `:g`) that runs from wherever the cursor is: the par spends no motion on it and the cursor stays put. */
   anywhere?: boolean;
+  /** The fix's own keys when `fixKeys` leans on an earlier item (`.`, or `N@a` replaying its macro). */
+  soloKeys?: string;
+  /** A macro fix: the body it records into register a (or replays from it). */
+  macro?: string;
 };
 
 export type Generated = {
@@ -41,6 +45,9 @@ export type Generated = {
 export const MOTION_MS = 250;
 export const MAX_MOTION_KEYS = 8;
 const PATH_KEYS = 'hjklwbeWBE0$';
+/** Par motion keys between two fix positions in the start text (capped). */
+export const motionKeys = (start: readonly string[], from: Pos, to: Pos) =>
+  Math.min(shortestPath(start, from, to, PATH_KEYS, MAX_MOTION_KEYS + 1), MAX_MOTION_KEYS);
 
 /**
  * Lines a mutation touches in the original (for the one-line-gap rule). A stray line sits
@@ -235,15 +242,16 @@ export function generate(c: GeneratedChallenge, seed: number): Generated {
     // Only a single-change fix replays whole with `.`; a yank-then-put (missing-duplicate-line) would replay the put alone.
     const dot = repeats && last !== null && lastKeys === item.fixKeys && parseKeys(item.fixKeys).length > 1 && item.kind !== 'missing-duplicate-line' && !m.multi;
     lastKeys = item.fixKeys;
-    if (dot) item.fixKeys = '.';
+    if (dot) { item.soloKeys = item.fixKeys; item.fixKeys = '.'; }
     let ms = dot ? Math.min(DOT_MS, m.parMs) : m.parMs;
     if (m.macro && item.fixKeys.startsWith('qa')) {
+      item.macro = m.macro.body;
       // The same macro is already in register a: run it over these lines instead of recording it again.
-      if (recorded === m.macro.body) { item.fixKeys = `${m.macro.runs}@a`; ms = Math.min(ms, 1000); }
+      if (recorded === m.macro.body) { item.soloKeys = item.fixKeys; item.fixKeys = `${m.macro.runs}@a`; ms = Math.min(ms, 1000); }
       else recorded = m.macro.body;
     }
     if (m.anywhere) item.anywhere = true;
-    const motion = m.anywhere ? 0 : Math.min(shortestPath(start, prev, item.fixAt, PATH_KEYS, MAX_MOTION_KEYS + 1), MAX_MOTION_KEYS);
+    const motion = m.anywhere ? 0 : motionKeys(start, prev, item.fixAt);
     parKeys += motion + parseKeys(item.fixKeys).length;
     parMs += motion * MOTION_MS + ms;
     if (!m.anywhere) prev = item.fixAt;
