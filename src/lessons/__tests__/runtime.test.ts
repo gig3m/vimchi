@@ -97,7 +97,7 @@ describe('cursor carry and folds', () => {
       kind: 'rounds', base: { name: 'a.ts', text }, carryCursor: false,
       rounds: [
         { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 3, col: 2 } }, solution: '3jw' },
-        { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 5, col: 0 } }, solution: '5j' },
+        { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 5, col: 0 } }, solution: '5j0' },
       ],
     };
     const s = new Session(c);
@@ -108,6 +108,44 @@ describe('cursor carry and folds', () => {
     for (const k of solutionKeys('3jw')) carried.key(k, 100);
     carried.advance();
     expect(carried.vim!.cursor).toEqual({ line: 3, col: 2 });
+  });
+  it('moves a carried cursor back, and says so, only when the round would not work from there', () => {
+    const c: RoundsChallenge = {
+      kind: 'rounds', base: { name: 'a.ts', text },
+      rounds: [
+        { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 3, col: 2 } }, solution: '3jw' },
+        // From column 2 of line 0, `5j` keeps the column and misses: the cursor goes back.
+        { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 5, col: 0 } }, solution: '5j' },
+        // `gg` works from anywhere: the cursor stays where round 2 left it.
+        { setup: { cursor: { line: 0, col: 0 } }, goal: { cursor: { line: 0, col: 0 } }, solution: 'gg' },
+      ],
+    };
+    const s = new Session(c);
+    for (const k of solutionKeys('3jw')) s.key(k, 100);
+    s.advance();
+    expect(s.vim!.cursor).toEqual({ line: 0, col: 0 });
+    expect(s.view().moved).toEqual({ from: { line: 3, col: 2 }, to: { line: 0, col: 0 } });
+    expect(s.view().msg).toMatch(/moved to line 1/);
+    for (const k of solutionKeys('5j')) s.key(k, 200);
+    expect(s.view().moved).toBeNull();
+    s.advance();
+    expect(s.vim!.cursor).toEqual({ line: 5, col: 0 });
+    expect(s.view().moved).toBeNull();
+    expect(s.view().msg).toBe('');
+  });
+  it('a new round starts with a clean command line', () => {
+    const c: RoundsChallenge = {
+      kind: 'rounds', base: { name: 'a.ts', text },
+      rounds: [
+        { goal: { cursor: { line: 0, col: 0 } }, solution: '/nomatch<CR>gg' },
+        { setup: { init: v => { for (const k of solutionKeys('/alsonothere<CR>')) v.feed(k); } }, goal: { cursor: { line: 1, col: 0 } }, solution: 'j' },
+      ],
+    };
+    const s = new Session(c);
+    for (const k of solutionKeys('/nomatch<CR>gg')) s.key(k, 100);
+    s.advance();
+    expect(s.view().msg).toBe('');
+    expect(s.vim!.message).toBeNull();
   });
   it('the Folds lesson solves every round in order with the cursor carried', () => {
     const lesson = LESSONS['toggle-folds'];

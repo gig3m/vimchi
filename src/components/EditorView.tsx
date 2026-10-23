@@ -1,14 +1,14 @@
 // Renders a Vim instance: tab line, split windows, status lines, command
 // line, floating windows and the tutor's overlays (targets, marks).
 
-import { type CSSProperties, type ReactNode, useLayoutEffect, useRef } from 'react';
+import { type CSSProperties, type ReactNode, type RefObject, useLayoutEffect, useRef } from 'react';
 import type { Decoration, Float, Vim } from '../vim/editor';
 import { displayKey } from '../vim/keys';
 import type { Window } from '../vim/layout';
 import { type Pos, cmpPos } from '../vim/types';
 import { C, colorize } from '../ui/syntax';
 import type { Annotations } from '../lessons/goalDiff';
-import { cellWidths, displayWidth } from './tabs';
+import { cellWidths } from './tabs';
 
 export type Overlay = {
   target: Pos | null;
@@ -20,6 +20,8 @@ export type Overlay = {
   ann?: Annotations | null;
   /** A coaching tip, shown as a tag at the cursor. */
   tip?: string | null;
+  /** The cursor was just moved back to the round's start: ring it so the jump is seen. */
+  moved?: boolean;
   /** Text the step points at (what to yank or select): underlined in cyan. */
   span?: { start: Pos; end: Pos } | null;
 };
@@ -178,12 +180,18 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
       if (d < best) { best = d; nearMark = k; }
     }
   }
-  shown.forEach((l, rowIdx) => {
+  // Goal lines to add get rows of their own under (or, for -1, above) their line: in the flow, so
+  // they never cover a line, and never clip at the editor's bottom edge.
+  const pushNew = (after: number) => overlay?.ann?.newLines.get(after)?.forEach((text, i) => rowsOut.push(
+    <div key={`n${after}:${i}`} className="ev-row ann-newrow" aria-label={`add the line ${JSON.stringify(text)}`}>
+      {(numbers || rel) && <span className="ev-gutter ann-newrow-g" style={{ width: `${numWidth + 1}ch` }}>+</span>}
+      {hasSigns && <span className="ev-sign" />}
+      <span className="ev-text"><span className="ann-newrow-t">{text ? text.replace(/\t/g, ' '.repeat(ts)) : '(blank line)'}</span></span>
+    </div>,
+  ));
+  if (topIdx === 0) pushNew(-1);
+  shown.forEach(l => {
     pushVirt(l);
-    // Insert hints float just above their row. The single pane has headroom for its first row;
-    // a multi-pane window clips above its first row, so that row shows no hint (owner ruling:
-    // no hint beats a hint that reads as belonging to the wrong line).
-    const hintRow = !(multi && rowIdx === 0);
     const fold = vim.closedFoldAt(l, win);
     const isCurLine = l === cur.line || (fold && cur.line >= fold.start && cur.line <= fold.end);
     const num = rel && !isCurLine ? Math.abs(visible.indexOf(l) - visible.indexOf(fold ? fold.start : cur.line)) : l + 1;
@@ -236,7 +244,9 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
         }
         const ann = overlay.ann;
         if (ann && chars[c] !== undefined && (ann.delLines.has(l) || ann.del.get(l)?.some(([a, b]) => c >= a && c <= b))) {
-          bg = 'rgba(255,85,85,.2)'; color = C.red; deco = 'line-through';
+          // A change of case keeps the letters: underlined, not struck out.
+          if (ann.cases?.get(l)?.some(([a, b]) => c >= a && c <= b)) { bg = 'rgba(139,233,253,.14)'; color = C.cyan; deco = 'underline wavy'; }
+          else { bg = 'rgba(255,85,85,.2)'; color = C.red; deco = 'line-through'; }
         }
         if (overlay.span && chars[c] !== undefined && cmpPos(overlay.span.start, here) <= 0 && cmpPos(here, overlay.span.end) <= 0) {
           bg = 'rgba(139,233,253,.14)'; shadow = SPAN_LINE;
@@ -251,11 +261,8 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
       let cls = 'cell';
       // In insert mode the caret is its own element, placed before any ghost text at this column.
       const caretHere = isCursor && insertish && vim.mode === 'insert';
-      // Ghost text (goal diff) at this column: the text to insert before this cell.
-      const ghostsHere = overlay?.ann ? (overlay.ann.ins.get(l) ?? []).filter(tag => {
-        const span = overlay.ann!.del.get(l)?.find(([a]) => a === tag.col);
-        return (span ? span[1] + 1 : tag.col) === c;
-      }) : [];
+      // Ghost text (goal diff) at this column: the text still to type, before this cell.
+      const ghostsHere = (overlay?.ann?.ins.get(l) ?? []).filter(tag => ghostAt(overlay!.ann!, l, tag) === c);
       if (isCursor) {
         if (caretHere) { /* drawn below */ }
         else if (focused) {
@@ -263,12 +270,13 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
           color = C.bg;
           shadow = 'none';
           cls += ' ev-block';
+          if (overlay?.moved) cls += ' ev-moved';
           if (vim.mode === 'replace') { bg = 'transparent'; color = C.fg; cls += ' ev-under'; }
         } else shadow = 'inset 0 0 0 1px ' + C.fg;
       }
       if (caretHere) cells.push(<span key={`caret${c}`} className={'ev-caret' + (focused ? '' : ' dim')} />);
       if (overlay?.tip && current && cur.line === l && cur.col === c) cells.push(<CoachTip key="tip" text={overlay.tip} />);
-      if (hintRow) ghostsHere.forEach((tag, gi) => cells.push(<InsertHint key={`g${c}-${gi}`} text={tag.text} done={tag.done ?? 0} quiet={tag.quiet || !!overlay?.tip} />));
+      ghostsHere.forEach((tag, gi) => cells.push(<Ghost key={`g${c}-${gi}`} text={tag.text} done={tag.done ?? 0} quiet={tag.quiet || !!overlay?.tip} kase={tag.kind === 'case'} />));
       for (const d of decos) for (const h of d.hl ?? []) if (h.inline && h.line === l && h.start === c) cells.push(<span key={`i${c}-${cells.length}`} className="cell" style={{ color: h.color, background: h.bg }}>{h.text}</span>);
       cells.push(
         <span key={c} className={cls} style={{ color, background: bg, boxShadow: shadow, textDecoration: deco }}
@@ -280,10 +288,12 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
     }
     for (const d of decos) for (const h of d.hl ?? []) if (h.inline && h.line === l && h.start >= nCells) cells.push(<span key={`i${h.start}-${cells.length}`} className="cell" style={{ color: h.color, background: h.bg }}>{h.text}</span>);
     for (const tag of overlay?.ann?.ins.get(l) ?? []) {
-      const span = overlay!.ann!.del.get(l)?.find(([a]) => a === tag.col);
-      const at = span ? span[1] + 1 : tag.col;
-      if (at >= nCells && hintRow) cells.push(<InsertHint key={`ge${at}`} text={tag.text} done={tag.done ?? 0} quiet={tag.quiet || !!overlay?.tip} />);
+      const at = ghostAt(overlay!.ann!, l, tag);
+      if (at >= nCells) cells.push(<Ghost key={`ge${at}`} text={tag.text} done={tag.done ?? 0} quiet={tag.quiet || !!overlay?.tip} kase={tag.kind === 'case'} />);
     }
+    // A join: the line below comes up onto this one (J adds a space, gJ doesn't).
+    const join = overlay?.ann?.joins?.get(l);
+    if (join) cells.push(<span key="join" className="ann-join" aria-label={`join the next line here${join === 'none' ? ', with no space' : ''}`}>{join === 'none' ? 'join ↓ no space' : 'join ↓'}</span>);
     const v = virt.get(l);
     rowsOut.push(
       <div key={l} className={'ev-row' + (isCurLine && current && vim.options.cursorline ? ' cur' : '')} style={lineBg.has(l) ? { background: lineBg.get(l) } : undefined}>
@@ -291,10 +301,11 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
         <span className="ev-text">
           {cells}
           {v && <span className="ev-virt" style={{ color: v.color }}>  {v.text}</span>}
-          {overlay?.ann && <AnnMarks ann={overlay.ann} line={l} text={t} next={buf.line(l + 1)} first={l === 0} tabstop={ts} />}
+          {overlay?.ann?.delLines.has(l) && !t && <span className="ann-del-blank" aria-label="delete this blank line">(blank line)</span>}
         </span>
       </div>,
     );
+    pushNew(l);
   });
   if (shown[shown.length - 1] === buf.lineCount - 1) pushVirt(buf.lineCount);
   for (let i = rowsOut.length; multi && i < textRows; i++) {
@@ -398,7 +409,29 @@ function CmdLine({ vim, note, focused }: { vim: Vim; note: { text: string; kind:
 
 // ---- floats ------------------------------------------------------------------------------------------------
 
+/**
+ * Rows and text drawn in the flow (goal lines to add, ghost text, plugin virtual lines) put the
+ * cursor off its buffer row and column, so a popup anchored there is pinned under the cursor cell
+ * as drawn: `back` cells to its left, `gap` px below (or above, if below is cut off). The style computed from row and column is
+ * the first paint and the fallback.
+ */
+function useUnderCursor(ref: RefObject<HTMLDivElement | null>, on: boolean, back: number, gap: number) {
+  useLayoutEffect(() => {
+    // In insert mode the caret is its own element, before any ghost text; the cursor cell is after it.
+    const el = ref.current, box = el?.closest('.ev-panes'), cell = box?.querySelector('[data-cursor]');
+    if (!on || !el || !box || !cell) return;
+    const at = box.querySelector('.ev-caret') ?? cell;
+    const b = box.getBoundingClientRect(), c = at.getBoundingClientRect(), w = cell.getBoundingClientRect().width;
+    // Under the cursor, or above it when that would run past the editor's bottom edge (clipped).
+    const below = c.bottom - b.top + gap, h = el.offsetHeight;
+    el.style.top = `${(below + h > box.clientHeight && c.top - b.top - h - 4 >= 0 ? c.top - b.top - h - 4 : below) + box.scrollTop}px`;
+    el.style.left = `${c.left - b.left + box.scrollLeft - back * w}px`;
+  });
+}
+
 function FloatBox({ f, vim, rowPx }: { f: Float; vim: Vim; rowPx: number }) {
+  const box = useRef<HTMLDivElement>(null);
+  useUnderCursor(box, f.anchor === 'cursor', 0, 4);
   const width = f.width ?? (f.preview ? 96 : 60);
   let style: CSSProperties;
   if (f.anchor === 'cursor') {
@@ -442,7 +475,7 @@ function FloatBox({ f, vim, rowPx }: { f: Float; vim: Vim; rowPx: number }) {
     </div>
   );
   return (
-    <div className="ev-float" style={style}>
+    <div ref={box} className="ev-float" style={style}>
       {f.title && <div className="ev-float-title">{f.title}</div>}
       {f.preview ? (
         <div className="ev-float-split">
@@ -464,8 +497,10 @@ function Completion({ vim, rowPx }: { vim: Vim; rowPx: number }) {
   const visible = vim.visibleLines();
   const row = Math.max(0, visible.indexOf(vim.cursor.line) - Math.max(0, visible.indexOf(vim.win.top))) + 1;
   const numWidth = Math.max(3, String(vim.buf.lineCount).length + 1) + 1;
+  const pum = useRef<HTMLDivElement>(null);
+  useUnderCursor(pum, true, vim.cursor.col - cp.startCol, 4);
   return (
-    <div className="ev-pum" style={{ top: row * rowPx + 16, left: `calc(${numWidth + cp.startCol}ch + 4px)` }}>
+    <div ref={pum} className="ev-pum" style={{ top: row * rowPx + 16, left: `calc(${numWidth + cp.startCol}ch + 4px)` }}>
       {cp.items.slice(0, 8).map((it, i) => (
         <div key={it} className={'ev-pum-row' + (i === cp.idx ? ' sel' : '')}>{it}</div>
       ))}
@@ -473,13 +508,13 @@ function Completion({ vim, rowPx }: { vim: Vim; rowPx: number }) {
   );
 }
 
-/**
- * Text to insert at this point, shown vim-hero style: a dotted marker at the exact
- * insertion boundary and the text in a tag floating just above it. Nothing is drawn as if it
- * were in the buffer. As the learner types, the typed part dims and the next character is bold,
- * and the marker follows the insertion point.
- */
 const show = (t: string) => t.replace(/ /g, '·');
+
+/** Where a ghost sits: after the struck span it replaces, past what's already typed of it. */
+function ghostAt(ann: Annotations, line: number, tag: { col: number; done?: number }): number {
+  const span = ann.del.get(line)?.find(([a]) => a === tag.col);
+  return (span ? span[1] + 1 : tag.col) + (tag.done ?? 0);
+}
 
 /** A shorter way to the edit just made, in a tag at the cursor: "$x · does that in 2 keys, not 4". */
 function CoachTip({ text }: { text: string }) {
@@ -491,51 +526,18 @@ function CoachTip({ text }: { text: string }) {
   );
 }
 
-function InsertHint({ text, done, quiet }: { text: string; done: number; quiet?: boolean }) {
-  const tag = useRef<HTMLSpanElement>(null);
-  // The tag is centred on the insertion point; near either edge of the buffer it would hang
-  // outside the editor (a column-0 insert put half of it over the gutter), so nudge it back in.
-  useLayoutEffect(() => {
-    const el = tag.current;
-    const box = el?.closest('.ev-panes');
-    if (!el || !box) return;
-    el.style.setProperty('--ann-shift', '0px');
-    const r = el.getBoundingClientRect(), b = box.getBoundingClientRect();
-    const pad = 6;
-    const shift = r.left < b.left + pad ? b.left + pad - r.left : r.right > b.right - pad ? b.right - pad - r.right : 0;
-    if (shift) el.style.setProperty('--ann-shift', `${shift}px`);
-  });
+/**
+ * Text to type at this point, drawn in the line like Neovim's inlay hints: it takes its own room
+ * at the insertion point, so it never covers another line, and every edit can show its text at
+ * once. As the learner types, the typed part becomes real text and the ghost shrinks; its next
+ * character is bold. `quiet` (not the edit in hand) is dimmer.
+ */
+function Ghost({ text, done, quiet, kase }: { text: string; done: number; quiet?: boolean; kase?: boolean }) {
+  const rest = text.slice(done);
   return (
-    <span className="ann-ins" aria-label={`insert ${JSON.stringify(text)} here`}>
-      <span className="ann-ins-line" style={{ left: `calc(${done}ch - 1px)` }} />
-      {!quiet && <span ref={tag} className="ann-tag">
-        {done > 0 && <span className="ann-typed">{show(text.slice(0, done))}</span>}
-        <span className="ann-next">{show(text.slice(done, done + 1))}</span>
-        {show(text.slice(done + 1))}
-      </span>}
+    <span className={'ann-ghost' + (quiet ? ' quiet' : '') + (kase ? ' case' : '')} aria-label={kase ? `change the case to ${JSON.stringify(rest)}` : `insert ${JSON.stringify(rest)} here`}>
+      <span className="ann-next">{show(rest.slice(0, 1))}</span>
+      {show(rest.slice(1))}
     </span>
   );
-}
-
-/** Goal annotations drawn over a row: inserted text tags and new-line markers. */
-function AnnMarks({ ann, line, text, next, first, tabstop }: { ann: Annotations; line: number; text: string; next: string; first: boolean; tabstop: number }) {
-  const out: ReactNode[] = [];
-  const marker = (after: number, lines: string[], key: string, above: boolean) => {
-    // Screen columns, not characters: a tab-indented line (Go) starts a tab stop in per tab.
-    const indent = displayWidth(/^\s*/.exec(lines[0])![0], tabstop);
-    const clear = Math.max(displayWidth(text, tabstop), above ? 0 : displayWidth(next, tabstop), indent) + 2;
-    out.push(
-      <span key={key} className={'ann-newline' + (above ? ' above' : '')} style={{ left: `${indent}ch` }}>
-        <span className="ann-dash" style={{ width: `${Math.max(2, clear - indent)}ch` }} />
-        <span className="ann-tag">{lines.map((l, i) => <span key={i} className="ann-tag-line">{l.trim() ? l.trim() : '(blank line)'}</span>)}</span>
-      </span>,
-    );
-    void after;
-  };
-  // An empty line has no characters to strike through, so it gets a tag of its own.
-  if (ann.delLines.has(line) && !text) out.push(<span key="d" className="ann-del-blank" aria-label="delete this blank line">(blank line)</span>);
-  const nl = ann.newLines.get(line);
-  if (nl) marker(line, nl, 'n', false);
-  if (first && ann.newLines.get(-1)) marker(-1, ann.newLines.get(-1)!, 'n0', true);
-  return <>{out}</>;
 }

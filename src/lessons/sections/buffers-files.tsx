@@ -507,7 +507,7 @@ export const buffersFiles: Section = {
             solution: "f'gf",
           },
           {
-            prompt: "Open './routes/notes', the path on the cursor's line.",
+            prompt: "Open './routes/notes', the path on line 2.",
             setup: { open: 'src/server.ts', cursor: { line: 1, col: 0 } },
             goal: { buffer: 'src/routes/notes.ts' },
             solution: 'f.gf',
