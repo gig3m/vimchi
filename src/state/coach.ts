@@ -78,11 +78,6 @@ export function coachEvents(report: Report, lesson: string, at: number): CoachEv
 
 export const keyMixOf = (s: Summary): KeyMix => ({ moving: s.moving, typing: s.typing, editing: s.editing });
 
-const ordinal = (n: number) => {
-  const t = n % 100;
-  return n + (t >= 11 && t <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] ?? 'th');
-};
-
 /** How often a pattern shows up now, counting the current run (not yet in the profile) as one. */
 export function recurrence(p: CoachProfile, pattern: string): { inRow: number; inLast: number } {
   const prev = p.recent.slice(-(RECENT_RUNS - 1));
@@ -91,13 +86,13 @@ export function recurrence(p: CoachProfile, pattern: string): { inRow: number; i
   return { inRow, inLast: 1 + prev.filter(r => r.patterns.includes(pattern)).length };
 }
 
-/** "3rd run in a row:" when the pattern has come up in ≥3 of the last 5 runs (this one included), else null. */
+/** "You've missed this 3 runs in a row." when the pattern has come up in ≥3 of the last 5 runs (this one included), else null. */
 export function calloutPrefix(p: CoachProfile, pattern: string): string | null {
   const { inRow, inLast } = recurrence(p, pattern);
   if (inLast < CALLOUT_MIN) return null;
   // With fewer than RECENT_RUNS runs so far, "of your last 5" would count runs that never happened.
   const window = Math.min(RECENT_RUNS, p.recent.length + 1);
-  return inRow >= CALLOUT_MIN ? `${ordinal(inRow)} run in a row:` : `${inLast} of your last ${window} runs:`;
+  return inRow >= CALLOUT_MIN ? `You've missed this ${inRow} runs in a row.` : `You've missed this in ${inLast} of your last ${window} runs.`;
 }
 
 /** Callouts for the patterns a report names, from the profile as it was before this run. */

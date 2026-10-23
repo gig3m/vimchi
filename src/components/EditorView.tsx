@@ -481,7 +481,7 @@ function Completion({ vim, rowPx }: { vim: Vim; rowPx: number }) {
  */
 const show = (t: string) => t.replace(/ /g, '·');
 
-/** A shorter way to the edit just made, in a tag at the cursor: "$x · 2 keys, you used 4". */
+/** A shorter way to the edit just made, in a tag at the cursor: "$x · does that in 2 keys, not 4". */
 function CoachTip({ text }: { text: string }) {
   const [keys, rest] = text.split(' · ');
   return (

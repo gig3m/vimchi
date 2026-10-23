@@ -7,7 +7,7 @@ import { LESSONS } from '../../lessons';
 import { Session } from '../../lessons/runtime';
 import type { RoundsChallenge } from '../../lessons/types';
 import { parseKeys } from '../../vim/keys';
-import { coach, nudgeText } from '../index';
+import { coach, gain, nudgeText } from '../index';
 import { PATTERNS } from '../patterns';
 
 function run(lessonId: string, round: number, keys: string) {
@@ -57,7 +57,15 @@ describe('patterns: every suggestion teaches a named idea with a lesson link', (
     const c = r.critiques.find(x => x.better[0].keys === 'dt)')!;
     expect(c.better[0].pattern).toBe('op-to-char');
     expect(c.better[0].why).toBe(PATTERNS['op-to-char'].principle);
-    expect(nudgeText(c)).toBe('Delete to a character: dt) (3 instead of 16)');
+    expect(nudgeText(c)).toBe('Edit up to a character: dt) does that in 3 keys instead of 16.');
+  });
+  it('says one key, not "1 keys", and never calls an equal count shorter', () => {
+    expect(gain(5, 1)).toBe('in 1 key instead of 5');
+    expect(gain(5, 5)).toBe('in one command, with the same 5 keys');
+  });
+  it('a habit that keeps coming up adds one word, so the one-line hint does not clip it', () => {
+    const c = run('delete-to-char', 1, 'kf,' + 'x'.repeat(16)).critiques.find(x => x.better[0].keys === 'dt)')!;
+    expect(nudgeText(c, true)).toBe('Edit up to a character, again: dt) does that in 3 keys instead of 16.');
   });
 });
 

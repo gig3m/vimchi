@@ -4,6 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { Session } from '../../lessons/runtime';
 import type { RoundsChallenge } from '../../lessons/types';
 import { parseKeys } from '../../vim/keys';
+import { LESSONS } from '../../lessons';
+import { PATTERNS, motionPattern } from '../patterns';
 import { coach } from '../index';
 
 /** A lesson past which A, I, o, dd, p, s and counts are taught (text objects are not yet). */
@@ -56,5 +58,15 @@ describe('former rules, found by the idiom search', () => {
     const s = suggest(['abc def'], 'deixyz<Esc>')!;
     expect(s.pattern).toBe('change-word');
     expect(s.why.length).toBeGreaterThan(10);
+  });
+  it('plain hjkl back and forth is "go straight there", not a count', () => {
+    expect(motionPattern(['k'])).toBe('direct');
+    expect(motionPattern(['j', 'COUNT'])).toBe('count-motion');
+  });
+  it('every pattern explains itself in whole sentences and links a real lesson', () => {
+    for (const [id, p] of Object.entries(PATTERNS)) {
+      expect(p.principle, id).toMatch(/^.+[.)]$/);
+      expect(LESSONS[p.lesson], `${id} → ${p.lesson}`).toBeDefined();
+    }
   });
 });
