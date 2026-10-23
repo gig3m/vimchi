@@ -78,6 +78,8 @@ export function Practice(p: Props) {
   if (!session.current || session.current.challenge !== challenge) session.current = new Session(challenge, { seed: seedRef.current ?? undefined });
   const s = session.current;
   s.picks = p.picks;
+  // Dev only: the visual harness reads the live session (a carried round's cursor).
+  if (import.meta.env.DEV) Object.assign((window as unknown as { __vimchi?: object }).__vimchi ?? {}, { session: s });
   const [focused, setFocused] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);

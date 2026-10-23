@@ -52,7 +52,9 @@ plus an `index.md` to `look/<lesson>/` (gitignored), so a person or an agent can
 - `--sweep`: every round's opening screen in every lesson, to `look/sweep/`.
 
 Keys go through the editor's own keydown handler. In dev builds `window.__vimchi` exposes the
-lessons and `parseKeys` for it.
+lessons, `parseKeys` and the live session for it. When the app carries the cursor over from the
+last round, the harness puts it back at the round's start (and scroll) before playing a solution,
+since solutions start there; your own `--keys` are played from wherever the cursor was carried.
 
 Browsers reserve Ctrl-W/N/T/Q. The practice editor maps Alt-W/N/T/Q to them, and its
 "full screen" button uses the Keyboard Lock API to capture the real keys (Chromium).
