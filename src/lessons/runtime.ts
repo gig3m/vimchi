@@ -320,6 +320,8 @@ export class Session {
     const setup = mergeSetup(c.base, r.setup);
     this.vim = createVim(setup);
     this.installReset();
+    this.roundStart = { ...this.vim.cursor };
+    this.roundTop = this.vim.win.top;
     this.stepIdx = 0;
     this.target = stepsOf(r)[0].goal.cursor ?? null;
     this.roundKeys = 0;
@@ -348,6 +350,10 @@ export class Session {
   }
   /** Keep the cursor between rounds (off in validation playthroughs, whose solutions assume the setup cursor). */
   private carryCursor: boolean;
+  /** Where the round's setup puts the cursor, before any carry: where its reference solution starts. */
+  roundStart: Pos | null = null;
+  /** The round's first screen line before any carry (page motions depend on it). */
+  roundTop = 0;
   private carryExtra = 0;
   private carryByRound: number[] = [];
 

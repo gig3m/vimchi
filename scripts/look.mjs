@@ -88,8 +88,26 @@ async function settle(before, more) {
   }
   return false;
 }
+/** The app keeps the cursor where the last round left it when the file is unchanged, but a round's
+ * solution starts at the round's own cursor. Put it back there without keys (keys would be coached
+ * as the learner's), and say where it was ('' when nothing carried). */
+const walkBack = () => page.evaluate(() => {
+  const s = window.__vimchi.session;
+  const at = s?.vim?.cursor, start = s?.roundStart;
+  if (!at || !start || (at.line === start.line && at.col === start.col)) return '';
+  s.vim.win.cursor = { ...start };
+  s.vim.win.want = start.col;
+  s.vim.win.top = s.roundTop;
+  // Par and the coach then count the round as played from its start, as it was. These are private
+  // Session fields: fail loudly if they are renamed, rather than quietly inflating par.
+  if (!('carryExtra' in s) || !Array.isArray(s.carryByRound)) throw new Error('Session carry fields moved: update walkBack in look.mjs');
+  s.carryExtra = 0;
+  s.carryByRound[s.roundIdx] = 0;
+  return `line ${at.line + 1} col ${at.col + 1}`;
+});
 const label = () => page.$eval('.ed-title > span:last-child', e => e.textContent).catch(() => '');
 const prompt = () => page.$eval('.ed-prompt', e => e.textContent).catch(() => '');
+const opens = async () => (await prompt()) || '(no written prompt; the goal is marked in the editor)';
 let n = 0;
 let lastHint = null;
 async function shot(name, note) {
@@ -121,8 +139,9 @@ if (sweep) {
       if (l.kind !== 'rounds') continue;
       for (let r = 0; r < l.rounds.length; r++) {
         if (!(await page.$('.editor'))) { index.push(`- **${lesson} round ${r + 1}: no editor on screen** (shot taken)`); await page.screenshot({ path: join(out, `${String(++n).padStart(3, '0')}-${lesson}-r${r + 1}-noeditor.png`) }); break; }
-        await shot(`${lesson}-r${r + 1}`, `**${l.title}** round ${r + 1}: ${await prompt()}`);
+        await shot(`${lesson}-r${r + 1}`, `**${l.title}** round ${r + 1}: ${await opens()}`);
         const before = await label();
+        await walkBack();
         await feed(l.rounds[r].keys);
         if (!(await settle(before, r + 1 < l.rounds.length))) index.push(`- **${lesson} round ${r + 1}: its solution did not finish the round**`);
       }
@@ -141,9 +160,12 @@ if (sweep) {
   for (let r = 0; r < l.rounds.length; r++) {
     const round = l.rounds[r];
     const mine = scripted?.[r] || undefined;
+    // The start shot shows the cursor where the learner finds it. Your own keys are played from
+    // there; the solution needs the round's start.
+    if (!only || only.has(r + 1)) await shot(`r${r + 1}-start`, `round ${r + 1} opens: ${await opens()}`);
+    const back = mine ? '' : await walkBack();
     const keys = mine ? await page.evaluate(k => window.__vimchi.parseKeys(k), mine) : round.keys;
-    const played = mine ? `your keys \`${mine}\`` : `the solution \`${round.solution}\``;
-    if (!only || only.has(r + 1)) await shot(`r${r + 1}-start`, `round ${r + 1} opens: ${await prompt()}`);
+    const played = mine ? `your keys \`${mine}\`` : `the solution \`${round.solution}\`${back ? ` (the cursor carried over to ${back}; the harness put it back at the round's start first)` : ''}`;
     // Feed key by key so a step change (yank → put) gets its own shot, and the live hint shows.
     let p = await prompt();
     const before = await label();
