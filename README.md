@@ -38,6 +38,22 @@ npm run build      # typecheck + production bundle in dist/
 
 All three sections gate the run (strict by default); `NVIMCHECK_STRICT=0 npm run check:nvim` relaxes it to the text gate only.
 
+### Seeing what the learner sees
+
+Tests check the text; `node scripts/look.mjs` checks the screen. It plays a lesson in headless
+Chromium (starting `vite` on 5317 if it is not up) and writes screenshots of the practice panel
+plus an `index.md` to `look/<lesson>/` (gitignored), so a person or an agent can read them:
+
+- `node scripts/look.mjs visual-lines`: each round's opening screen, each step, the live hints,
+  and the results, playing the lesson's own solutions.
+- `--keys "|||jyy3j2dd\"0p|"`: play your own keys per round (Vim notation, `|` between rounds,
+  empty = the solution), e.g. to see what the coach says about a route that skips the lesson's key.
+- `--rounds 2,5`: shots for those rounds only. `--out dir`: somewhere else.
+- `--sweep`: every round's opening screen in every lesson, to `look/sweep/`.
+
+Keys go through the editor's own keydown handler. In dev builds `window.__vimchi` exposes the
+lessons and `parseKeys` for it.
+
 Browsers reserve Ctrl-W/N/T/Q. The practice editor maps Alt-W/N/T/Q to them, and its
 "full screen" button uses the Keyboard Lock API to capture the real keys (Chromium).
 

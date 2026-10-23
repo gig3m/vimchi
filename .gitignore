@@ -5,3 +5,4 @@ dist
 var/
 db-snapshot/
 .superpowers/
+look/

@@ -85,6 +85,19 @@ function lineEdit(cur: string, goal: string, line: number, out: Annotations) {
   if (insText) push(out.ins, line, { col: p, text: insText });
 }
 
+const words = (ls: readonly string[]) => ls.join(' ').match(/\w+/g) ?? [];
+/** How many of the goal's words the current lines already have (each used once). */
+function reused(cur: readonly string[], goal: readonly string[]): number {
+  const have = new Map<string, number>();
+  for (const w of words(cur)) have.set(w, (have.get(w) ?? 0) + 1);
+  let n = 0;
+  for (const w of words(goal)) {
+    const c = have.get(w) ?? 0;
+    if (c) { n++; have.set(w, c - 1); }
+  }
+  return n;
+}
+
 export type GoalView = { mode: 'inline'; ann: Annotations } | { mode: 'pane' } | { mode: 'none' };
 
 /**
@@ -103,6 +116,17 @@ export function diffGoal(cur: readonly string[], goal: readonly string[], opts: 
     const cs = cur.slice(ci, cEnd), gs = goal.slice(gi, gEnd);
     if (!cs.length && !gs.length) return;
     hunks++;
+    // A block replaced by fewer, different lines (two legacy lines → one new one) is whole lines
+    // out and in: pairing its first line for a character edit pictures a retype. A join, a reflow
+    // or a delete across a line break reuses the block's own words, so it stays an edit; a split
+    // (more lines) always does. Only an untouched block: once a line in it starts a goal line
+    // (blank after `cc`, half typed) the learner is typing, and the plain pairing below is kept.
+    const typing = cs.some(a => gs.some(g => g.startsWith(a)));
+    if (cs.length > gs.length && !typing && reused(cs, gs) * 2 < words(gs).length) {
+      cs.forEach((_, k) => out.delLines.add(ci + k));
+      out.newLines.set(ci + cs.length - 1, gs);
+      return;
+    }
     const paired = Math.min(cs.length, gs.length);
     for (let k = 0; k < paired; k++) {
       const a = cs[k], b = gs[k];

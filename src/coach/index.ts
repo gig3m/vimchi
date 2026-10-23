@@ -23,7 +23,9 @@ export type Critique = { unit: number; you: string; youChips: Chip[]; keys: numb
 export type RefLine = { unit: number; you: number; par: number; ref?: string; chips?: Chip[]; kind?: 'round' | 'item' };
 /** Where the keys went: moving the cursor, typing text, and everything else (commands, operators, <Esc>). */
 export type Summary = { keys: number; moving: number; typing: number; editing: number; par: number | null };
-export type Report = { critiques: Critique[]; reference: RefLine[]; summary: Summary };
+/** A round done another way, not over par: no penalty, only a note of the lesson's key and the edits used instead. */
+export type OtherWay = { unit: number; lessonKeys: string[]; used: Chip[][] };
+export type Report = { critiques: Critique[]; reference: RefLine[]; summary: Summary; otherWays?: OtherWay[] };
 export type CoachSession = SessionLike & {
   challenge: Challenge;
   roundPar(unit: number): number | null;
@@ -471,5 +473,18 @@ export function coach(session: CoachSession, lessonId: string): Report {
     });
   }
   reference.sort((a, b) => (b.you - b.par) - (a.you - a.par));
-  return { critiques, reference: reference.slice(0, 3), summary };
+  // Rounds done without the lesson's key but not over par: say so, as a note, not a cost.
+  const otherWays: OtherWay[] = [];
+  const ctx = context(lessonId, session);
+  if (session.challenge.kind === 'rounds') {
+    for (let u = 0; u < session.challenge.rounds.length; u++) {
+      if (reference.some(r => r.unit === u) || !offLesson(session, ctx, u)) continue;
+      const seen = new Set<string>();
+      const used = segs
+        .filter(sg => sg.unit === u && sg.kind === 'edit' && !seen.has(sg.keys.join('')) && seen.add(sg.keys.join('')))
+        .slice(0, 4).map(sg => keyChips(stateBefore(session, sg.logStart), sg.keys));
+      if (used.length) otherWays.push({ unit: u, lessonKeys: LESSONS[lessonId]?.chips ?? [], used });
+    }
+  }
+  return { critiques, reference: reference.slice(0, 3), summary, ...(otherWays.length && { otherWays }) };
 }
