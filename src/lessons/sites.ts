@@ -91,23 +91,24 @@ export function solutionSites(setup: Setup, round: Round): Site[] {
   return sites;
 }
 
-/** The states a line passes through while a site is being done: untouched, then cut and typed n characters. */
+/** The states a line passes through while a site is being done: untouched, then cut and typed n
+ * characters. A typed state can read exactly like the untouched line (`cl` on "=", then "="). */
 function stages(site: Site): { text: string; done: number; cut: boolean }[] {
   const out = [{ text: site.before, done: 0, cut: false }];
   const head = site.before.slice(0, site.col), tail = site.before.slice(site.del ? site.del[1] + 1 : site.col);
-  for (let n = 0; n < site.ins.length; n++) {
-    const text = head + site.ins.slice(0, n) + tail;
-    if (text !== site.before) out.push({ text, done: n, cut: true });
-  }
+  for (let n = 0; n < site.ins.length; n++) out.push({ text: head + site.ins.slice(0, n) + tail, done: n, cut: true });
   return out;
 }
+
+/** An insert in progress: where it began and where the cursor is now. */
+export type Typing = { start: { line: number; col: number }; cursor: { line: number; col: number } } | null;
 
 /**
  * Redraw the diff's marks for lines that a pending site describes: its exact span and typed text,
  * and its repeat number. Part way through typing, the tag keeps the whole text and counts what's
  * typed. Lines with no site (or edited off-script) keep the diff's marks.
  */
-export function applySites(ann: Annotations, cur: readonly string[], sites: readonly Site[], step: number): Annotations {
+export function applySites(ann: Annotations, cur: readonly string[], sites: readonly Site[], step: number, typing: Typing = null): Annotations {
   const out: Annotations = { ...ann, del: new Map(ann.del), ins: new Map(ann.ins), num: new Map(ann.num), cases: new Map(ann.cases) };
   const claimed = new Set<number>();
   let tagged = false;
@@ -117,7 +118,11 @@ export function applySites(ann: Annotations, cur: readonly string[], sites: read
     let best = -1, form = forms[0];
     cur.forEach((t, i) => {
       if (claimed.has(i) || !(ann.del.has(i) || ann.ins.has(i))) return;
-      const f = forms.find(x => x.text === t);
+      // Text alone can't tell an untouched line from one retyped to read the same; insert mode
+      // begun at the site's column can.
+      const typed = typing && typing.start.line === i && typing.cursor.line === i && typing.start.col === site.col
+        ? forms.find(x => x.cut && x.done === typing.cursor.col - site.col && x.text === t) : undefined;
+      const f = typed ?? forms.find(x => x.text === t);
       if (!f) return;
       if (best < 0 || Math.abs(i - site.line) < Math.abs(best - site.line)) { best = i; form = f; }
     });

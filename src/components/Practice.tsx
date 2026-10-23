@@ -292,7 +292,7 @@ export function Practice(p: Props) {
   }, [s, s.roundIdx]);
   const diffAnn = goalView.mode === 'inline' && forced !== 'pane' && s.vim?.tab.windows().length === 1 ? goalView.ann : null;
   const inline = diffAnn && s.vim
-    ? focusTags(applySites(diffAnn, s.vim.buf.lines, sites, v.step), s.vim.cursor, s.vim.insert?.start ?? null, s.vim.buf.lines)
+    ? focusTags(applySites(diffAnn, s.vim.buf.lines, sites, v.step, s.vim.insert ? { start: s.vim.insert.start, cursor: s.vim.cursor } : null), s.vim.cursor, s.vim.insert?.start ?? null, s.vim.buf.lines)
     : null;
   const showPane = !!v.goalText && !inline && goalView.mode !== 'none';
   const overlay = useMemo(() => ({
