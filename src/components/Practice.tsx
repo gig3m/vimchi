@@ -114,10 +114,10 @@ export function Practice(p: Props) {
   const nudgeT = useRef<number>(undefined);
   const clearNudge = () => { clearTimeout(nudgeT.current); setNudge(null); };
   const showNudge = (c: Critique) => {
-    const prefix = calloutPrefix(coachProfile, c.better[0].pattern);
+    const again = calloutPrefix(coachProfile, c.better[0].pattern) !== null;
     clearTimeout(nudgeT.current);
-    setNudge((prefix ? prefix + ' ' : '') + nudgeText(c));
-    nudgeT.current = window.setTimeout(() => setNudge(null), 4000);
+    setNudge(nudgeText(c, again));
+    nudgeT.current = window.setTimeout(() => setNudge(null), 6000); // a whole sentence: time to read it
   };
   /** After a key (or a round/run end), critique a segment that has closed: at most one hint per round. */
   const nudgedEnd = useRef(-1);
@@ -136,7 +136,7 @@ export function Practice(p: Props) {
       const found = shorterSegment(s, segs, i, searchVocab(warmUpTaught(p.picks, challenge), p.picks));
       const best = idiom && (!found || idiom.used - idiom.length >= found.used - found.length) ? idiom : found;
       nudgedEnd.current = segs[i].logEnd;
-      if (best) setTip(`${best.keys} · ${best.length} ${best.length === 1 ? 'key' : 'keys'}, you used ${best.used}`);
+      if (best) setTip(`${best.keys} · does that in ${best.length} ${best.length === 1 ? 'key' : 'keys'}, not ${best.used}`);
       return;
     }
   };

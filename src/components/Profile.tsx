@@ -114,7 +114,7 @@ export function Coach({ profile }: { profile: CoachProfile }) {
   return (
     <section className="cp" aria-label="coach">
       <h2 className="h2 prof">Coach</h2>
-      <p className="empty cp-note" style={{ marginBottom: 12 }}>A hint retires after five coached runs without the habit and comes back if it recurs.</p>
+      <p className="empty cp-note" style={{ marginBottom: 12 }}>After five coached runs without a habit, the coach stops hinting about it. If the habit comes back, so do the hints.</p>
       {top.length > 0 ? (
         <ol className="cp-top">
           {top.map(s => {
@@ -123,9 +123,9 @@ export function Coach({ profile }: { profile: CoachProfile }) {
             return (
               <li key={s.id} className="cp-pattern">
                 <span className="cp-name">{p?.name ?? s.id}</span>
-                <span className="cp-count">{s.runs} {s.runs === 1 ? 'run' : 'runs'}</span>
+                <span className="cp-count">came up in {s.runs} {s.runs === 1 ? 'run' : 'runs'}</span>
                 {p && <span className="cp-principle">{p.principle}</span>}
-                {lesson && <a className="cp-review" href={`#${lesson.id}`}>Review: {lesson.title} →</a>}
+                {lesson && <a className="cp-review" href={`#${lesson.id}`}>Practice it in {lesson.title} →</a>}
               </li>
             );
           })}

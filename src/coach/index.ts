@@ -94,10 +94,18 @@ export function solutionCommands(setup: Setup, sol: string): string[] {
 }
 const referenceTokens = (session: CoachSession, unit: number, sol: string) => solutionCommands(session.setupFor(unit), sol);
 
-/** The one-line live hint: the idea's name, the keys, and the count it replaces. */
-export const nudgeText = (c: Critique) => {
+/** "3 keys", "1 key". */
+export const keysN = (n: number) => `${n} ${n === 1 ? 'key' : 'keys'}`;
+/** What a better way gains, after its keys: "in 3 keys instead of 9", or for an equal count (a
+ * command that carries its own motion, CARRIES) "in one command, with the same 5 keys". */
+export const gain = (you: number, better: number) => (better < you ? `in ${keysN(better)} instead of ${you}` : `in one command, with the same ${keysN(better)}`);
+
+/** The live hint, one line under the editor: "Edit up to a character: dt) does that in 3 keys instead
+ * of 9." `again` (a habit that keeps coming up) adds one word, as the line clips. */
+export const nudgeText = (c: Critique, again = false) => {
   const b = c.better[0];
-  return `${PATTERNS[b.pattern]?.name ?? 'Better'}: ${b.keys} (${keyCount(b.keys)} instead of ${c.keys})`;
+  const name = PATTERNS[b.pattern]?.name ?? 'A shorter way';
+  return `${name}${again ? ', again' : ''}: ${b.keys} does that ${gain(c.keys, keyCount(b.keys))}.`;
 };
 
 /** Does a route use one of this lesson's chips? A chip with a count (`d3w`) needs a count too. */

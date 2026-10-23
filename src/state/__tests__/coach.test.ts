@@ -48,26 +48,26 @@ describe('stepProfile', () => {
 });
 
 describe('recurrence callouts', () => {
-  it('says "3rd run in a row" when the last two runs had it too', () => {
+  it('says "3 runs in a row" when the last two runs had it too', () => {
     const p = fold(run(1), run(2), run(3), run(4, 'op-to-char'), run(5, 'op-to-char'));
     expect(recurrence(p, 'op-to-char')).toEqual({ inRow: 3, inLast: 3 });
-    expect(calloutPrefix(p, 'op-to-char')).toBe('3rd run in a row:');
+    expect(calloutPrefix(p, 'op-to-char')).toBe("You've missed this 3 runs in a row.");
   });
-  it('counts on past three (4th, 11th never "11st")', () => {
+  it('counts on past three', () => {
     const p = fold(run(1, 'x'), run(2, 'x'), run(3, 'x'), run(4, 'x'), run(5, 'x'));
-    expect(calloutPrefix(p, 'x')).toBe('5th run in a row:');
-    expect(calloutPrefix(fold(run(1), run(2, 'x'), run(3, 'x'), run(4, 'x')), 'x')).toBe('4th run in a row:');
+    expect(calloutPrefix(p, 'x')).toBe("You've missed this 5 runs in a row.");
+    expect(calloutPrefix(fold(run(1), run(2, 'x'), run(3, 'x'), run(4, 'x')), 'x')).toBe("You've missed this 4 runs in a row.");
   });
   it('names the count when the runs were not consecutive', () => {
     const p = fold(run(1, 'x'), run(2), run(3, 'x'), run(4), run(5));
     expect(calloutPrefix(p, 'x')).toBeNull(); // run 1 is outside the last five with this one
     const q = fold(run(1), run(2, 'x'), run(3), run(4, 'x'), run(5));
-    expect(calloutPrefix(q, 'x')).toBe('3 of your last 5 runs:');
+    expect(calloutPrefix(q, 'x')).toBe("You've missed this in 3 of your last 5 runs.");
   });
   it('never claims more runs than there are ("3 of your last 4", not "of your last 5")', () => {
     const p = fold(run(1, 'x'), run(2, 'x'), run(3)); // this run is the 4th
     expect(recurrence(p, 'x')).toEqual({ inRow: 1, inLast: 3 });
-    expect(calloutPrefix(p, 'x')).toBe('3 of your last 4 runs:');
+    expect(calloutPrefix(p, 'x')).toBe("You've missed this in 3 of your last 4 runs.");
   });
   it('stays quiet below three', () => {
     expect(calloutPrefix(fold(run(1, 'x')), 'x')).toBeNull();
@@ -75,7 +75,7 @@ describe('recurrence callouts', () => {
   });
   it('maps a report to callouts per pattern', () => {
     const p = fold(run(1, 'dot'), run(2, 'dot'));
-    expect(callouts(p, [ev('dot'), ev('find-char')])).toEqual({ dot: '3rd run in a row:' });
+    expect(callouts(p, [ev('dot'), ev('find-char')])).toEqual({ dot: "You've missed this 3 runs in a row." });
   });
 });
 
