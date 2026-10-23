@@ -29,3 +29,22 @@ describe('Better ways panel', () => {
     expect(html).not.toContain('saves ');
   });
 });
+
+describe('a lesson round done some other way', () => {
+  // A Visual Lines round solved by Vjp (paste over two lines). Deleting and retyping without V must
+  // not get a ct) tip: the lesson's own solution is the advice.
+  const c = LESSONS['visual-lines'].challenge as RoundsChallenge;
+  const round = {
+    setup: { text: ['app.use(auth);', 'app.get("/a", legacyA);', 'app.get("/b", legacyB);', 'app.listen(3000);'], registers: { '"': 'app.use("/api", router);\n' }, cursor: { line: 0, col: 0 } },
+    goal: { text: ['app.use(auth);', 'app.use("/api", router);', 'app.listen(3000);'] },
+    solution: 'jVjp',
+  };
+  const s = new Session({ ...c, rounds: [round] }, { carryCursor: false });
+  let t = 0;
+  for (const k of parseKeys('jjddkfgdt)iuse("/api", router<Esc>')) s.key(k, (t += 50));
+  const report = coach(s, 'visual-lines');
+  it('finishes the round', () => expect(s.done).toBe(true));
+  it('gives no tip on a piece of the route', () => expect(report.critiques).toEqual([]));
+  it("shows the lesson's own solution instead", () => expect(report.reference[0]?.ref).toBe('jVjp'));
+});
+

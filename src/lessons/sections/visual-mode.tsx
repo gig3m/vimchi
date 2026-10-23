@@ -275,14 +275,22 @@ export const visualMode: Section = {
             solution: 'VGd',
           },
           {
-            prompt: 'Replace the two "legacy" lines with the yanked line.',
+            // Yank first, on screen: a line already sitting in a register is state the learner cannot see.
             setup: {
-              text: ['app.use(auth);', 'app.get("/a", legacyA);', 'app.get("/b", legacyB);', 'app.listen(3000);'],
-              registers: { '"': 'app.use("/api", router);\n' },
-              cursor: { line: 1, col: 0 },
+              name: 'INSTALL.md',
+              text: ['## Linux', 'Run ./install.sh', '', '## macOS', 'brew install foo', 'brew link foo'],
+              cursor: { line: 0, col: 0 },
             },
-            goal: { text: ['app.use(auth);', 'app.use("/api", router);', 'app.listen(3000);'] },
-            solution: 'Vjp',
+            steps: [
+              {
+                prompt: 'Yank the Linux install line.',
+                goal: yanked('Run ./install.sh\n', 'line'),
+                mark: { start: { line: 1, col: 0 }, end: { line: 1, col: 15 } },
+              },
+            ],
+            prompt: 'The script covers macOS now: select both brew lines with V and put it over them.',
+            goal: { text: ['## Linux', 'Run ./install.sh', '', '## macOS', 'Run ./install.sh'] },
+            solution: 'jyy3jVjp',
           },
           {
             prompt: 'Delete both blocks of three TODO lines.',

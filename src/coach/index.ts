@@ -364,16 +364,40 @@ function context(lessonId: string, session: CoachSession): Ctx {
   return c;
 }
 
+/** A lesson round the learner did some other way: its solution uses the lesson's key and the
+ * learner never ran it in this round. A tip on a piece of their route (`dt)` → `ct)` in Visual
+ * Lines, where the round is `Vjp`) teaches the wrong thing: only a tip using the lesson's key is
+ * kept, and the report's reference line shows the lesson's own solution for the round. */
+function offLesson(session: CoachSession, ctx: Ctx, unit: number): boolean {
+  if (session.challenge.kind !== 'rounds' || !ctx.own.size) return false;
+  const sol = session.roundSolution(unit);
+  if (sol === null || !ctx.reinforces(referenceTokens(session, unit, sol))) return false;
+  const log = session.log();
+  const first = log.findIndex(e => e.unit === unit);
+  if (first < 0) return false;
+  let last = first;
+  while (last + 1 < log.length && log[last + 1].unit === unit) last++;
+  return !ctx.reinforces(ranTokens(log, first, last));
+}
+
 export function coachSegment(session: CoachSession, lessonId: string, seg: Segment, segs: Segment[], i: number): Critique | null {
   if (!coachable(lessonId)) return null;
   const log = session.log();
   if (recordingSpans(segs, log).has(i)) return null;
   const ctx = context(lessonId, session);
-  const idiom = seg.kind === 'edit' || seg.kind === 'motion' ? idiomCritique(session, ctx, segs, i) : null;
+  // Off the lesson's path, only a tip that uses the lesson's own key is worth giving (checked
+  // lazily: the reference replay runs only for a tip that does not use it).
+  let off: boolean | undefined;
+  const keep = (c: Critique | null) => {
+    if (!c || ctx.reinforces(c.better[0].uses)) return c;
+    off ??= offLesson(session, ctx, seg.unit);
+    return off ? null : c;
+  };
+  const idiom = keep(seg.kind === 'edit' || seg.kind === 'motion' ? idiomCritique(session, ctx, segs, i) : null);
   if (seg.kind !== 'motion') return idiom;
   // A motion run leading into an edit: the idiom may absorb only its last commands (`b` of `jfLb`).
   // When the run itself was the bigger waste, say that instead.
-  const motion = motionCritique(session, ctx, seg);
+  const motion = keep(motionCritique(session, ctx, seg));
   if (idiom && (!motion || idiom.better[0].saves >= motion.better[0].saves)) return idiom;
   return motion;
 }
