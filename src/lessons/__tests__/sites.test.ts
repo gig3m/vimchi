@@ -71,6 +71,22 @@ describe('applySites while typing', () => {
   });
 });
 
+describe('applySites while retyping the same character', () => {
+  it('cl on "=" then "=" reads as 1 of 3 typed, not untouched', () => {
+    const before = ['if (a = b) run();'];
+    const goal = ['if (a === b) run();'];
+    const r = sites(before, 'f=cl===<Esc>', goal);
+    const v = diffGoal(before, goal, { force: true });
+    if (v.mode !== 'inline') throw new Error(v.mode);
+    const typing = { start: { line: 0, col: 6 }, cursor: { line: 0, col: 7 } };
+    const a = applySites(v.ann, before, r, 0, typing);
+    expect(a.ins.get(0)).toEqual([{ col: 6, text: '===', done: 1, quiet: false }]);
+    expect(a.del.has(0)).toBe(false);
+    // In normal mode the same text is the untouched line.
+    expect(applySites(v.ann, before, r, 0).del.has(0)).toBe(true);
+  });
+});
+
 describe('focusTags', () => {
   const inline = (cur: string[], goal: string[]) => {
     const v = diffGoal(cur, goal, { force: true });
