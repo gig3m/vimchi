@@ -48,3 +48,23 @@ describe('a lesson round done some other way', () => {
   it("shows the lesson's own solution instead", () => expect(report.reference[0]?.ref).toBe('jVjp'));
 });
 
+describe('a lesson round done another way, efficiently', () => {
+  // Visual Lines round 5 (jyy3jVjp) as jyyGdk"0p: one key over par, no V. No tip, no cost, a note.
+  const c = LESSONS['visual-lines'].challenge as RoundsChallenge;
+  const s = new Session({ ...c, rounds: [c.rounds[4]] }, { carryCursor: false });
+  let t = 0;
+  for (const k of parseKeys('jyyGdk"0p')) s.key(k, (t += 50));
+  const report = coach(s, 'visual-lines');
+  const html = renderToStaticMarkup(<BetterWays report={report} unitLabel={u => `Round ${u + 1}`} />);
+  it('finishes the round', () => expect(s.done).toBe(true));
+  it('gives no tip and no reference line', () => {
+    expect(report.critiques).toEqual([]);
+    expect(report.reference).toEqual([]);
+  });
+  it('notes the lesson key and the edits used instead', () => {
+    expect(report.otherWays?.map(o => o.unit)).toEqual([0]);
+    expect(html).toContain('this lesson is about');
+    expect(html).toContain('to the same effect, which is fine.');
+  });
+});
+

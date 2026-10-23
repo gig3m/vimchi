@@ -1,5 +1,5 @@
 // "Better ways": what a better Vim user would have typed, from the learner's own keys.
-import { useLayoutEffect, useRef, useState } from 'react';
+import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import { type Chip, type Report, type Summary, gain, keysN } from '../coach';
 import { PATTERNS } from '../coach/patterns';
 import { LESSONS } from '../lessons';
@@ -14,6 +14,11 @@ function Keys({ chips }: { chips: Chip[] }) {
 export function summaryText(s: Summary): string {
   const par = s.par !== null ? ` Par, the key count of a clean solution, is ${s.par}.` : '';
   return `You pressed ${keysN(s.keys)}: ${s.moving} moving the cursor, ${s.typing} typing text and ${s.editing} on commands.${par}`;
+}
+
+/** "a", "a and b", "a, b and c", for JSX pieces. */
+function list(parts: ReactNode[]): ReactNode {
+  return parts.map((p, i) => <span key={i}>{i === 0 ? '' : i === parts.length - 1 ? ' and ' : ', '}{p}</span>);
 }
 
 export function BetterWays({ report, unitLabel }: { report: Report; unitLabel: (u: number) => string }) {
@@ -31,8 +36,9 @@ export function BetterWays({ report, unitLabel }: { report: Report; unitLabel: (
   };
   useLayoutEffect(measure, [report]);
   if (!report.critiques.length && !report.reference.length && !summary.keys) return null;
+  const others = report.otherWays ?? [];
   const items = report.reference.some(r => r.kind === 'item');
-  const typed = [...report.critiques.slice(0, 5).flatMap(c => [c.youChips, ...c.better.map(b => b.chips)]), ...report.reference.map(r => r.chips ?? [])].some(ch => ch.some(x => x.kind === 'text'));
+  const typed = [...report.critiques.slice(0, 5).flatMap(c => [c.youChips, ...c.better.map(b => b.chips)]), ...report.reference.map(r => r.chips ?? []), ...(report.otherWays ?? []).flatMap(o => o.used)].some(ch => ch.some(x => x.kind === 'text'));
   return (
     <div className={'bw-wrap' + (more ? ' more' : '')}>
     <section ref={box} className="better-ways" aria-label="better ways" tabIndex={scrolls ? 0 : undefined} onScroll={measure}>
@@ -64,9 +70,19 @@ export function BetterWays({ report, unitLabel }: { report: Report; unitLabel: (
           ))}
         </ol>
       )}
+      {others.length > 0 && (
+        <ul className="bw-ref">
+          {others.map(o => (
+            <li key={o.unit}>
+              {unitLabel(o.unit)}: this lesson is about {list(o.lessonKeys.map((k, i) => <Kbd key={i} k={k} />))}. You used{' '}
+              {list(o.used.map((chips, i) => <Keys key={i} chips={chips} />))} to the same effect, which is fine.
+            </li>
+          ))}
+        </ul>
+      )}
       {report.reference.length > 0 && (
         <ul className="bw-ref">
-          <li className="bw-ref-note">{items ? 'The edits that took you the most extra keys:' : "Rounds where you pressed many more keys than needed, with the lesson's own solution:"}</li>
+          <li className="bw-ref-note">{items ? 'The edits that took you the most extra keys:' : "Rounds where you pressed more keys than the lesson's own solution:"}</li>
           {report.reference.map((r, i) => (
             <li key={i}>
               {r.kind === 'item'
