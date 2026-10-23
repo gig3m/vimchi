@@ -99,6 +99,21 @@ export function goalMet(vim: Vim, g: Goal): boolean {
 
 export const solutionKeys = (s: string): Key[] => parseKeys(s);
 
+/** Whether a round's reference solution, started with the cursor at `at`, reaches its goal. */
+export function solves(setup: Setup, round: Round, at: Pos): boolean {
+  const vim = createVim(setup);
+  vim.win.cursor = { ...at };
+  vim.win.want = at.col;
+  vim.scrollToCursor();
+  const steps = stepsOf(round);
+  let i = 0;
+  for (const k of solutionKeys(round.solution)) {
+    vim.feed(k);
+    while (i < steps.length - 1 && goalMet(vim, steps[i].goal)) i++;
+  }
+  return goalMet(vim, steps[steps.length - 1].goal);
+}
+
 /** A round's steps in order, the round's own prompt and goal last. */
 export const stepsOf = (r: Round): Step[] => [...(r.steps ?? []), { prompt: r.prompt ?? '', goal: r.goal, mark: r.mark }];
 
@@ -178,6 +193,8 @@ export type SessionView = {
   roundDone: boolean;
   msg: string;
   msgKind: MsgKind;
+  /** The cursor was put back at the round's start (until the first key): the editor flags it. */
+  moved: { from: Pos; to: Pos } | null;
   quiz: { q: QuizChallenge['questions'][number]; index: number; picked: number | null; sel: number } | null;
   /** Generated challenges: the checklist, ticked live. Empty otherwise. */
   items: { text: string; kind: string; done: boolean; line: number }[];
@@ -326,6 +343,12 @@ export class Session {
     this.target = stepsOf(r)[0].goal.cursor ?? null;
     this.roundKeys = 0;
     this.carryExtra = 0;
+    this.moved = null;
+    // A new round starts with a clean command line: the last round's "3 lines >ed" or a setup's
+    // own message ("E486" from an init macro) would read as something the learner just did.
+    this.msg = '';
+    this.msgKind = 'info';
+    this.vim.message = null;
     // Leave the cursor where the learner is, rather than making them find it again. Not when the
     // round sets up folds: its cursor was placed against them, and a carried one can land hidden
     // inside a closed fold, where the reference keys no longer work.
@@ -337,7 +360,19 @@ export class Session {
       this.vim.win.cursor = { line, col };
       this.vim.win.want = col;
       this.vim.scrollToCursor();
-      if (goalMet(this.vim, stepsOf(r)[0].goal)) {
+      // Kept only while the round still works from here: once on the round's starting line, its
+      // own solution must reach the goal. A backward motion with the target now ahead, `*` on
+      // another word, a column-exact goal: the round's lesson can't be done from here, so the
+      // cursor goes back to the round's start, and says so (a cursor that jumps unannounced
+      // loses the learner's place).
+      const onLine = { line: start.line, col: Math.min(col, Math.max(0, this.vim.line(start.line).length - 1)) };
+      const fits = eqPos(onLine, start) || solves(setup, r, onLine);
+      if (goalMet(this.vim, stepsOf(r)[0].goal) || !fits) {
+        if (!fits && !eqPos(start, this.vim.cursor)) {
+          this.moved = { from: { ...this.vim.cursor }, to: start };
+          this.msg = start.line === this.vim.cursor.line ? 'The cursor moved back to where this round starts.' : `The cursor moved to line ${start.line + 1}, where this round starts.`;
+          this.msgKind = 'warn';
+        }
         this.vim.win.cursor = start;
         this.vim.win.want = start.col;
         this.vim.scrollToCursor();
@@ -350,6 +385,8 @@ export class Session {
   }
   /** Keep the cursor between rounds (off in validation playthroughs, whose solutions assume the setup cursor). */
   private carryCursor: boolean;
+  /** This round's cursor was carried, then moved back to the round's start (shown once, loudly). */
+  moved: { from: Pos; to: Pos } | null = null;
   /** Where the round's setup puts the cursor, before any carry: where its reference solution starts. */
   roundStart: Pos | null = null;
   /** The round's first screen line before any carry (page motions depend on it). */
@@ -625,7 +662,9 @@ export class Session {
     if ((c.kind === 'fix' || c.kind === 'replace') && this.vim) hits = Math.max(0, this.total - marks.size - brokenLines.size);
     const quiz = c.kind === 'quiz' && !this.done ? { q: c.questions[this.roundIdx], index: this.roundIdx, picked: this.picked, sel: this.sel } : null;
     return {
-      vim: this.vim, target: this.done ? null : this.target, marks, brokenLines, goalText, prompt: step?.prompt || null,
+      // A cursor goal in another file has no place in this one: drawing it here points at a wrong spot.
+      vim: this.vim, target: this.done || (step?.goal.buffer != null && step.goal.buffer !== this.vim?.buf.name) ? null : this.target,
+      moved: this.moved && this.roundKeys === 0 ? this.moved : null, marks, brokenLines, goalText, prompt: step?.prompt || null,
       span: !this.done && !this.roundDone ? step?.mark ?? null : null, step: this.stepIdx,
       hits, total: this.total, keys: this.keys, startAt: this.startAt, endAt: this.endAt, done: this.done,
       roundDone: this.roundDone, msg: this.msg, msgKind: this.msgKind, quiz,

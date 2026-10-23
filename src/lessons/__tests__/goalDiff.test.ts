@@ -40,12 +40,49 @@ describe('diffGoal', () => {
     const goal = ['app.use(auth);', 'app.use("/api", router);', 'app.listen(3000);'];
     const a = inline(['app.use(auth);', 'app.get("/a", legacyA);', '', 'app.listen(3000);'], goal);
     expect([...a.delLines]).toEqual([2]);
-    expect(a.ins.get(1)?.length).toBe(1);
+    // Word by word, not one retype of the line (a pure insertion stays minimal: "a" + "pi").
+    expect(a.ins.get(1)?.map(t => t.text)).toEqual(['use', 'pi', 'router']);
   });
-  it('a join keeps its first line and stays an edit', () => {
+  it('a join is drawn as a join, not as the next line retyped', () => {
     const a = inline(['# Notes', 'This note', 'was wrapped', 'end'], ['# Notes', 'This note was wrapped', 'end']);
-    expect(a.ins.get(1)).toEqual([{ col: 9, text: ' was wrapped' }]);
-    expect([...a.delLines]).toEqual([2]);
+    expect([...a.joins!]).toEqual([[1, 'space']]);
+    expect(a.ins.size + a.del.size + a.delLines.size).toBe(0);
+    const g = inline(['f(', '  a,', '  b)'], ['f(  a,  b)']);
+    expect([...g.joins!]).toEqual([[0, 'none'], [1, 'none']]);
+  });
+  it('a join that also changes text stays an edit', () => {
+    const a = inline(['This note', 'was wrapped'], ['This note is wrapped']);
+    expect(a.joins!.size).toBe(0);
+  });
+  it('several changes on one line are each marked', () => {
+    const a = inline(['getting started', 'x'], ['Getting Started', 'x']);
+    expect(a.ins.get(0)?.map(t => [t.col, t.text, t.kind])).toEqual([[0, 'Getting', 'case'], [8, 'Started', 'case']]);
+    expect(a.cases!.get(0)).toEqual([[0, 6], [8, 14]]);
+    const p = inline(['return (total);', 'x'], ['return total;', 'x']);
+    expect(p.del.get(0)).toEqual([[7, 7], [13, 13]]);
+    expect(p.ins.get(0)).toBeUndefined();
+  });
+  it('swapped quotes are two marks, and a bracketed prefix goes whole', () => {
+    const q = inline(["import x from 'express';", 'y'], ['import x from "express";', 'y']);
+    expect(q.del.get(0)).toEqual([[14, 14], [22, 22]]);
+    const b = inline(['[10:14:02] [INFO] up', 'y'], ['[INFO] up', 'y']);
+    expect(b.del.get(0)).toEqual([[0, 10]]);
+  });
+  it('a word edit stays one edit: cfg becomes config, not two inserts', () => {
+    const a = inline(['load(cfg);', 'x'], ['load(config);', 'x']);
+    expect(a.del.get(0)).toEqual([[5, 7]]);
+    expect(a.ins.get(0)?.map(t => t.text)).toEqual(['config']);
+  });
+  it('deleting a line between repeated lines is still inline, not a sort', () => {
+    const code = ['function a() {', '  return 1;', '}', '', 'function b() {', '  return 2;', '}'];
+    expect(diffGoal(code, code.filter((_, i) => i !== 1)).mode).toBe('inline');
+    expect(diffGoal(['', 'x', '', 'y'], ['x', '', 'y']).mode).toBe('inline');
+    // A copied line is new, not moved.
+    expect(diffGoal(['x', 'y', 'z'], ['x', 'x']).mode).toBe('inline');
+  });
+  it('sorted lines and rewrapped text go to the pane', () => {
+    expect(diffGoal(['pear', 'apple', 'fig', 'kiwi', 'date'], ['apple', 'date', 'fig', 'kiwi', 'pear']).mode).toBe('pane');
+    expect(diffGoal(['one two three four', 'five six', 'seven'], ['one two three four five', 'six seven']).mode).toBe('pane');
   });
   it('line deletion', () => {
     const a = inline(['a', 'b', 'c'], ['a', 'c']);

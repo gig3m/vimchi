@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useReducer, useRef, useState, type KeyboardEvent } from 'react';
-import { diffGoal } from '../lessons/goalDiff';
+import { align, diffGoal } from '../lessons/goalDiff';
 import { applySites, focusTags, solutionSites } from '../lessons/sites';
 import { Session } from '../lessons/runtime';
 import type { Lesson } from '../lessons/types';
 import { fmtClock } from '../state/format';
 import type { Run } from '../state/store';
-import { C, colorize } from '../ui/syntax';
+import { colorize } from '../ui/syntax';
 import { keyFromEvent } from '../vim/keys';
 import { EditorView } from './EditorView';
 import { resultsShortcut, tabToBrowser } from './shortcuts';
@@ -112,13 +112,13 @@ export function Practice(p: Props) {
   const unitLabel = (u: number) => (challenge.kind === 'generated' ? `Edit ${u + 1}` : `Round ${u + 1}`);
 
   // Live nudge: one line under the editor when a just-closed segment has a better way.
-  const [nudge, setNudge] = useState<string | null>(null);
+  const [nudge, setNudge] = useState<{ text: string; unit: number } | null>(null);
   const nudgeT = useRef<number>(undefined);
   const clearNudge = () => { clearTimeout(nudgeT.current); setNudge(null); };
   const showNudge = (c: Critique) => {
     const again = calloutPrefix(coachProfile, c.better[0].pattern) !== null;
     clearTimeout(nudgeT.current);
-    setNudge(nudgeText(c, again));
+    setNudge({ text: nudgeText(c, again), unit: c.unit });
     nudgeT.current = window.setTimeout(() => setNudge(null), 6000); // a whole sentence: time to read it
   };
   /** After a key (or a round/run end), critique a segment that has closed: at most one hint per round. */
@@ -297,9 +297,9 @@ export function Practice(p: Props) {
   const showPane = !!v.goalText && !inline && goalView.mode !== 'none';
   const overlay = useMemo(() => ({
     ann: inline,
-    target: v.target, marks: v.marks, brokenLines: v.brokenLines, span: v.span, tip,
+    target: v.target, marks: v.marks, brokenLines: v.brokenLines, span: v.span, tip, moved: !!v.moved,
     markKind: s.challenge.kind === 'fix' ? 'fix' as const : s.challenge.kind === 'replace' ? 'replace' as const : null,
-  }), [inline, v.target, v.marks, v.brokenLines, v.span, tip, s.challenge.kind]);
+  }), [inline, v.target, v.marks, v.brokenLines, v.span, tip, v.moved, s.challenge.kind]);
 
   const elapsed = v.startAt ? (v.endAt ?? Date.now()) - v.startAt : 0;
   const status = { keys: v.keys, time: fmtClock(elapsed) };
@@ -308,7 +308,9 @@ export function Practice(p: Props) {
   // Tutor notes (not Vim's own messages) go in the command-line row.
   const vimMsg = s.vim?.message?.text.split('\n')[0];
   // A tutor note wins, then Vim's own message; a coach hint never covers either.
-  const note = v.msg && v.msg !== vimMsg ? { text: v.msg, kind: v.msgKind } : nudge && !v.done && !vimMsg ? { text: nudge, kind: 'coach' } : null;
+  // A hint about the round just finished stays into the next one: say which round it was about.
+  const nudgeLine = nudge && (s.challenge.kind === 'rounds' && nudge.unit !== s.roundIdx ? `${unitLabel(nudge.unit)}: ${nudge.text}` : nudge.text);
+  const note = v.msg && v.msg !== vimMsg ? { text: v.msg, kind: v.msgKind } : nudgeLine && !v.done && !vimMsg ? { text: nudgeLine, kind: 'coach' } : null;
   const isQuiz = s.challenge.kind === 'quiz';
   const kind = s.challenge.kind;
   const roundLabel = kind === 'rounds' || kind === 'quiz' ? `${Math.min(v.hits + (v.done ? 0 : 1), v.total)} of ${v.total}` : `${v.hits} / ${v.total}`;
@@ -403,11 +405,15 @@ export function Practice(p: Props) {
 }
 
 function GoalPane({ goal, current, filetype }: { goal: string[]; current: readonly string[]; filetype: string }) {
+  // A goal line is unchanged when it lines up with one of the current lines, not merely when the
+  // same row matches: one line added or removed above must not mark everything below it.
+  const kept = new Set(align(current, goal).map(([, g]) => g));
+  const fewer = current.length - goal.length;
   return (
     <div className="goal">
       <div className="goal-label">goal</div>
       {goal.map((t, i) => {
-        const same = current[i] === t;
+        const same = kept.has(i);
         const cols = colorize(t, filetype);
         return (
           <div key={i} className={'goal-row' + (same ? ' same' : ' diff')}>
@@ -418,7 +424,8 @@ function GoalPane({ goal, current, filetype }: { goal: string[]; current: readon
           </div>
         );
       })}
-      {current.length > goal.length && <div className="goal-row diff"><span className="goal-mark">›</span><span className="goal-text" style={{ color: C.red }}>(delete the extra lines)</span></div>}
+      {/* A count, not an instruction: joins, sorts and filters shorten a file without deleting lines. */}
+      {fewer > 0 && <div className="goal-row same"><span className="goal-mark" /><span className="goal-text goal-note">({fewer} {fewer === 1 ? 'line' : 'lines'} fewer than now)</span></div>}
     </div>
   );
 }

@@ -5,8 +5,10 @@
 //
 // Keys are Vim notation (`dt)iuse<Esc>`, `<C-d>`, `<lt>`), fed through the editor's own keydown
 // handler. Without --keys each round plays the lesson's own solution. A round with an empty
-// entry in --keys is played by its solution too; any other entry is taken literally, spaces included. --rounds limits the opening shots (all rounds
-// are still played, so the results screen is real).
+// entry in --keys is played by its solution too; any other entry is taken literally, spaces included.
+// Fewer entries than rounds stops after the last one, with a shot of the screen as it stands (a
+// half-typed edit, say). --rounds limits the opening shots (all rounds are still played, so the
+// results screen is real).
 //
 // Writes PNGs of the practice panel (prompt, goal marks, coach hint, results) and an index.md
 // listing each shot with the round's prompt and the keys played. Starts the dev server on 5317
@@ -157,7 +159,9 @@ if (sweep) {
     if (keysArg) await feed(await page.evaluate(k => window.__vimchi.parseKeys(k), keysArg.replace(/\|/g, '')));
     await shot('end', `after ${keysArg ? `\`${keysArg}\`` : 'no keys'}`);
   }
-  for (let r = 0; r < l.rounds.length; r++) {
+  // --keys with fewer entries than rounds stops after the last one: a shot of a half-done edit.
+  const last = scripted ? Math.min(scripted.length, l.rounds.length) : l.rounds.length;
+  for (let r = 0; r < last; r++) {
     const round = l.rounds[r];
     const mine = scripted?.[r] || undefined;
     // The start shot shows the cursor where the learner finds it. Your own keys are played from
@@ -179,10 +183,11 @@ if (sweep) {
       lastHint = hint;
     }
     index.push(`  - played ${played}`);
+    if (r + 1 === last && last < l.rounds.length) { await page.waitForTimeout(200); await shot(`r${r + 1}-stop`, `stopped after round ${r + 1}'s keys`); break; }
     if (!(await settle(before, r + 1 < l.rounds.length))) index.push(`  - **round ${r + 1} did not finish**: later keys went to it, so the shots after this are off`);
   }
-  const done = await page.waitForSelector('.results', { timeout: 3000 }).then(() => true, () => false);
-  await shot('results', done ? 'results screen' : l.kind === 'rounds' || keysArg ? '**no results screen**: the run did not finish' : 'end (no keys played)');
+  const done = last < l.rounds.length || await page.waitForSelector('.results', { timeout: 3000 }).then(() => true, () => false);
+  if (last === l.rounds.length) await shot('results', done ? 'results screen' : l.kind === 'rounds' || keysArg ? '**no results screen**: the run did not finish' : 'end (no keys played)');
 }
 
 writeFileSync(join(out, 'index.md'), index.join('\n') + (errors.length ? `\n\n## Page errors\n${errors.map(e => `- ${e}`).join('\n')}\n` : '\n'));

@@ -108,7 +108,7 @@ function stages(site: Site): { text: string; done: number; cut: boolean }[] {
  * typed. Lines with no site (or edited off-script) keep the diff's marks.
  */
 export function applySites(ann: Annotations, cur: readonly string[], sites: readonly Site[], step: number): Annotations {
-  const out: Annotations = { ...ann, del: new Map(ann.del), ins: new Map(ann.ins), num: new Map(ann.num) };
+  const out: Annotations = { ...ann, del: new Map(ann.del), ins: new Map(ann.ins), num: new Map(ann.num), cases: new Map(ann.cases) };
   const claimed = new Set<number>();
   let tagged = false;
   for (const site of sites) {
@@ -123,8 +123,16 @@ export function applySites(ann: Annotations, cur: readonly string[], sites: read
     });
     if (best < 0) continue;
     claimed.add(best);
+    // The diff already reads better for an untouched line it splits into several edits (a pair of
+    // quotes, two words) or marks as a change of case: one site span would picture a retype.
+    const diffEdits = new Set([...(ann.del.get(best) ?? []).map(([a]) => a), ...(ann.ins.get(best) ?? []).map(t => t.col)]).size;
+    if (!form.cut && (diffEdits > 1 || ann.cases?.has(best))) {
+      if (site.num) out.num.set(best, site.num);
+      continue;
+    }
     out.del.delete(best);
     out.ins.delete(best);
+    out.cases!.delete(best);
     if (site.del && !form.cut) out.del.set(best, [site.del]);
     if (site.ins) out.ins.set(best, [{ col: site.col, text: site.ins, done: form.done, quiet: tagged }]);
     if (site.ins) tagged = true;

@@ -341,7 +341,7 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 .ev-tab { padding: 3px 12px; color: var(--muted); background: #21222c; border-radius: 5px 5px 0 0; }
 .ev-tab.on { color: var(--fg); background: var(--bg-editor); }
 .ev-panes { position: relative; font-size: 15px; }
-.ev-panes:not(.multi) { padding: 30px 0 18px; overflow-x: auto; } /* 30px top: headroom for an insert hint above the first row */
+.ev-panes:not(.multi) { padding: 30px 0 18px; overflow-x: auto; } /* 30px top: headroom for the warm-up coach tip above the first row */
 .ev-panes:not(.multi) .ev-pane { overflow: visible; }
 .ev-panes.multi { font-size: 13.5px; background: var(--bg-bar); }
 .ev-pane { overflow: hidden; }
@@ -471,14 +471,6 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 
 /* ---------- inline goal annotations ---------- */
 .ev-text { position: relative; }
-.ann-tag {
-  display: inline-flex; flex-direction: column; padding: 0 5px; font-size: 12.5px; line-height: 18px; white-space: pre;
-  color: var(--green); background: #1e1f29; border: 1.5px solid var(--green); border-radius: 4px;
-}
-.ann-newline { position: absolute; top: 100%; z-index: 2; display: flex; align-items: center; transform: translateY(-50%); pointer-events: none; }
-.ann-newline.above { top: 0; }
-.ann-dash { border-top: 1.5px dashed var(--green); }
-.ann-tag-line { display: block; }
 .ann-typed { opacity: .4; }
 .ann-next { color: #fff; font-weight: 800; text-decoration: underline; text-underline-offset: 2px; }
 /* Coaching tip at the cursor (Warm-up): a shorter way to the edit just made. */
@@ -500,18 +492,33 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
   display: inline-block; margin-left: 1ch; padding: 0 5px; font-size: 12.5px; line-height: 18px; pointer-events: none;
   color: var(--red); background: rgba(255,85,85,.2); border: 1.5px solid var(--red); border-radius: 4px; text-decoration: line-through;
 }
-/* Insert hint: a zero-width anchor between two cells, a dotted line marking the boundary,
-   and the text to type floating above it (below on the first row, which the pane would clip). */
-.ann-ins { position: relative; display: inline; pointer-events: none; --ann-lead: 5px; }
-.ann-ins-line { position: absolute; z-index: 1; left: -1px; top: calc(-1 * var(--ann-lead)); bottom: -3px; border-left: 2px dotted var(--green); }
-/* The tag overlaps the row above, so it must not read as buffer text there ("export as[e]c" looks
-   like a typo): a small filled pill, sitting low in the gap between the rows. */
-.ann-ins .ann-tag {
-  position: absolute; z-index: 2; bottom: calc(100% + var(--ann-lead)); left: 0; --ann-shift: 0px; transform: translateX(calc(-50% + var(--ann-shift)));
-  flex-direction: row; padding: 0 5px; font-size: 13px; line-height: 17px; font-weight: 600; color: var(--green); background: #1e1f29; border-color: var(--green); border-radius: 5px;
-  box-shadow: 0 0 0 2px var(--bg-editor);
+/* Text to type, in the line at its insertion point (like Neovim's inlay hints): it takes its own
+   room, so it never covers a neighbouring line. */
+.ann-ghost {
+  display: inline; padding: 0 2px; margin: 0 1px; border-radius: 3px; white-space: pre;
+  color: var(--green); background: rgba(80,250,123,.13); box-shadow: inset 0 0 0 1px rgba(80,250,123,.55);
+}
+.ann-ghost.quiet { opacity: .6; }
+/* A change of case: the letters stay (wavy underline), the ghost shows them in the new case. */
+.ann-ghost.case { color: var(--cyan); background: rgba(139,233,253,.12); box-shadow: inset 0 0 0 1px rgba(139,233,253,.55); }
+.ann-ghost.case::before { content: '→'; opacity: .7; margin-right: 2px; }
+.ann-join {
+  display: inline-block; margin-left: 1ch; padding: 0 5px; font-size: 12.5px; line-height: 18px; white-space: nowrap;
+  color: var(--cyan); background: rgba(139,233,253,.12); border: 1px dashed var(--cyan); border-radius: 4px;
+}
+/* A goal line to add: a row of its own, marked + in the gutter. */
+.ann-newrow-g { color: var(--green) !important; font-weight: 700; }
+.ann-newrow-t {
+  white-space: pre; color: var(--green); background: rgba(80,250,123,.1);
+  box-shadow: inset 0 0 0 1px rgba(80,250,123,.4); border-radius: 3px; padding: 0 2px;
 }
 
+/* The round put the cursor back at its start: a ring that pulses, so the jump is seen. */
+.cell.ev-moved::after {
+  content: ''; position: absolute; inset: -4px; border: 2px solid var(--yellow); border-radius: 4px; pointer-events: none;
+  animation: ev-moved .7s ease-out 4 both;
+}
+@keyframes ev-moved { from { opacity: 1; transform: scale(2.2); } to { opacity: .9; transform: scale(1); } }
 
 /* ---------- cursor stays visible over marks ---------- */
 .cell.ev-block { position: relative; z-index: 1; box-shadow: 0 0 0 1px var(--bg-editor), 0 0 8px 1px rgba(248, 248, 242, .55) !important; text-decoration: none !important; }
@@ -683,3 +690,4 @@ button.side-section:focus-visible { outline: 2px solid var(--purple); outline-of
 .about-table td:first-child { white-space: nowrap; }
 .about-keys code { margin-right: 4px; }
 @media (max-width: 640px) { .about-table td:first-child { white-space: normal; } }
+.goal-note { color: var(--comment); font-style: italic; }

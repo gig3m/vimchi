@@ -48,6 +48,8 @@ plus an `index.md` to `look/<lesson>/` (gitignored), so a person or an agent can
   and the results, playing the lesson's own solutions.
 - `--keys "|||jyy3j2dd\"0p|"`: play your own keys per round (Vim notation, `|` between rounds,
   empty = the solution), e.g. to see what the coach says about a route that skips the lesson's key.
+  Fewer entries than rounds stops after the last one with a shot of the screen as it stands
+  (`--keys "f=cl="`: round 1 half typed).
 - `--rounds 2,5`: shots for those rounds only. `--out dir`: somewhere else.
 - `--sweep`: every round's opening screen in every lesson, to `look/sweep/`.
 
