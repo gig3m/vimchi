@@ -99,6 +99,20 @@ export function goalMet(vim: Vim, g: Goal): boolean {
 
 export const solutionKeys = (s: string): Key[] => parseKeys(s);
 
+/** Whether a round's steps must all be done before its final goal counts. Usually reaching the
+ * final goal by another route is fine, but not when the goal is where the round starts (a step
+ * undone) or only a place to stand (a jump back to something a step did: you can walk there). */
+function stepsRequired(setup: Setup, round: Round): boolean {
+  const steps = stepsOf(round);
+  if (steps.length < 2) return false;
+  if (round.inOrder) return true;
+  const final = steps[steps.length - 1].goal;
+  if (final.text == null && final.files == null && final.registers == null) return true;
+  const vim = createVim(setup);
+  vim.feed('<Esc>');
+  return goalMet(vim, final);
+}
+
 /** Whether a round's reference solution, started with the cursor at `at`, reaches its goal. */
 export function solves(setup: Setup, round: Round, at: Pos): boolean {
   const vim = createVim(setup);
@@ -344,6 +358,7 @@ export class Session {
     this.roundKeys = 0;
     this.carryExtra = 0;
     this.moved = null;
+    this.stepsRequired = stepsRequired(setup, r);
     // A new round starts with a clean command line: the last round's "3 lines >ed" or a setup's
     // own message ("E486" from an init macro) would read as something the learner just did.
     this.msg = '';
@@ -392,6 +407,8 @@ export class Session {
   /** The round's first screen line before any carry (page motions depend on it). */
   roundTop = 0;
   private carryExtra = 0;
+  /** The final goal counts only after the steps: see stepsRequired. */
+  private stepsRequired = false;
   private carryByRound: number[] = [];
 
   /** Par keys for a finished round (reference length + carry-over path), or null. */
@@ -477,8 +494,9 @@ export class Session {
         this.stepIdx++;
         this.target = steps[this.stepIdx].goal.cursor ?? null;
       }
-      // Reaching the final goal by another route still finishes the round.
-      if (goalMet(vim, steps[last].goal)) {
+      // Reaching the final goal by another route still finishes the round, unless the steps are
+      // the round (see stepsRequired).
+      if (goalMet(vim, steps[last].goal) && (this.stepIdx === last || !this.stepsRequired)) {
         this.hits++;
         this.roundStats.push({ keys: this.roundKeys, par: solutionKeys(round!.solution).length + this.carryExtra });
         if (this.roundIdx >= c.rounds.length - 1) this.finish(now);

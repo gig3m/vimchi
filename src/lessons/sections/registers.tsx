@@ -383,10 +383,19 @@ export const registers: Section = {
               cursor: { line: 3, col: 4 },
             },
             goal: { registers: { q: "    sql = 'SELECT * FROM orders WHERE created_at > %s'\n" } },
+            mark: { start: { line: 2, col: 4 }, end: { line: 2, col: 53 } },
             solution: 'k"qyy',
           },
           {
-            prompt: 'Yank the text inside the quotes: the postgres URL into u, "X-Api-Key" into k.',
+            steps: [
+              {
+                prompt: 'Yank the postgres URL, inside its quotes, into register u.',
+                goal: { registers: { u: 'postgres://localhost:5432/app' } },
+                mark: { start: { line: 1, col: 16 }, end: { line: 1, col: 44 } },
+              },
+            ],
+            prompt: 'Now yank "X-Api-Key", inside its quotes, into register k.',
+            mark: { start: { line: 2, col: 18 }, end: { line: 2, col: 26 } },
             setup: {
               name: 'env.ts',
               text: [
@@ -434,13 +443,30 @@ export const registers: Section = {
             solution: '"ayy2j"byy4j"aPj"bp',
           },
           {
-            prompt: 'Registers h and s each hold one line. Put both at the top of the file, h first.',
             setup: {
               name: 'server.js',
-              text: ["const http = require('node:http');", '', 'http.createServer(handler).listen(8080);'],
-              registers: { h: '// SPDX-License-Identifier: MIT\n', s: "'use strict';\n" },
-              cursor: { line: 2, col: 0 },
+              text: [
+                "const http = require('node:http');",
+                '',
+                'http.createServer(handler).listen(8080);',
+                '// SPDX-License-Identifier: MIT',
+                "'use strict';",
+              ],
+              cursor: { line: 0, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Cut the SPDX line into register h.',
+                goal: { registers: { h: '// SPDX-License-Identifier: MIT\n' } },
+                mark: { start: { line: 3, col: 0 }, end: { line: 3, col: 30 } },
+              },
+              {
+                prompt: "Cut the 'use strict' line into register s.",
+                goal: { registers: { s: "'use strict';\n" } },
+                mark: { start: { line: 3, col: 0 }, end: { line: 3, col: 12 } },
+              },
+            ],
+            prompt: 'Put both lines at the top of the file, h first.',
             goal: {
               text: [
                 '// SPDX-License-Identifier: MIT',
@@ -450,7 +476,7 @@ export const registers: Section = {
                 'http.createServer(handler).listen(8080);',
               ],
             },
-            solution: 'gg"sP"hP',
+            solution: '3j"hdd"sddgg"sP"hP',
           },
         ],
       },
@@ -553,19 +579,30 @@ export const registers: Section = {
             solution: '"addj"Addgg"aP',
           },
           {
-            prompt: 'Register e already holds an export line. Append the parse and validate lines to it, in that order.',
             setup: {
               name: 'index.ts',
-              text: ["export { parse } from './parse';", "export { format } from './format';", "export { validate } from './validate';"],
-              registers: { e: "export { tokenize } from './tokenize';\n" },
+              text: [
+                "export { tokenize } from './tokenize';",
+                "export { parse } from './parse';",
+                "export { format } from './format';",
+                "export { validate } from './validate';",
+              ],
               cursor: { line: 0, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the tokenize line into register e.',
+                goal: { registers: { e: "export { tokenize } from './tokenize';\n" } },
+                mark: { start: { line: 0, col: 0 }, end: { line: 0, col: 37 } },
+              },
+            ],
+            prompt: 'Append the parse and validate lines to e, in that order.',
             goal: {
               registers: {
                 e: "export { tokenize } from './tokenize';\nexport { parse } from './parse';\nexport { validate } from './validate';\n",
               },
             },
-            solution: '"Eyy2j"Eyy',
+            solution: '"eyyj"Eyy2j"Eyy',
           },
           {
             prompt: 'Cut the two DEBUG lines into t and put them at the bottom.',
@@ -921,20 +958,24 @@ export const registers: Section = {
         base: { name: 'Button.tsx' },
         rounds: [
           {
-            prompt: 'You just changed "sum" to "subtotal" with cw. Do the same to "return sum", and put subtotal inside log().',
             setup: {
               name: 'total.ts',
               text: ['function total(items: Item[]) {', '  const sum = items.reduce(add, 0);', '  log();', '  return sum;', '}'],
-              cursor: { line: 1, col: 8 },
-              init: vim => {
-                vim.feedKeys('cwsubtotal<Esc>');
-                vim.typedKeys = 0;
+              cursor: { line: 1, col: 2 },
+            },
+            steps: [
+              {
+                prompt: 'Change "sum" on the const line to "net" with cw.',
+                goal: {
+                  text: ['function total(items: Item[]) {', '  const net = items.reduce(add, 0);', '  log();', '  return sum;', '}'],
+                },
               },
-            },
+            ],
+            prompt: 'Do the same to "return sum" with ., and put "net" inside log() from the . register.',
             goal: {
-              text: ['function total(items: Item[]) {', '  const subtotal = items.reduce(add, 0);', '  log(subtotal);', '  return subtotal;', '}'],
+              text: ['function total(items: Item[]) {', '  const net = items.reduce(add, 0);', '  log(net);', '  return net;', '}'],
             },
-            solution: 'jjb.kF(".p',
+            solution: 'wcwnet<Esc>jjb.kF(".p',
           },
           {
             prompt: 'Add the file name after "// File: ".',
@@ -959,19 +1000,20 @@ export const registers: Section = {
             solution: 'gg$"%p',
           },
           {
-            prompt: 'Put the command you just ran on a new line between the ``` lines, with a ":" in front.',
             setup: {
               name: 'cheatsheet.md',
-              text: ['## Strip trailing whitespace', '', '```vim', '```'],
+              text: ['## Sort a list', '- pears', '- apples', '- figs', '', '```vim', '```'],
               cursor: { line: 0, col: 0 },
-              init: vim => {
-                vim.feedKeys(':%s/\\s\\+$//e<CR>');
-                vim.setCursor({ line: 2, col: 0 });
-                vim.typedKeys = 0;
-              },
             },
-            goal: { text: ['## Strip trailing whitespace', '', '```vim', ':%s/\\s\\+$//e', '```'] },
-            solution: 'o:<Esc>":p',
+            steps: [
+              {
+                prompt: 'Sort the three fruit lines: run :2,4sort.',
+                goal: { text: ['## Sort a list', '- apples', '- figs', '- pears', '', '```vim', '```'] },
+              },
+            ],
+            prompt: 'Put the command you just ran on a new line between the ``` lines, with a ":" in front.',
+            goal: { text: ['## Sort a list', '- apples', '- figs', '- pears', '', '```vim', ':2,4sort', '```'] },
+            solution: ':2,4sort<CR>GO:<Esc>":p',
           },
           {
             prompt: "Put the file name between the empty quotes ''.",
@@ -1072,20 +1114,28 @@ export const registers: Section = {
             solution: 'kf(wciwstr(<C-r>")<Esc>',
           },
           {
-            prompt: 'Register u holds a URL. Put it between the empty quotes on the first line.',
             setup: {
               text: [
+                "// Stripe: 'https://api.stripe.com/v1/payment_intents'",
                 "const url = '';",
                 'const res = await fetch(url, {',
                 "  method: 'POST',",
                 '  body: JSON.stringify(intent),',
                 '});',
               ],
-              registers: { u: 'https://api.stripe.com/v1/payment_intents' },
-              cursor: { line: 2, col: 2 },
+              cursor: { line: 0, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Yank the URL inside the quotes into register u.',
+                goal: { registers: { u: 'https://api.stripe.com/v1/payment_intents' } },
+                mark: { start: { line: 0, col: 12 }, end: { line: 0, col: 52 } },
+              },
+            ],
+            prompt: 'Put it between the empty quotes on the "const url" line, from insert mode.',
             goal: {
               text: [
+                "// Stripe: 'https://api.stripe.com/v1/payment_intents'",
                 "const url = 'https://api.stripe.com/v1/payment_intents';",
                 'const res = await fetch(url, {',
                 "  method: 'POST',",
@@ -1093,7 +1143,7 @@ export const registers: Section = {
                 '});',
               ],
             },
-            solution: "ggf'a<C-r>u<Esc>",
+            solution: "f'\"uyi'ja<C-r>u<Esc>",
           },
           {
             prompt: 'Make the empty refund() read refund(amountCents, fee). The cursor is on amountCents.',

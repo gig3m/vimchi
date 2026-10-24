@@ -186,37 +186,34 @@ export const search: Section = {
             solution: '*cgnrows<Esc>..',
           },
           {
-            prompt: 'The last search was "print". Make each one "log".',
+            prompt: 'Search for "print", then make each one "log".',
             setup: {
               name: 'boot.lua',
               text: ["print('start')", "print('loading')", "print('done')"],
-              search: 'print',
               cursor: { line: 0, col: 0 },
             },
             goal: { text: ["log('start')", "log('loading')", "log('done')"] },
-            solution: 'cgnlog<Esc>..',
+            solution: '/print<CR>cgnlog<Esc>..',
           },
           {
-            prompt: 'The last search was " !important". Delete every match.',
+            prompt: 'Search for " !important" (with its space), then delete every match.',
             setup: {
               name: 'overrides.css',
               text: ['.btn { color: red !important; }', '.nav { margin: 0 !important; }', '.card { padding: 8px !important; }'],
-              search: ' !important',
               cursor: { line: 0, col: 0 },
             },
             goal: { text: ['.btn { color: red; }', '.nav { margin: 0; }', '.card { padding: 8px; }'] },
-            solution: 'dgn..',
+            solution: '/ !important<CR>dgn..',
           },
           {
-            prompt: 'The last search was "todo". Change each one to "TODO".',
+            prompt: 'Search for "todo", then change each one to "TODO".',
             setup: {
               name: 'plan.md',
               text: ['- todo: write tests', '- todo: update docs', '- done: tag release', '- todo: announce'],
-              search: 'todo',
               cursor: { line: 0, col: 0 },
             },
             goal: { text: ['- TODO: write tests', '- TODO: update docs', '- done: tag release', '- TODO: announce'] },
-            solution: 'cgnTODO<Esc>..',
+            solution: '/todo<CR>cgnTODO<Esc>..',
           },
           {
             prompt: 'Rename "cfg" to "config" everywhere.',
@@ -257,7 +254,8 @@ export const search: Section = {
       ),
       practice: total => (
         <p>
-          Reach the <span className="hl-green">green box</span> with one search and an offset. {total} rounds.
+          Reach the <span className="hl-green">green box</span> with one search and an offset. The last rounds use the
+          same searches to make an edit. {total} rounds.
         </p>
       ),
       aside: {
@@ -271,18 +269,18 @@ export const search: Section = {
       },
       challenge: {
         kind: 'rounds',
-        showGoal: false,
         base: { ...options, cursor: { line: 0, col: 0 } },
         rounds: [
           { goal: { cursor: { line: 4, col: 10 } }, solution: '/tabstop/e<CR>' },
-          { prompt: 'Land on the "2" after "shiftwidth =".', goal: { cursor: { line: 5, col: 17 } }, solution: '/shiftwidth = /e+1<CR>' },
-          { goal: { cursor: { line: 8, col: 0 } }, solution: '/keymap/+1<CR>' },
-          { goal: { cursor: { line: 3, col: 0 } }, solution: '/tabstop/-1<CR>' },
+          { prompt: 'Land on the "2" after "shiftwidth =".', setup: { cursor: { line: 4, col: 10 } }, goal: { cursor: { line: 5, col: 17 } }, solution: '/shiftwidth = /e+1<CR>' },
+          { setup: { cursor: { line: 5, col: 17 } }, goal: { cursor: { line: 8, col: 0 } }, solution: '/keymap/+1<CR>' },
+          { setup: { cursor: { line: 8, col: 0 } }, goal: { cursor: { line: 3, col: 0 } }, solution: '/tabstop/-1<CR>' },
           {
-            prompt: 'The last search was "relative". Land on its end.',
-            setup: { search: 'relative' },
+            setup: { cursor: { line: 3, col: 0 } },
+            steps: [{ prompt: 'Search for "relative".', goal: { cursor: { line: 3, col: 4 }, check: vim => vim.search.pattern === 'relative' } }],
+            prompt: 'Now land on its end with //e, which reuses the pattern.',
             goal: { cursor: { line: 3, col: 11 } },
-            solution: '//e<CR>',
+            solution: '/relative<CR>//e<CR>',
           },
           {
             prompt: 'Change every "opts" to "opt".',
@@ -299,7 +297,7 @@ export const search: Section = {
               cursor: { line: 1, col: 0 },
             },
             goal: { text: ['local opt = vim.opt', 'opt.number = nil', 'opt.wrap = nil', 'opt.tabstop = nil'] },
-            solution: '/= /e+1<CR>cwnil<Esc>n.n.',
+            solution: '/= /e+1<CR>Cnil<Esc>n.n.',
           },
         ],
       },
@@ -340,31 +338,25 @@ export const search: Section = {
       },
       challenge: {
         kind: 'rounds',
-        showGoal: false,
         base: { ...options, cursor: { line: 0, col: 0 } },
         rounds: [
           {
-            prompt: 'Clear the "opt" highlights with :noh.',
-            setup: { search: 'opt' },
-            goal: { check: vim => !vim.hlActive },
-            solution: ':noh<CR>',
+            steps: [{ prompt: 'Search for "opt". Every match lights up.', goal: { cursor: { line: 0, col: 6 }, check: vim => vim.search.pattern === 'opt' && vim.hlActive } }],
+            prompt: 'Clear the highlights with :noh.',
+            goal: { cursor: { line: 0, col: 6 }, check: vim => !vim.hlActive },
+            solution: '/opt<CR>:noh<CR>',
           },
           {
-            prompt: 'Clear the "vim" highlights with C-l.',
-            setup: { search: 'vim' },
-            goal: { check: vim => !vim.hlActive },
-            solution: '<C-l>',
-          },
-          {
-            prompt: 'Search your way to the box, then clear.',
-            goal: { cursor: { line: 7, col: 22 }, check: vim => !vim.hlActive },
-            solution: '/leader<CR><C-l>',
-          },
-          {
-            prompt: 'Jump to the next "opt" with *, then clear.',
+            prompt: 'Jump to the next "opt" with *, then clear with C-l.',
             setup: { cursor: { line: 0, col: 6 } },
             goal: { cursor: { line: 0, col: 16 }, check: vim => !vim.hlActive },
             solution: '*<C-l>',
+          },
+          {
+            prompt: 'Search your way to the box, then clear.',
+            setup: { cursor: { line: 0, col: 16 } },
+            goal: { cursor: { line: 7, col: 22 }, check: vim => !vim.hlActive },
+            solution: '/leader<CR>:noh<CR>',
           },
           {
             prompt: 'Turn both "true"s to "false", then clear the highlights with C-l.',
@@ -372,6 +364,7 @@ export const search: Section = {
               text: (options.text as string[]).map(l => l.replace('true', 'false')),
               check: vim => !vim.hlActive,
             },
+            setup: { cursor: { line: 7, col: 22 } },
             solution: '/true<CR>cwfalse<Esc>n.<C-l>',
           },
           {

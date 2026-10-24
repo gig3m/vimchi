@@ -152,31 +152,26 @@ export const commandLine: Section = {
           },
           {
             prompt: 'Go to line 14.',
-            setup: { cursor: { line: 34, col: 4 } },
-            goal: { cursor: { line: 13, col: 4 } },
+            goal: { cursor: { line: 13, col: 0 } },
             solution: ':14<CR>',
           },
           {
             prompt: 'Go to line 24.',
-            setup: { cursor: { line: 13, col: 0 } },
             goal: { cursor: { line: 23, col: 0 } },
             solution: ':24<CR>',
           },
           {
             prompt: 'Go to line 25.',
-            setup: { cursor: { line: 5, col: 0 } },
             goal: { cursor: { line: 24, col: 0 } },
             solution: ':25<CR>',
           },
           {
             prompt: 'Go to line 22.',
-            setup: { cursor: { line: 44, col: 0 } },
             goal: { cursor: { line: 21, col: 0 } },
             solution: ':22<CR>',
           },
           {
             prompt: 'Go to line 8.',
-            setup: { cursor: { line: 21, col: 0 } },
             goal: { cursor: { line: 7, col: 0 } },
             solution: ':8<CR>',
           },
@@ -226,6 +221,7 @@ export const commandLine: Section = {
           {
             prompt: 'Yank lines 3 and 4 into register a.',
             goal: { registers: { a: SERVER_TS.slice(2, 4).join('\n') + '\n' } },
+            mark: { start: { line: 2, col: 0 }, end: { line: 3, col: SERVER_TS[3].length - 1 } },
             solution: ':3,4y a<CR>',
           },
           {
@@ -514,15 +510,20 @@ export const commandLine: Section = {
             solution: 'Vjj:w march.csv<CR>',
           },
           {
-            prompt: 'You selected the last two lines earlier. Write that selection to sleep.ts.',
-            setup: {
-              name: 'utils.ts',
-              text: RETRY_TS,
-              cursor: { line: 0, col: 0 },
-              init: vim => vim.feedKeys('GVk<Esc>gg'),
-            },
+            setup: { name: 'utils.ts', text: RETRY_TS, cursor: { line: 0, col: 0 } },
+            steps: [
+              {
+                prompt: 'Select the last two lines, the sleep function, then press Esc.',
+                goal: {
+                  check: vim =>
+                    vim.buf.marks.get('<')?.line === RETRY_TS.length - 2 && vim.buf.marks.get('>')?.line === RETRY_TS.length - 1,
+                },
+                mark: { start: { line: RETRY_TS.length - 2, col: 0 }, end: { line: RETRY_TS.length - 1, col: SLEEP_FN[1].length - 1 } },
+              },
+            ],
+            prompt: 'Get that selection back with gv and write it to sleep.ts.',
             goal: { files: { 'sleep.ts': SLEEP_FN.join('\n') } },
-            solution: 'gv:w sleep.ts<CR>',
+            solution: 'GVk<Esc>gv:w sleep.ts<CR>',
           },
           {
             prompt: 'Join the paragraph under the cursor into one line.',
@@ -538,7 +539,7 @@ export const commandLine: Section = {
                 '## Rollback',
                 'Revert the tag.',
               ],
-              cursor: { line: 3, col: 5 },
+              cursor: { line: 3, col: 0 },
             },
             goal: {
               text: [
@@ -646,7 +647,7 @@ export const commandLine: Section = {
             solution: ':2t.<CR>',
           },
           {
-            prompt: 'Move lines 2 to 4, the License section, to the end.',
+            prompt: 'Move lines 2 to 4, the blank line and the License section under it, to the end.',
             setup: {
               name: 'README.md',
               text: ['# vimchi', '', '## License', 'MIT', '', '## Install', 'npm install', 'npm run dev'],
@@ -803,15 +804,16 @@ export const commandLine: Section = {
             solution: ':%norm dW<CR>',
           },
           {
-            prompt: 'Register q quotes one line. Run it on lines 2 to 4.',
+            prompt: 'Comment out lines 3 to 5 by putting "// " in front of them.',
             setup: {
-              name: 'routes.ts',
-              text: ['const allowed = [', 'dashboard', 'settings', 'billing', '];'],
-              registers: { q: 'I  "\x1bA",\x1b' },
+              name: 'flags.ts',
+              text: ['export const flags = {', '  search: true,', '  billing: true,', '  exports: false,', '  beta: true,', '};'],
               cursor: { line: 0, col: 0 },
             },
-            goal: { text: ['const allowed = [', '  "dashboard",', '  "settings",', '  "billing",', '];'] },
-            solution: ':2,4norm @q<CR>',
+            goal: {
+              text: ['export const flags = {', '  search: true,', '  // billing: true,', '  // exports: false,', '  // beta: true,', '};'],
+            },
+            solution: ':3,5norm I// <CR>',
           },
           {
             prompt: 'Put "pub " before the text on the three indented lines. The cursor is on the first.',
@@ -888,26 +890,24 @@ export const commandLine: Section = {
             solution: 'qaI1. <Esc>q:4,$norm @a<CR>',
           },
           {
-            prompt: 'Register q quotes a line and adds a comma. Select the three ".com" lines and run it.',
+            prompt: 'Record a macro in q that indents this line, quotes it and adds a comma. Then select the other two ".com" lines and run it on them.',
             setup: {
               name: 'allow.ts',
               text: ['export const ALLOWED = [', 'example.com', 'api.example.com', 'cdn.example.com', '];'],
-              registers: { q: `I  '\x1bA',\x1b` },
               cursor: { line: 1, col: 0 },
             },
             goal: { text: ['export const ALLOWED = [', "  'example.com',", "  'api.example.com',", "  'cdn.example.com',", '];'] },
-            solution: 'Vjj:norm @q<CR>',
+            solution: "qqI  '<Esc>A',<Esc>qjVj:norm @q<CR>",
           },
           {
-            prompt: 'Register a turns "key = value" into "key: value". Run it on every line; lines with no "=" are skipped.',
+            prompt: 'Record a macro in a that turns this line\'s "host = …" into "host: …". Then run it on every line: lines with no "=" are skipped.',
             setup: {
               name: 'settings.toml',
               text: ['# server', 'host = "0.0.0.0"', 'port = 8080', '# logging', 'level = "info"', 'format = "json"'],
-              registers: { a: '0f=hxr:' },
-              cursor: { line: 0, col: 0 },
+              cursor: { line: 1, col: 0 },
             },
             goal: { text: ['# server', 'host: "0.0.0.0"', 'port: 8080', '# logging', 'level: "info"', 'format: "json"'] },
-            solution: ':%norm @a<CR>',
+            solution: 'qa0f=hxr:q:%norm @a<CR>',
           },
         ],
       },
@@ -950,17 +950,20 @@ export const commandLine: Section = {
         base: {},
         rounds: [
           {
-            prompt: 'You just ran :norm A; on the line above. Repeat it here and on the next line.',
             setup: {
               name: 'totals.js',
               text: ['let subtotal = 0', 'let tax = 0', 'let shipping = 0', 'const TAX_RATE = 0.2;'],
-              init: vim => {
-                vim.ex('norm A;');
-                vim.win.cursor = { line: 1, col: 0 };
-              },
+              cursor: { line: 0, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Add a semicolon to line 1 with :norm A;',
+                goal: { text: ['let subtotal = 0;', 'let tax = 0', 'let shipping = 0', 'const TAX_RATE = 0.2;'] },
+              },
+            ],
+            prompt: 'Repeat it on lines 2 and 3: @: once, then @@.',
             goal: { text: ['let subtotal = 0;', 'let tax = 0;', 'let shipping = 0;', 'const TAX_RATE = 0.2;'] },
-            solution: '@:j@@',
+            solution: ':norm A;<CR>j@:j@@',
           },
           {
             prompt: 'Delete both console.log lines: run :/console/d once, then repeat it.',
@@ -1007,17 +1010,20 @@ export const commandLine: Section = {
             solution: ':t.<CR>3@:',
           },
           {
-            prompt: 'The last command changed var to let on line 1. Repeat it on lines 2 and 4.',
             setup: {
               name: 'legacy.js',
               text: ['var total = 0;', 'var count = 0;', 'const MAX = 10;', 'var items = [];'],
-              init: vim => {
-                vim.ex('s/var/let/');
-                vim.win.cursor = { line: 0, col: 0 };
-              },
+              cursor: { line: 0, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Run :s/var/let/ on line 1. It changes the first "var" on the line to "let".',
+                goal: { text: ['let total = 0;', 'var count = 0;', 'const MAX = 10;', 'var items = [];'] },
+              },
+            ],
+            prompt: 'Repeat it on lines 2 and 4.',
             goal: { text: ['let total = 0;', 'let count = 0;', 'const MAX = 10;', 'let items = [];'] },
-            solution: 'j@:jj@@',
+            solution: ':s/var/let/<CR>j@:jj@@',
           },
         ],
       },
@@ -1107,7 +1113,7 @@ export const commandLine: Section = {
             solution: 'q:ggI2,4<Esc><CR>',
           },
           {
-            prompt: 'Rerun the "3m0" command, four lines up from the bottom of the history.',
+            prompt: 'Rerun the "3m0" command. q: opens on an empty line under the history, and 3m0 is four lines above it.',
             setup: {
               name: 'app.ts',
               text: [
@@ -1201,7 +1207,6 @@ export const commandLine: Section = {
             solution: ':set wrap!<CR>',
           },
           {
-            prompt: 'The last search was todo, but the file says TODO. Turn on ignorecase and press n.',
             setup: {
               name: 'queue.lua',
               text: [
@@ -1216,15 +1221,21 @@ export const commandLine: Section = {
                 '  return table.remove(q, 1)',
                 'end',
               ],
-              cursor: { line: 2, col: 9 },
-              search: 'todo',
+              cursor: { line: 2, col: 0 },
             },
+            steps: [
+              {
+                prompt: 'Search for todo with /todo. It finds nothing, because the file says TODO.',
+                goal: { check: v => v.search.pattern === 'todo' },
+              },
+            ],
+            prompt: 'Turn on ignorecase, then press n to search again.',
             goal: { cursor: { line: 7, col: 5 }, check: v => v.opt('ignorecase') === true },
-            solution: ':set ic<CR>n',
+            solution: '/todo<CR>:set ic<CR>n',
           },
           {
             prompt: 'Hide the line numbers.',
-            setup: { cursor: { line: 3, col: 6 } },
+            setup: { cursor: { line: 3, col: 0 } },
             goal: { check: v => v.opt('number') === false },
             solution: ':set nu!<CR>',
           },
@@ -1232,11 +1243,11 @@ export const commandLine: Section = {
             prompt: 'Set shiftwidth to 4, then indent the return line.',
             setup: {
               name: 'sum.lua',
-              text: ['local function sum(xs)', '  local n = 0', 'return n', 'end'],
+              text: ['local function sum(xs)', '    local n = 0', 'return n', 'end'],
               cursor: { line: 2, col: 0 },
             },
             goal: {
-              text: ['local function sum(xs)', '  local n = 0', '    return n', 'end'],
+              text: ['local function sum(xs)', '    local n = 0', '    return n', 'end'],
               check: v => v.opt('shiftwidth') === 4,
             },
             solution: ':set sw=4<CR>>>',

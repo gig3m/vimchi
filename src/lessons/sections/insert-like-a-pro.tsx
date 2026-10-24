@@ -425,19 +425,19 @@ export const insertLikeAPro: Section = {
             setup: {
               name: 'theme.ts',
               text: ['export const body = {', "  fontFamily: 'Inter, sans-serif',", "  fontSize: '14px',", '  lineHeight: 1.5,', '};'],
-              cursor: { line: 1, col: 13 },
+              cursor: { line: 1, col: 2 },
             },
             goal: {
               text: ['export const body = {', "  fontFamily: 'Inter, sans-serif',", "  fontSize: '1rem',", '  lineHeight: 1.5,', '};'],
             },
-            solution: 'j4cl1rem<Esc>',
+            solution: 'jf14cl1rem<Esc>',
           },
           {
             prompt: 'Replace the whole print line with "end".',
             setup: {
               name: 'check.lua',
               text: ['if ok then', '  run()', "print('x')", 'return ok'],
-              cursor: { line: 0, col: 3 },
+              cursor: { line: 0, col: 0 },
             },
             goal: { text: ['if ok then', '  run()', 'end', 'return ok'] },
             solution: 'jjccend<Esc>',
@@ -447,7 +447,7 @@ export const insertLikeAPro: Section = {
             setup: {
               name: 'deploy.md',
               text: ['1. Build the image.', '2. TODO', '3. Restart the service.'],
-              cursor: { line: 1, col: 4 },
+              cursor: { line: 1, col: 0 },
             },
             goal: { text: ['1. Build the image.', '2. Tag', '3. Restart the service.'] },
             solution: 'cc2. Tag<Esc>',

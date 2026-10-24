@@ -32,7 +32,7 @@ const ROWS: [lesson: string, round: number, typed: string, expert: string][] = [
   ['open-lines', 1, '0i<CR><Esc>', 'O<Esc>'], // audit: 0i## This week<CR><Esc> — the round now opens a blank line
   ['insert-line-ends', 2, '0lli-- <Esc>', 'I-- <Esc>'],
   ['toggle-case', 0, 'kkwxiU<Esc>', '~'], // audit: xiF — the word is now userService
-  ['case-operators', 0, 'b' + '~'.repeat(11), 'gUiw'], // audit: ~~~~~ toggled half the word, which is not the same edit
+  ['case-operators', 0, 'ww' + '~'.repeat(11), 'gUiw'], // audit: ~~~~~ toggled half the word, which is not the same edit; the round now starts at col 0
   ['indenting', 0, 'I  <Esc>', '>>'],
   ['join-lines', 0, 'jjjI<BS> <Esc>', 'J'], // audit: jjA <Esc>jd$kp leaves a stray line, so it is not a join
 ];
@@ -83,7 +83,7 @@ describe('motion critic: canonical routes, one suggestion', () => {
     expect(motion('top-bottom', 2, 'j'.repeat(24)).map(c => c.better[0].keys)).toContain('25G');
   });
   it('l-spam to the closing paren in the % lesson → %', () => {
-    const c = motion('matching-pairs', 1, 'l'.repeat(38));
+    const c = motion('matching-pairs', 4, 'l'.repeat(20));
     expect(c.map(x => x.better[0].keys)).toContain('%');
   });
   it('j-spam in the half-pages lesson → <C-d>', () => {

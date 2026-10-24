@@ -243,9 +243,9 @@ export const quickfix: Section = {
           },
           {
             prompt: 'This list holds every formatPrice. Jump to the one on line 9 of products.ts.',
-            setup: { init: qf('vimgrep /formatPrice/ **/*.ts') },
+            setup: { init: qf('vimgrep /formatPrice/ **/*.ts', false, 3) },
             goal: { buffer: 'src/api/products.ts', cursor: at('src/api/products.ts', 8, 'formatPrice') },
-            solution: ':copen<CR>j<CR>',
+            solution: ':copen<CR>k<CR>',
           },
         ],
       },
@@ -349,7 +349,8 @@ export const quickfix: Section = {
       ),
       practice: total => (
         <p>
-          The location list for this window holds every <Code>lines.</Code> in cart.ts. Open it and walk it.{' '}
+          The location list for this window holds every line of cart.ts that mentions <Code>lines</Code>. Open it
+          and walk it.{' '}
           {total} rounds.
         </p>
       ),
@@ -364,17 +365,17 @@ export const quickfix: Section = {
       },
       challenge: {
         kind: 'rounds',
-        base: { files: SHOP, open: 'src/cart.ts', height: 18, init: vim => vim.ex('lvimgrep /lines\\./ %') },
+        base: { files: SHOP, open: 'src/cart.ts', height: 18, init: vim => vim.ex('lvimgrep /lines/ %') },
         rounds: [
           {
             prompt: 'Go to the next entry.',
-            goal: { cursor: at('src/cart.ts', 15, 'lines') },
+            goal: { cursor: at('src/cart.ts', 9, 'lines') },
             solution: ']l',
           },
           {
             prompt: 'Go back one entry.',
-            setup: { init: vim => { vim.ex('lvimgrep /lines\\./ %'); vim.ex('ll 2'); } },
-            goal: { cursor: at('src/cart.ts', 9, 'lines') },
+            setup: { init: vim => { vim.ex('lvimgrep /lines/ %'); vim.ex('ll 4'); } },
+            goal: { cursor: at('src/cart.ts', 12, 'lines') },
             solution: '[l',
           },
           {

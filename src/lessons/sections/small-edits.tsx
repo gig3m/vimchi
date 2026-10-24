@@ -297,7 +297,7 @@ export const smallEdits: Section = {
                 "app.delete('/users/:id', removeUser);",
               ],
               cursor: { line: 0, col: 0 },
-              init: vim => vim.feedKeys("f/aapi/<Esc>jdd0x"),
+              init: vim => vim.feedKeys("f/aapi/<Esc>jddkA // v2<Esc>"),
             },
             goal: {
               text: [
@@ -488,7 +488,7 @@ export const smallEdits: Section = {
           },
           {
             prompt: 'Look up dd.',
-            setup: { cursor: { line: 1, col: 4 } },
+            setup: { cursor: { line: 1, col: 0 } },
             goal: helpGoal('dd'),
             solution: ':h dd<CR>',
           },

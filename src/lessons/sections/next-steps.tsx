@@ -125,7 +125,7 @@ export const nextSteps: Section = {
             prompt: 'Add a space after the comma in "[3,4]".',
             setup: {
               text: ['const origin = [0, 0];', 'const point = [3,4];', 'const dist = distance(origin, point);'],
-              cursor: { line: 2, col: 5 },
+              cursor: { line: 2, col: 0 },
             },
             goal: { text: ['const origin = [0, 0];', 'const point = [3, 4];', 'const dist = distance(origin, point);'] },
             solution: 'k5wa <Esc>',
@@ -157,7 +157,7 @@ export const nextSteps: Section = {
           </p>
         </>
       ),
-      practice: total => <p>Each round has a file open with a change already made. Do what the prompt says. {total} rounds.</p>,
+      practice: total => <p>Each round has you make a small edit (or none), then save or quit as the prompt says. {total} rounds.</p>,
       aside: {
         title: 'ZZ and friends',
         body: (
@@ -176,10 +176,10 @@ export const nextSteps: Section = {
         },
         rounds: [
           {
-            prompt: 'You added a line. Save the file.',
-            setup: { init: vim => vim.buf.setLine(3, '- call Sam and Ana') },
-            goal: { check: vim => vim.fs.read('notes.md') === '# Notes\n\n- buy milk\n- call Sam and Ana\n' && !vim.buf.modified },
-            solution: ':w<CR>',
+            steps: [{ prompt: 'Add "oat " before "milk".', goal: { text: ['# Notes', '', '- buy oat milk', '- call Sam'] } }],
+            prompt: 'Now save the file.',
+            goal: { check: vim => vim.fs.read('notes.md') === '# Notes\n\n- buy oat milk\n- call Sam\n' && !vim.buf.modified },
+            solution: 'jjwwioat <Esc>:w<CR>',
           },
           {
             prompt: 'Nothing changed. Quit.',
@@ -187,16 +187,16 @@ export const nextSteps: Section = {
             solution: ':q<CR>',
           },
           {
-            prompt: 'You fixed the typo. Write the file and quit in one command.',
-            setup: { init: vim => vim.buf.setLine(2, '- buy oat milk') },
-            goal: { check: vim => vim.events.includes('quit') && vim.fs.read('notes.md') === '# Notes\n\n- buy oat milk\n- call Sam\n' },
-            solution: ':wq<CR>',
+            steps: [{ prompt: 'Change the "S" of "Sam" to "P".', goal: { text: ['# Notes', '', '- buy milk', '- call Pam'] } }],
+            prompt: 'Now write the file and quit, in one command.',
+            goal: { check: vim => vim.events.includes('quit') && vim.fs.read('notes.md') === '# Notes\n\n- buy milk\n- call Pam\n' },
+            solution: 'jjjwwrP:wq<CR>',
           },
           {
-            prompt: 'That edit was a mistake. Quit without saving it.',
-            setup: { init: vim => vim.buf.setLine(0, '# Ntoes') },
+            steps: [{ prompt: 'Delete the "#" on line 1.', goal: { text: [' Notes', '', '- buy milk', '- call Sam'] } }],
+            prompt: 'On second thought, keep the file as it was: quit without saving.',
             goal: { check: vim => vim.events.includes('quit') && vim.fs.read('notes.md') === '# Notes\n\n- buy milk\n- call Sam\n' },
-            solution: ':q!<CR>',
+            solution: 'x:q!<CR>',
           },
         ],
       },
@@ -311,12 +311,14 @@ export const nextSteps: Section = {
           cursor: { line: 0, col: 0 },
         },
         rounds: [
+          // Each target is ahead of where the last round left the cursor, so a carried cursor never
+          // has to be moved back.
           { goal: { cursor: { line: 0, col: 25 } }, solution: 'f(' },
-          { goal: { cursor: { line: 1, col: 32 } }, solution: 'jf(' },
-          { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: { line: 3, col: 11 } }, solution: 't{' },
-          { setup: { cursor: { line: 1, col: 10 } }, goal: { cursor: { line: 2, col: 35 } }, solution: "jf'" },
-          { setup: { cursor: { line: 0, col: 5 } }, goal: { cursor: { line: 2, col: 17 } }, solution: '2jf)' },
-          { setup: { cursor: { line: 3, col: 20 } }, goal: { cursor: { line: 3, col: 41 } }, solution: 't)' },
+          { setup: { cursor: { line: 0, col: 25 } }, goal: { cursor: { line: 1, col: 32 } }, solution: 'jf(' },
+          { setup: { cursor: { line: 1, col: 32 } }, goal: { cursor: { line: 2, col: 35 } }, solution: "jf'" },
+          { setup: { cursor: { line: 2, col: 35 } }, goal: { cursor: { line: 3, col: 40 } }, solution: 'jt}' },
+          { setup: { cursor: { line: 3, col: 40 } }, goal: { cursor: { line: 2, col: 47 } }, solution: 'kf)' },
+          { setup: { cursor: { line: 2, col: 47 } }, goal: { cursor: { line: 1, col: 54 } }, solution: 'kt)' },
         ],
       },
     },

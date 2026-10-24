@@ -373,15 +373,15 @@ export const findingThings: Section = {
             this file, <Code>Space sw</Code> lists every use in every file.
           </p>
           <p>
-            The first result is usually the line you are on. <Code>C-n</Code> steps to the others, and the preview
-            shows each one before you commit with <Code>enter</Code>.
+            Results come sorted by file, the line you are on among them. <Code>C-n</Code> steps through them, and
+            the preview shows each one before you commit with <Code>enter</Code>.
           </p>
         </>
       ),
       practice: total => (
         <p>
-          Put the cursor on the named word, open its uses with <Code>Space sw</Code> and pick the match the prompt
-          names. (In the browser, <Code>Alt-n</Code> stands in for <Code>C-n</Code>.) {total} rounds.
+          The cursor starts on the named word. Open its uses with <Code>Space sw</Code> and pick the match the
+          prompt names. (In the browser, <Code>Alt-n</Code> stands in for <Code>C-n</Code>.) {total} rounds.
         </p>
       ),
       aside: {

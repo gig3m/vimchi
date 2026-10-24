@@ -409,12 +409,12 @@ export const indentCase: Section = {
             prompt: 'Uppercase "max_retries".',
             setup: {
               text: ['export const max_retries = 5;', 'export const TIMEOUT_MS = 3000;', "export const BASE_URL = '/api';"],
-              cursor: { line: 0, col: 15 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: ['export const MAX_RETRIES = 5;', 'export const TIMEOUT_MS = 3000;', "export const BASE_URL = '/api';"],
             },
-            solution: 'gUiw',
+            solution: 'wwgUiw',
           },
           {
             prompt: 'Lowercase "Lin@Example.COM".',
@@ -438,21 +438,21 @@ export const indentCase: Section = {
           },
           {
             prompt: 'Flip the case of every letter in "hELLO, wORLD".',
-            setup: { name: 'hello.sh', text: ['#!/bin/sh', 'echo "hELLO, wORLD"', 'exit 0'], cursor: { line: 1, col: 7 } },
+            setup: { name: 'hello.sh', text: ['#!/bin/sh', 'echo "hELLO, wORLD"', 'exit 0'], cursor: { line: 1, col: 0 } },
             goal: { text: ['#!/bin/sh', 'echo "Hello, World"', 'exit 0'] },
-            solution: 'g~i"',
+            solution: 'f"g~i"',
           },
           {
             prompt: "Uppercase '#1e1e2e'.",
             setup: {
               name: 'colors.lua',
               text: ['local hl = vim.api.nvim_set_hl', "hl(0, 'Normal', { bg = '#1e1e2e' })", "hl(0, 'Comment', { fg = '#6C7086' })"],
-              cursor: { line: 1, col: 25 },
+              cursor: { line: 1, col: 0 },
             },
             goal: {
               text: ['local hl = vim.api.nvim_set_hl', "hl(0, 'Normal', { bg = '#1E1E2E' })", "hl(0, 'Comment', { fg = '#6C7086' })"],
             },
-            solution: "gUi'",
+            solution: "f#gUi'",
           },
         ],
       },
@@ -642,14 +642,14 @@ export const indentCase: Section = {
             solution: '500<C-x>',
           },
           {
-            prompt: 'Change "-1" to "1". A count on C-a adds that much.',
+            prompt: 'Change "-3" to "2". A count on C-a adds that much.',
             setup: {
               name: 'pager.ts',
-              text: ['export function pick(items: Item[]) {', '  const offset = -1;', '  return items.at(offset);', '}'],
+              text: ['export function pick(items: Item[]) {', '  const offset = -3;', '  return items.at(offset);', '}'],
               cursor: { line: 3, col: 0 },
             },
-            goal: { text: ['export function pick(items: Item[]) {', '  const offset = 1;', '  return items.at(offset);', '}'] },
-            solution: 'kk2<C-a>',
+            goal: { text: ['export function pick(items: Item[]) {', '  const offset = 2;', '  return items.at(offset);', '}'] },
+            solution: 'kk5<C-a>',
           },
           {
             prompt: 'Add 2 to each font size.',

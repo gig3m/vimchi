@@ -232,7 +232,7 @@ export const neovimBuiltins: Section = {
                 '  await trySend(req);',
                 '}',
               ],
-              cursor: { line: 2, col: 4 },
+              cursor: { line: 2, col: 2 },
             },
             goal: {
               text: [
@@ -275,7 +275,7 @@ export const neovimBuiltins: Section = {
             setup: {
               name: 'init.lua',
               text: ["local ok = pcall(require, 'tokyonight')", 'if ok then', "  -- vim.cmd.colorscheme('tokyonight')", 'end'],
-              cursor: { line: 2, col: 9 },
+              cursor: { line: 2, col: 2 },
             },
             goal: { text: ["local ok = pcall(require, 'tokyonight')", 'if ok then', "  vim.cmd.colorscheme('tokyonight')", 'end'] },
             solution: 'gcc',

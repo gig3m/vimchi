@@ -157,6 +157,7 @@ export const basicOperators: Section = {
               cursor: { line: 0, col: 0 },
             },
             goal: { registers: { '"': 'await ' } },
+            mark: { start: { line: 1, col: 15 }, end: { line: 1, col: 20 } },
             solution: 'jfayw',
           },
         ],
@@ -211,7 +212,7 @@ export const basicOperators: Section = {
                 '  return user;',
                 '}',
               ],
-              cursor: { line: 1, col: 15 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
@@ -221,7 +222,7 @@ export const basicOperators: Section = {
                 '}',
               ],
             },
-            solution: 'wdw',
+            solution: 'jfawdw',
           },
           {
             prompt: 'Delete "really".',
@@ -367,7 +368,7 @@ export const basicOperators: Section = {
             solution: 'kt?dt;',
           },
           {
-            prompt: 'Change "1.2.0-beta.3" to "1.2.0".',
+            prompt: 'Delete "-beta.3" from the version.',
             setup: {
               name: 'package.json',
               text: ['{', '  "name": "vimchi",', '  "version": "1.2.0-beta.3",', '  "private": true', '}'],
@@ -432,7 +433,7 @@ export const basicOperators: Section = {
             prompt: 'Delete " // was 5 before the outage".',
             setup: {
               text: ['const timeout = 5000;', 'const retries = 3; // was 5 before the outage', 'const backoff = 2;'],
-              cursor: { line: 2, col: 6 },
+              cursor: { line: 2, col: 0 },
             },
             goal: { text: ['const timeout = 5000;', 'const retries = 3;', 'const backoff = 2;'] },
             solution: 'kf/hD',
@@ -442,7 +443,7 @@ export const basicOperators: Section = {
             setup: {
               name: 'options.lua',
               text: ['vim.opt.number = true', 'vim.opt.swapfile = true', 'vim.opt.undofile = true', 'vim.opt.wrap = false'],
-              cursor: { line: 3, col: 8 },
+              cursor: { line: 3, col: 0 },
             },
             goal: { text: ['vim.opt.number = true', 'vim.opt.undofile = true', 'vim.opt.wrap = false'] },
             solution: 'kkdd',
@@ -532,12 +533,12 @@ export const basicOperators: Section = {
                 "-- vim.keymap.set('n', 'q:', '<nop>')",
                 "vim.keymap.set('n', '<leader>w', '<cmd>write<CR>')",
               ],
-              cursor: { line: 2, col: 0 },
+              cursor: { line: 3, col: 0 },
             },
             goal: {
               text: ["vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')", "vim.keymap.set('n', '<leader>w', '<cmd>write<CR>')"],
             },
-            solution: 'dk',
+            solution: 'kdk',
           },
           {
             prompt: 'Delete from "if (!id) {" down to the "}" under the cursor.',
@@ -553,19 +554,19 @@ export const basicOperators: Section = {
             setup: {
               name: 'CHANGELOG.md',
               text: ['## 2.1.0', '- Faster startup', '', '## Draft', 'Notes for next time.', '', '## 2.0.0', '- New engine'],
-              cursor: { line: 3, col: 0 },
+              cursor: { line: 0, col: 0 },
             },
             goal: { text: ['## 2.1.0', '- Faster startup', '', '## 2.0.0', '- New engine'] },
-            solution: 'd2j',
+            solution: '3jd2j',
           },
           {
             prompt: 'Delete the last two lines.',
             setup: {
               text: ['export const routes = [', "  { path: '/', page: Home },", "  { path: '/about', page: About },", '];', '// old routes below', '// export const legacy = [];'],
-              cursor: { line: 4, col: 3 },
+              cursor: { line: 0, col: 0 },
             },
             goal: { text: ['export const routes = [', "  { path: '/', page: Home },", "  { path: '/about', page: About },", '];'] },
-            solution: 'dj',
+            solution: '4jdj',
           },
         ],
       },
@@ -615,8 +616,8 @@ export const basicOperators: Section = {
         base: { name: 'config.ts' },
         rounds: [
           {
-            prompt: 'Change "verbose: yes" to "verbose: no".',
-            setup: { name: 'flags.yml', text: ['debug: yes', 'verbose: yes', 'color: yes'], cursor: { line: 0, col: 0 } },
+            prompt: 'Change "verbose: yes  # noisy, fix later" to "verbose: no".',
+            setup: { name: 'flags.yml', text: ['debug: yes', 'verbose: yes  # noisy, fix later', 'color: yes'], cursor: { line: 0, col: 0 } },
             goal: { text: ['debug: yes', 'verbose: no', 'color: yes'] },
             solution: 'jfyCno<Esc>',
           },
@@ -739,7 +740,7 @@ export const basicOperators: Section = {
                 '',
                 "render(<App />, document.getElementById('root'));",
               ],
-              cursor: { line: 2, col: 0 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
@@ -750,7 +751,7 @@ export const basicOperators: Section = {
                 "render(<App />, document.getElementById('root'));",
               ],
             },
-            solution: 'ddggP',
+            solution: 'jjddggP',
           },
           {
             setup: {
@@ -1097,7 +1098,7 @@ export const basicOperators: Section = {
               cursor: { line: 0, col: 0 },
             },
             goal: { text: ['let count = 0;', 'for (let i = 0; i < n; i++) {', '  let x = xs[i];', '  count += x;', '}'] },
-            solution: '*cwlet<Esc>n.n.',
+            solution: 'cwlet<Esc>j2w.j^.',
           },
           {
             prompt: 'Comment out the three debug lines with "// ".',
@@ -1217,10 +1218,10 @@ export const basicOperators: Section = {
             prompt: 'Delete the four lines from "if (!res.ok) {" to the next "}".',
             setup: {
               text: ['const res = await fetch(url);', 'if (!res.ok) {', '  await sleep(500);', '  return retry(url);', '}', 'return res.json();'],
-              cursor: { line: 1, col: 0 },
+              cursor: { line: 0, col: 0 },
             },
             goal: { text: ['const res = await fetch(url);', 'return res.json();'] },
-            solution: '4dd',
+            solution: 'j4dd',
           },
           {
             prompt: 'Change each "config.server" to "env".',
