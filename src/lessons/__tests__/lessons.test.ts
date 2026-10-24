@@ -5,7 +5,7 @@ import { SECTIONS } from '..';
 import { Session, createVim, goalMet, marksOf, mergeSetup, solutionKeys, stepsOf } from '../runtime';
 import type { Lesson, RoundsChallenge, Setup } from '../types';
 import { diffGoal } from '../goalDiff';
-import { solutionSites } from '../sites';
+import { applySites, solutionSites } from '../sites';
 
 const only = process.env.LESSON_SECTION;
 
@@ -126,9 +126,13 @@ describe('cc and C rounds: the marks strike what the command clears', () => {
         const goal = Array.isArray(r.goal.text) ? r.goal.text : r.goal.text!.split('\n');
         const view = diffGoal(vim.buf.lines, goal, { force: true });
         expect(view.mode).toBe('inline');
+        if (view.mode !== 'inline') return;
+        // As the app draws them: the diff, with the solution's own edits over it.
+        const ann = applySites(view.ann, vim.buf.lines, solutionSites(mergeSetup(c.base, r.setup), r), 0);
         const line = vim.cursor.line, text = vim.buf.line(line);
         const from = keys[at] === 'C' ? vim.cursor.col : text.search(/\S|$/);
-        const spans = view.mode === 'inline' ? view.ann.del.get(line) ?? [] : [];
+        const spans = ann.del.get(line) ?? [];
+        expect(ann.delLines.has(line), `${JSON.stringify(text)} drawn as a whole line out`).toBe(false);
         expect(spans, `struck spans on ${JSON.stringify(text)}`).toEqual([[from, text.length - 1]]);
       });
     });
@@ -185,6 +189,29 @@ describe.each(all)('%s / %s', (_section, lesson) => {
       });
       expect(s.done).toBe(true);
       expect(s.result().acc).toBe(1);
+    });
+    it('plays through with the cursor carried, finishing each round on its last key', () => {
+      // As a learner meets it: each round opens where the last left the cursor (the runtime moves it
+      // back only when the round can't be done from there). From a kept cursor the learner walks to
+      // the round's starting line with j or k, keeping the column, then plays the reference keys.
+      const s = new Session(c);
+      let t = 0;
+      const stuck: string[] = [];
+      c.rounds.forEach((r, i) => {
+        const start = createVim(mergeSetup(c.base, r.setup)).cursor;
+        const at = s.vim!.cursor;
+        const walk = at.line === start.line ? '' : `${Math.abs(start.line - at.line)}${start.line > at.line ? 'j' : 'k'}`;
+        for (const k of solutionKeys(walk)) s.key(k, (t += 100));
+        // A cursor-only goal on the way there is another route to it, and finishes the round.
+        if (!s.view().roundDone && !s.done) {
+          const keys = solutionKeys(r.solution);
+          const early = keys.findIndex(k => (s.key(k, (t += 100)), s.view().roundDone || s.done));
+          if (early >= 0 && early < keys.length - 1) stuck.push(`r${i + 1} finished after ${early + 1} of ${keys.length} keys`);
+          else if (!s.view().roundDone && !s.done) stuck.push(`r${i + 1} did not finish (step ${s.view().step + 1})${walk ? ` after walking ${walk}` : ''}`);
+        }
+        if (!s.done) s.advance();
+      });
+      expect(stuck).toEqual([]);
     });
     it('carries the cursor between rounds without breaking', () => {
       const s = new Session(c);

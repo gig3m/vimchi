@@ -24,7 +24,23 @@ export type Site = {
   step: number;
   /** Keys the edit's command took (a `.` repeat is 1). */
   keys: number;
+  /** The edit typed its text in insert mode (a change), so a `.` repeat of it does too. */
+  typed?: boolean;
 };
+
+/** Letters and digits: an underscore bounds the changed part of a snake_case name. */
+const isW = (ch: string | undefined) => !!ch && /[A-Za-z0-9]/.test(ch);
+
+/** A replacement inside a word reads as the whole word (~~True~~ False, not ~~Tru~~ Fals): widen
+ * it over the word characters it shares with both lines. Pure insertions and deletions stay exact. */
+function wholeWord(b: string, a: string, e: { col: number; del: number; ins: string }) {
+  if (!e.del || !e.ins) return e;
+  let col = e.col, end = e.col + e.del, aEnd = e.col + e.ins.length;
+  // Only into the word the replacement is part of: "=" → ": " leaves "URL" and "postgres" alone.
+  while (col > 0 && isW(b[col - 1]) && b[col - 1] === a[col - 1] && (isW(b[col]) || isW(a[col]))) col--;
+  while (end < b.length && isW(b[end]) && b[end] === a[aEnd] && (isW(b[end - 1]) || isW(a[aEnd - 1]))) { end++; aEnd++; }
+  return { col, del: end - col, ins: a.slice(col, aEnd) };
+}
 
 /** Smallest edit turning `b` into `a`, anchored as near column `hint` as the text allows. */
 function anchoredEdit(b: string, a: string, hint: number): { col: number; del: number; ins: string } {
@@ -71,16 +87,17 @@ export function solutionSites(setup: Setup, round: Round): Site[] {
     const m = vim.buf.marks.get('[');
     const markMoved = !!m && `${m.line}:${m.col}` !== s.mark && m.line === line;
     let edit: { col: number; del: number; ins: string };
-    if (s.insert && markMoved) {
+    const typed = s.insert || (s.dot && !!group[group.length - 1]?.typed);
+    if (typed && markMoved) {
       // A change: `[` is where typing began, `]` its last character.
       const e = vim.buf.marks.get(']');
       const insLen = e && e.line === line ? Math.max(0, e.col - m!.col + 1) : 0;
       edit = { col: m!.col, del: b.length - (a.length - insLen), ins: a.slice(m!.col, m!.col + insLen) };
     } else {
-      edit = anchoredEdit(b, a, markMoved ? m!.col : vim.cursor.col);
+      edit = wholeWord(b, a, anchoredEdit(b, a, markMoved ? m!.col : vim.cursor.col));
     }
     const site: Site = {
-      before: b, after: a, line, step: s.step, num: 0, col: edit.col, ins: edit.ins, keys: s.keys,
+      before: b, after: a, line, step: s.step, num: 0, col: edit.col, ins: edit.ins, keys: s.keys, typed,
       del: edit.del > 0 ? [edit.col, edit.col + edit.del - 1] : null,
     };
     if (s.dot && group.length) group.push(site);
@@ -109,15 +126,29 @@ export type Typing = { start: { line: number; col: number }; cursor: { line: num
  * typed. Lines with no site (or edited off-script) keep the diff's marks.
  */
 export function applySites(ann: Annotations, cur: readonly string[], sites: readonly Site[], step: number, typing: Typing = null): Annotations {
-  const out: Annotations = { ...ann, del: new Map(ann.del), ins: new Map(ann.ins), num: new Map(ann.num), cases: new Map(ann.cases) };
+  const out: Annotations = { ...ann, del: new Map(ann.del), ins: new Map(ann.ins), num: new Map(ann.num), numTo: new Map(ann.numTo), cases: new Map(ann.cases), delLines: new Set(ann.delLines), newLines: new Map(ann.newLines) };
+  // A line the diff draws as out-and-in (it kept too little of itself) is still the site's edit
+  // when the solution changed it in place (cc, C): the site's span reads as the lesson's command.
+  const swapped = (i: number) => ann.delLines.has(i) && !!ann.replaced?.has(i);
   const claimed = new Set<number>();
   let tagged = false;
-  for (const site of sites) {
-    if (site.step !== step) continue;
+  const folded = new Set<Site>();
+  const lineOf = new Map<Site, number>();
+  sites.forEach((site, k) => {
+    if (site.step !== step || folded.has(site)) return;
+    // A repeat that lands again on a line an earlier repeat is still pending on (two matches of a
+    // cgn on one line): count it on that line's badge, 2–3, instead of skipping its number.
+    const prev = sites[k - 1];
+    if (site.num && prev && prev.num && prev.line === site.line && prev.after === site.before && lineOf.has(prev)) {
+      const l = lineOf.get(prev)!;
+      out.numTo!.set(l, site.num);
+      lineOf.set(site, l);
+      return;
+    }
     const forms = stages(site);
     let best = -1, form = forms[0];
     cur.forEach((t, i) => {
-      if (claimed.has(i) || !(ann.del.has(i) || ann.ins.has(i))) return;
+      if (claimed.has(i) || !(ann.del.has(i) || ann.ins.has(i) || swapped(i))) return;
       // Text alone can't tell an untouched line from one retyped to read the same; insert mode
       // begun at the site's column can.
       const typed = typing && typing.start.line === i && typing.cursor.line === i && typing.start.col === site.col
@@ -126,23 +157,45 @@ export function applySites(ann: Annotations, cur: readonly string[], sites: read
       if (!f) return;
       if (best < 0 || Math.abs(i - site.line) < Math.abs(best - site.line)) { best = i; form = f; }
     });
-    if (best < 0) continue;
+    if (best < 0) return;
     claimed.add(best);
+    lineOf.set(site, best);
     // The diff already reads better for an untouched line it splits into several edits (a pair of
     // quotes, two words) or marks as a change of case: one site span would picture a retype.
     const diffEdits = new Set([...(ann.del.get(best) ?? []).map(([a]) => a), ...(ann.ins.get(best) ?? []).map(t => t.col)]).size;
     if (!form.cut && (diffEdits > 1 || ann.cases?.has(best))) {
       if (site.num) out.num.set(best, site.num);
-      continue;
+      return;
     }
     out.del.delete(best);
     out.ins.delete(best);
     out.cases!.delete(best);
+    const swap = ann.replaced?.get(best);
+    if (swapped(best) && swap!.text === site.after) {
+      // Its own block's row, not another block's row with the same text.
+      out.delLines.delete(best);
+      const ls = out.newLines.get(swap!.under) ?? [];
+      const j = ls.indexOf(site.after);
+      const rest = ls.filter((_, n) => n !== j);
+      if (rest.length) out.newLines.set(swap!.under, rest);
+      else out.newLines.delete(swap!.under);
+    }
     if (site.del && !form.cut) out.del.set(best, [site.del]);
     if (site.ins) out.ins.set(best, [{ col: site.col, text: site.ins, done: form.done, quiet: tagged }]);
     if (site.ins) tagged = true;
     if (site.num) out.num.set(best, site.num);
-  }
+    // A put that follows on the same line (`xp`: cut a letter, put it one along) is drawn on the
+    // untouched line too, where it will land, instead of waiting for the cut.
+    const next = sites[k + 1];
+    if (!form.cut && site.del && !site.ins && next && next.step === step && next.before === site.after && !next.del && next.ins) {
+      const n = site.del[1] - site.del[0] + 1;
+      if (next.col > site.del[0]) {
+        out.ins.set(best, [...(out.ins.get(best) ?? []), { col: next.col + n, text: next.ins, done: 0, quiet: tagged }]);
+        tagged = true;
+        folded.add(next);
+      }
+    }
+  });
   return out;
 }
 

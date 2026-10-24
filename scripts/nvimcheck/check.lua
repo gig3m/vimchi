@@ -12,6 +12,8 @@ local data = vim.json.decode(table.concat(vim.fn.readfile(vim.env.ROUNDS), '\n')
 local sandbox = vim.env.SANDBOX or vim.fn.tempname()
 vim.fn.mkdir(sandbox, 'p')
 vim.cmd('cd ' .. vim.fn.fnameescape(sandbox)) -- any :w lands here, never in the repo
+-- As LazyVim has it: markdown keeps the global indent settings, not its ftplugin's sw=4 ts=4.
+vim.g.markdown_recommended_style = 0
 local esc = vim.api.nvim_replace_termcodes('<Esc>', true, false, true)
 local REGTYPE = { v = 'v', V = 'V', ['\22'] = 'b' }
 
@@ -36,8 +38,20 @@ local function play(r, keys, regNames)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
   vim.cmd('set undolevels=1000')
   vim.api.nvim_buf_set_name(buf, r.name)
+  -- The engine's global indent settings, then the filetype's ftplugin on top (Python's sw=4 and so
+  -- on, as the engine's FT_OPTIONS has them). Set before 'filetype', which runs the ftplugin.
+  vim.go.shiftwidth, vim.go.expandtab, vim.go.tabstop, vim.o.autoindent = 2, true, 8, true
+  vim.bo.shiftwidth, vim.bo.expandtab, vim.bo.tabstop = 2, true, 8
   vim.bo.filetype = vim.filetype.match({ filename = r.name }) or ''
-  vim.o.shiftwidth, vim.o.expandtab, vim.o.tabstop, vim.o.autoindent = 2, true, 8, true
+  -- The engine has no 'softtabstop', and keeps Go at the global spaces (its challenge corpus indents
+  -- Go with two spaces, not gofmt's tabs).
+  vim.bo.softtabstop = 0
+  if vim.bo.filetype == 'go' then vim.bo.expandtab, vim.bo.shiftwidth = true, 2 end
+  -- Python's regex indent script is not what a learner has: LazyVim indents Python with treesitter,
+  -- which --clean can't load. The script re-indents a line when ':' is typed, so `cc` and typed
+  -- dict keys come out wrong. Without it, 'autoindent' keeps the line's indent, as treesitter does
+  -- in those rounds.
+  if vim.bo.filetype == 'python' then vim.bo.indentexpr = '' end
   vim.o.ignorecase, vim.o.smartcase, vim.o.textwidth, vim.o.wrapscan = false, false, 0, true
   vim.o.startofline = false -- Neovim's default; the engine's too
   for k, v in pairs(r.options or {}) do pcall(function() vim.o[k] = v end) end

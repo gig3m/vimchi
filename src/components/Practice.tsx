@@ -14,7 +14,7 @@ import { Results } from './Results';
 import { newSeed, repsHref, seedHref } from '../state/seed';
 import { repsChallenge, repsRunId } from '../challenges/reps';
 import { type Critique, type Report, coach, coachSegment, nudgeText } from '../coach';
-import { closedSegments } from '../coach/live';
+import { closedSegments, nudgeLine as coachNudgeLine } from '../coach/live';
 import { segment } from '../coach/segment';
 import { WARM_UP, coachable, warmUpTaught } from '../coach/vocab';
 import { searchVocab, shorterSegment } from '../coach/shorter';
@@ -308,8 +308,8 @@ export function Practice(p: Props) {
   // Tutor notes (not Vim's own messages) go in the command-line row.
   const vimMsg = s.vim?.message?.text.split('\n')[0];
   // A tutor note wins, then Vim's own message; a coach hint never covers either.
-  // A hint about the round just finished stays into the next one: say which round it was about.
-  const nudgeLine = nudge && (s.challenge.kind === 'rounds' && nudge.unit !== s.roundIdx ? `${unitLabel(nudge.unit)}: ${nudge.text}` : nudge.text);
+  // A hint about the round just finished stays into the next one, saying which round; then it goes.
+  const nudgeLine = nudge && (s.challenge.kind === 'rounds' ? coachNudgeLine(nudge, s.roundIdx, unitLabel) : nudge.text);
   const note = v.msg && v.msg !== vimMsg ? { text: v.msg, kind: v.msgKind } : nudgeLine && !v.done && !vimMsg ? { text: nudgeLine, kind: 'coach' } : null;
   const isQuiz = s.challenge.kind === 'quiz';
   const kind = s.challenge.kind;

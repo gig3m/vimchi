@@ -8,7 +8,7 @@ import type { Window } from '../vim/layout';
 import { type Pos, cmpPos } from '../vim/types';
 import { C, colorize } from '../ui/syntax';
 import type { Annotations } from '../lessons/goalDiff';
-import { cellWidths } from './tabs';
+import { cellWidths, listGlyphs, parseListchars } from './tabs';
 
 export type Overlay = {
   target: Pos | null;
@@ -133,8 +133,8 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
   const visible = vim.visibleLines(win);
   const topIdx = Math.max(0, visible.indexOf(win.top));
   const shown = visible.slice(topIdx, topIdx + textRows);
-  const numbers = (win.opts.number ?? vim.options.number) as boolean;
-  const rel = (win.opts.relativenumber ?? vim.options.relativenumber) as boolean;
+  const numbers = !!vim.optIn(win, 'number');
+  const rel = !!vim.optIn(win, 'relativenumber');
   const numWidth = Math.max(3, String(buf.lineCount).length + 1);
   const decos = vim.decorators.map(d => d(buf, win)).filter(Boolean) as Decoration[];
   const signs = new Map<number, { text: string; color: string }>();
@@ -169,7 +169,10 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
   const insertish = current && (vim.mode === 'insert' || vim.mode === 'replace');
 
   const rowsOut: ReactNode[] = [];
-  const ts = Number(vim.options.tabstop) || 8;
+  const ts = Number(vim.optIn(win, 'tabstop')) || 8;
+  // 'list' (on, as LazyVim has it): tabs, trailing spaces and no-break spaces drawn as listchars.
+  const list = !!vim.optIn(win, 'list');
+  const lcs = parseListchars(String(vim.optIn(win, 'listchars') ?? ''));
   // Replace drills: only the mark nearest the cursor shows its letter, like the one insert tag.
   let nearMark: string | null = null;
   if (overlay?.markKind === 'replace') {
@@ -199,7 +202,10 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
     const gutter = numbers || rel ? (
       <span className="ev-gutter" style={{ width: `${numWidth + 1}ch`, color: numColor }}>
         {rel && isCurLine && numbers ? String(l + 1).padEnd(numWidth - 1) : num}
-        {overlay?.ann?.num?.get(l) ? <span className="ann-num" aria-label={`edit ${overlay.ann.num.get(l)}`}>{overlay.ann.num.get(l)}</span> : null}
+        {overlay?.ann?.num?.get(l) ? (() => {
+          const n = overlay.ann!.num.get(l)!, to = overlay.ann!.numTo?.get(l);
+          return <span className={'ann-num' + (to ? ' wide' : '')} aria-label={to ? `edits ${n} to ${to}` : `edit ${n}`}>{to ? `${n}–${to}` : n}</span>;
+        })() : null}
       </span>
     ) : null;
     const sign = hasSigns ? <span className="ev-sign" style={{ color: signs.get(l)?.color }}>{signs.get(l)?.text ?? ' '}</span> : null;
@@ -222,6 +228,7 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
     const cols = colorize(t, buf.filetype);
     const chars = t.length ? [...t] : [];
     const widths = cellWidths(t, ts);
+    const glyphs = list ? listGlyphs(t, ts, lcs) : null;
     const cells: ReactNode[] = [];
     const nCells = Math.max(chars.length, insertish && isCurLine ? cur.col + 1 : 0, 1);
     for (let c = conceal.get(l) ?? 0; c < nCells; c++) {
@@ -229,7 +236,8 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
       const here = { line: l, col: c };
       let color = chars[c] !== undefined ? cols[c] : C.fg;
       let bg = 'transparent', shadow = 'none', deco = 'none', hint = '';
-      if (ch === '\t') { /* rendered as spaces below */ }
+      const glyph = glyphs?.[c] ?? null;
+      if (glyph != null) color = WHITESPACE;
       for (const m of hl) {
         if (cmpPos(m.start, here) <= 0 && cmpPos(here, m.end) <= 0 && chars[c] !== undefined) { bg = 'rgba(241,250,140,.28)'; break; }
       }
@@ -246,9 +254,12 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
         if (ann && chars[c] !== undefined && (ann.delLines.has(l) || ann.del.get(l)?.some(([a, b]) => c >= a && c <= b))) {
           // A change of case keeps the letters: underlined, not struck out.
           if (ann.cases?.get(l)?.some(([a, b]) => c >= a && c <= b)) { bg = 'rgba(139,233,253,.14)'; color = C.cyan; deco = 'underline wavy'; }
+          // A whole line to delete is a red row, as in a diff, so its text stays readable ("--").
+          else if (ann.delLines.has(l)) { color = C.red; }
           else { bg = 'rgba(255,85,85,.2)'; color = C.red; deco = 'line-through'; }
         }
-        if (overlay.span && chars[c] !== undefined && cmpPos(overlay.span.start, here) <= 0 && cmpPos(here, overlay.span.end) <= 0) {
+        // On a blank line the span takes its one cell (the line break), as Visual mode does.
+        if (overlay.span && (chars[c] !== undefined || (t.length === 0 && c === 0)) && cmpPos(overlay.span.start, here) <= 0 && cmpPos(here, overlay.span.end) <= 0) {
           bg = 'rgba(139,233,253,.14)'; shadow = SPAN_LINE;
         }
         if (overlay.target && overlay.target.line === l && overlay.target.col === c) {
@@ -263,6 +274,7 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
       const caretHere = isCursor && insertish && vim.mode === 'insert';
       // Ghost text (goal diff) at this column: the text still to type, before this cell.
       const ghostsHere = (overlay?.ann?.ins.get(l) ?? []).filter(tag => ghostAt(overlay!.ann!, l, tag) === c);
+      const under = { color, bg, shadow, deco };
       if (isCursor) {
         if (caretHere) { /* drawn below */ }
         else if (focused) {
@@ -278,13 +290,28 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
       if (overlay?.tip && current && cur.line === l && cur.col === c) cells.push(<CoachTip key="tip" text={overlay.tip} />);
       ghostsHere.forEach((tag, gi) => cells.push(<Ghost key={`g${c}-${gi}`} text={tag.text} done={tag.done ?? 0} quiet={tag.quiet || !!overlay?.tip} kase={tag.kind === 'case'} />));
       for (const d of decos) for (const h of d.hl ?? []) if (h.inline && h.line === l && h.start === c) cells.push(<span key={`i${c}-${cells.length}`} className="cell" style={{ color: h.color, background: h.bg }}>{h.text}</span>);
+      const text = over ?? glyph ?? (ch === '\t' ? ' '.repeat(widths[c] ?? ts) : ch === '\0' ? '^@' : ch.charCodeAt(0) < 32 ? '^' + String.fromCharCode(ch.charCodeAt(0) + 64) : ch);
+      const isTarget = (overlay?.target && overlay.target.line === l && overlay.target.col === c) || undefined;
+      if (isCursor && !caretHere && ch === '\t' && text.length > 1) {
+        // Neovim's block covers one cell of a tab: the first (the >) with 'list' on, else the last.
+        const [a, b] = list ? [text.slice(0, 1), text.slice(1)] : [text.slice(0, -1), text.slice(-1)];
+        const plain = <span key={`${c}p`} className="cell" style={{ color: under.color, background: under.bg, boxShadow: under.shadow, textDecoration: under.deco }}>{list ? b : a}</span>;
+        const block = <span key={c} className={cls} style={{ color, background: bg, boxShadow: shadow, textDecoration: deco }} data-cursor data-target={isTarget}>{list ? a : b}{hint && <span className="hint">{hint}</span>}</span>;
+        cells.push(...(list ? [block, plain] : [plain, block]));
+        continue;
+      }
       cells.push(
         <span key={c} className={cls} style={{ color, background: bg, boxShadow: shadow, textDecoration: deco }}
-          data-cursor={isCursor || undefined} data-target={(overlay?.target && overlay.target.line === l && overlay.target.col === c) || undefined}>
-          {over ?? (ch === '\t' ? ' '.repeat(widths[c] ?? ts) : ch === '\0' ? '^@' : ch.charCodeAt(0) < 32 ? '^' + String.fromCharCode(ch.charCodeAt(0) + 64) : ch)}
+          data-cursor={isCursor || undefined} data-target={isTarget}>
+          {text}
           {hint && <span className="hint">{hint}</span>}
         </span>,
       );
+    }
+    // A span that runs on past this line's end takes its line break, as Visual mode shows it: one
+    // cell after the text (a blank line's own cell is marked above).
+    if (overlay?.span && t.length > 0 && cmpPos(overlay.span.start, { line: l, col: t.length }) <= 0 && (overlay.span.end.line > l || (overlay.span.end.line === l && overlay.span.end.col >= t.length))) {
+      cells.push(<span key="span-eol" className="cell" style={{ background: 'rgba(139,233,253,.14)', boxShadow: SPAN_LINE }}> </span>);
     }
     for (const d of decos) for (const h of d.hl ?? []) if (h.inline && h.line === l && h.start >= nCells) cells.push(<span key={`i${h.start}-${cells.length}`} className="cell" style={{ color: h.color, background: h.bg }}>{h.text}</span>);
     for (const tag of overlay?.ann?.ins.get(l) ?? []) {
@@ -293,10 +320,11 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
     }
     // A join: the line below comes up onto this one (J adds a space, gJ doesn't).
     const join = overlay?.ann?.joins?.get(l);
-    if (join) cells.push(<span key="join" className="ann-join" aria-label={`join the next line here${join === 'none' ? ', with no space' : ''}`}>{join === 'none' ? 'join ↓ no space' : 'join ↓'}</span>);
+    if (join === 'cut') cells.push(<span key="join" className="ann-break" aria-label="the line break goes too">⏎</span>);
+    else if (join) cells.push(<span key="join" className="ann-join" aria-label={`join the next line here${join === 'none' ? ', with no space' : ''}`}>{join === 'none' ? 'join ↓ no space' : 'join ↓'}</span>);
     const v = virt.get(l);
     rowsOut.push(
-      <div key={l} className={'ev-row' + (isCurLine && current && vim.options.cursorline ? ' cur' : '')} style={lineBg.has(l) ? { background: lineBg.get(l) } : undefined}>
+      <div key={l} className={'ev-row' + (isCurLine && current && vim.optIn(win, 'cursorline') ? ' cur' : '') + (overlay?.ann?.delLines.has(l) ? ' ann-del-row' : '')} style={lineBg.has(l) ? { background: lineBg.get(l) } : undefined}>
         {gutter}{sign}
         <span className="ev-text">
           {cells}
@@ -308,7 +336,10 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
     pushNew(l);
   });
   if (shown[shown.length - 1] === buf.lineCount - 1) pushVirt(buf.lineCount);
-  for (let i = rowsOut.length; multi && i < textRows; i++) {
+  // Past the end of the file the window keeps its height with ~ rows, as Vim draws it. A window on
+  // a short file is only as tall as the file (the tutor's editor sizes to its text).
+  const height = multi ? textRows : Math.min(textRows, visible.length);
+  for (let i = rowsOut.length; i < height; i++) {
     rowsOut.push(<div key={'~' + i} className="ev-row"><span className="ev-tilde">~</span></div>);
   }
   return (
@@ -319,6 +350,8 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
   );
 }
 
+/** 'list' whitespace (Neovim's Whitespace/NonText group): there, but quieter than comments. */
+const WHITESPACE = '#4f5b80';
 /** Visual selection: brighter than Dracula's #44475a, which vanishes on the cursorline. */
 const VISUAL_BG = 'rgba(189,147,249,.42)';
 /** Underline for a step's pointed-at text; it stays under a selection so the two can be compared. */
@@ -355,10 +388,10 @@ function StatusLine({ vim, win, current, status, compact }: { vim: Vim; win: Win
       <span className="seg">{name}</span>
       {vim.recording && <span className="rec">recording @{vim.recording.reg}</span>}
       <span className="grow" />
-      <span className="pending">{pending}</span>
+      {(pending || !compact) && <span className="pending">{pending}</span>}
       <span className="stat-extra">{status.keys} keys</span>
       <span className="stat-extra">{status.time}</span>
-      <span className="seg">{win.cursor.line + 1}:{win.cursor.col + 1}</span>
+      <span className="seg pos">{win.cursor.line + 1}:{win.cursor.col + 1}</span>
     </div>
   );
 }

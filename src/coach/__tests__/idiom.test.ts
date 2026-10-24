@@ -8,6 +8,8 @@ import { Session } from '../../lessons/runtime';
 import type { RoundsChallenge } from '../../lessons/types';
 import { parseKeys } from '../../vim/keys';
 import { coach, gain, nudgeText } from '../index';
+import { searchIdioms } from '../idiom';
+import { createVim } from '../../lessons/runtime';
 import { PATTERNS } from '../patterns';
 
 function run(lessonId: string, round: number, keys: string) {
@@ -106,5 +108,35 @@ describe('motion critic: canonical routes, one suggestion', () => {
   it('motion critiques name a motion pattern', () => {
     const c = motion('top-bottom', 2, 'j'.repeat(24))[0];
     expect(c.better[0].pattern).toBe('jump-line');
+  });
+});
+
+describe('search rounds: no hand-motion tips', () => {
+  const tips = (lesson: string, round: number, keys: string) => run(lesson, round, keys).critiques.filter(c => c.better[0].rule === 'motion').map(c => c.better[0].keys);
+  it('a second search for the same pattern → n, never 3j^ or j$b', () => {
+    expect(tips('pattern-atoms', 2, '/^function<CR>Iasync <Esc>/^function<CR>.')).toEqual(['n']);
+    expect(tips('pattern-atoms', 0, '/gr.y<CR>cgnsilver<Esc>/gr.y<CR>.')).toEqual(['n']);
+  });
+  it('a search to a spot on the same line stays: dgn needs it ($ is not better)', () => {
+    expect(tips('pattern-atoms', 1, '/;$<CR>dgn..')).toEqual([]);
+  });
+  it('a search that lands where a hand motion would is not critiqued', () => {
+    expect(tips('pattern-atoms', 4, '/\\s$<CR>xjj$x')).toEqual([]);
+  });
+  it('a round solved by moving still gets its motion tip', () => {
+    expect(tips('top-bottom', 2, 'j'.repeat(24))).toContain('25G');
+  });
+});
+
+describe('a change that types nothing is a delete', () => {
+  it('di" is offered, ci"<Esc> never', () => {
+    const text = ['  token: "sk-live-4f9a2c",'];
+    const start = createVim({ name: 'a.ts', text, cursor: { line: 0, col: 9 } });
+    const scratch = createVim({ name: 'a.ts', text, cursor: { line: 0, col: 9 } });
+    const found = searchIdioms(scratch, start, '  token: "",', { taught: new Set(['d', 'c', 'i"', 'a"', 't', 'f', 'D', 'C', 'x']), maxKeys: 20 });
+    const keys = found.map(x => x.keys.join(''));
+    expect(keys).toContain('di"');
+    // Changes that type nothing; a change that retypes the quote (ct""<Esc>) is a different edit.
+    expect(found.filter(x => x.typed === '' && /^[cC]/.test(x.keys[0])).map(x => x.keys.join(''))).toEqual([]);
   });
 });

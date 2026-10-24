@@ -3,7 +3,7 @@ import { Session } from '../../lessons/runtime';
 import type { RoundsChallenge } from '../../lessons/types';
 import { parseKeys } from '../../vim/keys';
 import { segment } from '../segment';
-import { closedSegments } from '../live';
+import { closedSegments, nudgeLine } from '../live';
 
 function log(keys: string) {
   const c: RoundsChallenge = { kind: 'rounds', base: { text: ['abc def ghi jkl', 'x'], name: 'a.ts', cursor: { line: 0, col: 0 } }, rounds: [{ goal: { text: ['__never__'] }, solution: 'x' }] };
@@ -32,4 +32,12 @@ describe('live hints consider only closed segments', () => {
     const l = log('lllll');
     expect(closedSegments(segment(l), l, true)).toEqual([0]);
   });
+});
+
+describe('the live hint line', () => {
+  const label = (u: number) => `Round ${u + 1}`;
+  const n = { text: 'Search: n does that in 1 key instead of 6.', unit: 2 };
+  it('shows in its own round, plain', () => { expect(nudgeLine(n, 2, label)).toBe(n.text); });
+  it('stays one round, labelled with the round it is about', () => { expect(nudgeLine(n, 3, label)).toBe(`Round 3: ${n.text}`); });
+  it('is dropped after that', () => { expect(nudgeLine(n, 4, label)).toBeNull(); expect(nudgeLine(null, 0, label)).toBeNull(); });
 });

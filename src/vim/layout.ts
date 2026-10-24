@@ -31,8 +31,11 @@ export class Window {
   alt: Buffer | null = null;
   /** Per-window location list. */
   loclist: { items: QfItem[]; idx: number } | null = null;
-  /** Per-window options overriding the globals. */
-  opts: Record<string, boolean | number> = {};
+  /** The window's own option values: window-local ones (WINDOW_LOCAL, copied from the global
+   * values on first use, or from the window split off) and :setlocal values of global ones. */
+  opts: Record<string, boolean | number | string> = {};
+  /** Whether `opts` has had the window-local values copied in yet. */
+  optsCopied = false;
   /** Remembered cursor per buffer, restored when switching back. */
   lastPos = new Map<number, Pos>();
 
@@ -200,16 +203,16 @@ export class Tab {
         out.set(n.win, { top, left, height: h, width: w });
         return;
       }
-      const total = n.children.reduce((a, c) => a + c.size, 0);
+      // Side by side, windows have a one-column separator between them. Stacked, the status line
+      // is the separator; each window keeps one text row and its status line (winminheight=1).
       const span = n.type === 'col' ? h : w;
-      const gaps = n.children.length - 1;
+      const sep = n.type === 'row' ? 1 : 0;
+      const lens = share(span - sep * (n.children.length - 1), n.children.map(c => c.size), n.type === 'col' ? 2 : 1);
       let off = 0;
       n.children.forEach((c, i) => {
-        const isLast = i === n.children.length - 1;
-        const len = isLast ? span - gaps - off : Math.max(1, Math.round(((span - gaps) * c.size) / total));
-        if (n.type === 'col') walk(c, top + off, left, len, w);
-        else walk(c, top, left + off, h, len);
-        off += len + 1;
+        if (n.type === 'col') walk(c, top + off, left, lens[i], w);
+        else walk(c, top, left + off, h, lens[i]);
+        off += lens[i] + sep;
       });
     };
     walk(this.root, 0, 0, rows, cols);
@@ -236,6 +239,23 @@ export class Tab {
     }
     return best;
   }
+}
+
+/**
+ * Split `total` rows (or columns) by weight, each at least `min`, summing exactly to `total`.
+ * Whole shares first, then the rows left over by largest remainder, earlier windows first: Neovim
+ * gives 13 rows to two stacked windows as 7 and 6 (6 and 5 text rows), to four as 4, 3, 3, 3.
+ */
+export function share(total: number, weights: number[], min: number): number[] {
+  const n = weights.length;
+  if (total < n * min) return weights.map((_, i) => Math.floor(total / n) + (i < total % n ? 1 : 0));
+  const rest = total - n * min, sum = weights.reduce((a, b) => a + b, 0) || n;
+  const ideal = weights.map(w => (rest * (w || 0)) / sum);
+  const out = ideal.map(x => min + Math.floor(x));
+  let left = total - out.reduce((a, b) => a + b, 0);
+  const order = ideal.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0] || a[1] - b[1]);
+  for (let k = 0; left > 0; k = (k + 1) % n, left--) out[order[k][1]]++;
+  return out;
 }
 
 function equalize(n: LayoutNode) {

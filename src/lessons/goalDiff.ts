@@ -17,13 +17,17 @@ export type Annotations = {
   delLines: Set<number>;
   /** Repeat order of the edit on a line (1, 2, 3… for a change and its `.` repeats), shown in the gutter. */
   num: Map<number, number>;
+  /** The last repeat number on a line holding several ("2–3"): two matches of a `cgn` on one line. */
+  numTo?: Map<number, number>;
+  /** Lines drawn as out-and-in: the goal line that replaces each, and the `newLines` row it sits under. */
+  replaced?: Map<number, { text: string; under: number }>;
   /** Spans whose letters only change case (`gU`, `~`): marked as a case change, not a retype. */
   cases?: Map<number, [number, number][]>;
   /** Lines that join the line below them (`J`, `gJ`), with the space a join adds or none. */
-  joins?: Map<number, 'space' | 'none'>;
+  joins?: Map<number, 'space' | 'none' | 'cut'>;
 };
 
-const EMPTY = (): Annotations => ({ del: new Map(), ins: new Map(), newLines: new Map(), delLines: new Set(), num: new Map(), cases: new Map(), joins: new Map() });
+const EMPTY = (): Annotations => ({ del: new Map(), ins: new Map(), newLines: new Map(), delLines: new Set(), num: new Map(), cases: new Map(), joins: new Map(), replaced: new Map() });
 
 /** Longest common subsequence alignment of two line arrays. */
 export function align(a: readonly string[], b: readonly string[]): [number, number][] {
@@ -66,7 +70,9 @@ export function slide(str: string, p: number, len: number): number {
   return best;
 }
 
-const isW = (ch: string | undefined) => !!ch && /\w/.test(ch);
+/** A character a replacement widens over: letters and digits. An underscore bounds the part of a
+ * snake_case name that changed (~~old~~ new_b, not ~~old_b~~ new_b). */
+const isWide = (ch: string | undefined) => !!ch && /[A-Za-z0-9]/.test(ch);
 
 /** One edit inside a line: current [s, e) becomes goal [gs, ge). Text between edits is shared. */
 type Edit = { s: number; e: number; gs: number; ge: number };
@@ -115,8 +121,8 @@ function lineEdit(cur: string, goal: string, line: number, out: Annotations) {
   for (const ed of merged) {
     // Only into the word the edit is part of: swapping quotes (' for ") leaves the word between alone.
     if (ed.e > ed.s && ed.ge > ed.gs) {
-      while (ed.s > 0 && isW(cur[ed.s - 1]) && ed.gs > 0 && (isW(cur[ed.s]) || isW(goal[ed.gs]))) { ed.s--; ed.gs--; }
-      while (ed.e < cur.length && isW(cur[ed.e]) && ed.ge < goal.length && isW(goal[ed.ge]) && (isW(cur[ed.e - 1]) || isW(goal[ed.ge - 1]))) { ed.e++; ed.ge++; }
+      while (ed.s > 0 && isWide(cur[ed.s - 1]) && ed.gs > 0 && (isWide(cur[ed.s]) || isWide(goal[ed.gs]))) { ed.s--; ed.gs--; }
+      while (ed.e < cur.length && isWide(cur[ed.e]) && ed.ge < goal.length && isWide(goal[ed.ge]) && (isWide(cur[ed.e - 1]) || isWide(goal[ed.ge - 1]))) { ed.e++; ed.ge++; }
     }
     const last = edits[edits.length - 1];
     if (last && ed.s <= last.e) { last.e = Math.max(last.e, ed.e); last.ge = Math.max(last.ge, ed.ge); }
@@ -136,6 +142,28 @@ function lineEdit(cur: string, goal: string, line: number, out: Annotations) {
     if (text) push(out.ins, line, { col: ed.s, text, ...(was && was !== text && was.toLowerCase() === text.toLowerCase() ? { kind: 'case' as const } : {}) });
     if (was && was !== text && was.toLowerCase() === text.toLowerCase()) push(out.cases!, line, [ed.s, ed.e - 1] as [number, number]);
   }
+}
+
+/** Where a delete across line breaks cuts: the goal's one line is `cs[0]` up to `a` and the last
+ * line from `b`. Null when it isn't that (or when no break is crossed). */
+function acrossBreak(cs: readonly string[], gs: readonly string[]): [number, number] | null {
+  if (cs.length < 2 || gs.length !== 1) return null;
+  const g = gs[0], first = cs[0], last = cs[cs.length - 1];
+  let p = 0;
+  while (p < first.length && p < g.length && first[p] === g[p]) p++;
+  for (let a = p; a >= 0; a--) {
+    const b = last.length - (g.length - a);
+    if (b >= 0 && last.slice(b) === g.slice(a) && (a < first.length || b > 0)) return [a, b];
+  }
+  return null;
+}
+
+/** Two versions of a line that share under 40% of their characters (indentation aside). */
+function unlike(a: string, b: string): boolean {
+  const x = a.trim(), y = b.trim();
+  if (!x || !y) return false;
+  const kept = x.length - charEdits(x, y).reduce((n, e) => n + e.e - e.s, 0);
+  return kept < 0.4 * Math.max(x.length, y.length);
 }
 
 /** `J` (one space, leading blanks dropped; none after a blank end or before a ")") or `gJ` (as is). */
@@ -196,6 +224,8 @@ export function diffGoal(cur: readonly string[], goal: readonly string[], opts: 
   const pairs = align(cur, goal);
   let hunks = 0, noisy = false, reflow = false;
   let ci = 0, gi = 0;
+  /** First line of a cut across line breaks → its last line. */
+  const cutEnds = new Map<number, number>();
   const flush = (cEnd: number, gEnd: number) => {
     const cs = cur.slice(ci, cEnd), gs = goal.slice(gi, gEnd);
     if (!cs.length && !gs.length) return;
@@ -210,6 +240,18 @@ export function diffGoal(cur: readonly string[], goal: readonly string[], opts: 
       joined.forEach((how, k) => out.joins!.set(ci + k, how));
       return;
     }
+    // A delete across line breaks (d/Then, dap mid-sentence): the goal line is the head of the
+    // first line and the tail of the last. One strike from there to there, lines between gone.
+    const across = acrossBreak(cs, gs);
+    if (across) {
+      const [a, b] = across, last = ci + cs.length - 1;
+      if (a < cs[0].length) push(out.del, ci, [a, cs[0].length - 1] as [number, number]);
+      for (let k = 1; k < cs.length - 1; k++) out.delLines.add(ci + k);
+      if (b > 0) push(out.del, last, [0, b - 1] as [number, number]);
+      out.joins!.set(ci, 'cut');
+      cutEnds.set(ci, last);
+      return;
+    }
     // Lines rewrapped (gq, a reflow): the same words across a different number of lines. Marks
     // on each line would picture a retype; the pane shows the result.
     if (cs.length > 1 && gs.length > 1 && cs.length !== gs.length && words(cs).join(' ') === words(gs).join(' ')) reflow = true;
@@ -220,13 +262,24 @@ export function diffGoal(cur: readonly string[], goal: readonly string[], opts: 
       return;
     }
     const paired = Math.min(cs.length, gs.length);
+    const addNew = (after: number, ls: string[]) => out.newLines.set(after, [...(out.newLines.get(after) ?? []), ...ls]);
     for (let k = 0; k < paired; k++) {
       const a = cs[k], b = gs[k];
       if (a.trim() === b.trim()) noisy = true; // indentation-only change
+      // In a block that shrinks, a line that keeps little of itself is a new line, not
+      // an edit: a character splice of "inc() {" into "n = 0;" reads as nonsense. The new lines go
+      // below the whole block, so the old lines read as one block out. Not while it is being
+      // typed, and not line for line (ci( on two lines keeps both as edits).
+      if (!typing && cs.length > gs.length && unlike(a, b)) {
+        out.delLines.add(ci + k);
+        addNew(ci + cs.length - 1, [b]);
+        out.replaced!.set(ci + k, { text: b, under: ci + cs.length - 1 });
+        continue;
+      }
       lineEdit(a, b, ci + k, out);
     }
     for (let k = paired; k < cs.length; k++) out.delLines.add(ci + k);
-    if (gs.length > paired) out.newLines.set(ci + paired - 1, gs.slice(paired));
+    if (gs.length > paired) addNew(ci + paired - 1, gs.slice(paired));
   };
   for (const [a, b] of pairs) {
     flush(a, b);
@@ -237,7 +290,9 @@ export function diffGoal(cur: readonly string[], goal: readonly string[], opts: 
   const tags = [...out.ins.values()].flat();
   const longTag = tags.some(t => t.text.length > 40) || [...out.newLines.values()].some(ls => ls.length > 3 || ls.some(l => l.length > 50));
   // Busy-ness counts changed lines, not marks: a line split into word edits is still one line.
-  const spans = new Set([...out.del.keys(), ...out.ins.keys()]).size * 2 + out.delLines.size + out.newLines.size;
+  // A cut across a line break is one change though it marks two lines: count its second line once.
+  const cutTails = [...(out.joins?.entries() ?? [])].filter(([l, how]) => how === 'cut' && out.del.has(l) && out.del.has(cutEnds.get(l)!)).length;
+  const spans = new Set([...out.del.keys(), ...out.ins.keys()]).size * 2 - cutTails + out.delLines.size + out.newLines.size;
   // Lines put in a new order (:sort, a filter): line moves drawn one by one read as edits.
   // Every goal line is already in the file, yet they don't all line up in order: lines moved.
   // One line moved (ddp) stays inline; a sort, or a sort that also drops lines (:sort u), doesn't.

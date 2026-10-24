@@ -296,6 +296,15 @@ function dotCandidate(segs: Segment[], first: number, last: number, start: numbe
   return { keys: out, uses: ['.'], pattern: 'dot', style: out.length + 2 * adjacent, commands: 1, typed: '' };
 }
 
+const SEARCHES = new Set(['/', '?', 'n', 'N', '*', '#']);
+/** A round whose reference solution gets there by searching: a hand-motion tip there teaches
+ * against the lesson (`/^function<CR>` → `3j^`), so only a search may be suggested. */
+function searchRound(session: CoachSession, unit: number): boolean {
+  if (session.challenge.kind !== 'rounds') return false;
+  const sol = session.roundSolution(unit);
+  return sol !== null && referenceTokens(session, unit, sol).some(t => SEARCHES.has(t));
+}
+
 function motionCritique(session: CoachSession, ctx: Ctx, seg: Segment & { kind: 'motion' }): Critique | null {
   const log = session.log();
   const vim = stateBefore(session, seg.logStart);
@@ -328,9 +337,14 @@ function motionCritique(session: CoachSession, ctx: Ctx, seg: Segment & { kind: 
   const undercuts = (uses: string[]) =>
     (ran.some(t => t === '/' || t === '?') && uses.some(u => u === '/' || u === '?')) // a shorter pattern for a search already made is a nitpick
     || ran.some(t => ctx.drilled.has(t) && !uses.includes(t));
+  const searching = searchRound(session, seg.unit);
+  // A search the learner made there is the lesson's route (gn, n and . lean on it), even to a spot
+  // on the same line; a hand run to the same line may still be told f/t.
+  const searched = ran.some(t => SEARCHES.has(t));
   for (const c of cands) {
     const saves = seg.keys.length - c.cost;
     if (!motionWorth(seg.keys.length, saves) || !usesAllowed(c.uses, ctx.taught) || undercuts(c.uses)) continue;
+    if (searching && (searched || !sameLine) && !c.uses.some(u => SEARCHES.has(u))) continue;
     const ks = parseNotation(c.keys);
     if (!verifyKeys(session, seg.logStart, seg.logEnd, ks, false)) continue;
     const pattern = motionPattern(c.uses);

@@ -31,7 +31,9 @@ function signs(hs: Hunk[]): Map<number, { text: string; color: string }> {
     if (isDelete(h)) out.set(hunkLine(h), { text: h.bStart === 0 ? '‾' : '_', color: RED });
     else if (h.aCount === 0) for (let k = 0; k < h.bCount; k++) out.set(h.bStart + k, { text: '┃', color: GREEN });
     else {
-      for (let k = 0; k < h.bCount; k++) out.set(h.bStart + k, { text: '┃', color: CHANGE });
+      // As gitsigns draws a change: as many lines as were replaced are "change", the rest of a
+      // longer replacement are "add"; a shorter one ends in "changedelete" (~).
+      for (let k = 0; k < h.bCount; k++) out.set(h.bStart + k, { text: '┃', color: k < h.aCount ? CHANGE : GREEN });
       if (h.aCount > h.bCount) out.set(h.bStart + h.bCount - 1, { text: '~', color: CHANGE });
     }
   }

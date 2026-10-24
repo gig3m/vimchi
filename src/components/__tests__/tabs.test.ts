@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cellWidths, displayWidth } from '../tabs';
+import { cellWidths, displayWidth, listGlyphs, parseListchars } from '../tabs';
 
 describe('cellWidths', () => {
   it('a tab runs to the next tab stop, not a fixed tabstop width', () => {
@@ -15,5 +15,18 @@ describe('cellWidths', () => {
     expect(displayWidth('\t\t', 8)).toBe(16);
     expect(displayWidth('  \t', 4)).toBe(4);
     expect(displayWidth('    ', 8)).toBe(4);
+  });
+});
+
+describe('listGlyphs (list on, Neovim default listchars), checked against nvim --clean screenstring()', () => {
+  const lcs = parseListchars('tab:> ,trail:-,nbsp:+');
+  const draw = (line: string) => listGlyphs(line, 8, lcs).map((g, i) => g ?? [...line][i]).join('');
+  it('tabs are > then fill; spaces after the last non-blank are -', () => {
+    expect(draw('a \t b  ')).toBe('a >      b--');
+    expect(draw('x\t \t')).toBe('x>      ->      ');
+  });
+  it('a line of spaces is all trail; a no-break space is +', () => {
+    expect(draw('   ')).toBe('---');
+    expect(draw('c\u00a0d')).toBe('c+d');
   });
 });

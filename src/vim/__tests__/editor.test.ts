@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Vim } from '../editor';
+import { parseListchars } from '../../components/tabs';
 
 /** Run keys against a document. `|` in the doc marks the cursor. */
 function run(doc: string, keys: string, opts: { files?: Record<string, string> } = {}) {
@@ -622,5 +623,167 @@ describe(':set forms (Neovim 0.12)', () => {
     expect(vim.buf.text()).toBe('cd');
     vim.feedKeys(':earlier<CR>');
     expect(vim.buf.text()).toBe('bcd');
+  });
+});
+
+describe(':w messages and guards (as Neovim prints them)', () => {
+  const files = { 'src.txt': 'a\nbb\nccc\ndddd\n', 'old.txt': 'x\n' };
+  it('a range writes just those lines and counts them', () => {
+    const v = new Vim({ files, open: 'src.txt' });
+    v.feedKeys(':2,3w new.txt<CR>');
+    expect(v.fs.read('new.txt')).toBe('bb\nccc\n');
+    expect(v.message?.text).toBe('"new.txt" [New] 2L, 7B written');
+  });
+  it('a whole-file write counts the file', () => {
+    const v = new Vim({ files, open: 'src.txt' });
+    v.feedKeys(':w<CR>');
+    expect(v.message?.text).toBe('"src.txt" 4L, 14B written');
+  });
+  it('an existing other file needs !; >> appends', () => {
+    const v = new Vim({ files, open: 'src.txt' });
+    v.feedKeys(':2,3w old.txt<CR>');
+    expect(v.message?.text).toBe('E13: File exists (add ! to override)');
+    v.feedKeys(':2,3w >> old.txt<CR>');
+    expect(v.fs.read('old.txt')).toBe('x\nbb\nccc\n');
+    expect(v.message?.text).toBe('"old.txt" 2L, 7B appended');
+    v.feedKeys(':1w! old.txt<CR>');
+    expect(v.fs.read('old.txt')).toBe('a\n');
+  });
+  it('part of the buffer onto its own file needs !', () => {
+    const v = new Vim({ files, open: 'src.txt' });
+    v.feedKeys(':2,3w<CR>');
+    expect(v.message?.text).toBe('E140: Use ! to write partial buffer');
+    v.feedKeys(':%w<CR>');
+    expect(v.message?.text).toBe('"src.txt" 4L, 14B written');
+  });
+});
+
+describe('filetype indent settings (Neovim ftplugins)', () => {
+  it('Python shifts by 4 (PEP 8), TypeScript by the global 2', () => {
+    const py = new Vim({ text: 'def f():\nreturn 1', name: 'a.py' });
+    py.feedKeys('j>>');
+    expect(py.buf.line(1)).toBe('    return 1');
+    const ts = new Vim({ text: 'x\ny', name: 'a.ts' });
+    ts.feedKeys('j>>');
+    expect(ts.buf.line(1)).toBe('  y');
+  });
+  it(':set sw? reads the buffer\'s value; :set changes it, :setlocal only the window\'s', () => {
+    const v = new Vim({ text: 'a\nb', name: 'a.py' });
+    v.feedKeys(':set sw?<CR>');
+    expect(v.message?.text).toBe('  shiftwidth=4');
+    v.feedKeys(':set sw=2<CR>>>');
+    expect(v.buf.line(0)).toBe('  a');
+    expect(v.buf.opts.shiftwidth).toBe(2);
+  });
+  it('noexpandtab indents with tabs, then spaces', () => {
+    const v = new Vim({ text: 'a', name: 'a.ts' });
+    v.feedKeys(':set noet sw=4 ts=8<CR>>>>>>>');
+    expect(v.buf.line(0)).toBe('\t    a');
+  });
+});
+
+describe('option scope and :set syntax (review of batch 4, checked in nvim --clean)', () => {
+  const files = { 'a.py': 'x\n', 'b.py': 'y\n', 'c.ts': 'z\n', 'd.ts': 'w\n', 'src.txt': 'a\nbb\n' };
+  it('listchars is a comma list: += adds an item, -= removes one, ^= prepends', () => {
+    const v = new Vim({ files, open: 'c.ts' });
+    v.feedKeys(':set lcs+=space:.<CR>');
+    expect(v.options.listchars).toBe('tab:> ,trail:-,nbsp:+,space:.');
+    expect(parseListchars(String(v.options.listchars))).toMatchObject({ nbsp: '+', space: '.' });
+    v.feedKeys(':set lcs-=trail:-<CR>:set lcs^=eol:$<CR>');
+    expect(v.options.listchars).toBe('eol:$,tab:> ,nbsp:+,space:.');
+  });
+  it('a backslash keeps a space in a :set value', () => {
+    const v = new Vim({ files, open: 'c.ts' });
+    v.feedKeys(':set lcs=tab:>\\ ,trail:-<CR>');
+    expect(v.options.listchars).toBe('tab:> ,trail:-');
+    expect(v.message?.kind).not.toBe('error');
+  });
+  it(':setlocal nolist is the window\'s; the global stays on', () => {
+    const v = new Vim({ files, open: 'c.ts' });
+    v.feedKeys(':setlocal nolist<CR>');
+    expect(v.optIn(v.win, 'list')).toBe(false);
+    expect(v.options.list).toBe(true);
+  });
+  it('shiftwidth is per buffer: :setlocal stays in its buffer; a new buffer gets the global and its ftplugin', () => {
+    const v = new Vim({ files, open: 'a.py' });
+    v.feedKeys(':setlocal sw=8<CR>');
+    expect(v.opt('shiftwidth')).toBe(8);
+    v.feedKeys(':e b.py<CR>');
+    expect(v.opt('shiftwidth')).toBe(4);
+    v.feedKeys(':e c.ts<CR>');
+    expect(v.opt('shiftwidth')).toBe(2);
+    v.feedKeys(':b a.py<CR>');
+    expect(v.opt('shiftwidth')).toBe(8);
+  });
+  it(':set changes the global and this buffer, not buffers made before it', () => {
+    const v = new Vim({ files, open: 'c.ts' });
+    v.feedKeys(':e d.ts<CR>:set sw=6<CR>');
+    expect(v.opt('shiftwidth')).toBe(6);
+    v.feedKeys(':b c.ts<CR>');
+    expect(v.opt('shiftwidth')).toBe(2);
+    v.feedKeys(':e a.py<CR>');
+    expect(v.opt('shiftwidth')).toBe(4); // the ftplugin's, over the new global
+    v.feedKeys(':e src.txt<CR>');
+    expect(v.opt('shiftwidth')).toBe(6);
+  });
+  it('markdown keeps the global indent (LazyVim turns off its recommended style)', () => {
+    const v = new Vim({ text: '- a\n- b', name: 'a.md' });
+    v.feedKeys('j>>');
+    expect(v.buf.line(1)).toBe('  - b');
+  });
+  it(':w! >> makes a missing file; without ! it is E212', () => {
+    const v = new Vim({ files, open: 'src.txt' });
+    v.feedKeys(':1,2w >> n.txt<CR>');
+    expect(v.message?.text).toBe("E212: Can't open file for writing: no such file or directory");
+    v.feedKeys(':1,2w! >> n.txt<CR>');
+    expect(v.fs.read('n.txt')).toBe('a\nbb\n');
+    expect(v.message?.text).toBe('"n.txt" [New] 2L, 5B appended');
+  });
+});
+
+describe('option scope, round 2 (checked in nvim --clean 0.12.6)', () => {
+  const files = { 'a.py': 'x\n', 'aq.txt': 'a\n', 'bq.txt': 'b\n', 'c.ts': 'z\n' };
+  it('window-local: :set changes only this window; the others keep theirs', () => {
+    const v = new Vim({ files, open: 'c.ts' });
+    v.feedKeys(':set list<CR>:split<CR>:set nolist<CR>');
+    expect(v.optIn(v.win, 'list')).toBe(false);
+    v.feedKeys('<C-w>j');
+    expect(v.optIn(v.win, 'list')).toBe(true);
+    v.feedKeys(':set nonumber<CR><C-w>k');
+    expect(v.optIn(v.win, 'number')).toBe(true);
+  });
+  it('a split copies the window\'s own values', () => {
+    const v = new Vim({ files, open: 'c.ts' });
+    v.feedKeys(':set list<CR>:setlocal nolist<CR>:setlocal rnu<CR>:split<CR>');
+    expect(v.optIn(v.win, 'list')).toBe(false);
+    expect(v.optIn(v.win, 'relativenumber')).toBe(true);
+  });
+  it(':bd drops a buffer\'s local values: opened again it takes the global and its ftplugin', () => {
+    const v = new Vim({ files, open: 'c.ts' });
+    v.feedKeys(':set sw=2<CR>:e aq.txt<CR>:setlocal sw=8<CR>:e bq.txt<CR>:bd aq.txt<CR>:e aq.txt<CR>');
+    expect(v.opt('shiftwidth')).toBe(2);
+  });
+  it(':set lists what differs from Neovim\'s defaults, local values included, as Neovim lays it out', () => {
+    const v = new Vim({ files, open: 'a.py' });
+    v.feedKeys(':set<CR>');
+    expect(v.message?.text).toBe([
+      '--- Options ---',
+      // Sorted by option name, so nowrap is under w; filled down, then across.
+      '  cursorline          list                shiftwidth=4      nowrap',
+      '  expandtab           number              tabstop=4',
+    ].join('\n'));
+    v.feedKeys(':setlocal sw=3<CR>:set<CR>');
+    expect(v.message?.text).toContain('shiftwidth=3');
+    v.feedKeys(':set all <CR>');
+    expect(v.message?.text).toMatch(/^--- Options ---/);
+  });
+  it('listchars items: += replaces one with the same key at the end, -= removes several, ^= at the front', () => {
+    const v = new Vim({ files, open: 'c.ts' });
+    const lcs = (cmd: string) => { v.feedKeys(':set lcs&<CR>' + cmd); return v.options.listchars; };
+    expect(lcs(':set lcs+=tab:>-<CR>')).toBe('trail:-,nbsp:+,tab:>-');
+    expect(lcs(':set lcs-=trail:-,tab:>\\ <CR>')).toBe('nbsp:+');
+    expect(lcs(':set lcs+=trail:x,space:.<CR>')).toBe('tab:> ,nbsp:+,trail:x,space:.');
+    expect(lcs(':set lcs^=nbsp:x<CR>')).toBe('nbsp:x,tab:> ,trail:-');
+    expect(lcs(':set lcs+=space:.,trail:-<CR>')).toBe('tab:> ,trail:-,nbsp:+,space:.');
   });
 });

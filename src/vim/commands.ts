@@ -407,14 +407,14 @@ export function installCommands(vim: Vim) {
 
   const shift = (dir: 1 | -1) => (r: Range, c: OpCtx) => {
     V.buf.markUndoEntry(); // an undo step even when no line moves (>> on a blank line)
-    const sw = Number(V.opt('shiftwidth')) || 8;
+    const sw = V.sw();
     const times = c.visual ? c.count : 1;
     for (let l = r.start.line; l <= r.end.line; l++) {
       const t = ln(l);
       if (!t.trim() && dir === 1) continue;
       const ind = indentOf(t).replace(/\t/g, ' '.repeat(Number(V.opt('tabstop')))).length;
       const n = dir === 1 ? ind + sw * times : Math.max(0, ind - sw * times);
-      V.buf.setLine(l, ' '.repeat(n) + t.trimStart());
+      V.buf.setLine(l, V.indentStr(n) + t.trimStart());
     }
     V.buf.recordChange(pos(r.start.line, 0));
     V.setCursor(landOn(r.start.line), V.win.want);
@@ -429,7 +429,7 @@ export function installCommands(vim: Vim) {
     change: true,
     run: r => {
       V.buf.markUndoEntry(); // an undo step even when the indent was already right
-      const out = reindentLines(L(), r.start.line, r.end.line, V.buf.filetype, Number(V.opt('shiftwidth')) || 2);
+      const out = reindentLines(L(), r.start.line, r.end.line, V.buf.filetype, V.sw());
       V.buf.splice(r.start.line, r.end.line - r.start.line + 1, out);
       V.setCursor(landOn(r.start.line), V.win.want);
       const n = r.end.line - r.start.line + 1;
@@ -583,7 +583,7 @@ export function installCommands(vim: Vim) {
    * the next 'tabstop'; 'expandtab' spells it with spaces, otherwise tabs fill whole tabstops.
    */
   const tabText = (t: string, col: number, count: number) => {
-    const ts = Number(V.opt('tabstop')) || 8, sw = Number(V.opt('shiftwidth')) || ts;
+    const ts = Number(V.opt('tabstop')) || 8, sw = V.sw();
     const inIndent = /^[ \t]*$/.test(t.slice(0, col));
     let vc = 0;
     for (const ch of t.slice(0, col)) vc = ch === '\t' ? vc + ts - (vc % ts) : vc + 1;
@@ -670,7 +670,7 @@ export function installCommands(vim: Vim) {
     // On a closed fold, o opens below its last line and O above its first (n_opencmd).
     const f = V.closedFoldAt(cur().line);
     const l = above ? (f?.start ?? cur().line) : (f?.end ?? cur().line);
-    const indent = V.opt('autoindent') ? indentOf(ln(l)) + (!above && /[{([]\s*$/.test(ln(l)) ? ' '.repeat(Number(V.opt('shiftwidth'))) : '') : '';
+    const indent = V.opt('autoindent') ? indentOf(ln(l)) + (!above && /[{([]\s*$/.test(ln(l)) ? V.indentStr(V.sw()) : '') : '';
     const at = above ? l : l + 1;
     V.insertLines(at, [indent]);
     V.startInsert(above ? 'O' : 'o', pos(at, indent.length), c.count);
