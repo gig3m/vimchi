@@ -79,7 +79,9 @@ export function createVim(setup: Setup): Vim {
   setup.init?.(vim);
   vim.clampCursor();
   vim.scrollToCursor();
-  vim.buf.modified = false;
+  // The file as given is saved; edits the setup made on top of it are not ("You changed this
+  // line": [+] shows and :q refuses, as it would after making them yourself).
+  vim.buf.modified = !setup.open && vim.buf.name === (setup.name ?? 'scratch.txt') && vim.buf.text() !== (text ?? '');
   return vim;
 }
 
@@ -359,6 +361,7 @@ export class Session {
     this.carryExtra = 0;
     this.moved = null;
     this.stepsRequired = stepsRequired(setup, r);
+    this.roundText = this.vim.buf.text();
     // A new round starts with a clean command line: the last round's "3 lines >ed" or a setup's
     // own message ("E486" from an init macro) would read as something the learner just did.
     this.msg = '';
@@ -409,6 +412,8 @@ export class Session {
   private carryExtra = 0;
   /** The final goal counts only after the steps: see stepsRequired. */
   private stepsRequired = false;
+  /** The buffer text the round started with. */
+  private roundText = '';
   private carryByRound: number[] = [];
 
   /** Par keys for a finished round (reference length + carry-over path), or null. */
@@ -496,7 +501,18 @@ export class Session {
       }
       // Reaching the final goal by another route still finishes the round, unless the steps are
       // the round (see stepsRequired).
-      if (goalMet(vim, steps[last].goal) && (this.stepIdx === last || !this.stepsRequired)) {
+      const finalMet = goalMet(vim, steps[last].goal);
+      // The end result without the steps that are the round: say what's still to do, and how
+      // to get back to it when the text went another way.
+      // Only for a result in the text: walking across a cursor goal on the way (f5 over the box
+      // before the edit) is no skip.
+      const textGoal = steps[last].goal.text != null || steps[last].goal.files != null || steps[last].goal.registers != null;
+      if (finalMet && textGoal && this.stepIdx < last && this.stepsRequired) {
+        const undo = vim.buf.text() !== this.roundText ? ' (u undoes)' : '';
+        this.msg = `This round goes step by step. Next: ${steps[this.stepIdx].prompt}${undo}`;
+        this.msgKind = 'warn';
+      }
+      if (finalMet && (this.stepIdx === last || !this.stepsRequired)) {
         this.hits++;
         this.roundStats.push({ keys: this.roundKeys, par: solutionKeys(round!.solution).length + this.carryExtra });
         if (this.roundIdx >= c.rounds.length - 1) this.finish(now);
@@ -681,7 +697,7 @@ export class Session {
     const quiz = c.kind === 'quiz' && !this.done ? { q: c.questions[this.roundIdx], index: this.roundIdx, picked: this.picked, sel: this.sel } : null;
     return {
       // A cursor goal in another file has no place in this one: drawing it here points at a wrong spot.
-      vim: this.vim, target: this.done || (step?.goal.buffer != null && step.goal.buffer !== this.vim?.buf.name) ? null : this.target,
+      vim: this.vim, target: this.done || (c.kind === 'rounds' && c.showTarget === false) || (step?.goal.buffer != null && step.goal.buffer !== this.vim?.buf.name) ? null : this.target,
       moved: this.moved && this.roundKeys === 0 ? this.moved : null, marks, brokenLines, goalText, prompt: step?.prompt || null,
       span: !this.done && !this.roundDone ? step?.mark ?? null : null, step: this.stepIdx,
       hits, total: this.total, keys: this.keys, startAt: this.startAt, endAt: this.endAt, done: this.done,

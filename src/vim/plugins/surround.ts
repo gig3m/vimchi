@@ -171,7 +171,7 @@ function replaceSpan(vim: Vim, a: Pos, b: Pos, text: string) {
 
 /** Reindent lines [from, to] one shiftwidth deeper than `base` (nvim-surround's indent_lines). */
 function reindent(vim: Vim, from: number, to: number, base: string) {
-  const sw = ' '.repeat(Number(vim.opt('shiftwidth')) || 2);
+  const sw = vim.indentStr(vim.sw());
   const lines = vim.buf.lines.slice(from, to + 1);
   const min = Math.min(...lines.filter(t => t.trim()).map(t => indentOf(t).length));
   for (let l = from; l <= to; l++) {

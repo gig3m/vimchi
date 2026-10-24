@@ -37,6 +37,11 @@ export class Buffer {
   marks = new Map<string, Pos>();
   changelist: Pos[] = [];
   changeIdx = -1;
+  /** Buffer-local option values ('shiftwidth' and friends, see BUFFER_LOCAL): the filetype's as
+   * Neovim's ftplugins set them, the rest copied from the global values (Vim.localsOf). */
+  opts: Record<string, boolean | number | string> = {};
+  /** Whether `opts` has had the global values copied in yet. */
+  optsCopied = false;
   /** Arbitrary per-buffer data for plugins (e.g. the explorer's tree). */
   data: Record<string, unknown> = {};
   /** Buffer-local mappings (see Vim.mapLocal). Keys are joined key sequences. */
@@ -53,7 +58,14 @@ export class Buffer {
     if (!this.lines.length) this.lines = [''];
     this.kind = opts.kind ?? 'file';
     this.filetype = opts.filetype ?? filetypeOf(name);
+    this.resetOpts();
     this.undoRoot.lines = this.lines.slice();
+  }
+
+  /** Local option values as a new buffer has them: its filetype's, the rest copied later. */
+  resetOpts() {
+    this.opts = { ...FT_OPTIONS[this.filetype] };
+    this.optsCopied = false;
   }
 
   get lineCount() {
@@ -380,6 +392,20 @@ export function filetypeOf(name: string): string {
   if (/(^|\/)\.?(bashrc|zshrc)$/.test(name)) return 'sh';
   return map[ext] ?? 'text';
 }
+
+/**
+ * What Neovim's own ftplugins (0.12, recommended styles on, as nvim --clean and LazyVim have them)
+ * set for indenting: Python's PEP 8 four spaces. 'softtabstop' is left out (the engine has none).
+ * From $VIMRUNTIME/ftplugin/{python,rust,yaml,ruby}.vim.
+ */
+export const FT_OPTIONS: Record<string, Record<string, boolean | number>> = {
+  python: { expandtab: true, tabstop: 4, shiftwidth: 4 },
+  // Not markdown's (sw=4 ts=4): LazyVim sets g:markdown_recommended_style = 0.
+  rust: { expandtab: true, shiftwidth: 4 },
+  yaml: { expandtab: true, shiftwidth: 2 },
+  ruby: { expandtab: true, shiftwidth: 2 },
+  // Not Go's (noexpandtab shiftwidth=0): the challenge corpus has its Go indented with two spaces.
+};
 
 export const COMMENT_STRINGS: Record<string, string> = {
   typescript: '// %s', javascript: '// %s', go: '// %s', rust: '// %s', c: '// %s', css: '/* %s */', json: '// %s',

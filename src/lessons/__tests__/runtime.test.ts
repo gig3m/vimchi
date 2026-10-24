@@ -240,9 +240,29 @@ describe('rounds with steps', () => {
     expect(play(c, 'xx')).toBe(false);
     expect(play(c, 'xjkx')).toBe(true);
   });
+  it('skipping the steps says what is next, and how to undo', () => {
+    const c = two({ inOrder: true, setup: { cursor: { line: 0, col: 0 } }, steps: [{ prompt: 'Delete the a.', goal: { text: ['lpha beta gamma', 'delta'] } }, { prompt: 'Go down.', goal: { text: ['lpha beta gamma', 'delta'], cursor: { line: 1, col: 0 } } }], goal: { text: ['pha beta gamma', 'delta'] }, solution: 'xjkx' });
+    const s = new Session(c, { carryCursor: false });
+    for (const k of solutionKeys('xx')) s.key(k);
+    expect(s.view().msg).toBe('This round goes step by step. Next: Go down. (u undoes)');
+    expect(s.view().msgKind).toBe('warn');
+  });
   it('a goal that Esc meets at the start needs the steps', () => {
     const c = two({ setup: { cursor: { line: 0, col: 0 } }, steps: [{ prompt: 'x', goal: { text: ['lpha beta gamma', 'delta'] } }], goal: { text: ['alpha beta gamma', 'delta'] }, solution: 'xu' });
     expect(play(c, '<Esc>')).toBe(false);
     expect(play(c, 'xu')).toBe(true);
+  });
+});
+
+describe('setup', () => {
+  it('edits made by init leave the buffer modified; the file as given does not', () => {
+    expect(createVim({ name: 'a.ts', text: ['x'] }).buf.modified).toBe(false);
+    expect(createVim({ name: 'a.ts', text: ['x'], init: v => v.feedKeys('Ay<Esc>') }).buf.modified).toBe(true);
+    expect(createVim({ name: 'a.ts', text: ['x'], init: v => v.feedKeys('j') }).buf.modified).toBe(false);
+  });
+  it('showTarget: false hides the green box', () => {
+    const c: RoundsChallenge = { kind: 'rounds', showTarget: false, base: { name: 'a.ts', text: ['a', 'b'] }, rounds: [{ goal: { cursor: { line: 1, col: 0 } }, solution: 'j' }] };
+    expect(new Session(c).view().target).toBeNull();
+    expect(new Session({ ...c, showTarget: undefined }).view().target).toEqual({ line: 1, col: 0 });
   });
 });

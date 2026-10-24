@@ -303,5 +303,10 @@
   {"id": "fold-shift-opens", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": ":3,4fold<CR>ggjj>>jx"},
   {"id": "fold-unshift-opens", "src": "p4-review", "name": "x.txt", "text": "a\n{\n  one();\n  two();\n}\nz\nw\nv", "keys": ":3,4fold<CR>ggjj<<jx"},
   {"id": "earlier-0", "src": "p4-review", "name": "x.txt", "text": "abcd", "keys": "xxxu:earlier 0<CR>x"},
-  {"id": "earlier-bare", "src": "p4-review", "name": "x.txt", "text": "abcd", "keys": "xxxu:earlier<CR>"}
+  {"id": "earlier-bare", "src": "p4-review", "name": "x.txt", "text": "abcd", "keys": "xxxu:earlier<CR>"},
+  {"id": "ft-python-shift", "src": "b4-ftplugin", "name": "a.py", "text": "def f():\nreturn 1\n    x = 2", "keys": "j>>jj<<"},
+  {"id": "ft-python-ctrl-t", "src": "b4-ftplugin", "name": "a.py", "text": "def f():\nreturn 1", "keys": "jA<C-t><Esc>"},
+  {"id": "ft-markdown-shift", "src": "b4-ftplugin", "name": "a.md", "text": "- a\n- b", "keys": "j>>"},
+  {"id": "ft-ruby-shift", "src": "b4-ftplugin", "name": "a.rb", "text": "def f\n1\nend", "keys": "j>>"},
+  {"id": "noet-shift-tabs", "src": "b4-ftplugin", "name": "a.ts", "text": "a", "keys": ":set noet sw=4 ts=8<CR>>>>>>>"}
 ]

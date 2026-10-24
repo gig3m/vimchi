@@ -114,4 +114,26 @@ describe('diffGoal force', () => {
     expect(v.mode).toBe('inline');
     if (v.mode === 'inline') expect(v.ann.del.size).toBe(5);
   });
+  it('a snake_case prefix change marks the prefix, a number change the whole number', () => {
+    const v = diffGoal(['x = old_b;', 'n = 1000;'], ['x = new_b;', 'n = 500;'], { force: true });
+    if (v.mode !== 'inline') throw new Error(v.mode);
+    expect(v.ann.del.get(0)).toEqual([[4, 6]]);
+    expect(v.ann.ins.get(0)?.[0].text).toBe('new');
+    expect(v.ann.del.get(1)).toEqual([[4, 7]]);
+    expect(v.ann.ins.get(1)?.[0].text).toBe('500');
+  });
+  it('a delete across a line break is one strike over the break', () => {
+    const v = diffGoal(['# x', 'Install it. It takes a', 'while. Then run it.', 'end'], ['# x', 'Install it. Then run it.', 'end'], { force: true });
+    if (v.mode !== 'inline') throw new Error(v.mode);
+    expect(v.ann.del.get(1)).toEqual([[12, 21]]);
+    expect(v.ann.del.get(2)).toEqual([[0, 6]]);
+    expect(v.ann.ins.size).toBe(0);
+  });
+  it('a line that keeps little of itself is drawn out and in, not spliced', () => {
+    const v = diffGoal(['class C {', '  inc() {', '    this.n++;', '  }', '}'], ['class C {', '  n = 0;', '}'], { force: true });
+    if (v.mode !== 'inline') throw new Error(v.mode);
+    expect([...v.ann.delLines].sort()).toEqual([1, 2, 3]);
+    expect([...v.ann.newLines.values()].flat()).toEqual(['  n = 0;']);
+    expect(v.ann.del.size + v.ann.ins.size).toBe(0);
+  });
 });

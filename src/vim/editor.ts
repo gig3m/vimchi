@@ -12,10 +12,10 @@ import { type Key, keysToString, parseKeys } from './keys';
 import { type QfItem, Tab, Window } from './layout';
 import { type Compiled, PatternError, compile } from './regex';
 import { type RegKind, type RegValue, Registers, isValidRegister } from './registers';
-import { firstNonBlank, indentOf, lastCol } from './text';
+import { displayWidth, firstNonBlank, indentOf, lastCol } from './text';
 import type { ObjectCtx, TextObject } from './textobjects';
 import {
-  DEFAULT_OPTIONS, type Message, type Mode, type Options, type Pos, type Range, type VisualKind,
+  BUFFER_LOCAL, DEFAULT_OPTIONS, WINDOW_LOCAL, type Message, type Mode, type Options, type Pos, type Range, type VisualKind,
   VimError, cmpPos, fail, maxPos, minPos, pos,
 } from './types';
 
@@ -275,8 +275,44 @@ export class Vim {
   get lines() { return this.buf.lines; }
   line(n = this.cursor.line) { return this.buf.line(n); }
   opt<K extends keyof Options>(k: K): Options[K] {
-    const w = this.win.opts[k as string];
+    return this.optIn(this.win, k);
+  }
+  /** An option as `win` sees it: a buffer-local one from its buffer, else its :setlocal value, else the global one. */
+  optIn<K extends keyof Options>(win: Window, k: K): Options[K] {
+    if (BUFFER_LOCAL.has(k as string)) return this.localsOf(win.buf)[k as string] as Options[K];
+    if (WINDOW_LOCAL.has(k as string)) return this.localsOfWin(win)[k as string] as Options[K];
+    const w = win.opts[k as string];
     return (w !== undefined ? w : this.options[k]) as Options[K];
+  }
+  /**
+   * A buffer's own copy of the buffer-local options. Neovim takes it from the global values when the
+   * buffer is made, then its ftplugin; here it is taken on first use, and :set takes it for every
+   * buffer before it changes a global value, so a buffer never sees a later :set made elsewhere.
+   */
+  localsOf(buf: Buffer): Record<string, boolean | number | string> {
+    if (!buf.optsCopied) {
+      for (const k of BUFFER_LOCAL) if (!(k in buf.opts)) buf.opts[k] = this.options[k];
+      buf.optsCopied = true;
+    }
+    return buf.opts;
+  }
+  /** A window's own copy of the window-local options, taken from the global values on first use. */
+  localsOfWin(win: Window): Record<string, boolean | number | string> {
+    if (!win.optsCopied) {
+      for (const k of WINDOW_LOCAL) if (!(k in win.opts)) win.opts[k] = this.options[k];
+      win.optsCopied = true;
+    }
+    return win.opts;
+  }
+  /** 'shiftwidth', where 0 means 'tabstop' (Go's ftplugin sets it so). */
+  sw(): number {
+    return Number(this.opt('shiftwidth')) || Number(this.opt('tabstop')) || 8;
+  }
+  /** An indent `n` columns wide: spaces with 'expandtab', else tabs then spaces (Go). */
+  indentStr(n: number): string {
+    if (this.opt('expandtab')) return ' '.repeat(n);
+    const ts = Number(this.opt('tabstop')) || 8;
+    return '\t'.repeat(Math.floor(n / ts)) + ' '.repeat(n % ts);
   }
 
   // ---- definitions -----------------------------------------------------------
@@ -435,6 +471,9 @@ export class Vim {
 
   splitWindow(dir: 'row' | 'col', buf?: Buffer): Window {
     const w = new Window(buf ?? this.buf);
+    // A split starts with the window's own options (Neovim copies them).
+    w.opts = { ...this.localsOfWin(this.win) };
+    w.optsCopied = true;
     w.cursor = { ...this.cursor };
     w.want = this.win.want;
     w.top = this.win.top;
@@ -1583,7 +1622,7 @@ export class Vim {
         return;
       }
       case '<Tab>': {
-        const sw = Number(this.opt('shiftwidth')) || 8;
+        const sw = this.sw();
         typeChar(this.opt('expandtab') ? ' '.repeat(sw - (c.col % sw)) : '\t');
         return;
       }
@@ -1616,12 +1655,13 @@ export class Vim {
       }
       case '<C-t>':
       case '<C-d>': {
-        const sw = Number(this.opt('shiftwidth')) || 8;
+        const sw = this.sw();
         const t = this.line();
-        const ind = indentOf(t).length;
+        const lead = indentOf(t), ind = displayWidth(lead, Number(this.opt('tabstop')) || 8);
         const nind = key === '<C-t>' ? ind + sw - (ind % sw) : Math.max(0, ind - (ind % sw || sw));
-        b.setLine(c.line, ' '.repeat(nind) + t.slice(ind));
-        c.col = Math.max(0, c.col + nind - ind);
+        const indent = this.indentStr(nind);
+        b.setLine(c.line, indent + t.slice(lead.length));
+        c.col = Math.max(0, c.col + indent.length - lead.length);
         ins.keys.push(key);
         return;
       }

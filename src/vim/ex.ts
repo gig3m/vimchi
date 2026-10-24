@@ -2,7 +2,7 @@
 
 import { Buffer } from './buffer';
 import { type ExArgs, type Vim, lineStarts, offsetToPos, registerToKeys, showRegister, REG_KIND_LABEL } from './editor';
-import { OPTION_ALIASES, type Pos, VimError, fail, pos } from './types';
+import { BUFFER_LOCAL, COMMA_LIST, OPTION_ALIASES, WINDOW_LOCAL, type Pos, VimError, fail, pos } from './types';
 import { type Compiled, replacer } from './regex';
 import { firstNonBlank, indentOf } from './text';
 import { shellFilter } from './transforms';
@@ -143,7 +143,8 @@ export function runEx(vim: Vim, input: string) {
   let reg: string | null = null;
   let count: number | null = null;
   // :normal (and :g/:v, which may run it) keep trailing spaces (":norm I- " inserts "- ").
-  const keepTrailing = cmd.run === normalCmd || cmd === COMMANDS.global || cmd === COMMANDS.vglobal;
+  // :set keeps them too: `:set lcs=tab:>\ ` ends in an escaped space.
+  const keepTrailing = cmd.run === normalCmd || cmd === COMMANDS.global || cmd === COMMANDS.vglobal || cmd === COMMANDS.set || cmd === COMMANDS.setlocal;
   const args: ExArgs = { range, addrCount, bang, arg: keepTrailing ? argStr.replace(/^\s+/, '') : argStr.trim(), name, count, reg };
   if (range && (range.start < 0 || range.end >= vim.buf.lineCount + (name === 'm' || name === 't' ? 1 : 0))) {
     if (!(range.start === -1 && (name === 'pu' || name === 'put' || name === 'r' || name === 'read'))) fail('E16: Invalid range');
@@ -816,6 +817,8 @@ function findBufferArg(vim: Vim, arg: string) {
 function deleteBuffer(vim: Vim, b: Buffer, force: boolean) {
   if (b.modified && !force && b.kind === 'file') fail(`E89: No write since last change for buffer ${bufnr(vim, b)} (add ! to override)`);
   b.listed = false;
+  // Its local options go with it: opened again, it takes the global values and its ftplugin afresh.
+  b.resetOpts();
   const others = listedBuffers(vim);
   for (const tab of vim.tabs) {
     for (const w of tab.windows()) {
@@ -834,40 +837,58 @@ function deleteBuffer(vim: Vim, b: Buffer, force: boolean) {
 // ---- options -----------------------------------------------------------------------------------------------
 
 function setOption(vim: Vim, arg: string, local: boolean) {
-  if (!arg || arg === 'all') {
-    const changed = Object.entries(vim.options).filter(([k, v]) => v !== (DEFAULTS as Record<string, unknown>)[k]);
-    vim.msg('--- Options ---\n' + changed.map(([k, v]) => (typeof v === 'boolean' ? (v ? k : 'no' + k) : `${k}=${v}`)).join('  '), 'more');
+  if (!arg.trim() || arg.trim() === 'all') {
+    arg = arg.trim();
+    // Values as this window and buffer see them; without `all`, only those not at Neovim's default.
+    const names = Object.keys(vim.options).sort().filter(k => arg === 'all' || vim.opt(k) !== (NVIM_DEFAULTS as Record<string, unknown>)[k]);
+    vim.msg(showOptions(names.map(k => { const v = vim.opt(k); return typeof v === 'boolean' ? (v ? k : 'no' + k) : `${k}=${v}`; })), 'more');
     return;
   }
-  const target = local ? vim.win.opts : (vim.options as Record<string, boolean | number | string>);
-  for (const tok of arg.split(/\s+/)) {
-    const m = /^(no|inv)?(\w+)(!|\?|&|([+^-]?=)(.*))?$/.exec(tok);
+  // Buffer-local options (shiftwidth…) live in the buffer, window-local ones (list, number…) in the
+  // window: :set writes the global value (what new buffers and windows start from) and the current
+  // buffer's or window's, :setlocal only theirs. Global options: :setlocal gives the window a value
+  // of its own, :set changes the global one and drops the window's.
+  const put = (name: string, v: boolean | number | string) => {
+    if (BUFFER_LOCAL.has(name)) {
+      if (!local) {
+        for (const b of vim.buffers) vim.localsOf(b);
+        (vim.options as Record<string, boolean | number | string>)[name] = v;
+      }
+      vim.localsOf(vim.buf)[name] = v;
+    } else if (WINDOW_LOCAL.has(name)) {
+      if (!local) {
+        for (const t of vim.tabs) for (const w of t.windows()) vim.localsOfWin(w);
+        (vim.options as Record<string, boolean | number | string>)[name] = v;
+      }
+      vim.localsOfWin(vim.win)[name] = v;
+    } else if (local) vim.win.opts[name] = v;
+    else {
+      delete vim.win.opts[name];
+      (vim.options as Record<string, boolean | number | string>)[name] = v;
+    }
+  };
+  // Arguments are split on spaces, except a backslash-escaped one (`:set lcs=tab:>\ ,trail:-`).
+  const toks = (arg.match(/(?:\\.|\S)+/g) ?? []).map(t => t.replace(/\\(.)/g, '$1'));
+  for (const tok of toks) {
+    const m = /^(no|inv)?(\w+)(!|\?|&|([+^-]?=)([\s\S]*))?$/.exec(tok);
     if (!m) fail(`E518: Unknown option: ${tok}`);
     const name = OPTION_ALIASES[m[2]] ?? m[2];
     if (!(name in vim.options)) {
       if (m[2].startsWith('no') && (OPTION_ALIASES[m[2].slice(2)] ?? m[2].slice(2)) in vim.options) {
-        const n2 = OPTION_ALIASES[m[2].slice(2)] ?? m[2].slice(2);
-        if (!local) delete vim.win.opts[n2];
-        target[n2] = false;
+        put(OPTION_ALIASES[m[2].slice(2)] ?? m[2].slice(2), false);
         continue;
       }
       fail(`E518: Unknown option: ${m[2]}`);
     }
-    // The window's value (a :setlocal) wins over the global one.
-    const cur = name in vim.win.opts ? vim.win.opts[name] : vim.options[name];
-    // :set sets the global value and the current window's; :setlocal only the window's.
-    const put = (v: boolean | number | string) => {
-      if (!local) delete vim.win.opts[name];
-      target[name] = v as boolean | number;
-    };
+    const cur = vim.opt(name);
     if (m[3] === '?') {
       vim.msg(typeof cur === 'boolean' ? (cur ? `  ${name}` : `no${name}`) : `  ${name}=${cur}`);
       continue;
     }
-    if (m[3] === '&') { put((DEFAULTS as Record<string, boolean | number>)[name]); continue; }
+    if (m[3] === '&') { put(name, (DEFAULTS as Record<string, boolean | number>)[name]); continue; }
     if (typeof cur === 'boolean') {
       if (m[4]) fail(`E474: Invalid argument: ${tok}`);
-      put(m[1] === 'no' ? false : m[1] === 'inv' || m[3] === '!' ? !cur : true);
+      put(name, m[1] === 'no' ? false : m[1] === 'inv' || m[3] === '!' ? !cur : true);
       continue;
     }
     if (m[1]) fail(`E474: Invalid argument: ${tok}`);
@@ -878,15 +899,54 @@ function setOption(vim: Vim, arg: string, local: boolean) {
     }
     const val = typeof cur === 'number' ? parseInt(m[5], 10) : m[5];
     if (typeof cur === 'number' && isNaN(val as number)) fail(`E521: Number required after =: ${tok}`);
-    if (m[4] === '+=') put(typeof cur === 'number' ? cur + (val as number) : cur + String(val));
-    else if (m[4] === '-=') put(typeof cur === 'number' ? cur - (val as number) : String(cur).replace(String(val), ''));
-    else if (m[4] === '^=') put(typeof cur === 'number' ? cur * (val as number) : String(val) + cur);
-    else put(val);
+    if (typeof cur === 'number') {
+      if (m[4] === '+=') put(name, cur + (val as number));
+      else if (m[4] === '-=') put(name, cur - (val as number));
+      else if (m[4] === '^=') put(name, cur * (val as number));
+      else put(name, val);
+    } else if (COMMA_LIST.has(name)) {
+      // A list of key:value items, as Neovim edits 'listchars': += appends each new item (one already
+      // there is left where it is; one with the same key but another value is moved to the end),
+      // ^= does the same at the front, -= removes each item given.
+      const items = String(cur).split(',').filter(Boolean), given = String(val).split(',').filter(Boolean);
+      const key = (i: string) => i.split(':')[0];
+      if (m[4] === '-=') put(name, items.filter(i => !given.includes(i)).join(','));
+      else if (m[4] === '+=' || m[4] === '^=') {
+        const add = given.filter(g => !items.includes(g));
+        const keep = items.filter(i => !add.some(g => key(g) === key(i)));
+        put(name, (m[4] === '+=' ? [...keep, ...add] : [...add, ...keep]).join(','));
+      } else put(name, String(val));
+    } else {
+      if (m[4] === '+=') put(name, String(cur) + val);
+      else if (m[4] === '-=') put(name, String(cur).replace(String(val), ''));
+      else if (m[4] === '^=') put(name, String(val) + cur);
+      else put(name, val);
+    }
   }
   vim.emit('set');
 }
 
-import { DEFAULT_OPTIONS as DEFAULTS } from './types';
+import { DEFAULT_OPTIONS as DEFAULTS, NVIM_DEFAULTS } from './types';
+
+/**
+ * `:set`'s listing as Neovim prints it (80 columns): short items in 20-column cells, filled down
+ * then across, sorted by name; items longer than 17 characters each on a line of their own after.
+ */
+function showOptions(items: string[]): string {
+  const INC = 20, GAP = 3, COLS = Math.floor((80 + GAP - 3) / INC);
+  const pad = (i: string) => (/^no[a-z]/.test(i) && !i.includes('=') ? i : '  ' + i);
+  const short = items.filter(i => i.length <= INC - GAP), long = items.filter(i => i.length > INC - GAP);
+  const rows = Math.ceil(short.length / COLS);
+  const out = ['--- Options ---'];
+  for (let r = 0; r < rows; r++) {
+    const cells: string[] = [];
+    // Neovim indents each item two spaces, a "no" option taking that room for its "no".
+    for (let i = r; i < short.length; i += rows) cells.push(pad(short[i]));
+    out.push(cells.map((c, j) => (j < cells.length - 1 ? c.padEnd(INC) : c)).join(''));
+  }
+  for (const i of long) out.push(pad(i));
+  return out.join('\n');
+}
 
 // ---- file ops ---------------------------------------------------------------------------------------------
 
@@ -895,19 +955,29 @@ function write(vim: Vim, a: ExArgs, buf = vim.buf) {
     if (buf.data.onWrite) return (buf.data.onWrite as () => void)();
     fail('E382: Cannot write, \'buftype\' option is set');
   }
-  const name = a.arg || buf.name;
+  // `:w >> name` appends; a range writes just those lines. The message counts what was written.
+  const append = /^>>/.test(a.arg);
+  const name = a.arg.replace(/^>>\s*/, '') || buf.name;
   if (name === '[No Name]') fail('E32: No file name');
-  const text = buf.text() + '\n';
-  if (a.range) {
-    const part = buf.lines.slice(a.range.start, a.range.end + 1).join('\n') + '\n';
-    vim.fs.write(name, part);
+  const all = !a.range || (a.range.start === 0 && a.range.end === buf.lineCount - 1);
+  const own = name === buf.name;
+  const existed = vim.fs.exists(name);
+  if (!append && !a.bang) {
+    if (own && !all) fail('E140: Use ! to write partial buffer');
+    if (!own && existed) fail('E13: File exists (add ! to override)');
+  }
+  const lines = a.range ? buf.lines.slice(a.range.start, a.range.end + 1) : buf.lines;
+  const text = lines.join('\n') + '\n';
+  if (append) {
+    // Without ! the file must be there; with it, it is made (Neovim opens it O_APPEND|O_CREAT).
+    if (!existed && !a.bang) fail("E212: Can't open file for writing: no such file or directory");
+    vim.fs.write(name, (vim.fs.read(name) ?? '') + text);
   } else {
     vim.fs.write(name, text);
-    if (!a.arg || a.arg === buf.name) buf.modified = false;
+    if (own && all) buf.modified = false;
     if (buf.name === '[No Name]') buf.name = name;
   }
-  const bytes = text.length;
-  vim.msg(`"${name}" ${buf.lineCount}L, ${bytes}B written`);
+  vim.msg(`"${name}" ${existed ? '' : '[New] '}${lines.length}L, ${text.length}B ${append ? 'appended' : 'written'}`);
   vim.emit('write');
 }
 

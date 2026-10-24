@@ -8,6 +8,7 @@ import { createVim, mergeSetup } from '../../src/lessons/runtime';
 import type { Setup } from '../../src/lessons/types';
 import { parseKeys } from '../../src/vim/keys';
 import { DEFAULT_OPTIONS, type Pos } from '../../src/vim/types';
+import { FT_OPTIONS, filetypeOf } from '../../src/vim/buffer';
 
 /** Register type as the first character of getregtype() ('b' stands for <C-v>). */
 const REGTYPE = { char: 'v', line: 'V', block: 'b' } as const;
@@ -43,7 +44,9 @@ function start(st: Setup) {
   return {
     name: st.name ?? 'x.txt', search: st.search ?? '',
     text: Array.isArray(st.text) ? st.text.join('\n') : st.text ?? '',
-    cursor: st.cursor ?? { line: 0, col: 0 }, options: { ...DEFAULT_OPTIONS, ...st.options },
+    cursor: st.cursor ?? { line: 0, col: 0 },
+    // As the engine's buffer has them: the setup's options, then the filetype's (an ftplugin's setlocal wins).
+    options: { ...DEFAULT_OPTIONS, ...st.options, ...FT_OPTIONS[filetypeOf(st.name ?? 'x.txt')] },
     height: createVim(st).win.height,
   };
 }

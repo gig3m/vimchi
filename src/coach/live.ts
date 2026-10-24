@@ -16,3 +16,10 @@ export function closedSegments(segs: Segment[], log: LogEntry[], closing: boolea
   });
   return out;
 }
+
+/** The live hint line for the round on screen. A hint from the round just finished stays, labelled
+ * with its round ("Round 3: …"), so it still reads as about that round; an older one is dropped. */
+export function nudgeLine(nudge: { text: string; unit: number } | null, current: number, label: (unit: number) => string): string | null {
+  if (!nudge || nudge.unit < current - 1) return null;
+  return nudge.unit === current ? nudge.text : `${label(nudge.unit)}: ${nudge.text}`;
+}

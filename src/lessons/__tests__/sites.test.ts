@@ -30,6 +30,18 @@ describe('solutionSites', () => {
     const [s] = sites(["x('a')", 'y'], 'A;<Esc>', ["x('a');", 'y']);
     expect(s).toMatchObject({ del: null, ins: ';', col: 6 });
   });
+  it('a . repeat of a change marks the whole word it retyped, like the change', () => {
+    const r = sites(['a = false;', 'b = false;'], 'wwcwtrue<Esc>jb.', ['a = true;', 'b = true;']);
+    expect(r.map(s => [s.line, s.del, s.ins])).toEqual([[0, [4, 8], 'true'], [1, [4, 8], 'true']]);
+  });
+  it('a replacement from :s is the whole word, not the letters that differ', () => {
+    const [s] = sites(['debug = True'], ':s/True/False/<CR>', ['debug = False']);
+    expect(s).toMatchObject({ del: [8, 11], ins: 'False' });
+  });
+  it('a punctuation replacement stays punctuation', () => {
+    const [s] = sites(['URL=postgres'], ':s/=/: /<CR>', ['URL: postgres']);
+    expect(s).toMatchObject({ del: [3, 3], ins: ': ' });
+  });
   it('line-level edits are left to the diff', () => {
     expect(sites(['a', 'b', 'c'], 'jdd', ['a', 'c'])).toEqual([]);
   });
@@ -48,6 +60,56 @@ describe('applySites', () => {
     expect(a.num.get(2)).toBe(3);
     expect(a.ins.get(1)).toEqual([{ col: 3, text: ' ', done: 0, quiet: false }]);
     expect(a.ins.get(2)?.[0].quiet).toBe(true); // only the edit in hand carries a tag
+  });
+});
+
+describe('applySites for a change and its . on two lines', () => {
+  it('ci( then . on the next line keeps both edits, numbered', () => {
+    const before = ['greet(user.firstName, user.lastName);', 'track(user.firstName, user.lastName);'];
+    const goal = ['greet(user);', 'track(user);'];
+    const r = sites(before, 'f(ci(user<Esc>j.', goal);
+    const v = diffGoal(before, goal, { force: true });
+    if (v.mode !== 'inline') throw new Error(v.mode);
+    const a = applySites(v.ann, before, r, 0);
+    expect(a.delLines.size + a.newLines.size).toBe(0);
+    expect([a.num.get(0), a.num.get(1)]).toEqual([1, 2]);
+    expect(a.del.get(0)).toEqual([[6, 34]]);
+  });
+});
+
+describe('applySites taking back a line drawn out-and-in', () => {
+  it('removes the row from its own block, not another with the same text', () => {
+    const before = ['inc() {', 'this.n++;', '}', 'same', 'dec() {', 'this.n--;', '}'], goal = ['n = 0;', 'same', 'n = 0;'];
+    const v = diffGoal(before, goal, { force: true });
+    if (v.mode !== 'inline') throw new Error(v.mode);
+    expect([...v.ann.newLines.entries()]).toEqual([[2, ['n = 0;']], [6, ['n = 0;']]]);
+    // The first block goes by whole lines (no site); only the second is a cc the site takes back.
+    const a = applySites(v.ann, before, sites(before, '3ddOn = 0;<Esc>jjccn = 0;<Esc>j2dd', goal), 0);
+    expect([...a.newLines.entries()]).toEqual([[2, ['n = 0;']]]);
+    expect([...a.delLines].sort()).toEqual([0, 1, 2, 5, 6]);
+  });
+});
+
+describe('applySites for repeats on one line', () => {
+  it('two matches of a cgn on one line share a 2–3 badge', () => {
+    const before = ['a cfg', 'b cfg cfg', 'c cfg'], goal = ['a config', 'b config config', 'c config'];
+    const r = sites(before, '/cfg<CR>cgnconfig<Esc>...', goal);
+    const v = diffGoal(before, goal, { force: true });
+    if (v.mode !== 'inline') throw new Error(v.mode);
+    const a = applySites(v.ann, before, r, 0);
+    expect([a.num.get(0), a.num.get(1), a.numTo?.get(1), a.num.get(2)]).toEqual([1, 2, 3, 4]);
+  });
+});
+
+describe('applySites for a cut and a put on one line', () => {
+  it('xp strikes the letter and shows where it lands', () => {
+    const before = ['  retrun x;'], goal = ['  return x;'];
+    const r = sites(before, 'fuhxp', goal);
+    const v = diffGoal(before, goal, { force: true });
+    if (v.mode !== 'inline') throw new Error(v.mode);
+    const a = applySites(v.ann, before, r, 0);
+    expect(a.del.get(0)).toEqual([[5, 5]]);
+    expect(a.ins.get(0)).toEqual([{ col: 7, text: 'r', done: 0, quiet: false }]);
   });
 });
 

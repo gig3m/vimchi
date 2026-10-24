@@ -289,6 +289,8 @@ export const quickfix: Section = {
       },
       challenge: {
         kind: 'rounds',
+        // The box would point at the entry: 6j there skips the list this lesson is about.
+        showTarget: false,
         showGoal: false,
         base: { files: SHOP, open: 'src/cart.ts', height: 16 },
         rounds: [
@@ -365,6 +367,8 @@ export const quickfix: Section = {
       },
       challenge: {
         kind: 'rounds',
+        // The box would point at the entry: 6j there skips the list this lesson is about.
+        showTarget: false,
         base: { files: SHOP, open: 'src/cart.ts', height: 18, init: vim => vim.ex('lvimgrep /lines/ %') },
         rounds: [
           {

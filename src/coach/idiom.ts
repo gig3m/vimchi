@@ -208,6 +208,11 @@ export function searchIdioms(scratch: Vim, start: Vim, target: string, opts: Idi
     out.push({ keys, uses: k.uses, pattern: k.pattern, style: keys.length + k.penalty, commands: k.commands ?? 1, typed, ...(k.longCount && { longCount: true }) });
   }
   reset();
+  // A change that types nothing is a delete: `di"`, never `ci"<Esc>`, and `D`, never `C<Esc>`.
+  // (They leave the cursor a column apart, which could let the change win a cursor check.)
+  const asDelete = (x: Idiom) => (x.keys[0] === 'C' ? 'D' : 'd' + x.keys.slice(1, -1).join(''));
+  const have = new Set(out.map(x => x.keys.join('')));
+  const kept = out.filter(x => !(x.typed === '' && (x.keys[0] === 'c' || x.keys[0] === 'C') && x.keys[x.keys.length - 1] === '<Esc>' && have.has(asDelete(x))));
   // Stable: equal style keeps generation order (dw before de, t before f).
-  return out.map((x, i) => ({ x, i })).sort((a, b) => a.x.style - b.x.style || a.x.keys.length - b.x.keys.length || a.i - b.i).map(({ x }) => x);
+  return kept.map((x, i) => ({ x, i })).sort((a, b) => a.x.style - b.x.style || a.x.keys.length - b.x.keys.length || a.i - b.i).map(({ x }) => x);
 }

@@ -96,6 +96,9 @@ export type RoundsChallenge = {
   rounds: Round[];
   /** Show the goal text under the editor for text goals (default true). */
   showGoal?: boolean | 'inline' | 'pane';
+  /** `false`: no green box on cursor goals, where the box would give away a place the lesson's
+   * own keys should find (an entry in the quickfix list: `6j` to the box skips the list). */
+  showTarget?: boolean;
   /**
    * `false`: start every round at its setup cursor instead of carrying the learner's cursor over.
    * For lessons whose keys depend on the cursor (flash labels), so what the learner sees matches the
