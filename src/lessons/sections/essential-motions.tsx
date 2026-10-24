@@ -613,6 +613,13 @@ export const essentialMotions: Section = {
           you need to. {total} rounds.
         </p>
       ),
+      lazyvim: (
+        <p>
+          LazyVim searches ignore case while the pattern is all lowercase (<Code>ignorecase</Code> +{' '}
+          <Code>smartcase</Code>): <Code>/todo</Code> finds todo, Todo and TODO, while <Code>/Todo</Code> finds only
+          Todo. Plain Vim matches case exactly unless you <Code>:set ignorecase</Code>.
+        </p>
+      ),
       aside: {
         title: 'Counts and wrapping',
         body: (
@@ -724,6 +731,13 @@ export const essentialMotions: Section = {
         <p>
           Put the cursor's word to work: reach the <span className="hl-green">green box</span> with <Code>*</Code> or{' '}
           <Code>#</Code>. {total} rounds.
+        </p>
+      ),
+      lazyvim: (
+        <p>
+          With LazyVim's <Code>ignorecase</Code>, <Code>*</Code> on <Code>Foo</Code> also finds <Code>foo</Code>:{' '}
+          <Code>*</Code> and <Code>#</Code> ignore case but skip <Code>smartcase</Code>. Plain Vim's <Code>*</Code>{' '}
+          matches case exactly.
         </p>
       ),
       aside: {

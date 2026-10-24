@@ -534,6 +534,16 @@ export const macros: Section = {
           scratch line, then use it if the round asks. {total} rounds.
         </p>
       ),
+      lazyvim: (
+        <>
+          <p>
+            In LazyVim, <Code>o</Code> on a comment line starts the new line with the comment marker, so the
+            "empty" line is <Code>#</Code> and the macro lands after it. <Code>:put a</Code> puts the register on a
+            line of its own, below the cursor, whatever the line is.
+          </p>
+          <p>Plain Vim opens a truly empty line, and <Code>Go</Code> then <Code>"ap</Code> always works.</p>
+        </>
+      ),
       aside: {
         title: 'Or use :let',
         body: (
@@ -577,7 +587,7 @@ export const macros: Section = {
               cursor: { line: 0, col: 0 },
             },
             goal: { text: ['DEBUG = True', 'ALLOWED_HOSTS = ["*"]', 'CACHE_TTL = 0'], registers: { c: '02xj' } },
-            solution: 'Go<Esc>"cp0a2<Esc>0"cy$ddgg3@c',
+            solution: 'G:put c<CR>0a2<Esc>0"cy$ddgg3@c',
           },
         ],
       },

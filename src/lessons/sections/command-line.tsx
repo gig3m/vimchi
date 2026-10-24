@@ -130,6 +130,14 @@ export const commandLine: Section = {
           Jump to each line with <Code>:</Code> and its number. Line numbers are on the left. {total} rounds.
         </p>
       ),
+      lazyvim: (
+        <p>
+          LazyVim numbers lines by their distance from the cursor (<Code>relativenumber</Code>), so only your own line
+          shows its real number. This lesson turns that off so you can read the numbers <Code>:</Code> needs; in
+          your own setup, <Code>:set nornu</Code> does the same. Plain Vim shows real numbers once{' '}
+          <Code>:set number</Code> is on.
+        </p>
+      ),
       aside: {
         title: 'Or 42G',
         body: (
@@ -143,7 +151,7 @@ export const commandLine: Section = {
       challenge: {
         kind: 'rounds',
         showGoal: false,
-        base: { name: 'init.lua', text: INIT_LUA, height: 12, cursor: { line: 0, col: 0 } },
+        base: { name: 'init.lua', text: INIT_LUA, height: 12, cursor: { line: 0, col: 0 }, options: { relativenumber: false } },
         rounds: [
           {
             prompt: 'Go to line 30.',
@@ -200,6 +208,14 @@ export const commandLine: Section = {
         </>
       ),
       practice: total => <p>Delete or yank by line number. {total} rounds.</p>,
+      lazyvim: (
+        <p>
+          LazyVim numbers lines by their distance from the cursor (<Code>relativenumber</Code>), so only your own line
+          shows its real number. This lesson turns that off so you can read the numbers <Code>:</Code> needs; in
+          your own setup, <Code>:set nornu</Code> does the same. Plain Vim shows real numbers once{' '}
+          <Code>:set number</Code> is on.
+        </p>
+      ),
       aside: {
         title: 'Search addresses',
         body: (
@@ -211,7 +227,7 @@ export const commandLine: Section = {
       },
       challenge: {
         kind: 'rounds',
-        base: { name: 'server.ts', text: SERVER_TS, cursor: { line: 18, col: 0 } },
+        base: { name: 'server.ts', text: SERVER_TS, cursor: { line: 18, col: 0 }, options: { relativenumber: false } },
         rounds: [
           {
             prompt: 'Delete lines 10 to 15, the "// debug" block.',
@@ -1155,9 +1171,9 @@ export const commandLine: Section = {
       intro: (
         <>
           <p>
-            Options change how the editor behaves. <Code>:set rnu</Code> switches one on and <Code>:set nornu</Code>{' '}
-            off; <Code>:set rnu!</Code> flips it; <Code>:set rnu?</Code> shows it. Number options take a value:{' '}
-            <Code>:set sw=4</Code>.
+            Options change how the editor behaves. <Code>:set wrap</Code> switches one on and{' '}
+            <Code>:set nowrap</Code> off; <Code>:set wrap!</Code> flips it; <Code>:set wrap?</Code> shows it. Number
+            options take a value: <Code>:set sw=4</Code>.
           </p>
           <p>
             Every option has a long and a short name: <Code>relativenumber</Code> is <Code>rnu</Code>,{' '}
@@ -1171,6 +1187,19 @@ export const commandLine: Section = {
         <p>
           Set the option the round names, then finish the edit if there is one. {total} rounds.
         </p>
+      ),
+      lazyvim: (
+        <>
+          <p>
+            LazyVim starts with <Code>relativenumber</Code>, <Code>ignorecase</Code> and <Code>smartcase</Code> on
+            (and more: it sets them in its <Code>options.lua</Code>). Plain Vim has all three off: absolute line
+            numbers, and searches that match case exactly.
+          </p>
+          <p>
+            So here you turn them <em>off</em>. <Code>:set opt&amp;</Code> puts an option back to Vim's own default,
+            not LazyVim's.
+          </p>
+        </>
       ),
       aside: {
         title: 'Keeping an option',
@@ -1186,13 +1215,13 @@ export const commandLine: Section = {
         base: { name: 'server.ts', text: SERVER_TS },
         rounds: [
           {
-            prompt: 'Turn on relativenumber, then delete the opt.updatetime line and the two opt.split lines below it.',
+            prompt: 'Turn relativenumber off to see plain line numbers, then delete the opt.updatetime line and the two opt.split lines below it.',
             setup: { name: 'init.lua', text: INIT_LUA, cursor: { line: 14, col: 0 } },
             goal: {
               text: [...INIT_LUA.slice(0, 14), ...INIT_LUA.slice(17)],
-              check: v => v.opt('relativenumber') === true,
+              check: v => v.opt('relativenumber') === false,
             },
-            solution: ':set rnu<CR>d2j',
+            solution: ':set nornu<CR>d2j',
           },
           {
             prompt: 'Is wrap on? Show its value.',
@@ -1220,24 +1249,27 @@ export const commandLine: Section = {
                 '  -- TODO: return nil when empty',
                 '  return table.remove(q, 1)',
                 'end',
+                '',
+                'M.todo = {}',
+                'return M',
               ],
               cursor: { line: 2, col: 0 },
             },
             steps: [
               {
-                prompt: 'Search for todo with /todo. It finds nothing, because the file says TODO.',
-                goal: { check: v => v.search.pattern === 'todo' },
+                prompt: 'Search for todo with /todo. It lands on TODO: ignorecase is on.',
+                goal: { cursor: { line: 7, col: 5 }, check: v => v.search.pattern === 'todo' },
               },
             ],
-            prompt: 'Turn on ignorecase, then press n to search again.',
-            goal: { cursor: { line: 7, col: 5 }, check: v => v.opt('ignorecase') === true },
-            solution: '/todo<CR>:set ic<CR>n',
+            prompt: 'Turn ignorecase off, then press n: now only the lowercase todo matches.',
+            goal: { cursor: { line: 11, col: 2 }, check: v => v.opt('ignorecase') === false },
+            solution: '/todo<CR>:set noic<CR>n',
           },
           {
-            prompt: 'Hide the line numbers.',
+            prompt: 'Hide the line numbers: turn off both number and relativenumber.',
             setup: { cursor: { line: 3, col: 0 } },
-            goal: { check: v => v.opt('number') === false },
-            solution: ':set nu!<CR>',
+            goal: { check: v => v.opt('number') === false && v.opt('relativenumber') === false },
+            solution: ':set nonu nornu<CR>',
           },
           {
             prompt: 'Set shiftwidth to 4, then indent the return line.',

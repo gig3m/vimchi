@@ -35,6 +35,15 @@ export const gettingAround: Section = {
           to repeat it: <Code>4j</Code> moves down four lines.
         </p>
       ),
+      lazyvim: (
+        <>
+          <p>
+            LazyVim numbers the lines by their distance from the cursor: the line three below reads 3, so{' '}
+            <Code>3j</Code> lands on it. The cursor's own line shows its real line number.
+          </p>
+          <p>Plain Vim numbers every line from the top of the file (and Neovim shows no numbers until you ask).</p>
+        </>
+      ),
       aside: {
         title: 'Why hjkl?',
         body: (

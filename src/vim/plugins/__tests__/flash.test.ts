@@ -18,16 +18,19 @@ describe('flash.nvim jump', () => {
   it('labels matches nearest first, skipping letters that continue the pattern', () => {
     const vim = make(code);
     const ms = flashMatches(vim, 'us');
-    // Case-sensitive, so getUser doesn't match. "us" is always followed by "e": no "e" label.
+    // LazyVim's ignorecase + smartcase, which flash follows: lowercase "us" matches getUser's "Us"
+    // too. "us" is always followed by "e": no "e" label.
     expect(ms.map(m => [m.start.line, m.start.col, m.label])).toEqual([
-      [0, 6, 'a'], [1, 5, 's'], [1, 36, 'd'], [2, 7, 'f'],
+      [0, 6, 'a'], [0, 22, 's'], [1, 5, 'd'], [1, 36, 'f'], [2, 7, 'g'],
     ]);
+    // A capital makes it case-sensitive (smartcase): only getUser.
+    expect(flashMatches(vim, 'Us').map(m => [m.start.line, m.start.col])).toEqual([[0, 22]]);
     expect(flashMatches(vim, 'e').map(m => m.label)).not.toContain('r');
   });
 
   it('s{chars}{label} jumps', () => {
     const vim = make(code);
-    vim.feedKeys('suss');
+    vim.feedKeys('susd');
     expect(vim.cursor).toEqual({ line: 1, col: 5 });
     expect(vim.modal).toBeNull();
     // The jump is in the jumplist.

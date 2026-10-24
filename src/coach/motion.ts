@@ -97,7 +97,7 @@ function wholeWordMatch(lines: readonly string[], from: Pos, word: string, dir: 
 
 /**
  * Shorter ways from `from` to `to`, cost < maxCost, unverified, best first. Routes are canonical:
- * at most one vertical leg (Nj, NG, gg/G, {/}, <C-d>, H/M/L, or a jump: * # n % /search) that
+ * at most one vertical leg (Nj, NG, gg/G, {/}, <C-d>, M, or a jump: * # n % /search) that
  * reaches the target line, then at most two horizontal moves on that line (0 ^ $ f t w b e, `;`).
  * Interleaved routes (`2wjl`, `3jEj3j`) are search artefacts no teacher would give.
  */
@@ -136,7 +136,8 @@ export function betterMotions(lines: readonly string[], from: Pos, want: number,
     if (isBlank(lines[to.line])) for (const p of ['}', '{']) for (let r = 1; r <= 3; r++) leg(move(lines, start, p, r), p.repeat(r), r, [p], 'line');
     if (oracle && far) {
       for (const p of ['<C-d>', '<C-u>']) for (let r = 1; r <= 3; r++) leg(oracle(p.repeat(r)), p.repeat(r), r, [p], 'line');
-      for (const p of ['H', 'M', 'L']) leg(oracle(p), p, 1, [p], 'line');
+      // Not H or L: in Normal mode LazyVim gives them to buffers (previous, next).
+      leg(oracle('M'), 'M', 1, ['M'], 'line');
     }
   }
   // ---- jumps: land anywhere; on the target line a horizontal leg may follow

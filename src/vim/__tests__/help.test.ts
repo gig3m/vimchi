@@ -57,19 +57,22 @@ describe(':help lookup (as Neovim 0.12 resolves these subjects)', () => {
 });
 
 describe(':help and CTRL-]', () => {
-  it(':h x opens a help window above, on the tag', () => {
+  it(':h x opens a help window below (LazyVim\'s splitbelow; plain Vim opens it above), on the tag', () => {
     const vim = fresh();
     vim.feedKeys(':h x<CR>');
     expect(at(vim)).toEqual({ buf: 'change.txt', ...tag('x').pos, wins: 2 });
     expect(vim.buf.filetype).toBe('help');
-    expect(vim.tab.windows()[0]).toBe(vim.win);
-    expect(vim.tab.windows()[1].buf.name).toBe('app.ts');
+    expect(vim.tab.windows()[1]).toBe(vim.win);
+    expect(vim.tab.windows()[0].buf.name).toBe('app.ts');
+    const plain = fresh();
+    plain.feedKeys(':set nosb<CR>:h x<CR>');
+    expect(plain.tab.windows()[0]).toBe(plain.win);
   });
   it('a second :help reuses the help window', () => {
     const vim = fresh();
     vim.feedKeys(':h x<CR>:h g-<CR>');
     expect(at(vim)).toEqual({ buf: 'undo.txt', ...tag('g-').pos, wins: 2 });
-    vim.feedKeys('<C-w>j:help zz<CR>');
+    vim.feedKeys('<C-w>k:help zz<CR>');
     expect(at(vim)).toEqual({ buf: 'scroll.txt', ...tag('zz').pos, wins: 2 });
   });
   it('CTRL-O after :help goes to the top of the page, then back to the file (Neovim)', () => {
@@ -115,17 +118,22 @@ describe(':help and CTRL-]', () => {
 });
 
 describe('the help window', () => {
-  it(':h puts the tag line at the top of the window, like zt (Neovim: :h CTRL-E -> w0 = tag line)', () => {
+  // Like zt: with LazyVim's scrolloff=4, four lines of context above it (Neovim with LazyVim's
+  // options: :h CTRL-E -> w0 = tag line - 4; plain Neovim puts the tag line itself at w0).
+  const below4 = (l: number) => Math.max(0, l - 4);
+  it(':h puts the tag line at the top of the window, like zt', () => {
     const vim = fresh();
     vim.feedKeys(':h CTRL-E<CR>');
-    expect(vim.win.top).toBe(tag('CTRL-E').pos.line);
+    expect(vim.win.top).toBe(below4(tag('CTRL-E').pos.line));
     vim.feedKeys(':h zb<CR>');
-    expect(vim.win.top).toBe(tag('zb').pos.line);
+    expect(vim.win.top).toBe(below4(tag('zb').pos.line));
+    vim.feedKeys(':set so=0<CR>:h CTRL-E<CR>');
+    expect(vim.win.top).toBe(tag('CTRL-E').pos.line);
   });
   it('CTRL-] puts the tag line at the top too', () => {
     const vim = fresh();
     vim.feedKeys(':h dd<CR>2j0f|<C-]>');
-    expect(vim.win.top).toBe(tag('linewise').pos.line);
+    expect(vim.win.top).toBe(below4(tag('linewise').pos.line));
   });
   it.each(['x', 'dd', 'i', 'o', 'O', 'A', 'R', 'p', '>>', 'J', 'rX', '~', 'cw', 'u', ':s/dd/X/<CR>', ':d<CR>'])(
     'is not modifiable: %s fails with E21 and changes nothing',

@@ -163,6 +163,14 @@ export const search: Section = {
           Change every match with one <Code>gn</Code> edit and some <Code>.</Code>s. {total} rounds.
         </p>
       ),
+      lazyvim: (
+        <p>
+          LazyVim searches ignore case while the pattern is all lowercase (<Code>ignorecase</Code> +{' '}
+          <Code>smartcase</Code>), so <Code>/todo</Code> also finds <Code>TODO</Code>, and <Code>cgn</Code> then{' '}
+          <Code>.</Code> change those too. Plain Vim matches case exactly. Put a capital in the pattern, or{' '}
+          <Code>\C</Code>, to match case in LazyVim.
+        </p>
+      ),
       aside: {
         title: 'A safer :s',
         body: (
@@ -206,14 +214,14 @@ export const search: Section = {
             solution: '/ !important<CR>dgn..',
           },
           {
-            prompt: 'Search for "todo", then change each one to "TODO".',
+            prompt: 'Search for "todo", then mark each one "done".',
             setup: {
               name: 'plan.md',
               text: ['- todo: write tests', '- todo: update docs', '- done: tag release', '- todo: announce'],
               cursor: { line: 0, col: 0 },
             },
-            goal: { text: ['- TODO: write tests', '- TODO: update docs', '- done: tag release', '- TODO: announce'] },
-            solution: '/todo<CR>cgnTODO<Esc>..',
+            goal: { text: ['- done: write tests', '- done: update docs', '- done: tag release', '- done: announce'] },
+            solution: '/todo<CR>cgndone<Esc>..',
           },
           {
             prompt: 'Rename "cfg" to "config" everywhere.',

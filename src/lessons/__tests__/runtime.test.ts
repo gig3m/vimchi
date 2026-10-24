@@ -266,3 +266,36 @@ describe('setup', () => {
     expect(new Session({ ...c, showTarget: undefined }).view().target).toEqual({ line: 1, col: 0 });
   });
 });
+
+describe('LazyVim notes', () => {
+  it('a comment continued by o is said once, badged', () => {
+    // Python: plain Neovim's ftplugin doesn't continue comments on o, so LazyVim's does it alone.
+    const c: RoundsChallenge = { kind: 'rounds', base: { name: 'a.py', text: ['# one', 'x'] }, rounds: [{ goal: { text: ['# one', '# two', 'x'] }, solution: 'otwo<Esc>' }, { goal: { cursor: { line: 1, col: 0 } }, solution: 'j' }] };
+    const s = new Session(c, { carryCursor: false });
+    s.key('o');
+    expect([s.view().msgKind, s.view().msg]).toEqual(['lazy', expect.stringContaining('LazyVim continued the comment')]);
+    s.key('<Esc>');
+    s.key('o');
+    expect(s.view().msgKind).not.toBe('lazy');
+  });
+  it('is said once a lesson, not again in a later round with a fresh editor', () => {
+    const c: RoundsChallenge = { kind: 'rounds', base: { name: 'a.py', text: ['# one', 'x'] }, rounds: [{ goal: { text: ['# one', '# two', 'x'] }, solution: 'otwo<Esc>' }, { goal: { text: ['# one', '# two', 'x'] }, solution: 'otwo<Esc>' }] };
+    const s = new Session(c, { carryCursor: false });
+    for (const k of solutionKeys('otwo<Esc>')) s.key(k);
+    s.advance();
+    s.key('o');
+    expect(s.view().msgKind).not.toBe('lazy');
+  });
+});
+
+describe('carried view', () => {
+  it('a round whose solution needs its own view gets it back when the learner arrived another way', () => {
+    const l = LESSONS['full-pages'] as { challenge: RoundsChallenge };
+    const s = new Session(l.challenge);
+    for (const k of solutionKeys('16j')) s.key(k); // round 1 by hand, not <C-f>j: a different view
+    s.advance();
+    const r2 = l.challenge.rounds[1];
+    for (const k of solutionKeys(r2.solution)) s.key(k);
+    expect(s.view().roundDone).toBe(true);
+  });
+});

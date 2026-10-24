@@ -260,22 +260,33 @@ export const buffersFiles: Section = {
     {
       id: 'cycling-buffers',
       title: 'Cycling Buffers',
-      chips: ['[b', ']b'],
+      chips: ['L', 'H', ']b', '[b'],
       keyCards: [
-        { key: '[b', glyph: '←', label: 'previous buffer' },
-        { key: ']b', glyph: '→', label: 'next buffer' },
+        { key: 'L', glyph: '→', label: 'next buffer', sub: 'LazyVim' },
+        { key: 'H', glyph: '←', label: 'previous buffer', sub: 'LazyVim' },
+        { key: ']b', glyph: '→', label: 'next buffer', sub: 'LazyVim' },
+        { key: '[b', glyph: '←', label: 'previous buffer', sub: 'LazyVim' },
       ],
       intro: (
         <>
           <p>
-            <Code>]b</Code> moves to the next buffer in the list and <Code>[b</Code> to the previous one. Both wrap
-            around at the ends.
+            <Code>L</Code> moves to the next buffer in the list and <Code>H</Code> to the previous one. Both wrap
+            around at the ends. LazyVim's bufferline shows the buffers as tabs along the top, in the same order.
           </p>
           <p>
-            They are quickest when you have a handful of related files open. A count skips ahead: <Code>2]b</Code>{' '}
-            moves two buffers on.
+            <Code>]b</Code> and <Code>[b</Code> do the same. In LazyVim none of the four takes a count: each press
+            moves one buffer.
           </p>
         </>
+      ),
+      lazyvim: (
+        <p>
+          <Code>H</Code> and <Code>L</Code> for buffers are LazyVim's maps. Plain Vim has no such map, and its{' '}
+          <Code>H</Code> and <Code>L</Code> jump to the top and bottom of the window. Neovim 0.11 and later have{' '}
+          <Code>[b</Code> and <Code>]b</Code> built in, and there they take a count (<Code>2]b</Code> moves two
+          buffers on) and <Code>[B</Code> and <Code>]B</Code> go to the first and last buffer. In classic Vim
+          use <Code>:bnext</Code> and <Code>:bprevious</Code>.
+        </p>
       ),
       practice: total => (
         <p>
@@ -284,13 +295,12 @@ export const buffersFiles: Section = {
         </p>
       ),
       aside: {
-        title: 'New in Neovim 0.11',
+        title: 'Reordering the tabs',
         body: (
           <p>
-            <Code>[b</Code> <Code>]b</Code> (and <Code>[B</Code> <Code>]B</Code> for first and last) are built-in maps
-            since Neovim 0.11, borrowed from vim-unimpaired. LazyVim also binds <Code>S-h</Code> / <Code>S-l</Code> to
-            the same moves, with bufferline showing the buffers as tabs. In classic Vim use <Code>:bnext</Code> and{' '}
-            <Code>:bprevious</Code>.
+            In LazyVim, <Code>[B</Code> and <Code>]B</Code> move the current buffer's tab one place left or right
+            along the bufferline. <Code>H</Code> and <Code>L</Code> then follow the new order. <Code>:ls</Code>{' '}
+            still lists the buffers by number, and <Code>:b 3</Code> goes straight to one.
           </p>
         ),
       },
@@ -302,31 +312,37 @@ export const buffersFiles: Section = {
             prompt: 'Go to the next buffer.',
             setup: { init: vim => { FIVE(vim); vim.ex('b2'); } },
             goal: { buffer: 'src/routes/notes.ts' },
-            solution: ']b',
+            solution: 'L',
           },
           {
             prompt: 'Go to the previous buffer.',
             setup: { init: vim => { FIVE(vim); vim.ex('b4'); } },
             goal: { buffer: 'src/routes/notes.ts' },
-            solution: '[b',
+            solution: 'H',
           },
           {
             prompt: 'From index.ts, go back one. It wraps.',
             setup: { init: vim => { FIVE(vim); vim.ex('b1'); } },
             goal: { buffer: 'README.md' },
-            solution: '[b',
+            solution: 'H',
           },
           {
-            prompt: 'Skip ahead two buffers.',
-            setup: { init: vim => { FIVE(vim); vim.ex('b1'); } },
-            goal: { buffer: 'src/routes/notes.ts' },
-            solution: '2]b',
+            prompt: 'Go to the next buffer, this time with the bracket key.',
+            setup: { init: vim => { FIVE(vim); vim.ex('b3'); } },
+            goal: { buffer: 'src/db.ts' },
+            solution: ']b',
+          },
+          {
+            prompt: 'Go to the previous buffer with the bracket key.',
+            setup: { init: vim => { FIVE(vim); vim.ex('b2'); } },
+            goal: { buffer: 'src/index.ts' },
+            solution: '[b',
           },
           {
             prompt: 'Forward one, past the end.',
             setup: { init: FIVE },
             goal: { buffer: 'src/index.ts' },
-            solution: ']b',
+            solution: 'L',
           },
         ],
       },
@@ -409,9 +425,17 @@ export const buffersFiles: Section = {
             or numbers to close other buffers without leaving this one: <Code>:bd db</Code>, <Code>:bd 2 3</Code>.
           </p>
           <p>
-            A buffer with unsaved changes won't go quietly. <Code>:bd!</Code> drops it and its changes.
+            A buffer with unsaved changes won't go quietly: you are asked whether to save it first.{' '}
+            <Code>:bd!</Code> drops it and its changes without asking.
           </p>
         </>
+      ),
+      lazyvim: (
+        <p>
+          LazyVim turns on <Code>confirm</Code>, so <Code>:bd</Code> on unsaved changes asks{' '}
+          <Code>Save changes?</Code> with Yes, No and Cancel. Plain Vim and Neovim refuse with E89 until you add{' '}
+          <Code>!</Code>.
+        </p>
       ),
       practice: total => (
         <p>

@@ -265,6 +265,13 @@ export const screenMovement: Section = {
           </p>
         </>
       ),
+      lazyvim: (
+        <p>
+          LazyVim keeps 4 lines between the cursor and the window's edge (<Code>scrolloff=4</Code>). So from the top of a
+          file, the first <Code>C-d</Code> takes the cursor 10 lines down, not 6. In plain Vim, the cursor always moves
+          exactly as far as the text scrolls.
+        </p>
+      ),
       practice: total => (
         <p>
           Line numbers are off: scroll with <Code>C-d</Code> and <Code>C-u</Code> until the thing the prompt names is
@@ -283,43 +290,43 @@ export const screenMovement: Section = {
       challenge: {
         kind: 'rounds',
         showGoal: false,
-        base: { name: 'queue.ts', text: QUEUE, height: ROWS, options: { number: false } },
+        base: { name: 'queue.ts', text: QUEUE, height: ROWS, options: { number: false, relativenumber: false } },
         rounds: [
           {
-            prompt: 'Scroll down to "const DEFAULTS".',
+            prompt: 'Scroll down to "private readonly opts".',
             setup: { cursor: { line: 0, col: 0 } },
-            goal: { check: onLine(18) },
-            solution: '<C-d><C-d><C-d>',
-          },
-          {
-            prompt: 'Scroll down to "constructor(".',
-            setup: { cursor: { line: 18, col: 0 } },
-            goal: { check: onLine(30) },
-            solution: '<C-d><C-d>',
-          },
-          {
-            prompt: 'Scroll down to "this.running++".',
-            setup: { cursor: { line: 30, col: 0 } },
-            goal: { check: onLine(60) },
-            solution: '<C-d><C-d><C-d><C-d><C-d>',
-          },
-          {
-            prompt: 'Scroll down to "async drain()".',
-            setup: { cursor: { line: 60, col: 0 } },
-            goal: { check: onLine(84) },
+            goal: { check: onLine(28) },
             solution: '<C-d><C-d><C-d><C-d>',
           },
           {
-            prompt: 'Scroll back up to "} catch (err) {".',
-            setup: { cursor: { line: 84, col: 0 } },
-            goal: { check: onLine(72) },
-            solution: '<C-u><C-u>',
+            prompt: 'Scroll down to "return this.jobs.length".',
+            setup: { cursor: { line: 28, col: 0 } },
+            goal: { check: onLine(46) },
+            solution: '<C-d><C-d><C-d>',
           },
           {
-            prompt: 'Scroll up to "this.tick()" at the end of push.',
-            setup: { cursor: { line: 72, col: 0 } },
-            goal: { check: onLine(42) },
-            solution: '<C-u><C-u><C-u><C-u><C-u>',
+            prompt: 'Scroll down to "await this.handler".',
+            setup: { cursor: { line: 46, col: 0 } },
+            goal: { check: onLine(70) },
+            solution: '<C-d><C-d><C-d><C-d>',
+          },
+          {
+            prompt: 'Scroll down to "stop() {".',
+            setup: { cursor: { line: 70, col: 0 } },
+            goal: { check: onLine(88) },
+            solution: '<C-d><C-d><C-d>',
+          },
+          {
+            prompt: 'Scroll back up to "try {".',
+            setup: { cursor: { line: 88, col: 0 } },
+            goal: { check: onLine(69) },
+            solution: '<C-u><C-u><C-u>',
+          },
+          {
+            prompt: 'Scroll up to "get size()".',
+            setup: { cursor: { line: 69, col: 0 } },
+            goal: { check: onLine(45) },
+            solution: '<C-u><C-u><C-u><C-u>',
           },
         ],
       },
@@ -335,14 +342,21 @@ export const screenMovement: Section = {
       intro: (
         <>
           <p>
-            <Code>C-f</Code> scrolls forward a whole screen, keeping two lines of overlap, and puts the cursor at the top.{' '}
-            <Code>C-b</Code> scrolls back a screen and puts the cursor at the bottom.
+            <Code>C-f</Code> scrolls forward a whole screen, keeping two lines of overlap, and puts the cursor near the
+            top. <Code>C-b</Code> scrolls back a screen and puts the cursor near the bottom.
           </p>
           <p>
             Use them to skim a long file: a changelog, a log, generated code. When you spot what you want, finish with{' '}
             <Code>j</Code> or <Code>k</Code>.
           </p>
         </>
+      ),
+      lazyvim: (
+        <p>
+          In LazyVim the cursor lands 4 lines below the top after <Code>C-f</Code>, and 4 lines above the bottom after{' '}
+          <Code>C-b</Code>, because it keeps 4 lines of context (<Code>scrolloff=4</Code>). Plain Vim puts it on the top
+          or bottom line itself.
+        </p>
       ),
       practice: total => (
         <p>
@@ -362,96 +376,104 @@ export const screenMovement: Section = {
       challenge: {
         kind: 'rounds',
         showGoal: false,
-        base: { name: 'CHANGELOG.md', text: CHANGELOG, height: ROWS, options: { number: false } },
+        base: { name: 'CHANGELOG.md', text: CHANGELOG, height: ROWS, options: { number: false, relativenumber: false } },
         rounds: [
           {
-            prompt: 'Page down to the 3.1.0 release.',
+            prompt: 'Page down to the 3.1.1 release.',
             setup: { cursor: { line: 0, col: 0 } },
-            goal: { cursor: { line: 22, col: 0 } },
+            goal: { cursor: { line: 16, col: 0 } },
+            solution: '<C-f>j',
+          },
+          // Each round opens on the view the last one ended with.
+          {
+            prompt: 'Page down to the third migration step.',
+            setup: { cursor: { line: 16, col: 0 }, top: 11 },
+            goal: { cursor: { line: 47, col: 0 } },
+            solution: '<C-f><C-f><C-f>k',
+          },
+          {
+            prompt: 'Page down to the 2.3.0 release.',
+            setup: { cursor: { line: 47, col: 0 }, top: 43 },
+            goal: { cursor: { line: 69, col: 0 } },
             solution: '<C-f><C-f>',
           },
           {
-            prompt: 'Page down to the migration steps.',
-            setup: { cursor: { line: 0, col: 0 } },
-            goal: { cursor: { line: 44, col: 0 } },
-            solution: '<C-f><C-f><C-f><C-f>',
+            prompt: 'Page back to the 2.4.2 release.',
+            setup: { cursor: { line: 69, col: 0 }, top: 65 },
+            goal: { cursor: { line: 49, col: 0 } },
+            solution: '<C-b><C-b>kk',
           },
           {
-            prompt: 'Page down to the 2.4.1 release.',
-            setup: { cursor: { line: 22, col: 0 }, init: top(22) },
-            goal: { cursor: { line: 55, col: 0 } },
-            solution: '<C-f><C-f><C-f>',
+            prompt: 'Page back to the 3.1.1 release.',
+            setup: { cursor: { line: 49, col: 0 }, top: 43 },
+            goal: { cursor: { line: 16, col: 0 } },
+            solution: '<C-b><C-b><C-b>kk',
           },
           {
-            prompt: 'Page back to the 2.4.1 release.',
-            setup: { cursor: { line: 70, col: 0 }, init: top(66) },
-            goal: { cursor: { line: 55, col: 0 } },
-            solution: '<C-b><C-b>k',
-          },
-          {
-            prompt: 'Page back to the 3.0.0 release.',
-            setup: { cursor: { line: 43, col: 0 }, init: top(43) },
+            prompt: 'Page down to the 3.0.0 release.',
+            setup: { cursor: { line: 16, col: 0 }, top: 10 },
             goal: { cursor: { line: 33, col: 0 } },
-            solution: '<C-b><C-b>',
-          },
-          {
-            prompt: 'Page back to the first migration step.',
-            setup: { cursor: { line: 66, col: 0 }, init: top(66) },
-            goal: { cursor: { line: 45, col: 0 } },
-            solution: '<C-b><C-b><C-b>',
+            solution: '<C-f><C-f>3k',
           },
         ],
       },
     },
     {
       id: 'screen-lines',
-      title: 'Screen Lines',
-      chips: ['H', 'M', 'L'],
-      keyCards: [
-        { key: 'H', glyph: '⤒▭', label: 'top of screen', sub: 'high' },
-        { key: 'M', glyph: '▭', label: 'middle of screen', sub: 'middle' },
-        { key: 'L', glyph: '⤓▭', label: 'bottom of screen', sub: 'low' },
-      ],
+      title: 'Middle of the Screen',
+      chips: ['M'],
+      keyCards: [{ key: 'M', glyph: '▭', label: 'middle of the window', sub: 'middle' }],
       intro: (
         <>
           <p>
-            <Code>H</Code>, <Code>M</Code> and <Code>L</Code> stand for <b>High</b>, <b>Middle</b> and <b>Low</b>: they
-            move the cursor to the top, middle and bottom line of the window. Nothing scrolls, and your column is kept
-            (Neovim's default).
+            <Code>M</Code> moves the cursor to the <b>middle</b> line of the window. Nothing scrolls, and your column
+            is kept (Neovim's default). When the file ends before the window does, it is the middle of the lines you
+            can see.
           </p>
           <p>
-            They get you near anything you can see in one key. Look at the line, pick the closest of the three, then finish
-            with <Code>j</Code> or <Code>k</Code>.
+            It gets you near anything in the middle of the screen in one key: look at the line, press{' '}
+            <Code>M</Code>, then finish with <Code>j</Code> or <Code>k</Code>.
+          </p>
+        </>
+      ),
+      lazyvim: (
+        <>
+          <p>
+            LazyVim gives <Code>H</Code> and <Code>L</Code> to buffers: <Code>H</Code> is the previous buffer,{' '}
+            <Code>L</Code> the next. In plain Vim, <Code>H</Code> and <Code>L</Code> jump to the top and bottom of the
+            window; <Code>M</Code> is the same in both.
           </p>
         </>
       ),
       practice: total => (
         <p>
-          Reach each <span className="hl-green">green box</span>. A count counts lines from the edge: <Code>3H</Code> is
-          the third line from the top. {total} rounds.
+          Reach each <span className="hl-green">green box</span> with <Code>M</Code>. {total} rounds.
         </p>
       ),
       aside: {
-        title: 'With scrolloff',
+        title: 'H and L still work in Visual mode',
         body: (
           <p>
-            Neovim's <Code>scrolloff</Code> defaults to 0. If your config sets it, say to 8, <Code>H</Code> and{' '}
-            <Code>L</Code> stop 8 lines short of the edges, because going further would scroll the window.
+            LazyVim maps <Code>H</Code> and <Code>L</Code> in Normal mode only. After an operator or in Visual mode
+            they are still Vim's top and bottom of the window: <Code>dL</Code> deletes down to the bottom,{' '}
+            <Code>vH</Code> selects up to the top. With LazyVim's <Code>scrolloff=4</Code> they stop 4 lines short
+            of an edge that isn't the file's.
           </p>
         ),
       },
       challenge: {
         kind: 'rounds',
         showGoal: false,
-        base: { name: 'plugins.lua', text: PLUGINS, height: ROWS },
+        base: { name: 'plugins.lua', text: PLUGINS, height: 20 },
         rounds: [
-          { setup: { cursor: { line: 16, col: 6 }, init: top(11) }, goal: { cursor: { line: 11, col: 6 } }, solution: 'H' },
-          { setup: { cursor: { line: 13, col: 4 }, init: top(11) }, goal: { cursor: { line: 23, col: 4 } }, solution: 'L' },
-          { setup: { cursor: { line: 1, col: 2 }, init: top(0) }, goal: { cursor: { line: 6, col: 2 } }, solution: 'M' },
-          { setup: { cursor: { line: 45, col: 4 }, init: top(39) }, goal: { cursor: { line: 39, col: 4 } }, solution: 'H' },
-          { setup: { cursor: { line: 35, col: 6 }, init: top(33) }, goal: { cursor: { line: 45, col: 6 } }, solution: 'L' },
-          { setup: { cursor: { line: 22, col: 4 }, init: top(20) }, goal: { cursor: { line: 26, col: 4 } }, solution: 'M' },
-          { setup: { cursor: { line: 9, col: 2 }, init: top(0) }, goal: { cursor: { line: 2, col: 2 } }, solution: '3H' },
+          { setup: { cursor: { line: 26, col: 4 }, init: top(11) }, goal: { cursor: { line: 20, col: 4 } }, solution: 'M' },
+          { setup: { cursor: { line: 24, col: 4 }, init: top(20) }, goal: { cursor: { line: 29, col: 4 } }, solution: 'M' },
+          { setup: { cursor: { line: 43, col: 4 }, init: top(28) }, goal: { cursor: { line: 37, col: 3 } }, solution: 'M' },
+          // The start of the file is on screen. The init sets the view, so the cursor isn't carried
+          // from round 3 (M from there lands elsewhere) only to be put back with a warning.
+          { setup: { cursor: { line: 15, col: 4 }, init: top(0) }, goal: { cursor: { line: 9, col: 3 } }, solution: 'M' },
+          // The end of the file is on screen: the middle of the lines shown.
+          { setup: { cursor: { line: 44, col: 4 }, init: top(40) }, goal: { cursor: { line: 46, col: 4 } }, solution: 'M' },
         ],
       },
     },
@@ -468,13 +490,20 @@ export const screenMovement: Section = {
         <>
           <p>
             These scroll the window without moving the cursor. <Code>zz</Code> puts the cursor's line in the middle of the
-            screen, <Code>zt</Code> at the top, <Code>zb</Code> at the bottom.
+            screen, <Code>zt</Code> near the top, <Code>zb</Code> near the bottom.
           </p>
           <p>
             Use <Code>zt</Code> to see as much as possible of a function that starts on your line, <Code>zb</Code> to see
             what leads up to it, and <Code>zz</Code> to see both.
           </p>
         </>
+      ),
+      lazyvim: (
+        <p>
+          LazyVim keeps 4 lines of context around the cursor (<Code>scrolloff=4</Code>), so <Code>zt</Code> leaves your
+          line fifth from the top and <Code>zb</Code> fifth from the bottom. Plain Vim puts it on the very top or bottom
+          line. <Code>zz</Code> is the same in both.
+        </p>
       ),
       practice: total => (
         <p>
@@ -496,39 +525,39 @@ export const screenMovement: Section = {
         base: { name: 'queue.ts', text: QUEUE, height: ROWS },
         rounds: [
           {
-            prompt: 'Put the "private async run" line at the top of the screen.',
-            setup: { cursor: { line: 68, col: 2 }, init: top(56) },
-            goal: { cursor: { line: 68, col: 2 }, check: topIs(68) },
+            prompt: 'Put the "private async run" line near the top of the screen.',
+            setup: { cursor: { line: 68, col: 2 }, init: top(60) },
+            goal: { cursor: { line: 68, col: 2 }, check: topIs(64) },
             solution: 'zt',
           },
           {
-            prompt: 'Put the "constructor(" line at the bottom of the screen.',
-            setup: { cursor: { line: 30, col: 2 }, init: top(30) },
-            goal: { cursor: { line: 30, col: 2 }, check: topIs(18) },
+            prompt: 'Put the "constructor(" line near the bottom of the screen.',
+            setup: { cursor: { line: 30, col: 2 }, init: top(26) },
+            goal: { cursor: { line: 30, col: 2 }, check: topIs(22) },
             solution: 'zb',
           },
           {
             prompt: 'Centre the "private tick()" line on the screen.',
-            setup: { cursor: { line: 55, col: 2 }, init: top(55) },
+            setup: { cursor: { line: 55, col: 2 }, init: top(51) },
             goal: { cursor: { line: 55, col: 2 }, check: topIs(49) },
             solution: 'zz',
           },
           {
             prompt: 'Centre the "const wait" line on the screen.',
-            setup: { cursor: { line: 78, col: 6 }, init: top(66) },
+            setup: { cursor: { line: 78, col: 6 }, init: top(70) },
             goal: { cursor: { line: 78, col: 6 }, check: topIs(72) },
             solution: 'zz',
           },
           {
-            prompt: 'Put the "export class Queue" line at the bottom of the screen.',
-            setup: { cursor: { line: 24, col: 0 }, init: top(24) },
-            goal: { cursor: { line: 24, col: 0 }, check: topIs(12) },
+            prompt: 'Put the "export class Queue" line near the bottom of the screen.',
+            setup: { cursor: { line: 24, col: 0 }, init: top(20) },
+            goal: { cursor: { line: 24, col: 0 }, check: topIs(16) },
             solution: 'zb',
           },
           {
-            prompt: 'Put the "private next()" line at the top of the screen.',
-            setup: { cursor: { line: 49, col: 2 }, init: top(37) },
-            goal: { cursor: { line: 49, col: 2 }, check: topIs(49) },
+            prompt: 'Put the "private next()" line near the top of the screen.',
+            setup: { cursor: { line: 49, col: 2 }, init: top(41) },
+            goal: { cursor: { line: 49, col: 2 }, check: topIs(45) },
             solution: 'zt',
           },
         ],
@@ -549,10 +578,16 @@ export const screenMovement: Section = {
             <Code>C-y</Code> scrolls up one line. A count scrolls that many: <Code>5C-e</Code>.
           </p>
           <p>
-            The cursor stays put, on its line and in its column. Only when its line would leave the screen does it move, to the nearest edge. Use them to see a
-            few more lines above or below without losing your place.
+            The cursor stays put, on its line and in its column, until scrolling would take it too close to the edge: then
+            it is pushed along. Use them to see a few more lines above or below without losing your place.
           </p>
         </>
+      ),
+      lazyvim: (
+        <p>
+          LazyVim pushes the cursor along once it comes within 4 lines of the window's edge (<Code>scrolloff=4</Code>).
+          In plain Vim it stays put until its own line would leave the screen.
+        </p>
       ),
       practice: total => (
         <p>
@@ -561,11 +596,11 @@ export const screenMovement: Section = {
         </p>
       ),
       aside: {
-        title: 'With scrolloff',
+        title: 'Your own scrolloff',
         body: (
           <p>
-            If your config sets <Code>scrolloff</Code> (kickstart sets 10, LazyVim 4), the cursor is pushed along once it comes within
-            that many lines of the edge, not only at the edge.
+            kickstart sets <Code>scrolloff</Code> to 10, plain Neovim to 0. The bigger it is, the sooner{' '}
+            <Code>C-e</Code> and <Code>C-y</Code> start pushing the cursor.
           </p>
         ),
       },
@@ -576,38 +611,38 @@ export const screenMovement: Section = {
         rounds: [
           {
             prompt: 'Scroll down until "export class Queue" is the top line.',
-            setup: { cursor: { line: 30, col: 2 }, init: top(20) },
+            setup: { cursor: { line: 30, col: 2 }, init: top(22) },
             goal: { cursor: { line: 30, col: 2 }, check: topIs(24) },
-            solution: '4<C-e>',
+            solution: '2<C-e>',
           },
           {
-            prompt: 'Scroll up until "push(id" is the top line.',
-            setup: { cursor: { line: 45, col: 2 }, init: top(40) },
-            goal: { cursor: { line: 45, col: 2 }, check: topIs(38) },
-            solution: '2<C-y>',
+            prompt: 'Scroll up until "const DEFAULTS" is the top line. Watch the cursor.',
+            setup: { cursor: { line: 30, col: 2 }, init: top(24) },
+            goal: { cursor: { line: 26, col: 2 }, check: topIs(18) },
+            solution: '6<C-y>',
           },
           {
-            prompt: 'Scroll "export class Queue" off the top. Watch the cursor.',
-            setup: { cursor: { line: 24, col: 13 }, init: top(24) },
-            goal: { cursor: { line: 25, col: 13 }, check: topIs(25) },
+            prompt: 'Scroll down one line. The cursor is 4 lines from the top: watch it.',
+            setup: { cursor: { line: 26, col: 2 }, init: top(22) },
+            goal: { cursor: { line: 27, col: 2 }, check: topIs(23) },
             solution: '<C-e>',
           },
           {
-            prompt: 'Scroll up until "return i === -1" is the top line.',
-            setup: { cursor: { line: 68, col: 2 }, init: top(56) },
-            goal: { cursor: { line: 64, col: 2 }, check: topIs(52) },
-            solution: '4<C-y>',
+            prompt: 'Scroll up until "export type QueueOptions" is the top line.',
+            setup: { cursor: { line: 27, col: 2 }, init: top(19) },
+            goal: { cursor: { line: 20, col: 2 }, check: topIs(12) },
+            solution: '7<C-y>',
           },
           {
-            prompt: 'Scroll down until line 92, the last line of the file, is the bottom line.',
-            setup: { cursor: { line: 82, col: 2 }, init: top(70) },
-            goal: { cursor: { line: 82, col: 2 }, check: topIs(79) },
-            solution: '9<C-e>',
+            prompt: 'Scroll down until "}", the last line of the file, is the bottom line.',
+            setup: { cursor: { line: 84, col: 2 }, init: top(76) },
+            goal: { cursor: { line: 84, col: 2 }, check: topIs(79) },
+            solution: '3<C-e>',
           },
           {
             prompt: 'Scroll up until the first line of the file is the top line.',
             setup: { cursor: { line: 10, col: 0 }, init: top(3) },
-            goal: { cursor: { line: 10, col: 0 }, check: topIs(0) },
+            goal: { cursor: { line: 8, col: 0 }, check: topIs(0) },
             solution: '3<C-y>',
           },
         ],

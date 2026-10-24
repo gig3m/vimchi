@@ -107,7 +107,7 @@ Survive, then learn the grammar: motions and search, operators, text objects, vi
 |---|---|---|---|
 | 29 | Half Pages | `C-d` `C-u` | transform |
 | 30 | Full Pages | `C-f` `C-b` | transform |
-| 31 | Screen Lines | `H` `M` `L` | transform |
+| 31 | Middle of the Screen | `M` | transform |
 | 32 | Recenter | `zz` `zt` `zb` | transform |
 | 33 | Scroll by Line | `C-e` `C-y` | transform |
 
@@ -207,7 +207,7 @@ Move through a codebase, not a file: buffers, windows, jumps, quickfix, definiti
 |---|---|---|---|
 | 86 | Opening Files | `:e` | transform |
 | 87 | Buffer List | `:ls` `:b` | transform |
-| 88 | Cycling Buffers | `[b` `]b` | transform |
+| 88 | Cycling Buffers | `L` `H` `]b` `[b` | transform |
 | 89 | Alternate File | `C-^` | transform |
 | 90 | Closing Buffers | `:bd` | transform |
 | 91 | Go to File | `gf` | transform |
@@ -291,7 +291,7 @@ Edit at scale: the command line, substitute, global commands, project replace.
 | 133 | Substitute | `:s` | transform |
 | 134 | Whole File | `%s` `/g` | transform |
 | 135 | Confirm Each | `/c` | transform |
-| 136 | Ignoring Case | `/i` `\c` | transform |
+| 136 | Ignoring Case | `\C` `/I` | transform |
 | 137 | Word Boundaries | `\<` `\>` | transform |
 | 138 | Very Magic | `\v` | transform |
 | 139 | Capture Groups | `()` `\1` | transform |

@@ -21,11 +21,21 @@ export class Window {
   want = 0;
   /** First visible buffer line. */
   top = 0;
+  /** The view was set by a page scroll; scrollToCursor() keeps it while the cursor line and the
+   * text are as they were then (Neovim's VALID_TOPLINE). */
+  topLocked = false;
+  lockLine = -1;
+  lockText = '';
   /** Laid-out size in rows/cols, set by the layout pass. */
   height = 20;
   width = 80;
   folds: Fold[] = [];
-  jumplist: { buf: Buffer; pos: Pos }[] = [];
+  /** The folds were made from the text ('foldmethod' indent / expr), not set up by hand: they are
+   * made again when the text changes. The text they were made from. */
+  autoFolds = false;
+  autoFoldsText?: string;
+  /** `top`: the view when the jump was made, restored with 'jumpoptions' view (LazyVim). */
+  jumplist: { buf: Buffer; pos: Pos; top?: number }[] = [];
   jumpIdx = 0;
   /** Alternate buffer for <C-^>. */
   alt: Buffer | null = null;
@@ -82,10 +92,13 @@ export class Tab {
   /** Split `win`. 'col' stacks windows vertically (:split), 'row' side by side (:vsplit). */
   split(win: Window, newWin: Window, dir: 'row' | 'col', after = false) {
     const loc = this.parentOf(win)!;
-    const leaf: LayoutNode = { type: 'leaf', win: newWin, size: 1 };
+    // A new window below / right of the old one (splitbelow, splitright) takes the odd row or
+    // column, as Neovim gives it: 9 rows for the old window and 10 for the new.
+    const leaf: LayoutNode = { type: 'leaf', win: newWin, size: after ? 1.0001 : 1 };
     if (loc.parent && loc.parent.type === dir) {
       loc.parent.children.splice(loc.index + (after ? 1 : 0), 0, leaf);
       equalize(loc.parent);
+      if (after) leaf.size = 1.0001; // the odd row still goes to the new window (nvim: 6/6/7)
     } else {
       const old = loc.node;
       const container: LayoutNode = { type: dir, children: after ? [old, leaf] : [leaf, old], size: old.size };
@@ -185,9 +198,14 @@ export class Tab {
    * A lone window gets all the rows (the view draws its status line outside the pane); split
    * windows each lose one row to their own status line.
    */
-  layoutFor(screenRows: number, cols: number): Map<Window, { top: number; left: number; height: number; width: number }> {
+  /**
+   * Window rectangles for a screen of `screenRows` text rows. Each window's last row is its status
+   * line; with a global one (laststatus=3, LazyVim) the windows at the bottom share the status line
+   * drawn below the screen, and the others' last row is a plain separator.
+   */
+  layoutFor(screenRows: number, cols: number, globalStatus = false, minWidth = 1): Map<Window, { top: number; left: number; height: number; width: number }> {
     const multi = this.windows().length > 1;
-    const out = this.rects(multi ? screenRows : screenRows + 1, cols);
+    const out = this.rects(multi && !globalStatus ? screenRows : screenRows + 1, cols, minWidth);
     for (const [w, r] of out) {
       w.height = Math.max(1, r.height - 1); // minus the status line
       w.width = r.width;
@@ -196,7 +214,8 @@ export class Tab {
   }
 
   /** Rectangles for every window, in abstract units (rows × cols). Pure: sizes nothing. */
-  rects(rows: number, cols: number): Map<Window, { top: number; left: number; height: number; width: number }> {
+  /** `minWidth`: the narrowest a window side by side gets ('winminwidth', 5 in LazyVim). */
+  rects(rows: number, cols: number, minWidth = 1): Map<Window, { top: number; left: number; height: number; width: number }> {
     const out = new Map<Window, { top: number; left: number; height: number; width: number }>();
     const walk = (n: LayoutNode, top: number, left: number, h: number, w: number) => {
       if (n.type === 'leaf') {
@@ -207,7 +226,7 @@ export class Tab {
       // is the separator; each window keeps one text row and its status line (winminheight=1).
       const span = n.type === 'col' ? h : w;
       const sep = n.type === 'row' ? 1 : 0;
-      const lens = share(span - sep * (n.children.length - 1), n.children.map(c => c.size), n.type === 'col' ? 2 : 1);
+      const lens = share(span - sep * (n.children.length - 1), n.children.map(c => c.size), n.type === 'col' ? 2 : minWidth);
       let off = 0;
       n.children.forEach((c, i) => {
         if (n.type === 'col') walk(c, top + off, left, lens[i], w);

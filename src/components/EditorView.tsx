@@ -6,6 +6,7 @@ import type { Decoration, Float, Vim } from '../vim/editor';
 import { displayKey } from '../vim/keys';
 import type { Window } from '../vim/layout';
 import { type Pos, cmpPos } from '../vim/types';
+import { subPreview } from '../vim/ex';
 import { C, colorize } from '../ui/syntax';
 import type { Annotations } from '../lessons/goalDiff';
 import { cellWidths, listGlyphs, parseListchars } from './tabs';
@@ -69,39 +70,54 @@ export function EditorView({ vim, focused, overlay, status, note }: Props) {
   const multi = wins.length > 1;
   const rowPx = multi ? 24 : 30;
   const rows = vim.screenRows;
-  const rects = tab.layoutFor(rows, 120);
+  // laststatus=3 (LazyVim): one status line for all windows, below them; stacked windows are
+  // divided by a separator row.
+  const globalStatus = Number(vim.opt('laststatus')) === 3;
+  const rects = tab.layoutFor(rows, 120, globalStatus, Number(vim.opt('winminwidth')) || 1);
   // Keep every window's scroll position valid after layout changes.
   for (const w of wins) if (w !== vim.win) clampTop(vim, w);
   vim.scrollToCursor();
 
   const totalHeight = rows * rowPx;
+  const order = vim.bufferOrder();
   return (
     <div className="ev" style={{ '--row': rowPx + 'px' } as CSSProperties}>
-      {vim.tabs.length > 1 && (
+      {/* LazyVim's bufferline: the listed buffers as tabs, shown once there are two; Vim's tab
+          pages go on its right as numbers. */}
+      {(order.length > 1 || vim.tabs.length > 1) && (
         <div className="ev-tabline">
-          {vim.tabs.map((t, i) => (
-            <span key={i} className={'ev-tab' + (i === vim.tabIdx ? ' on' : '')}>
-              {t.windows().length > 1 ? t.windows().length + ' ' : ''}
-              {shortName(t.cur.buf.name)}
+          {(order.length > 1 ? order : [vim.buf]).map(b => (
+            <span key={b.id} className={'ev-tab' + (b === vim.buf ? ' on' : '')}>
+              {shortName(b.name)}
+              {b.modified ? ' ●' : ''}
             </span>
           ))}
+          {vim.tabs.length > 1 && (
+            <span className="ev-tabpages">
+              {vim.tabs.map((_, i) => (
+                <span key={i} className={'ev-tab' + (i === vim.tabIdx ? ' on' : '')}>{i + 1}</span>
+              ))}
+            </span>
+          )}
         </div>
       )}
       <div ref={panes} className={'ev-panes' + (multi ? ' multi' : '')} style={multi ? { height: totalHeight } : undefined}>
         {wins.map(w => {
           const r = rects.get(w)!;
+          const bottom = globalStatus && r.top + r.height === rows + 1;
           const style: CSSProperties = multi
-            ? { position: 'absolute', top: r.top * rowPx, left: `${(r.left / 120) * 100}%`, width: `calc(${(r.width / 120) * 100}% - ${r.left + r.width < 120 ? 1 : 0}px)`, height: r.height * rowPx }
+            ? { position: 'absolute', top: r.top * rowPx, left: `${(r.left / 120) * 100}%`, width: `calc(${(r.width / 120) * 100}% - ${r.left + r.width < 120 ? 1 : 0}px)`, height: (bottom ? r.height - 1 : r.height) * rowPx }
             : {};
           return (
             <Pane key={w.id} vim={vim} win={w} current={w === vim.win} focused={focused} overlay={w === vim.win ? overlay : null}
-              style={style} textRows={multi ? r.height - 1 : rows} multi={multi} status={status} />
+              style={style} textRows={multi ? r.height - 1 : rows} multi={multi} status={status}
+              below={!multi ? 'none' : !globalStatus ? 'status' : bottom ? 'none' : 'separator'} />
           );
         })}
         {vim.floats.map(f => <FloatBox key={f.id} f={f} vim={vim} rowPx={rowPx} />)}
         {vim.insert?.completion && focused && <Completion vim={vim} rowPx={rowPx} />}
       </div>
-      {!multi && <StatusLine vim={vim} win={vim.win} current status={status} />}
+      {(!multi || globalStatus) && <StatusLine vim={vim} win={vim.win} current status={status} />}
       <CmdLine vim={vim} note={note ?? null} focused={focused} />
     </div>
   );
@@ -125,10 +141,12 @@ type PaneProps = {
   style: CSSProperties;
   textRows: number;
   multi: boolean;
+  /** What closes the window off below: its own status line, a separator (laststatus=3), or nothing. */
+  below: 'status' | 'separator' | 'none';
   status: { keys: number; time: string };
 };
 
-function Pane({ vim, win, current, focused, overlay, style, textRows, multi, status }: PaneProps) {
+function Pane({ vim, win, current, focused, overlay, style, textRows, multi, status, below }: PaneProps) {
   const buf = win.buf;
   const visible = vim.visibleLines(win);
   const topIdx = Math.max(0, visible.indexOf(win.top));
@@ -158,11 +176,14 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
       <span className="ev-text" style={{ color: v.color }}>{v.text || ' '}</span>
     </div>,
   ));
-  const hasSigns = signs.size > 0;
+  // 'signcolumn' yes (LazyVim): the sign column is always there, so text doesn't shift when one appears.
+  const hasSigns = signs.size > 0 || vim.optIn(win, 'signcolumn') === 'yes';
 
   // Search highlights.
   const hl = vim.hlActive && vim.options.hlsearch && vim.search.pattern ? vim.matches(vim.search.pattern, buf, { noSmartcase: vim.search.noSmartcase }) : [];
   const inc = current ? vim.incsearchPos : null;
+  // 'inccommand' (nosplit in LazyVim): a :s being typed shows its result in the buffer.
+  const preview = current && vim.cmdline?.type === ':' && vim.opt('inccommand') ? subPreview(vim, vim.cmdline.text) : null;
   const visualRange = current && vim.visual ? vim.visualRange() : null;
   const cur = win.cursor;
   const cursorVisible = current && vim.mode !== 'cmdline';
@@ -193,11 +214,14 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
     </div>,
   ));
   if (topIdx === 0) pushNew(-1);
+  const curRow = vim.closedFoldAt(cur.line, win)?.start ?? cur.line;
   shown.forEach(l => {
     pushVirt(l);
     const fold = vim.closedFoldAt(l, win);
     const isCurLine = l === cur.line || (fold && cur.line >= fold.start && cur.line <= fold.end);
-    const num = rel && !isCurLine ? Math.abs(visible.indexOf(l) - visible.indexOf(fold ? fold.start : cur.line)) : l + 1;
+    // Relative numbers count screen rows from the cursor's row, a closed fold being one row.
+    // The cursor's own row shows its line number, or 0 with 'relativenumber' alone (nonu rnu).
+    const num = rel && !isCurLine ? Math.abs(visible.indexOf(l) - visible.indexOf(curRow)) : rel && !numbers ? 0 : l + 1;
     const numColor = overlay?.brokenLines.has(l) ? C.red : isCurLine && current ? C.yellow : C.comment;
     const gutter = numbers || rel ? (
       <span className="ev-gutter" style={{ width: `${numWidth + 1}ch`, color: numColor }}>
@@ -211,20 +235,24 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
     const sign = hasSigns ? <span className="ev-sign" style={{ color: signs.get(l)?.color }}>{signs.get(l)?.text ?? ' '}</span> : null;
     if (fold) {
       const n = fold.end - fold.start + 1;
-      const text = `+--${String(n).padStart(3)} lines: ${buf.line(fold.start).trim()}`;
+      // 'foldtext' empty (LazyVim): the fold shows its first line as it is, with a ▸ beside it;
+      // plain Vim's foldtext() writes "+--  4 lines: …".
+      const own = vim.optIn(win, 'foldtext') === '';
+      const text = own ? buf.line(fold.start).replace(/\t/g, ' '.repeat(ts)) || ' ' : `+--${String(n).padStart(3)} lines: ${buf.line(fold.start).trim()}`;
       rowsOut.push(
-        <div key={l} className={'ev-row ev-fold' + (isCurLine && current ? ' cur' : '')}>
-          {gutter}{sign}
+        <div key={l} className={'ev-row ev-fold' + (own ? ' own' : '') + (isCurLine && current ? ' cur' : '')} aria-label={`${n} folded lines`}>
+          {gutter}{own ? <span className="ev-sign ev-fold-sign">{signs.get(l)?.text ?? '▸'}</span> : sign}
           <span className="ev-text">
             {current && isCurLine && vim.mode !== 'cmdline' ? <span className={focused ? 'ev-cursor' : 'ev-cursor-hollow'}>{text[0]}</span> : text[0]}
             {text.slice(1)}
-            <span className="ev-fold-fill">{'·'.repeat(60)}</span>
+            {!own && <span className="ev-fold-fill">{'·'.repeat(60)}</span>}
           </span>
         </div>,
       );
       return;
     }
-    const t = buf.line(l);
+    const pv = preview?.get(l);
+    const t = pv?.text ?? buf.line(l);
     const cols = colorize(t, buf.filetype);
     const chars = t.length ? [...t] : [];
     const widths = cellWidths(t, ts);
@@ -242,6 +270,7 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
         if (cmpPos(m.start, here) <= 0 && cmpPos(here, m.end) <= 0 && chars[c] !== undefined) { bg = 'rgba(241,250,140,.28)'; break; }
       }
       if (inc && cmpPos(inc.start, here) <= 0 && cmpPos(here, inc.end) <= 0) { bg = C.orange; color = C.bg; }
+      if (pv?.spans.some(([a, b]) => c >= a && c <= b)) { bg = C.orange; color = C.bg; }
       let over: string | undefined;
       for (const d of decos) for (const h of d.hl ?? []) if (!h.inline && h.line === l && c >= h.start && c < h.end) { color = h.color; if (h.bg) bg = h.bg; if (h.text) over = h.text[c - h.start]; }
       if (overlay) {
@@ -336,16 +365,19 @@ function Pane({ vim, win, current, focused, overlay, style, textRows, multi, sta
     pushNew(l);
   });
   if (shown[shown.length - 1] === buf.lineCount - 1) pushVirt(buf.lineCount);
-  // Past the end of the file the window keeps its height with ~ rows, as Vim draws it. A window on
-  // a short file is only as tall as the file (the tutor's editor sizes to its text).
+  // Past the end of the file the window keeps its height with 'fillchars' eob rows: ~ in plain Vim,
+  // blank in LazyVim (eob: ). A window on a short file is only as tall as the file (the tutor's
+  // editor sizes to its text).
   const height = multi ? textRows : Math.min(textRows, visible.length);
+  const eob = /(?:^|,)eob:(.)/u.exec(String(vim.optIn(win, 'fillchars')))?.[1] ?? '~';
   for (let i = rowsOut.length; i < height; i++) {
-    rowsOut.push(<div key={'~' + i} className="ev-row"><span className="ev-tilde">~</span></div>);
+    rowsOut.push(<div key={'~' + i} className="ev-row"><span className="ev-tilde">{eob === ' ' ? ' ' : eob}</span></div>);
   }
   return (
     <div className={'ev-pane' + (multi ? ' multi' : '') + (current ? ' current' : '')} style={style}>
       <div className="ev-lines">{rowsOut}</div>
-      {multi && <StatusLine vim={vim} win={win} current={current} status={status} compact />}
+      {below === 'status' && <StatusLine vim={vim} win={win} current={current} status={status} compact />}
+      {below === 'separator' && <div className="ev-winsep" />}
     </div>
   );
 }
@@ -401,7 +433,7 @@ function CmdLine({ vim, note, focused }: { vim: Vim; note: { text: string; kind:
   let content: ReactNode;
   let kind = '';
   if (!cl && note) {
-    content = note.text;
+    content = note.kind === 'lazy' ? <><span className="lazy-badge">LazyVim</span> {note.text}</> : note.text;
     kind = note.kind;
   } else if (!cl && !vim.confirm && !vim.message && !focused) {
     content = '-- editor not focused --';
@@ -416,23 +448,27 @@ function CmdLine({ vim, note, focused }: { vim: Vim; note: { text: string; kind:
       </>
     );
   } else if (vim.confirm) {
-    content = vim.confirm.prompt;
+    // A dialog's question goes above, its choices on the command line ("Save changes to …?").
+    content = vim.confirm.prompt.split('\n').pop();
     kind = 'warn';
   } else if (vim.message) {
     content = vim.message.text.split('\n').length > 1 ? '' : vim.message.text;
     kind = vim.message.kind;
-  } else if (vim.mode === 'insert' || vim.mode === 'replace') {
+  } else if (vim.opt('showmode') && (vim.mode === 'insert' || vim.mode === 'replace')) {
+    // 'showmode' (off in LazyVim, whose status line already names the mode).
     content = <span className="ev-mode-msg">-- {vim.mode === 'insert' ? 'INSERT' : 'REPLACE'} --</span>;
-  } else if (vim.visual) {
+  } else if (vim.opt('showmode') && vim.visual) {
     content = <span className="ev-mode-msg">-- {modeLabel(vim)} --</span>;
   }
-  const more = !cl && vim.message && vim.message.text.includes('\n') ? vim.message.text : null;
+  const more = !cl && vim.confirm?.prompt.includes('\n')
+    ? vim.confirm.prompt.split('\n').slice(0, -1).join('\n')
+    : !cl && vim.message && vim.message.text.includes('\n') ? vim.message.text : null;
   return (
     <>
       {more && (
         <div className="ev-more">
           {more.split('\n').map((l, i) => <div key={i}>{l || ' '}</div>)}
-          <div className="ev-more-prompt">Press any key to continue</div>
+          {!vim.confirm && <div className="ev-more-prompt">Press any key to continue</div>}
         </div>
       )}
       <div className={'ev-cmdline ' + kind}>{content}</div>

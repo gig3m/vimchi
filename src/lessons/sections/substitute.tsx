@@ -179,6 +179,12 @@ export const substitute: Section = {
           Fix the cursor's line with one <Code>:s</Code>. Other lines stay as they are. {total} rounds.
         </p>
       ),
+      lazyvim: (
+        <p>
+          LazyVim shows the substitution in the file as you type it (<Code>inccommand</Code>), before you press
+          Enter; Esc backs out. Neovim does this out of the box too; classic Vim shows nothing until Enter.
+        </p>
+      ),
       aside: {
         title: 'The last slash is optional',
         body: (
@@ -504,24 +510,32 @@ export const substitute: Section = {
     {
       id: 'sub-ignore-case',
       title: 'Ignoring Case',
-      chips: ['/i', '\\c'],
+      chips: ['\\C', '/I'],
       keyCards: [
-        { key: 'i', glyph: 'Aa', label: 'ignore case', sub: 'flag' },
-        { key: '\\c', glyph: 'Aa', label: 'ignore case', sub: 'anywhere in the pattern' },
-        { key: '\\C', glyph: 'A≠a', label: 'match case' },
+        { key: '\\C', glyph: 'A≠a', label: 'match case', sub: 'anywhere in the pattern' },
+        { key: 'I', glyph: 'A≠a', label: 'match case', sub: ':s flag' },
+        { key: '\\c', glyph: 'Aa', label: 'ignore case', sub: 'even with a capital' },
       ],
       intro: (
         <>
           <p>
-            Patterns match case exactly unless you say otherwise. The <Code>i</Code> flag ignores case for one
-            substitute; <Code>\c</Code> anywhere in the pattern does the same, and <Code>\C</Code> forces an exact
-            match.
+            With <Code>ignorecase</Code> and <Code>smartcase</Code> on, a pattern in all lowercase matches any case,
+            and a pattern with a capital matches exactly: <Code>:%s/json/JSON/g</Code> catches Json and jSON,{' '}
+            <Code>:%s/Todo/TODO/g</Code> only Todo.
           </p>
           <p>
-            Many Neovim configs set <Code>ignorecase</Code> and <Code>smartcase</Code>: an all-lowercase pattern
-            ignores case, and a capital letter makes it exact. <Code>\c</Code> and <Code>\C</Code> override both.
+            To match a lowercase pattern exactly, put <Code>\C</Code> anywhere in it, or give <Code>:s</Code> the{' '}
+            <Code>I</Code> flag. <Code>\c</Code> does the opposite: it ignores case even with a capital in the
+            pattern.
           </p>
         </>
+      ),
+      lazyvim: (
+        <p>
+          Plain Vim matches case exactly by default, so there <Code>:%s/json/JSON/g</Code> changes only json, and
+          catching Json takes <Code>\c</Code> or the <Code>i</Code> flag (<Code>:%s/json/JSON/gi</Code>). LazyVim
+          turns on <Code>ignorecase</Code> and <Code>smartcase</Code>, so lowercase patterns ignore case already.
+        </p>
       ),
       practice: total => (
         <p>
@@ -529,11 +543,11 @@ export const substitute: Section = {
         </p>
       ),
       aside: {
-        title: 'The I flag',
+        title: 'Exact everywhere',
         body: (
           <p>
-            Capital <Code>I</Code> is the opposite flag: <Code>:%s/user/account/gI</Code> matches case exactly, even
-            with <Code>ignorecase</Code> on.
+            <Code>:set noignorecase</Code> makes every pattern match case exactly, as plain Vim does. LazyVim users
+            usually keep smartcase and reach for <Code>\C</Code> when it matters.
           </p>
         ),
       },
@@ -548,36 +562,34 @@ export const substitute: Section = {
               text: ['## Why json', 'Json parses anywhere.', 'Most of our jSON is config now.'],
             },
             goal: { text: ['## Why JSON', 'JSON parses anywhere.', 'Most of our JSON is config now.'] },
-            solution: ':%s/json/JSON/gi<CR>',
+            solution: ':%s/json/JSON/g<CR>',
           },
           {
-            prompt: 'Change every "warn", in any case, to "WARN".',
+            prompt: 'Change only "Todo", with its capital T, to "TODO". The others stay.',
             setup: {
-              name: 'app.log',
-              text: ['09:14:02 Warn disk at 81%', '09:14:07 warn retrying upload', '09:15:30 WARN queue is backing up'],
+              name: 'plan.md',
+              text: ['- todo: write tests', '- Todo: fix the build', '- TODO: ship it', '- Todo: tag release'],
             },
-            goal: { text: ['09:14:02 WARN disk at 81%', '09:14:07 WARN retrying upload', '09:15:30 WARN queue is backing up'] },
-            solution: ':%s/\\cwarn/WARN/<CR>',
+            goal: { text: ['- todo: write tests', '- TODO: fix the build', '- TODO: ship it', '- TODO: tag release'] },
+            solution: ':%s/Todo/TODO/<CR>',
           },
           {
-            prompt: 'smartcase is on. Make every "todo:" read "TODO:".',
-            setup: {
-              name: 'worker.go',
-              text: ['// todo: handle timeouts', 'func run() {', '\t// Todo: close the channel', '}'],
-              options: { ignorecase: true, smartcase: true },
-            },
-            goal: { text: ['// TODO: handle timeouts', 'func run() {', '\t// TODO: close the channel', '}'] },
-            solution: ':%s/todo:/TODO:/<CR>',
-          },
-          {
-            prompt: 'smartcase is on. Change every lowercase "user" to "account"; "User" stays.',
+            prompt: 'Change every lowercase "user" to "account"; "User" stays.',
             setup: {
               name: 'session.ts',
               text: ['const user: User = await load();', 'if (!user) throw new Error("no user");', 'return user;'],
-              options: { ignorecase: true, smartcase: true },
             },
             goal: { text: ['const account: User = await load();', 'if (!account) throw new Error("no account");', 'return account;'] },
             solution: ':%s/\\Cuser/account/g<CR>',
+          },
+          {
+            prompt: 'Change only the lowercase "warn" tags to "WARN", with the I flag.',
+            setup: {
+              name: 'app.log',
+              text: ['09:14:02 Warn disk at 81%', '09:14:07 warn retrying upload', '09:15:30 WARN queue is full', '09:16:12 warn upload done'],
+            },
+            goal: { text: ['09:14:02 Warn disk at 81%', '09:14:07 WARN retrying upload', '09:15:30 WARN queue is full', '09:16:12 WARN upload done'] },
+            solution: ':%s/warn/WARN/I<CR>',
           },
         ],
       },
