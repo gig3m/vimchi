@@ -244,6 +244,56 @@ function parseSub(s: string): { pattern: string; replacement: string; flags: str
   return { pattern: parts[0], replacement: parts[1], flags: m[1], count: m[2] ? +m[2] : null };
 }
 
+/**
+ * 'inccommand' (nosplit in LazyVim): what a :s being typed would do, shown in the buffer before
+ * <CR>. Line → its new text and the replaced spans. Null when the command line isn't a :s yet (or
+ * one that can't be shown: a \= expression, a line break put in, no replacement typed yet).
+ */
+export function subPreview(vim: Vim, text: string): Map<number, { text: string; spans: [number, number][] }> | null {
+  try {
+    const { range, rest } = parseRange(vim, text);
+    const m = /^\s*s(?:u(?:b(?:s(?:t(?:i(?:t(?:u(?:t(?:e)?)?)?)?)?)?)?)?)?(?=[^\w\s\\"|])/.exec(rest);
+    if (!m) return null;
+    const arg = rest.slice(m[0].length);
+    const delim = arg[0];
+    // The replacement part has begun: a second, unescaped delimiter.
+    let i = 1;
+    while (i < arg.length && arg[i] !== delim) i += arg[i] === '\\' ? 2 : 1;
+    if (!delim || i >= arg.length) return null;
+    const p = parseSub(arg);
+    if (!p || /\\=/.test(p.replacement) || p.flags.includes('n')) return null;
+    const pattern = p.pattern || vim.search.pattern;
+    if (!pattern || /\\n|\\_/.test(pattern)) return null;
+    const c = vim.compilePattern(pattern).re;
+    const re = new RegExp(c.source, c.flags.includes('g') ? c.flags : c.flags + 'g');
+    const rep = replacer(p.replacement, vim.lastSub?.replacement ?? '', () => '');
+    const r = range ?? { start: vim.cursor.line, end: vim.cursor.line };
+    const out = new Map<number, { text: string; spans: [number, number][] }>();
+    for (let l = Math.max(0, r.start); l <= Math.min(r.end, vim.buf.lineCount - 1); l++) {
+      const t = vim.line(l);
+      re.lastIndex = 0;
+      let res = '', last = 0, hit = false;
+      const spans: [number, number][] = [];
+      let mm: RegExpExecArray | null;
+      while ((mm = re.exec(t))) {
+        const r2 = rep(mm);
+        if (r2.includes('\n') || r2.includes('\r')) return null;
+        res += t.slice(last, mm.index);
+        spans.push([res.length, res.length + r2.length - 1]);
+        res += r2;
+        last = mm.index + mm[0].length;
+        hit = true;
+        if (!mm[0].length) re.lastIndex++;
+        if (!p.flags.includes('g')) break;
+      }
+      if (hit) out.set(l, { text: res + t.slice(last), spans: spans.filter(([a, b]) => b >= a) });
+    }
+    return out;
+  } catch {
+    return null;
+  }
+}
+
 /** Cursor on `line` at curswant, which stays as it is (beginline(BL_SOL | BL_FIX) under nostartofline). */
 function atWant(v: Vim, line: number) {
   const l = Math.max(0, Math.min(line, v.buf.lineCount - 1));
@@ -295,6 +345,17 @@ function substitute(vim: Vim, a: ExArgs, mode: 's' | '&' | '~' = 's') {
   } finally {
     vim.options.ignorecase = save.ignorecase;
     vim.options.smartcase = save.smartcase;
+  }
+  // 'ignorecase' (LazyVim): say so when it is what made a line match (not with the i flag).
+  if (ic === undefined && !flags.includes('n')) {
+    const scan = new RegExp(compiled.re.source, compiled.re.flags.includes('g') ? compiled.re.flags : compiled.re.flags + 'g');
+    for (let l = range.start; l <= range.end && l < vim.buf.lineCount; l++) {
+      scan.lastIndex = 0;
+      for (let m = scan.exec(vim.line(l)); m; m = scan.exec(vim.line(l))) {
+        vim.noteIgnoreCase(pattern, l, m.index, m[0].length);
+        if (!m[0].length) scan.lastIndex++;
+      }
+    }
   }
   let curLine = range.start; // line('.') inside \= is the line being substituted
   const rep = replacer(replacement, prevRep, (src, m) => vim.evalExpr(src, { submatch: n => m[n] ?? '', line: a => (a === '.' ? curLine + 1 : a === '$' ? vim.buf.lineCount : 0) }));
@@ -498,7 +559,9 @@ function globalCmd(vim: Vim, a: ExArgs, invert: boolean) {
   const tokens: string[] = [];
   for (let l = range.start; l <= range.end; l++) {
     re.lastIndex = 0;
-    const hit = re.test(B.line(l));
+    const m = re.exec(B.line(l));
+    const hit = !!m;
+    if (m) vim.noteIgnoreCase(pat, l, m.index, m[0].length);
     if (hit !== (invert || a.bang)) {
       const k = `\u0001g${l}`;
       B.marks.set(k, pos(l, 0));
@@ -815,7 +878,10 @@ function findBufferArg(vim: Vim, arg: string) {
 }
 
 function deleteBuffer(vim: Vim, b: Buffer, force: boolean) {
-  if (b.modified && !force && b.kind === 'file') fail(`E89: No write since last change for buffer ${bufnr(vim, b)} (add ! to override)`);
+  if (b.modified && !force && b.kind === 'file') {
+    if (confirmChanged(vim, [b], () => deleteBuffer(vim, b, true))) return;
+    fail(`E89: No write since last change for buffer ${bufnr(vim, b)} (add ! to override)`);
+  }
   b.listed = false;
   // Its local options go with it: opened again, it takes the global values and its ftplugin afresh.
   b.resetOpts();
@@ -885,7 +951,7 @@ function setOption(vim: Vim, arg: string, local: boolean) {
       vim.msg(typeof cur === 'boolean' ? (cur ? `  ${name}` : `no${name}`) : `  ${name}=${cur}`);
       continue;
     }
-    if (m[3] === '&') { put(name, (DEFAULTS as Record<string, boolean | number>)[name]); continue; }
+    if (m[3] === '&') { put(name, (NVIM_DEFAULTS as Record<string, boolean | number>)[name]); continue; }
     if (typeof cur === 'boolean') {
       if (m[4]) fail(`E474: Invalid argument: ${tok}`);
       put(name, m[1] === 'no' ? false : m[1] === 'inv' || m[3] === '!' ? !cur : true);
@@ -909,7 +975,8 @@ function setOption(vim: Vim, arg: string, local: boolean) {
       // there is left where it is; one with the same key but another value is moved to the end),
       // ^= does the same at the front, -= removes each item given.
       const items = String(cur).split(',').filter(Boolean), given = String(val).split(',').filter(Boolean);
-      const key = (i: string) => i.split(':')[0];
+      // listchars and fillchars are key:value maps (a new tab: replaces the old); others are plain lists.
+      const key = (i: string) => (name === 'listchars' || name === 'fillchars' ? i.split(':')[0] : i);
       if (m[4] === '-=') put(name, items.filter(i => !given.includes(i)).join(','));
       else if (m[4] === '+=' || m[4] === '^=') {
         const add = given.filter(g => !items.includes(g));
@@ -926,7 +993,7 @@ function setOption(vim: Vim, arg: string, local: boolean) {
   vim.emit('set');
 }
 
-import { DEFAULT_OPTIONS as DEFAULTS, NVIM_DEFAULTS } from './types';
+import { NVIM_DEFAULTS } from './types';
 
 /**
  * `:set`'s listing as Neovim prints it (80 columns): short items in 20-column cells, filled down
@@ -981,10 +1048,61 @@ function write(vim: Vim, a: ExArgs, buf = vim.buf) {
   vim.emit('write');
 }
 
+const WRITE_ARGS: ExArgs = { range: null, addrCount: 0, bang: false, arg: '', name: 'w', count: null, reg: null };
+
+/**
+ * 'confirm' (on in LazyVim): where plain Vim refuses with E37/E89, ask for each changed buffer
+ * whether to save it, as Neovim's dialog_changed() does. Yes writes it, No leaves it, Save All and
+ * Discard All answer for the rest; Cancel (or <Esc>) stops. `then` runs once all are answered.
+ * Returns false when 'confirm' is off, for the caller to fail as plain Vim does.
+ */
+function confirmChanged(vim: Vim, bufs: Buffer[], then: () => void): boolean {
+  if (!vim.opt('confirm') || !bufs.length) return false;
+  vim.noteLazy('confirm', 'LazyVim asks whether to save (confirm). Plain Vim refuses with E37: :w to save first, or :q! to throw the changes away.');
+  let i = 0;
+  const many = bufs.length > 1;
+  const ask = () => {
+    const name = bufs[i].name === '[No Name]' ? 'Untitled' : bufs[i].name;
+    vim.confirm!.prompt = `Save changes to "${name}"?\n${many ? '[Y]es, (N)o, Save (A)ll, (D)iscard All, (C)ancel: ' : '[Y]es, (N)o, (C)ancel: '}`;
+  };
+  const close = () => { vim.confirm = null; vim.mode = 'normal'; };
+  const next = () => {
+    if (++i < bufs.length) return ask();
+    close();
+    then();
+  };
+  vim.mode = 'confirm';
+  vim.confirm = {
+    prompt: '',
+    onKey: k => {
+      const key = k.length === 1 ? k.toLowerCase() : k;
+      // <CR> takes the default, [Y]es.
+      if (key === 'y' || key === '<CR>') { write(vim, WRITE_ARGS, bufs[i]); next(); }
+      else if (key === 'n') next();
+      else if (many && key === 'a') { close(); for (; i < bufs.length; i++) write(vim, WRITE_ARGS, bufs[i]); then(); }
+      else if (many && key === 'd') { close(); then(); }
+      else if (key === 'c' || key === '<Esc>' || key === '<C-c>') close();
+    },
+  };
+  ask();
+  return true;
+}
+
 function quit(vim: Vim, a: ExArgs) {
-  const b = vim.buf;
-  const shownElsewhere = vim.tabs.some(t => t.windows().some(w => w !== vim.win && w.buf === b));
-  if (b.modified && !a.bang && !shownElsewhere && b.kind === 'file') fail('E37: No write since last change (add ! to override)');
+  // 'hidden' (on in Neovim): closing one of several windows leaves its buffer loaded, changes and
+  // all. Only quitting the last window asks about changed buffers, hidden ones included.
+  const last = vim.tab.windows().length === 1 && vim.tabs.length === 1;
+  if (last && !a.bang) {
+    const changed = vim.buffers.filter(b => b.modified && b.kind === 'file').sort((x, y) => (x === vim.buf ? -1 : y === vim.buf ? 1 : 0));
+    if (changed.length) {
+      if (confirmChanged(vim, changed, () => quitNow(vim))) return;
+      fail(changed[0] === vim.buf ? 'E37: No write since last change (add ! to override)' : `E162: No write since last change for buffer "${changed[0].name}"`);
+    }
+  }
+  quitNow(vim);
+}
+
+function quitNow(vim: Vim) {
   vim.emit('quit');
   const wins = vim.tab.windows();
   if (wins.length > 1 || vim.tabs.length > 1) {
@@ -1254,7 +1372,18 @@ const COMMANDS: Record<string, Cmd> = {
   xit: { min: 1, run: (v, a) => { if (v.buf.modified) write(v, a); quit(v, { ...a, bang: true }); } },
   exit: { min: 3, run: (v, a) => COMMANDS.xit.run(v, a) },
   quit: { min: 1, run: quit },
-  qall: { min: 2, run: (v, a) => { if (!a.bang && v.buffers.some(b => b.modified && b.kind === 'file')) fail('E37: No write since last change (add ! to override)'); v.emit('quit'); v.msg('(You would be back at your shell now. The tutor stays open.)'); } },
+  qall: {
+    min: 2,
+    run: (v, a) => {
+      const done = () => { v.emit('quit'); v.msg('(You would be back at your shell now. The tutor stays open.)'); };
+      const changed = v.buffers.filter(b => b.modified && b.kind === 'file');
+      if (!a.bang && changed.length) {
+        if (confirmChanged(v, changed, done)) return;
+        fail('E37: No write since last change (add ! to override)');
+      }
+      done();
+    },
+  },
   quitall: { min: 5, run: (v, a) => COMMANDS.qall.run(v, a) },
   wqall: { min: 3, run: (v, a) => { COMMANDS.wall.run(v, a); COMMANDS.qall.run(v, { ...a, bang: true }); } },
   xall: { min: 2, run: (v, a) => COMMANDS.wqall.run(v, a) },
@@ -1387,7 +1516,15 @@ const COMMANDS: Record<string, Cmd> = {
   llast: { min: 3, run: v => jumpQf(v, true, qfList(v, true).items.length - 1) },
   ll: { min: 2, run: (v, a) => jumpQf(v, true, (parseInt(a.arg, 10) || qfList(v, true).idx + 1) - 1) },
   clist: { min: 2, run: v => v.msg(qfList(v, false).items.map((it, i) => `${String(i + 1).padStart(2)} ${it.file}:${it.line + 1} col ${it.col + 1}: ${it.text}`).join('\n'), 'more') },
-  fold: { min: 2, run: (v, a) => { const r = lineRange(v, a); v.win.folds.push({ start: r.start, end: r.end, closed: true }); } },
+  fold: {
+    min: 2,
+    run: (v, a) => {
+      // Folds made by hand need 'foldmethod' manual; LazyVim's indent / expr make them from the code.
+      if (['indent', 'expr'].includes(String(v.opt('foldmethod')))) fail("E350: Cannot create fold with current 'foldmethod'");
+      const r = lineRange(v, a);
+      v.win.folds.push({ start: r.start, end: r.end, closed: true });
+    },
+  },
   foldopen: { min: 5, run: (v, a) => { const r = lineRange(v, a); v.win.folds.forEach(f => { if (f.start <= r.end && f.end >= r.start) f.closed = false; }); } },
   foldclose: { min: 5, run: (v, a) => { const r = lineRange(v, a); v.win.folds.forEach(f => { if (f.start <= r.end && f.end >= r.start) f.closed = true; }); } },
   retab: {

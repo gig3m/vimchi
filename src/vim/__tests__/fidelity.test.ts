@@ -323,13 +323,13 @@ describe('blockwise yank and put over short lines', () => {
     ['a|bc\ng\nmno', '<C-v>jjly', 'bc\n\nno'],
     ['ab|c\ng\nmno', '<C-v>jjd', 'c\n \no'],
   ])('%j %s', (doc, keys, text) => {
-    expect(S(doc, keys)[1]).toBe(text);
+    expect(S(doc, ':set ve=<CR>' + keys)[1]).toBe(text); // plain Neovim's virtualedit=
   });
   it.each([
     // Put pads a short line out to the block; trailing blanks only where text follows.
     ['abc|def\ng\nmnopqr', '<C-v>jjldup', 'abcd|deef\ng     \nmnoppqqr'],
     ['abc|def\ng\nmnopqr', '<C-v>jj$dup', 'abcd|defef\ng       \nmnoppqrqr'],
   ])('%j %s', (doc, keys, want) => {
-    expect(C(doc, keys)).toBe(want);
+    expect(C(doc, ':set ve=<CR>' + keys)).toBe(want); // plain Neovim's virtualedit=
   });
 });

@@ -14,6 +14,19 @@ vim.fn.mkdir(sandbox, 'p')
 vim.cmd('cd ' .. vim.fn.fnameescape(sandbox)) -- any :w lands here, never in the repo
 -- As LazyVim has it: markdown keeps the global indent settings, not its ftplugin's sw=4 ts=4.
 vim.g.markdown_recommended_style = 0
+-- LazyVim folds with treesitter where the filetype has a parser ('foldexpr' from its treesitter
+-- plugin), falling back to options.lua's 'foldmethod=indent'. --clean has no TypeScript parser, so
+-- borrow the installed LazyVim's parsers and queries when they are there; elsewhere the fold rounds
+-- compare against indent folds, as a LazyVim without the parser would.
+for _, dir in ipairs({ '~/.local/share/nvim/site', '~/.local/share/nvim/lazy/nvim-treesitter/runtime' }) do
+  local d = vim.fn.expand(dir)
+  if vim.fn.isdirectory(d) == 1 then vim.opt.runtimepath:append(d) end
+end
+-- LazyVim (bufferline): H, L, [b and ]b are the previous and next buffer, in Normal mode only, with
+-- no count. With every buffer in its tab, bufferline's cycle is :bprevious / :bnext. [B and ]B
+-- reorder bufferline's tabs, which a headless nvim never draws, so they're left out.
+for _, k in ipairs({ 'H', '[b' }) do vim.keymap.set('n', k, '<cmd>bprevious<cr>') end
+for _, k in ipairs({ 'L', ']b' }) do vim.keymap.set('n', k, '<cmd>bnext<cr>') end
 local esc = vim.api.nvim_replace_termcodes('<Esc>', true, false, true)
 local REGTYPE = { v = 'v', V = 'V', ['\22'] = 'b' }
 
@@ -54,7 +67,14 @@ local function play(r, keys, regNames)
   if vim.bo.filetype == 'python' then vim.bo.indentexpr = '' end
   vim.o.ignorecase, vim.o.smartcase, vim.o.textwidth, vim.o.wrapscan = false, false, 0, true
   vim.o.startofline = false -- Neovim's default; the engine's too
+  -- The engine's options, LazyVim's among them (ignorecase, scrolloff=4, formatoptions…), so the
+  -- comparison is with LazyVim. Two stay as the harness needs them: laststatus 0 keeps the window as
+  -- tall as the tutor's editor, and confirm off keeps a headless Neovim from waiting on a dialog.
   for k, v in pairs(r.options or {}) do pcall(function() vim.o[k] = v end) end
+  vim.o.laststatus, vim.o.confirm = 0, false
+  if vim.wo.foldmethod ~= 'manual' and pcall(vim.treesitter.start, buf) then
+    vim.wo.foldmethod, vim.wo.foldexpr = 'expr', 'v:lua.vim.treesitter.foldexpr()'
+  end
   vim.fn.histdel('search'); vim.fn.histdel('cmd')
   vim.fn.setreg('/', r.search or '')
   if r.search and r.search ~= '' then vim.o.hlsearch = true end
@@ -64,6 +84,12 @@ local function play(r, keys, regNames)
   vim.fn.winrestview({ curswant = vim.api.nvim_win_get_cursor(0)[2] })
   pcall(vim.api.nvim_feedkeys, vim.api.nvim_replace_termcodes(keys, true, true, true), 'tx', false)
   if vim.fn.mode() ~= 'n' then pcall(vim.api.nvim_feedkeys, esc, 'tx', false) end
+  -- After a Visual-block edit with 'virtualedit=block' Neovim leaves its cursor past the line's end
+  -- until the next redraw puts it on the last character; read it as a user sees it. Normal mode
+  -- never shows a cursor past the end (no 'virtualedit' all/onemore here).
+  if vim.fn.mode() == 'n' and not vim.o.virtualedit:find('all') and not vim.o.virtualedit:find('onemore') then
+    vim.fn.cursor(vim.fn.line('.'), vim.fn.col('.'))
+  end
   local p = vim.api.nvim_win_get_cursor(0)
   local cur = vim.api.nvim_buf_get_lines(buf, p[1] - 1, p[1], false)[1] or ''
   local regs = {}

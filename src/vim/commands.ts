@@ -13,6 +13,7 @@ import { firstNonBlank, indentOf, lastCol, lastNonBlank } from './text';
 import { TEXT_OBJECTS } from './textobjects';
 import { followTag } from './help';
 import { type Pos, type Range, cmpPos, fail } from './types';
+import { continuation, dropLeader, leaderOf } from './comments';
 
 export function installCommands(vim: Vim) {
   const V = vim;
@@ -30,7 +31,7 @@ export function installCommands(vim: Vim) {
   const right = (c: MotionCtx) => {
     const p = cur();
     const len = ln().length;
-    const max = c.op || c.visual ? len : Math.max(0, len - 1);
+    const max = V.veBlock() ? Infinity : c.op || c.visual ? len : Math.max(0, len - 1);
     if (p.col >= max) return c.op && len > 0 ? { pos: pos(p.line, len) } : null;
     return { pos: pos(p.line, Math.min(max, p.col + c.count)) };
   };
@@ -51,7 +52,7 @@ export function installCommands(vim: Vim) {
       }
       line = next;
     }
-    return { pos: pos(line, Math.min(V.win.want, c.visual ? ln(line).length : lastCol(ln(line)))), linewise: true, keepWant: true };
+    return { pos: pos(line, V.veBlock() ? V.win.want : Math.min(V.win.want, c.visual ? ln(line).length : lastCol(ln(line)))), linewise: true, keepWant: true };
   };
   M('h', left); M('<Left>', left); M('<BS>', left); M('<C-h>', left);
   M('l', right); M('<Right>', right); M(' ', right);
@@ -195,20 +196,30 @@ export function installCommands(vim: Vim) {
     const top = Math.max(0, rows.indexOf(V.win.top));
     return rows.slice(top, top + V.win.height);
   };
+  // H and L stop 'scrolloff' rows short of the window's edges, unless that edge is the file's.
+  // These are the Visual and operator-pending H and L (vH, dL); in Normal mode LazyVim gives them
+  // to buffers (below).
+  // After an operator there is no 'scrolloff' correction (Neovim's nv_scroll() corrects the cursor
+  // only with no operator pending): dL takes everything down to the window's last line.
   M('H', c => {
-    const rows = screenRows();
-    const so = Math.min(Number(V.options.scrolloff), Math.floor((rows.length - 1) / 2));
+    const rows = screenRows(), so = c.op ? 0 : V.so();
     const i = Math.min(rows.length - 1, Math.max(c.count - 1, V.win.top === 0 ? c.count - 1 : so));
     return lineJump(rows[i]);
   });
   M('L', c => {
-    const rows = screenRows();
-    const i = Math.max(0, rows.length - c.count);
+    const rows = screenRows(), so = c.op ? 0 : V.so();
+    const atEnd = rows[rows.length - 1] === V.buf.lineCount - 1 || V.closedFoldAt(V.buf.lineCount - 1)?.start === rows[rows.length - 1];
+    const i = Math.max(0, Math.min(rows.length - c.count, atEnd ? rows.length - 1 : rows.length - 1 - so));
     return lineJump(rows[i]);
   });
   M('M', () => {
-    const rows = screenRows();
-    return lineJump(rows[Math.floor((rows.length - 1) / 2)]);
+    const rows = screenRows(), so = V.so();
+    // Then 'scrolloff' moves it in from an edge that isn't the file's (cursor_correct()).
+    const atEnd = rows[rows.length - 1] === V.buf.lineCount - 1;
+    let i = Math.floor((rows.length - 1) / 2);
+    if (V.win.top !== 0) i = Math.max(i, Math.min(so, rows.length - 1));
+    if (!atEnd) i = Math.min(i, Math.max(0, rows.length - 1 - so));
+    return lineJump(rows[i]);
   });
 
   // ---- marks ------------------------------------------------------------------------------
@@ -222,15 +233,23 @@ export function installCommands(vim: Vim) {
     }
     return V.buf.marks.get(m) ?? null;
   };
+  // 'jumpoptions' view: a mark jump shows the view the mark was set in (not with an operator).
+  const markView = (m: string, line: number, c: MotionCtx) => {
+    if (!c.op && /[a-zA-Z]/.test(m)) V.restoreView(V.markViews.get(`${/[A-Z]/.test(m) ? '' : V.buf.id}:${m}`), line);
+  };
   M('`', c => {
     const p = markPos(c.arg);
     if (!p) fail('E20: Mark not set');
-    return { pos: pos(Math.min(p.line, V.buf.lineCount - 1), p.col), jump: true, openFold: true };
+    const l = Math.min(p.line, V.buf.lineCount - 1);
+    markView(c.arg, l, c);
+    return { pos: pos(l, p.col), jump: true, openFold: true };
   }, 'char');
   M("'", c => {
     const p = markPos(c.arg);
     if (!p) fail('E20: Mark not set');
-    return { pos: firstNonBlankPos(L(), Math.min(p.line, V.buf.lineCount - 1)), linewise: true, jump: true, openFold: true };
+    const l = Math.min(p.line, V.buf.lineCount - 1);
+    markView(c.arg, l, c);
+    return { pos: firstNonBlankPos(L(), l), linewise: true, jump: true, openFold: true };
   }, 'char');
 
   // ---- search ------------------------------------------------------------------------------
@@ -286,11 +305,13 @@ export function installCommands(vim: Vim) {
 
   // ---- fold motions ---------------------------------------------------------------------------
   M('zj', c => {
+    if (['indent', 'expr'].includes(String(V.opt('foldmethod')))) V.ensureFolds();
     const l = cur().line;
     const starts = [...new Set(V.win.folds.map(f => f.start).filter(s => s > l))].sort((a, b) => a - b);
     return starts.length ? { pos: pos(starts[Math.min(c.count, starts.length) - 1], 0), linewise: true } : null;
   });
   M('zk', c => {
+    if (['indent', 'expr'].includes(String(V.opt('foldmethod')))) V.ensureFolds();
     const l = cur().line;
     const ends = [...new Set(V.win.folds.map(f => f.end).filter(e => e < l))].sort((a, b) => b - a);
     return ends.length ? { pos: pos(ends[Math.min(c.count, ends.length) - 1], 0), linewise: true } : null;
@@ -396,7 +417,7 @@ export function installCommands(vim: Vim) {
         const v = V.deleteRange(r);
         put(c.reg, v, true);
         const col = Math.min(r.start.col, r.end.col);
-        V.startInsert('c', pos(r.start.line, col), 1, { block: { first: r.start.line, last: r.end.line, col, append: false, toEol: false } });
+        V.startInsert('c', pos(r.start.line, col), 1, { block: { first: r.start.line, last: r.end.line, col, append: false, toEol: false, pad: V.veOpt() } });
         return;
       }
       const v = V.deleteRange(r);
@@ -409,11 +430,42 @@ export function installCommands(vim: Vim) {
     V.buf.markUndoEntry(); // an undo step even when no line moves (>> on a blank line)
     const sw = V.sw();
     const times = c.visual ? c.count : 1;
+    if (r.kind === 'block') {
+      // A block shifts from its left column (Vim's shift_block()): > widens the blanks there, those
+      // just before the column included, by shiftwidth × count; < takes up to that much from the
+      // blanks at the column on.
+      const s0 = Math.min(r.start.col, r.end.col);
+      for (let l = r.start.line; l <= r.end.line; l++) {
+        const t = ln(l);
+        if (t.length <= s0) continue;
+        let a = s0, e = s0;
+        while (e < t.length && /[ \t]/.test(t[e])) e++;
+        if (dir === 1) {
+          while (a > 0 && /[ \t]/.test(t[a - 1])) a--;
+          if (e >= t.length) continue;
+          V.buf.setLine(l, t.slice(0, a) + V.indentStr(e - a + sw * times) + t.slice(e));
+        } else {
+          const cut = Math.min(e - s0, sw * times);
+          if (cut) V.buf.setLine(l, t.slice(0, e - cut) + t.slice(e));
+        }
+      }
+      V.buf.recordChange(pos(r.start.line, s0));
+      V.setCursor(pos(r.start.line, s0));
+      const n = r.end.line - r.start.line + 1;
+      if (n > 2) V.msg(`${n} lines ${dir === 1 ? '>' : '<'}ed ${times} time${times > 1 ? 's' : ''}`);
+      return;
+    }
     for (let l = r.start.line; l <= r.end.line; l++) {
       const t = ln(l);
       if (!t.trim() && dir === 1) continue;
       const ind = indentOf(t).replace(/\t/g, ' '.repeat(Number(V.opt('tabstop')))).length;
-      const n = dir === 1 ? ind + sw * times : Math.max(0, ind - sw * times);
+      let n = dir === 1 ? ind + sw * times : Math.max(0, ind - sw * times);
+      // 'shiftround' (LazyVim): to a multiple of shiftwidth, as shift_line() does: a partial step counts as one.
+      if (V.opt('shiftround') && ind % sw) {
+        const i = Math.floor(ind / sw);
+        n = Math.max(0, dir === 1 ? (i + times) * sw : (i - (times - 1)) * sw);
+        V.noteLazy('shiftround', `LazyVim rounded the indent to a multiple of ${sw} (shiftround). Plain Vim would shift by ${sw} from where it was.`);
+      }
       V.buf.setLine(l, V.indentStr(n) + t.trimStart());
     }
     V.buf.recordChange(pos(r.start.line, 0));
@@ -494,6 +546,7 @@ export function installCommands(vim: Vim) {
 
   V.defineOperator('zf', {
     run: r => {
+      manualOnly("E350: Cannot create fold with current 'foldmethod'");
       V.win.folds.push({ start: r.start.line, end: r.end.line, closed: true });
       V.setCursor(pos(r.start.line, 0));
     },
@@ -637,8 +690,16 @@ export function installCommands(vim: Vim) {
     const last = Math.min(V.buf.lineCount - 1, start + n - 1);
     let text = ln(start);
     let col = 0;
+    // 'formatoptions' j (LazyVim): a comment line joined onto a comment loses its leader.
+    const comments = String(V.opt('formatoptions')).includes('j') ? String(V.opt('comments')) : '';
+    let prevComment = !!comments && !!leaderOf(text, comments);
     for (let l = start + 1; l <= last; l++) {
-      const next = ln(l);
+      let next = ln(l);
+      if (comments) {
+        const isComment = !!leaderOf(next, comments);
+        if (prevComment && isComment) next = dropLeader(next, comments, spaces);
+        prevComment = isComment;
+      }
       if (spaces) {
         // :help J: the joined line loses its leading blanks; one space goes in unless the line
         // already ends in a blank (kept as is), either side is empty, or the next starts with ')'.
@@ -670,10 +731,16 @@ export function installCommands(vim: Vim) {
     // On a closed fold, o opens below its last line and O above its first (n_opencmd).
     const f = V.closedFoldAt(cur().line);
     const l = above ? (f?.start ?? cur().line) : (f?.end ?? cur().line);
-    const indent = V.opt('autoindent') ? indentOf(ln(l)) + (!above && /[{([]\s*$/.test(ln(l)) ? V.indentStr(V.sw()) : '') : '';
+    // 'formatoptions' o (LazyVim): a new line next to a comment continues it.
+    // O above the first line of a comment (/*, a first-line-only "- ") doesn't continue it.
+    const lead = above ? leaderOf(ln(l), String(V.opt('comments'))) : null;
+    const cont = String(V.opt('formatoptions')).includes('o') && !(lead && (lead.part === 's' || lead.first)) ? continuation(ln(l), String(V.opt('comments'))) : null;
+    if (cont !== null) V.noteContinued('o');
+    const indent = cont ?? V.openIndent(l, above);
     const at = above ? l : l + 1;
     V.insertLines(at, [indent]);
     V.startInsert(above ? 'O' : 'o', pos(at, indent.length), c.count);
+    if (indent) V.insert!.auto = { line: at, text: indent };
   };
   A('o', open(false), { change: true });
   A('O', open(true), { change: true });
@@ -845,6 +912,7 @@ export function installCommands(vim: Vim) {
   }, { arg: 'char' });
   A('@', c => { V.executeRegister(c.arg, c.count); }, { arg: 'char' });
   A('m', c => {
+    if (/[a-zA-Z]/.test(c.arg)) V.markViews.set(`${/[A-Z]/.test(c.arg) ? '' : V.buf.id}:${c.arg}`, V.win.top);
     if (/[a-z]/.test(c.arg)) V.buf.marks.set(c.arg, { ...cur() });
     else if (/[A-Z]/.test(c.arg)) V.globalMarks.set(c.arg, { buf: V.buf, pos: { ...cur() } });
     else if (c.arg === "'" || c.arg === '`') V.pushJump();
@@ -876,7 +944,10 @@ export function installCommands(vim: Vim) {
     const rows = V.visibleLines();
     const topRow = Math.max(0, rows.indexOf(V.win.top));
     const n = c.hasCount ? c.count : rowsFn();
-    const newTop = Math.max(0, Math.min(rows.length - 1, topRow + n));
+    // C-d / C-u stop with the last line at the window's bottom (Neovim's scroll_with_sms); C-e may
+    // scroll on until only the last line shows.
+    const maxTop = moveCursor ? Math.max(0, rows.length - V.win.height) : rows.length - 1;
+    const newTop = Math.max(0, Math.min(maxTop, topRow + n));
     const curRow = Math.max(0, rows.indexOf(V.closedFoldAt(cur().line)?.start ?? cur().line));
     if ((n > 0 && topRow >= rows.length - 1 && curRow >= rows.length - 1) || (n < 0 && topRow === 0 && curRow === 0)) fail();
     V.win.top = rows[newTop];
@@ -893,25 +964,37 @@ export function installCommands(vim: Vim) {
         V.win.cursor.col = Math.min(V.win.want, lastCol(ln()));
       }
     }
+    V.cursorCorrect();
+    V.lockTop();
   };
   const half = () => Math.max(1, Math.floor(V.win.height / 2));
   A('<C-d>', scroll(half, true), { modes: ['n', 'v'] });
   A('<C-u>', c => scroll(() => -half(), true)({ ...c, count: -c.count }), { modes: ['n', 'v'] });
+  // A page: height - 2 rows, so two lines stay in view (one in a 4-line window, none in a smaller
+  // one: get_scroll_overlap()); once the end of the file is on screen, C-f puts its last line at
+  // the top (Neovim's pagescroll()).
+  const pageRows = (h: number) => (h >= 5 ? h - 2 : h === 4 ? 3 : h);
   A('<C-f>', c => {
-    const n = Math.max(1, V.win.height - 2) * c.count;
-    scroll(() => n, false)({ ...c, hasCount: false });
-    const rows = V.visibleLines();
-    const top = rows.indexOf(V.win.top);
+    const rows = V.visibleLines(), h = V.win.height;
+    let top = Math.max(0, rows.indexOf(V.win.top));
+    if (top >= rows.length - 1) fail();
+    for (let i = 0; i < c.count && top < rows.length - 1; i++) top = top + h - 1 >= rows.length - 1 ? rows.length - 1 : top + pageRows(h);
+    V.win.top = rows[top];
     V.win.cursor = landOn(rows[top]);
+    V.cursorCorrect();
+    V.lockTop();
   }, { modes: ['n', 'v'] });
   A('<PageDown>', c => V.getAction('<C-f>')!.run(c), { modes: ['n', 'v'] });
   A('<C-b>', c => {
-    const n = -Math.max(1, V.win.height - 2) * c.count;
-    scroll(() => n, false)({ ...c, hasCount: false });
-    const rows = V.visibleLines();
-    const top = rows.indexOf(V.win.top);
-    const bottom = rows[Math.min(rows.length - 1, top + V.win.height - 1)];
-    V.win.cursor = landOn(bottom);
+    const rows = V.visibleLines(), h = V.win.height;
+    let top = Math.max(0, rows.indexOf(V.win.top));
+    if (top === 0) fail();
+    // From a window showing only the last line, back a whole window.
+    for (let i = 0; i < c.count && top > 0; i++) top = Math.max(0, top - (top === rows.length - 1 && rows.length > 1 ? h : pageRows(h)));
+    V.win.top = rows[top];
+    V.win.cursor = landOn(rows[Math.min(rows.length - 1, top + h - 1)]);
+    V.cursorCorrect();
+    V.lockTop();
   }, { modes: ['n', 'v'] });
   A('<PageUp>', c => V.getAction('<C-b>')!.run(c), { modes: ['n', 'v'] });
   A('<C-e>', c => scroll(() => 1, false)({ ...c, hasCount: c.hasCount }), { modes: ['n', 'v'] });
@@ -919,7 +1002,9 @@ export function installCommands(vim: Vim) {
   const recenter = (where: 'top' | 'center' | 'bottom', fnb: boolean) => (c: ActionCtx) => {
     if (c.hasCount) V.win.cursor = pos(Math.min(c.count, V.buf.lineCount) - 1, cur().col);
     if (fnb) V.win.cursor = firstNonBlankPos(L(), cur().line);
-    V.scrollCursorTo(where);
+    if (V.scrollCursorTo(where)) {
+      V.noteLazy('scrolloff-z', `LazyVim keeps ${V.so()} lines of context (scrolloff=${V.options.scrolloff}), so the line stays up to ${V.so()} rows in from the ${where}, not at the edge as in plain Vim.`);
+    }
   };
   A('zz', recenter('center', false), { modes: ['n', 'v'] });
   A('zt', recenter('top', false), { modes: ['n', 'v'] });
@@ -929,7 +1014,17 @@ export function installCommands(vim: Vim) {
   A('z-', recenter('bottom', true), { modes: ['n', 'v'] });
 
   // ---- folds ----------------------------------------------------------------------------------------------------
-  const foldsHere = () => V.win.folds.filter(f => f.start <= cur().line && cur().line <= f.end).sort((a, b) => (b.start - a.start) || (a.end - b.end));
+  // 'foldmethod' indent / expr (LazyVim: treesitter, indent where there is none): the folds come
+  // from the text, so z commands make them on first use, all open under foldlevel=99; and they can't
+  // be made, deleted or erased by hand.
+  const auto = () => ['indent', 'expr'].includes(String(V.opt('foldmethod')));
+  const ensure = () => { if (auto()) V.ensureFolds(); };
+  const manualOnly = (err: string) => {
+    if (!auto()) return;
+    V.noteLazy('foldmethod', `LazyVim makes folds from the code (foldmethod=${V.opt('foldmethod')}), so they can't be made or deleted by hand. Plain Vim (foldmethod=manual) makes them with zf.`);
+    fail(err);
+  };
+  const foldsHere = () => { ensure(); return V.win.folds.filter(f => f.start <= cur().line && cur().line <= f.end).sort((a, b) => (b.start - a.start) || (a.end - b.end)); };
   A('zo', () => { const f = foldsHere().filter(f => f.closed).pop() ?? null; if (!f) { if (!foldsHere().length) fail('E490: No fold found'); return; } f.closed = false; });
   A('zO', () => { const fs = foldsHere(); if (!fs.length) fail('E490: No fold found'); fs.forEach(f => (f.closed = false)); });
   A('zc', () => { const f = foldsHere().find(f => !f.closed); if (!f) { if (!foldsHere().length) fail('E490: No fold found'); return; } f.closed = true; });
@@ -943,12 +1038,13 @@ export function installCommands(vim: Vim) {
   });
   A('zA', () => { const fs = foldsHere(); if (!fs.length) fail('E490: No fold found'); const open = fs.some(f => !f.closed); fs.forEach(f => (f.closed = open)); });
   A('zv', () => V.openFoldsAt(cur().line));
-  A('zR', () => V.win.folds.forEach(f => (f.closed = false)));
-  A('zM', () => V.win.folds.forEach(f => (f.closed = true)));
-  A('zd', () => { const f = foldsHere()[0]; if (!f) fail('E490: No fold found'); V.win.folds.splice(V.win.folds.indexOf(f), 1); });
-  A('zD', () => { const fs = foldsHere(); if (!fs.length) fail('E490: No fold found'); V.win.folds = V.win.folds.filter(f => !fs.includes(f)); });
-  A('zE', () => { V.win.folds = []; });
-  A('zF', c => { V.win.folds.push({ start: cur().line, end: Math.min(V.buf.lineCount - 1, cur().line + c.count - 1), closed: true }); });
+  // zR and zM set 'foldlevel' (its deepest level, and 0) as well as opening or closing every fold.
+  A('zR', () => { ensure(); V.win.folds.forEach(f => (f.closed = false)); V.localsOfWin(V.win).foldlevel = V.foldDepth(); });
+  A('zM', () => { ensure(); V.win.folds.forEach(f => (f.closed = true)); V.localsOfWin(V.win).foldlevel = 0; });
+  A('zd', () => { manualOnly("E351: Cannot delete fold with current 'foldmethod'"); const f = foldsHere()[0]; if (!f) fail('E490: No fold found'); V.win.folds.splice(V.win.folds.indexOf(f), 1); });
+  A('zD', () => { manualOnly("E351: Cannot delete fold with current 'foldmethod'"); const fs = foldsHere(); if (!fs.length) fail('E490: No fold found'); V.win.folds = V.win.folds.filter(f => !fs.includes(f)); });
+  A('zE', () => { manualOnly("E352: Cannot erase folds with current 'foldmethod'"); V.win.folds = []; });
+  A('zF', c => { manualOnly("E350: Cannot create fold with current 'foldmethod'"); V.win.folds.push({ start: cur().line, end: Math.min(V.buf.lineCount - 1, cur().line + c.count - 1), closed: true }); });
 
   // ---- jumps ---------------------------------------------------------------------------------------------------
   const jump = (dir: -1 | 1) => (c: ActionCtx) => {
@@ -967,6 +1063,8 @@ export function installCommands(vim: Vim) {
     if (j.buf !== V.buf) V.showBuffer(w, j.buf);
     V.setCursor(pos(Math.min(j.pos.line, V.buf.lineCount - 1), j.pos.col));
     V.openFoldsAt(cur().line);
+    // 'jumpoptions' view (LazyVim): back to the view as it was, not just the line.
+    V.restoreView(j.top);
   };
   A('<C-o>', jump(-1));
   A('<C-i>', jump(1));
@@ -981,6 +1079,7 @@ export function installCommands(vim: Vim) {
     b.changeIdx = idx;
     const p = b.changelist[idx];
     V.setCursor(pos(Math.min(p.line, b.lineCount - 1), p.col));
+    V.restoreView(p.top);
   };
   A('g;', changeJump(-1));
   A('g,', changeJump(1));
@@ -988,7 +1087,14 @@ export function installCommands(vim: Vim) {
   // ---- misc -----------------------------------------------------------------------------------------------------
   A(':', c => {
     const init = V.visual ? "'<,'>" : c.hasCount ? (c.count === 1 ? '.' : `.,.+${c.count - 1}`) : '';
-    if (V.visual) V.exitVisual();
+    if (V.visual) {
+      // The command line opens with the cursor at the start of the selection, as Neovim leaves it:
+      // column 0 for a linewise one, the left edge for a block.
+      const kind = V.visual.kind, a = V.visual.anchor, [s] = V.visualBounds();
+      const start = kind === 'V' ? pos(s.line, 0) : kind === '<C-v>' ? pos(s.line, Math.min(a.col, cur().col)) : s;
+      V.exitVisual();
+      V.setCursor(start);
+    }
     V.openCmdline(':', init, text => V.ex(text));
   }, { modes: ['n', 'v'] });
   A('&', () => V.ex('&&'), { change: true });
@@ -1111,10 +1217,25 @@ export function installCommands(vim: Vim) {
   });
 
   // ---- built-in bracket maps (Neovim 0.11) ----------------------------------------------------------------
-  A('[b', c => V.ex(`${c.hasCount ? c.count : ''}bprevious`));
-  A(']b', c => V.ex(`${c.hasCount ? c.count : ''}bnext`));
-  A('[B', () => V.ex('bfirst'));
-  A(']B', () => V.ex('blast'));
+  // LazyVim maps H, L, [b and ]b to bufferline's BufferLineCyclePrev/Next: the previous and next
+  // tab in the bufferline, wrapping, with no count. [B and ]B are BufferLineMovePrev/Next, which
+  // move the current buffer's tab along the line (the buffer stays; :ls is unchanged).
+  const bufferKey = (dir: 1 | -1, hl: boolean) => (c: { hasCount: boolean }) => {
+    const before = V.buf;
+    V.cycleBuffer(dir);
+    if (hl && V.buf !== before) V.noteLazy('HL', 'LazyVim uses H and L for the previous and next buffer. In plain Vim they jump to the top and bottom of the window.');
+    if (!hl && c.hasCount) V.noteLazy('bcount', 'LazyVim\'s [b and ]b take no count: they always go one buffer. In plain Neovim (0.11+) a count goes that many buffers.');
+  };
+  A('H', bufferKey(-1, true));
+  A('L', bufferKey(1, true));
+  A('[b', bufferKey(-1, false));
+  A(']b', bufferKey(1, false));
+  const moveKey = (dir: 1 | -1) => () => {
+    V.moveBuffer(dir);
+    V.noteLazy('bmove', 'LazyVim\'s [B and ]B move the buffer\'s tab along the bufferline. In plain Neovim (0.11+) they go to the first and last buffer.');
+  };
+  A('[B', moveKey(-1));
+  A(']B', moveKey(1));
   A('[q', c => V.ex(`${c.hasCount ? c.count : ''}cprevious`));
   A(']q', c => V.ex(`${c.hasCount ? c.count : ''}cnext`));
   A('[Q', () => V.ex('cfirst'));
@@ -1205,10 +1326,13 @@ function installVisual(V: Vim, h: {
       let s = 0, e = t.length - 1;
       if (r.kind === 'char') { s = l === r.start.line ? r.start.col : 0; e = l === r.end.line ? r.end.col : t.length - 1; }
       if (r.kind === 'block') { s = Math.min(r.start.col, r.end.col); e = r.toEol ? t.length - 1 : Math.max(r.start.col, r.end.col); }
-      e = Math.min(e, t.length - 1);
+      // 'virtualedit' block (LazyVim): a short line is padded out to the block and replaced there.
+      const ve = r.kind === 'block' && !r.toEol && V.veOpt();
+      const pad = ve ? t.padEnd(e + 1) : t;
+      if (!ve) e = Math.min(e, t.length - 1);
       if (e < s) continue;
       V.buf.markUndoEntry(); // even when nothing changes (vra on an a)
-      V.buf.setLine(l, t.slice(0, s) + ch.repeat(e - s + 1) + t.slice(e + 1));
+      V.buf.setLine(l, pad.slice(0, s) + ch.repeat(e - s + 1) + pad.slice(e + 1));
     }
     V.buf.recordChange(r.start);
     V.setCursor(r.kind === 'line' ? pos(r.start.line, 0) : pos(r.start.line, r.kind === 'block' ? Math.min(r.start.col, r.end.col) : r.start.col));

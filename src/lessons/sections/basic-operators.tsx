@@ -505,8 +505,9 @@ export const basicOperators: Section = {
         title: 'Count the lines, not the jumps',
         body: (
           <p>
-            <Code>d2j</Code> and <Code>3dd</Code> both delete three lines. With <Code>relativenumber</Code> on, the number
-            beside the last line you want is exactly the count for <Code>j</Code>.
+            <Code>d2j</Code> and <Code>3dd</Code> both delete three lines. LazyVim numbers lines by distance from the
+            cursor (<Code>relativenumber</Code>), so the number beside the last line you want is exactly the count
+            for <Code>j</Code>.
           </p>
         ),
       },

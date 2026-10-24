@@ -5,6 +5,7 @@
 
 import { Buffer } from './buffer';
 import { installCommands } from './commands';
+import { continuation, leaderOf, plainFo } from './comments';
 import { type ExprEnv, evaluate, valueToString } from './expr';
 import { runEx } from './ex';
 import { VirtualFS, norm } from './fs';
@@ -125,7 +126,7 @@ type InsertState = {
   count: number;
   /** Visual block insert: lines and column to replicate into on <Esc>. */
   /** left: the block's left column, where Vim puts the cursor after a block I / A (not c). */
-  block?: { first: number; last: number; col: number; append: boolean; toEol: boolean; left?: number };
+  block?: { first: number; last: number; col: number; append: boolean; toEol: boolean; left?: number; pad?: boolean };
   /** Original line texts for replace mode backspacing. */
   replaced?: Map<string, string>;
   /** Pending multi-key input: <C-r>, <C-v>, <C-k>, <C-x>, <C-o>. */
@@ -136,8 +137,129 @@ type InsertState = {
   completion?: { items: string[]; idx: number; startCol: number; line: number; orig: string };
   /** Moved by <C-g>j / <C-g>k and nothing typed since: the next edit restarts the insert. */
   arrowed?: boolean;
+  /** A line opened with an automatic indent or comment leader (o, O, <CR>) and its text then: left
+   * without typing on it, its trailing blanks go (Vim's did_ai: "  " → "", "  -- " → "  --"). */
+  auto?: { line: number; text: string };
   /** Came from <C-o>: return here after one command. */
 };
+
+
+/**
+ * Neovim's update_topline() for a window of `h` rows over `n` rows of text (a closed fold is one),
+ * every row one screen line high ('wrap' off, as in LazyVim, so no 'smoothscroll' path): the new
+ * top row for cursor row `c`, given top row `t`. A port of move.c (0.12): scroll_cursor_top(),
+ * scroll_cursor_bot() and scroll_cursor_halfway(), 'scrolljump' 1. Rows are 1-based inside.
+ */
+function updateTopline(n: number, h: number, so: number, t0: number, c0: number, concealed = true): number {
+  let T = t0 + 1;
+  const C = c0 + 1, sj = 1;
+  const halfway = (preferAbove: boolean) => {
+    let used = 1, loff = C, boff = C, top = C;
+    outer: while (top > 1) {
+      let above = 0, below = 0;
+      for (let round = 1; round <= 2; round++) {
+        if (preferAbove ? round === 2 && below < above : round === 1 && below <= above) {
+          if (boff < n) {
+            boff++;
+            if (++used > h) break outer;
+            below++;
+          } else below++;
+        }
+        if (preferAbove ? round === 1 && below >= above : round === 1 && below > above) {
+          loff--;
+          if (++used > h) break outer;
+          above++;
+          top = loff;
+        }
+      }
+    }
+    T = top;
+  };
+  const scrollTop = (minScroll: number) => {
+    let scrolled = C < T ? 1 : 0, used = 1, top = C - 1, bot = C + 1, newTop = top + 1, extra = 0;
+    while (top > 0) {
+      if (top < T) scrolled++;
+      if ((newTop >= T || scrolled > minScroll) && extra >= so) break;
+      used++;
+      if (extra + 1 <= so && bot < n) used++;
+      if (used > h) break;
+      extra++;
+      newTop = top;
+      top--;
+      bot++;
+    }
+    if (used > h) halfway(false);
+    else T = Math.min(newTop < T ? newTop : T, C);
+  };
+  const scrollBot = (minScroll: number) => {
+    const B = Math.min(T + h, n + 1), empty = Math.max(0, T + h - 1 - n);
+    let used = 1, scrolled = 0;
+    if (C >= B) { scrolled = used; if (C === B) scrolled -= empty; }
+    let loff = C, boff = C, extra = 0;
+    while (loff > 1) {
+      if ((((scrolled <= 0 || scrolled >= minScroll) && extra >= so) || boff + 1 > n) && loff <= B) break;
+      const before = loff;
+      loff--;
+      if (++used > h) break;
+      if (loff >= B) { scrolled++; if (loff === B && before > B) scrolled -= empty; }
+      if (boff < n) {
+        const bBefore = boff;
+        boff++;
+        if (++used > h) break;
+        if (extra < so || scrolled < minScroll) {
+          extra++;
+          if (boff >= B) { scrolled++; if (bBefore < B) scrolled -= empty; }
+        }
+      }
+    }
+    let lineCount: number;
+    if (scrolled <= 0) lineCount = 0;
+    else if (used > h) lineCount = used;
+    else {
+      lineCount = 0;
+      let bl = T - 1, i = 0;
+      while (i < scrolled && bl < B) { bl++; i++; lineCount++; }
+      if (i < scrolled) lineCount = 9999;
+    }
+    if (lineCount >= h && lineCount > minScroll) halfway(true);
+    else if (lineCount > 0) T += lineCount;
+  };
+  let checkBot = true;
+  if (T > 1 && (C < T || C - T < so)) {
+    checkBot = false;
+    // With folding (or conceal) active, as LazyVim always has it (foldmethod=expr, conceallevel=2),
+    // win_lines_concealed() counts the lines between the cursor and topline + scrolloff one by one,
+    // stopping at the last line: near the end of the file that makes it scroll, not centre.
+    const half = Math.max(2, Math.floor(h / 2) - 1);
+    const gap = concealed ? Math.min(Math.min(T + so, n) - C, half) : T + so - C;
+    if (gap >= half) halfway(false);
+    else { scrollTop(sj); checkBot = true; }
+  }
+  if (checkBot) {
+    const B = Math.min(T + h, n + 1);
+    if (B <= n && !(C < B && B - 1 - C >= so) && !(C < B - so)) {
+      if (C - B + 1 + so <= h + 1) scrollBot(sj);
+      else halfway(false);
+    }
+  }
+  return Math.max(0, Math.min(T, n) - 1);
+}
+
+/** `t` with its quoted strings blanked out, so brackets inside them don't count. */
+function blankStrings(t: string): string {
+  return t.replace(/(["'`])(?:\\.|(?!\1).)*\1?/g, m => ' '.repeat(m.length));
+}
+
+/** The index of the outermost bracket left open on a line (brackets in strings not counted), or -1. */
+function unclosedBracket(t: string): number {
+  const stack: number[] = [];
+  const code = blankStrings(t);
+  for (let i = 0; i < code.length; i++) {
+    if ('([{'.includes(code[i])) stack.push(i);
+    else if (')]}'.includes(code[i])) stack.pop();
+  }
+  return stack.length ? stack[0] : -1;
+}
 
 /** Commands the coach counts as undo: u, <C-r>, the time-travel g- / g+, and U. */
 const UNDO_KEYS = new Set(['u', '<C-r>', 'g-', 'g+', 'U']);
@@ -162,6 +284,8 @@ export class Vim {
   // ---- state ---------------------------------------------------------------
   fs: VirtualFS;
   buffers: Buffer[] = [];
+  /** bufferline's tab order where [B / ]B have rearranged it (buffers not in it follow, by number). */
+  bufferSort: Buffer[] = [];
   tabs: Tab[] = [];
   tabIdx = 0;
   options: Options = { ...DEFAULT_OPTIONS };
@@ -175,6 +299,18 @@ export class Vim {
   /** Keys of the normal command being parsed. */
   pending: Key[] = [];
   message: Message | null = null;
+  /**
+   * A LazyVim-only behaviour just fired for the first time (a continued comment, the save prompt,
+   * a rounded shift…): one plain sentence saying so, for the tutor to show and clear. Each kind is
+   * noted once per editor.
+   */
+  lazyNote: string | null = null;
+  private lazyNoted = new Set<string>();
+  noteLazy(kind: string, text: string) {
+    if (this.lazyNoted.has(kind)) return;
+    this.lazyNoted.add(kind);
+    this.lazyNote = text;
+  }
   search: { pattern: string; dir: 1 | -1; offset: string; noSmartcase?: boolean } = { pattern: '', dir: 1, offset: '' };
   /** Set while an operator waits for a / or ? search target. */
   pendingSearchOp: ((res: MotionResult) => void) | null = null;
@@ -412,6 +548,29 @@ export class Vim {
     return buf;
   }
 
+  /** The listed buffers in bufferline's tab order. :ls keeps buffer-number order. */
+  bufferOrder(): Buffer[] {
+    const listed = this.buffers.filter(b => b.listed);
+    return [...this.bufferSort.filter(b => listed.includes(b)), ...listed.filter(b => !this.bufferSort.includes(b))];
+  }
+
+  /** bufferline's cycle (H, L, [b, ]b in LazyVim): the next tab along, wrapping, no count. */
+  cycleBuffer(dir: 1 | -1) {
+    const order = this.bufferOrder();
+    const i = order.indexOf(this.buf);
+    if (i < 0 || order.length < 2) return;
+    this.showBuffer(this.win, order[(i + dir + order.length) % order.length]);
+  }
+
+  /** bufferline's move ([B, ]B in LazyVim): swap the current tab with its neighbour; stops at the ends. */
+  moveBuffer(dir: 1 | -1) {
+    const order = this.bufferOrder();
+    const i = order.indexOf(this.buf), j = i + dir;
+    if (i < 0 || j < 0 || j >= order.length) return;
+    [order[i], order[j]] = [order[j], order[i]];
+    this.bufferSort = order;
+  }
+
   showBuffer(win: Window, buf: Buffer) {
     if (win.buf === buf) return;
     win.lastPos.set(win.buf.id, { ...win.cursor });
@@ -469,7 +628,10 @@ export class Vim {
     return buf;
   }
 
-  splitWindow(dir: 'row' | 'col', buf?: Buffer): Window {
+  /** Split the current window. The new one goes below/right with 'splitbelow'/'splitright' (both
+   * on in LazyVim), above/left without; `side` overrides (the explorer always opens on the left). */
+  splitWindow(dir: 'row' | 'col', buf?: Buffer, side?: 'before' | 'after'): Window {
+    const after = side ? side === 'after' : !!this.opt(dir === 'col' ? 'splitbelow' : 'splitright');
     const w = new Window(buf ?? this.buf);
     // A split starts with the window's own options (Neovim copies them).
     w.opts = { ...this.localsOfWin(this.win) };
@@ -478,7 +640,7 @@ export class Vim {
     w.want = this.win.want;
     w.top = this.win.top;
     w.alt = this.win.alt;
-    this.tab.split(this.win, w, dir, false);
+    this.tab.split(this.win, w, dir, after);
     this.tab.prev = this.win;
     this.tab.cur = w;
     return w;
@@ -512,9 +674,20 @@ export class Vim {
   clampCursor(allowEol = this.mode === 'insert' || this.mode === 'replace' || (this.mode === 'visual') || (this.mode === 'cmdline' && this.cmdline?.type === '=')) {
     const c = this.win.cursor;
     c.line = Math.max(0, Math.min(c.line, this.buf.lineCount - 1));
+    // 'virtualedit' block (LazyVim): in a Visual block the cursor may sit past the end of a line.
+    if (this.veBlock()) { c.col = Math.max(0, c.col); return; }
     const len = this.line(c.line).length;
     c.col = Math.max(0, Math.min(c.col, allowEol ? len : Math.max(0, len - 1)));
     if (this.mode === 'visual' && !allowEol) c.col = Math.min(c.col, Math.max(0, len - 1));
+  }
+
+  /** 'virtualedit' has block (or all), as in LazyVim. */
+  veOpt(): boolean {
+    return String(this.opt('virtualedit')).split(',').some(v => v === 'block' || v === 'all');
+  }
+  /** In a Visual block with 'virtualedit' block: columns past a line's end are allowed. */
+  veBlock(): boolean {
+    return this.visual?.kind === '<C-v>' && this.veOpt();
   }
 
   setCursor(p: Pos, want?: number) {
@@ -526,7 +699,7 @@ export class Vim {
   pushJump(p: Pos = this.cursor) {
     const w = this.win;
     w.jumplist = w.jumplist.slice(0, w.jumpIdx).filter(j => !(j.buf === this.buf && j.pos.line === p.line));
-    w.jumplist.push({ buf: this.buf, pos: { ...p } });
+    w.jumplist.push({ buf: this.buf, pos: { ...p }, top: w.top });
     if (w.jumplist.length > 100) w.jumplist.shift();
     w.jumpIdx = w.jumplist.length;
     this.buf.marks.set("'", { ...p });
@@ -551,6 +724,115 @@ export class Vim {
     }
     return out;
   }
+  /**
+   * Folds as LazyVim makes them, when the window has none yet, or again after the text changed (it
+   * recomputes them as you type): 'foldmethod' expr by treesitter where the language has fold
+   * queries (a block from its header to its closing line; Markdown by section), Vim's indent
+   * folding elsewhere (text: the indented lines, not their header). Open or closed by 'foldlevel'
+   * (99 in LazyVim: all open); after an edit each fold keeps its state, found by its first line.
+   * Folds a lesson set up itself are left alone.
+   */
+  ensureFolds(win = this.win) {
+    const text = win.buf.text();
+    if (win.folds.length && (!win.autoFolds || win.autoFoldsText === text)) return;
+    const level = Number(this.optIn(win, 'foldlevel'));
+    // Old states by first line, in order: a copy of a block (same first line) doesn't take its state.
+    // The old folds were already moved with the edit (foldMarkAdjust), so their lines are read in
+    // the text as it is now.
+    const old = new Map<string, boolean[]>();
+    for (const f of [...win.folds].sort((x, y) => x.start - y.start)) {
+      const k = win.buf.lines[f.start] ?? '';
+      old.set(k, [...(old.get(k) ?? []), f.closed]);
+    }
+    const found = this.computeFolds(win);
+    for (const f of found) f.depth = found.filter(g => g !== f && g.start <= f.start && f.end <= g.end).length;
+    const L = win.buf.lines, first = !win.autoFolds;
+    // A fold an edit makes (a put function, a typed block) starts open, as Neovim's do; on first
+    // use 'foldlevel' decides.
+    win.folds = found.sort((x, y) => x.start - y.start || y.end - x.end).map(f => ({ start: f.start, end: f.end, closed: old.get(L[f.start])?.shift() ?? (first && f.depth >= level) }));
+    win.autoFolds = true;
+    win.autoFoldsText = text;
+  }
+
+  private computeFolds(win: Window): { start: number; end: number; depth: number }[] {
+    const L = win.buf.lines, ts = Number(this.optIn(win, 'tabstop')) || 8, ft = win.buf.filetype;
+    const ind = (l: number) => displayWidth(indentOf(L[l]), ts);
+    const blank = (l: number) => !L[l].trim();
+    const found: { start: number; end: number; depth: number }[] = [];
+    if (ft === 'markdown') {
+      // A heading folds its section, down to the next heading as high or higher, without the blank
+      // lines before it (folds.scm's #trim!); a fenced code block is a fold of its own. Headings
+      // inside a fence don't count.
+      const fence: boolean[] = [];
+      let inFence = -1;
+      L.forEach((t, i) => {
+        if (/^\s*(```|~~~)/.test(t)) {
+          if (inFence < 0) inFence = i;
+          else { found.push({ start: inFence, end: i, depth: 0 }); fence[i] = true; inFence = -1; return; }
+        }
+        fence[i] = inFence >= 0;
+      });
+      const heads = L.map((t, i) => [i, fence[i] ? 0 : /^(#{1,6})\s/.exec(t)?.[1].length ?? 0] as const).filter(([, n]) => n > 0);
+      heads.forEach(([i, n], k) => {
+        const next = heads.slice(k + 1).find(([, m]) => m <= n);
+        let end = (next ? next[0] : L.length) - 1;
+        while (end > i && blank(end)) end--;
+        if (end > i) found.push({ start: i, end, depth: 0 });
+      });
+      // The text before the first heading is a section too (the whole document when there is none).
+      let end = (heads.length ? heads[0][0] : L.length) - 1;
+      while (end > 0 && blank(end)) end--;
+      if (end > 0 && !found.some(f => f.start === 0 && f.end === end)) found.push({ start: 0, end, depth: 0 });
+      return found;
+    }
+    if (ft === 'text' || ft === 'csv') {
+      // Vim's 'foldmethod' indent: a line's level is its indent in shiftwidths; a blank line takes
+      // the lower of its neighbours'. A fold is each run of lines at a level or deeper.
+      const sw = Number(this.optIn(win, 'shiftwidth')) || ts;
+      const lv: number[] = L.map((_, i) => (blank(i) ? -1 : Math.floor(ind(i) / sw)));
+      for (let i = 0; i < L.length; i++) {
+        if (lv[i] >= 0) continue;
+        let p = i - 1; while (p >= 0 && lv[p] < 0) p--;
+        let n = i + 1; while (n < L.length && blank(n)) n++;
+        lv[i] = Math.min(p >= 0 ? lv[p] : 0, n < L.length ? Math.floor(ind(n) / sw) : 0);
+      }
+      const max = Math.max(0, ...lv);
+      for (let k = 1; k <= max; k++) {
+        for (let i = 0; i < L.length; i++) {
+          if (lv[i] < k) continue;
+          let e = i;
+          while (e + 1 < L.length && lv[e + 1] >= k) e++;
+          found.push({ start: i, end: e, depth: 0 });
+          i = e;
+        }
+      }
+      return found;
+    }
+    for (let i = 0; i < L.length; i++) {
+      if (blank(i)) continue;
+      let j = i + 1;
+      while (j < L.length && blank(j)) j++;
+      if (j >= L.length || ind(j) <= ind(i)) continue;
+      let end = j;
+      for (let k = j; k < L.length; k++) {
+        if (blank(k)) continue;
+        if (ind(k) <= ind(i)) {
+          if (ind(k) === ind(i) && /^\s*([}\])]|end\b)/.test(L[k])) end = k;
+          break;
+        }
+        end = k;
+      }
+      found.push({ start: i, end, depth: 0 });
+    }
+    return found;
+  }
+
+  /** How deep the window's folds nest (zR sets 'foldlevel' to it). */
+  foldDepth(win = this.win): number {
+    const fs = win.folds;
+    return fs.reduce((m, f) => Math.max(m, fs.filter(g => g !== f && g.start <= f.start && f.end <= g.end).length + 1), 0);
+  }
+
   openFoldsAt(line: number, win = this.win) {
     for (const f of win.folds) if (line >= f.start && line <= f.end) f.closed = false;
   }
@@ -559,23 +841,83 @@ export class Vim {
   scrollToCursor(win = this.win) {
     const rows = this.visibleLines(win);
     const h = Math.max(1, win.height);
-    const so = Math.min(Number(this.options.scrolloff), Math.floor((h - 1) / 2));
     const curRow = rows.findIndex(l => l >= win.cursor.line) - (rows.includes(win.cursor.line) ? 0 : 1);
     const cr = Math.max(0, rows.indexOf(this.closedFoldAt(win.cursor.line, win)?.start ?? win.cursor.line) >= 0
       ? rows.indexOf(this.closedFoldAt(win.cursor.line, win)?.start ?? win.cursor.line) : curRow);
-    let topRow = Math.max(0, rows.findIndex(l => l >= win.top));
-    if (cr < topRow + so) topRow = Math.max(0, cr - so);
-    if (cr > topRow + h - 1 - so) topRow = Math.min(Math.max(0, rows.length - 1), cr - h + 1 + so);
-    win.top = rows[Math.max(0, Math.min(topRow, rows.length - 1))] ?? 0;
+    // A top line past the end of the text (the file got shorter) is the last line (check_topline).
+    const ti = rows.findIndex(l => l >= win.top);
+    const topRow = ti < 0 ? Math.max(0, rows.length - 1) : ti;
+    // A page scroll (C-f, C-d, C-e…) set the view itself and moved the cursor into it: it stays
+    // until the cursor changes line or the text changes (Neovim's VALID_TOPLINE), even with the
+    // last line at the top.
+    if (win.topLocked) {
+      if (win.lockLine === win.cursor.line && win.lockText === win.buf.text() && cr >= topRow && cr < topRow + h) return;
+      win.topLocked = false;
+    }
+    // hasAnyFolding(): a folding 'foldmethod', or folds made by hand.
+    const folding = String(this.optIn(win, 'foldmethod')) !== 'manual' || win.folds.length > 0;
+    win.top = rows[Math.max(0, Math.min(updateTopline(rows.length, h, Number(this.optIn(win, 'scrolloff')), topRow, cr, folding), rows.length - 1))] ?? 0;
   }
 
-  /** Scroll so the cursor row sits at a screen position. */
-  scrollCursorTo(where: 'top' | 'center' | 'bottom') {
+  /** Lock the view a page scroll just set (see scrollToCursor). */
+  lockTop(win = this.win, line = win.cursor.line) {
+    win.topLocked = true;
+    win.lockLine = line;
+    win.lockText = win.buf.text();
+  }
+
+  /** 'scrolloff' as it applies to a window `h` rows high (at most half of it). */
+  so(h = this.win.height): number {
+    return Math.min(Number(this.options.scrolloff), Math.floor((Math.max(1, h) - 1) / 2));
+  }
+
+  /** Scroll so the cursor row sits at a screen position, 'scrolloff' rows in from an edge (zt, zb). */
+  /** Returns whether 'scrolloff' put the line somewhere other than the edge itself. */
+  scrollCursorTo(where: 'top' | 'center' | 'bottom'): boolean {
     const rows = this.visibleLines();
     const cr = rows.indexOf(this.closedFoldAt(this.cursor.line)?.start ?? this.cursor.line);
-    const h = this.win.height;
-    const topRow = where === 'top' ? cr : where === 'center' ? cr - Math.floor((h - 1) / 2) : cr - h + 1;
-    this.win.top = rows[Math.max(0, Math.min(topRow, rows.length - 1))] ?? 0;
+    // zt keeps up to half the window less one above the cursor, zb up to half below it: in an
+    // even-height window zb's 'scrolloff' can reach a line further (Neovim's scroll_cursor_bot).
+    const h = this.win.height, so = this.so(h), soBot = Math.min(Number(this.options.scrolloff), Math.floor(Math.max(1, h) / 2));
+    const clamp = (r: number) => Math.max(0, Math.min(r, rows.length - 1));
+    const topRow = where === 'top' ? cr - so : where === 'center' ? cr - Math.floor((h - 1) / 2) : cr - h + 1 + Math.min(soBot, rows.length - 1 - cr);
+    const plain = where === 'top' ? cr : where === 'center' ? topRow : cr - h + 1;
+    this.win.top = rows[clamp(topRow)] ?? 0;
+    return clamp(topRow) !== clamp(plain);
+  }
+
+  /**
+   * After a scroll that left the view where it is (C-d, C-e, C-f…), bring the cursor 'scrolloff'
+   * rows in from the window's edges, as Neovim's cursor_correct() does: the view stays, the cursor
+   * moves. No correction at an edge of the file that is on screen.
+   */
+  cursorCorrect(win = this.win) {
+    // A port of move.c's cursor_correct() (0.12), rows for lines (a closed fold is one): trim the
+    // window from both ends, a line at a time, until 'scrolloff' lines of context are taken (none
+    // at an end of the file that is on screen), and put the cursor inside what's left.
+    const rows = this.visibleLines(win), n = rows.length, h = Math.max(1, win.height);
+    const so = Number(this.optIn(win, 'scrolloff'));
+    if (!so || !n) return;
+    const T = Math.max(0, rows.indexOf(win.top)) + 1, B = Math.min(T + h, n + 1);
+    let aw = so, bw = so;
+    if (T === 1) { aw = 0; bw = Math.min(bw, Math.floor(h / 2)); }
+    if (B === n + 1) { bw = 0; aw = Math.min(aw, Math.floor((h - 1) / 2)); }
+    let top = T, bot = B - 1, above = 0, below = 0;
+    while ((above < aw || below < bw) && top < bot) {
+      if (below < bw && (below <= above || above >= aw)) { below++; bot--; }
+      if (above < aw && (above < below || below >= bw)) { above++; top++; }
+    }
+    const C0 = Math.max(0, rows.indexOf(this.closedFoldAt(win.cursor.line, win)?.start ?? win.cursor.line)) + 1;
+    let C = C0;
+    if (top === bot || bot === 0) C = top;
+    else if (top > bot) C = bot;
+    else {
+      if (C < top && T > 1) C = top;
+      if (C > bot && B <= n) C = bot;
+    }
+    if (C === C0) return;
+    const line = rows[C - 1];
+    win.cursor = { line, col: Math.min(win.want, Math.max(0, win.buf.line(line).length - 1)) };
   }
 
   // ---- text access ----------------------------------------------------------------
@@ -591,8 +933,12 @@ export class Vim {
       // ($: up to the longest line's end, plus one).
       let right = r.toEol ? 0 : c2;
       if (r.toEol) for (let l = r.start.line; l <= r.end.line; l++) right = Math.max(right, L[l].length);
+      // With 'virtualedit' block (LazyVim) every line of the block is padded out to its width; a $
+      // block to one past the longest line, as Neovim does it.
+      const ve = String(this.opt('virtualedit')).split(',').some(v => v === 'block' || v === 'all');
       for (let l = r.start.line; l <= r.end.line; l++) {
-        parts.push(L[l].length < c1 ? ' '.repeat(right - c1 + 1) : L[l].slice(c1, r.toEol ? undefined : c2 + 1));
+        const part = L[l].length < c1 ? ' '.repeat(right - c1 + 1) : L[l].slice(c1, r.toEol ? undefined : c2 + 1);
+        parts.push(!ve ? part : part.padEnd(r.toEol ? right - c1 + 1 : c2 - c1 + 1));
       }
       // op_yank(): y_width = end_vcol - start_vcol, one less for a $ block.
       const width = r.toEol ? Math.max(1, right - c1 > 0 ? right - c1 : right - c1 + 1) : c2 - c1 + 1;
@@ -734,7 +1080,22 @@ export class Vim {
     for (const k of typeof keys === 'string' ? parseKeys(keys) : keys) this.feed(k);
   }
 
+  /** The view each mark was set in, by buffer and mark ('jumpoptions' view: 'a and `a restore it). */
+  markViews = new Map<string, number>();
+
+  /** With 'jumpoptions' view (LazyVim), show `top` again after a jump, when the cursor is in it. */
+  restoreView(top: number | undefined, line = this.cursor.line) {
+    if (top == null || !String(this.opt('jumpoptions')).split(',').includes('view')) return;
+    const rows = this.visibleLines(), t = rows.indexOf(top), r = rows.indexOf(this.closedFoldAt(line)?.start ?? line);
+    if (t < 0 || r < t || r >= t + this.win.height) return;
+    // The view goes back as it was; scrollToCursor() then checks 'scrolloff' in it, as Neovim does.
+    this.win.top = top;
+  }
+
   private afterKey() {
+    for (const w of this.tab.windows()) if (w.autoFolds && ['indent', 'expr'].includes(String(this.optIn(w, 'foldmethod')))) this.ensureFolds(w);
+    const lc = this.buf.changelist[this.buf.changelist.length - 1];
+    if (lc && lc.top === undefined) lc.top = this.win.top;
     if (this.mode === 'normal' && this.pending.length === 0) {
       this.endChange();
       this.clampCursor(false);
@@ -1483,6 +1844,9 @@ export class Vim {
     if (this.visual) {
       if (this.visual.kind === kind) return this.exitVisual();
       this.visual.kind = kind;
+      // Out of a block, a cursor past the line's end ('virtualedit' block) comes back onto it.
+      const c = this.cursor;
+      c.col = Math.min(c.col, Math.max(0, this.line(c.line).length - 1));
       return;
     }
     this.visual = { kind, anchor: { ...this.cursor }, toEol: false };
@@ -1565,8 +1929,10 @@ export class Vim {
         c.col++;
         b.recordChange({ ...c });
       } else {
+        this.electricIndent(ch);
         const end = this.insertText(c, ch);
         this.win.cursor = end;
+        this.electricWord();
       }
       ins.keys.push(key);
       ins.typed += ch;
@@ -1578,12 +1944,22 @@ export class Vim {
       case '<CR>':
       case '<C-j>':
       case '<C-m>': {
-        const indent = this.opt('autoindent') ? indentOf(this.line()) : '';
         const t = this.line();
+        // An untyped auto line is left without its trailing blanks, but the new line takes its
+        // leader from it as it was (Neovim's open_line(): "  // " gives "  //" and a new "  // ").
+        const untyped = !!ins.auto && ins.auto.line === c.line && ins.auto.text === t;
+        ins.auto = undefined;
+        // 'formatoptions' r (LazyVim): <CR> after a comment leader continues the comment.
+        const lead = String(this.opt('formatoptions')).includes('r') ? leaderOf(t, String(this.opt('comments'))) : null;
+        const cont = lead && c.col >= lead.indent.length + lead.str.length ? continuation(t, String(this.opt('comments'))) : null;
+        if (cont !== null) this.noteContinued('r');
+        const indent = cont ?? this.openIndent(c.line, false, t);
         const rest = t.slice(c.col);
-        b.setLine(c.line, t.slice(0, c.col).replace(/[ \t]+$/, (m) => (t.slice(0, c.col).trim() ? '' : m)));
+        // The first part keeps its trailing blanks (Neovim's open_line() with OPENLINE_KEEPTRAIL).
+        b.setLine(c.line, untyped ? t.slice(0, c.col).replace(/[ \t]+$/, '') : t.slice(0, c.col));
         b.splice(c.line + 1, 0, [indent + rest.replace(/^[ \t]+/, '')], { split: true });
         this.win.cursor = pos(c.line + 1, indent.length);
+        if (indent && !rest.trim()) ins.auto = { line: c.line + 1, text: this.line(c.line + 1) };
         b.recordChange({ ...this.cursor });
         ins.keys.push(key);
         ins.typed += '\n';
@@ -1912,6 +2288,198 @@ export class Vim {
     c.col = startCol + word.length;
   }
 
+  /**
+   * How a new line is indented, by filetype: 'ts' where LazyVim indents with treesitter (its
+   * indent queries: in a level after an opener, a closer typed first lines up with it), 'si' for
+   * 'smartindent' (text and CSV: in after "{" or an "if"/"for"… line, "}" back out, "#" to column
+   * 0), 'ai' for 'autoindent' only (Markdown, YAML: their treesitter indent keeps the line's
+   * indent), 'zero' where it gives column 0 (JSON). Checked against LazyVim itself (nvim with the
+   * user's config, LazyVim.treesitter.indentexpr()).
+   */
+  private indentKind(): 'ts' | 'si' | 'ai' | 'zero' {
+    const ft = this.buf.filetype;
+    return ft === 'json' ? 'zero' : ft === 'markdown' || ft === 'yaml' ? 'ai' : ft === 'text' || ft === 'csv' ? 'si' : 'ts';
+  }
+
+  /** Does `line` open a block whose body goes a level in, by the filetype's treesitter indent? */
+  private opensBlock(line: string): boolean {
+    const ft = this.buf.filetype;
+    // A trailing comment doesn't count ("function f() { // a").
+    const code = line.replace(ft === 'python' || ft === 'sh' || ft === 'yaml' || ft === 'toml' || ft === 'ruby' ? /\s+#.*$/ : ft === 'lua' ? /\s*--.*$/ : /\s*\/\/.*$/, '').trimEnd();
+    if (/[{([]$/.test(code)) return true;
+    if (ft === 'python') return /:$/.test(code);
+    if (ft === 'lua') return /\b(then|do|else|repeat)$/.test(code) || (/\bfunction\b[^)]*\)$/.test(code) && !/\bend\b/.test(code));
+    if (ft === 'sh') return /(\bthen|\bdo|\belse|\bin)$/.test(code);
+    if (ft === 'ruby') return /\b(do|then|else)$/.test(code) || /^\s*(def|class|module|if|unless|while|until|case|begin)\b/.test(code);
+    return false;
+  }
+
+  /**
+   * The indent for a line opened below line `at` (o, <CR>; `text` its text when it is being split),
+   * or above it (O): 'autoindent', a level more after an opener, and back to a comment's own
+   * indent after the line that closes it.
+   */
+  openIndent(at: number, above = false, text = this.line(at)): string {
+    if (!this.opt('autoindent')) return '';
+    let kind = this.indentKind();
+    // JSON: complete objects and arrays indent as code; an unfinished file (a bracket left open)
+    // gives column 0, as LazyVim's JSON indent does while the text doesn't parse.
+    if (kind === 'zero') {
+      const t = blankStrings(this.buf.text());
+      if ((t.match(/[{[]/g) ?? []).length !== (t.match(/[}\]]/g) ?? []).length) return '';
+      kind = 'ts';
+    }
+    // O: treesitter indents the new line by where it is, so as an o from the line above would;
+    // smartindent only goes in after an opener above.
+    if (above) {
+      const prev = at > 0 ? this.line(at - 1) : null;
+      if (prev !== null && kind === 'ts') return this.openIndent(at - 1);
+      if (prev !== null && kind === 'si' && this.siOpens(prev)) return indentOf(prev) + this.indentStr(this.sw());
+      return indentOf(text);
+    }
+    const l = leaderOf(text, String(this.opt('comments')));
+    if (l?.part === 'e') {
+      for (let k = at - 1; k >= 0; k--) if (leaderOf(this.line(k), String(this.opt('comments')))?.part === 's') return indentOf(this.line(k));
+    }
+    const base = indentOf(text), ft = this.buf.filetype, sw = this.sw();
+    const ts = Number(this.opt('tabstop')) || 8;
+    const out = (n: number) => this.indentStr(Math.max(0, n));
+    const width = displayWidth(base, ts);
+    if (kind === 'ts' && ft === 'python') {
+      // A bracket left open mid-line: the next line lines up after the outermost one, except a
+      // parenthesised return value, which keeps the line's indent.
+      const code = text.replace(/\s+#.*$/, '');
+      const open = unclosedBracket(code);
+      if (open >= 0 && open < code.trimEnd().length - 1) {
+        return /^\s*return\s*\($/.test(code.slice(0, open + 1)) ? base : out(displayWidth(text.slice(0, open + 1), ts));
+      }
+      // After return the function is over: column 0, however deep (the indent stays when nothing
+      // encloses it). After break or continue the loop's block is over: out to its header's
+      // indent. pass and raise keep the indent.
+      const ret = /^\s*return\b/.test(text);
+      if (ret || /^\s*(break|continue)\b/.test(text)) {
+        for (let k = at - 1; k >= 0; k--) {
+          const u = this.line(k);
+          if (u.trim() && displayWidth(indentOf(u), ts) < width) return ret ? '' : indentOf(u);
+        }
+        return base;
+      }
+    }
+    if (ft === 'yaml' && /:\s*(#.*)?$/.test(text)) {
+      // A list item's key goes a level in; any other key does when it has children below.
+      if (/^\s*- /.test(text)) return out(width + sw);
+      let k = at + 1;
+      while (k < this.buf.lineCount && !this.line(k).trim()) k++;
+      if (k < this.buf.lineCount && displayWidth(indentOf(this.line(k)), ts) > width) return out(width + sw);
+      return base;
+    }
+    if (kind === 'ts' && /^(typescript|javascript|c)$/.test(ft)) {
+      // A braceless `if (…)` (only if: not for, while or else) indents its one statement, and the
+      // line after that statement goes back out. A condition split over lines counts from its if.
+      const ifAt = (k: number) => {
+        const code = blankStrings(this.line(k)).replace(/\s*\/\/.*$/, '');
+        if (/^\s*if\s*\(.*\)\s*$/.test(code)) return k;
+        if (!/\)\s*$/.test(code)) return -1;
+        let depth = 0;
+        for (let j = k; j >= 0 && j > k - 10; j--) {
+          const u = blankStrings(this.line(j));
+          for (let i = u.length - 1; i >= 0; i--) depth += u[i] === ')' ? 1 : u[i] === '(' ? -1 : 0;
+          if (depth <= 0) return j < k && /^\s*if\s*\(/.test(u) ? j : -1;
+        }
+        return -1;
+      };
+      const head = ifAt(at);
+      if (head >= 0) return out(displayWidth(indentOf(this.line(head)), ts) + sw);
+      if (at > 0 && !/[{([]\s*$/.test(text)) {
+        const prev = ifAt(at - 1);
+        if (prev >= 0 && width > displayWidth(indentOf(this.line(prev)), ts)) return indentOf(this.line(prev));
+      }
+    }
+    // Rust: a statement left without its ; inside a block continues on a level in.
+    if (kind === 'ts' && ft === 'rust' && width > 0 && text.trim() && !/[;,{}]\s*$/.test(text.replace(/\s*\/\/.*$/, ''))) return out(width + sw);
+    const opens = kind === 'ts' ? this.opensBlock(text) : kind === 'si' && this.siOpens(text);
+    return opens ? base + this.indentStr(sw) : base;
+  }
+
+  private siOpens(line: string): boolean {
+    return !!this.opt('smartindent') && (/\{\s*$/.test(line) || /^\s*(if|else|while|do|for|switch)\b/.test(line));
+  }
+
+  /**
+   * Block-ending words typed first on a line go back to the indent of their block's opener, as
+   * treesitter's indentkeys have it (Lua's end, else, elseif, until; the shell's fi, done, esac,
+   * else, elif). Called after each typed character.
+   */
+  private electricWord() {
+    if (!this.opt('autoindent') || this.indentKind() !== 'ts') return;
+    const ft = this.buf.filetype;
+    const words = ft === 'lua' ? /^(end|else|elseif|until)$/ : ft === 'sh' ? /^(fi|done|esac|else|elif)$/ : ft === 'ruby' ? /^(end|else|elsif|when|rescue|ensure)$/ : null;
+    const c = this.cursor, t = this.line();
+    if (!words || !words.test(t.slice(0, c.col).trim()) || t.slice(c.col).trim()) return;
+    // The opener this closes: walking up, the first line that opens a block and sits left of
+    // every line passed on the way (blocks closed in between are skipped by that).
+    const ts = Number(this.opt('tabstop')) || 8;
+    const width = (u: string) => displayWidth(indentOf(u), ts);
+    let min = Infinity, want: string | null = null;
+    for (let k = c.line - 1; k >= 0 && want === null; k--) {
+      const u = this.line(k);
+      if (!u.trim()) continue;
+      if (width(u) < min && this.opensBlock(u)) want = indentOf(u);
+      min = Math.min(min, width(u));
+    }
+    if (want === null) return;
+    const lead = indentOf(t);
+    if (want === lead) return;
+    this.buf.setLine(c.line, want + t.slice(lead.length));
+    c.col += want.length - lead.length;
+  }
+
+  /** A closing bracket (or smartindent's "#") typed first on a line moves the line's indent. */
+  private electricIndent(ch: string) {
+    const kind = this.indentKind(), ts = kind === 'ts';
+    if (!this.opt('autoindent') || !(ts ? '}])' : this.opt('smartindent') ? (kind === 'si' ? '}#' : '#') : '').includes(ch)) return;
+    const c = this.cursor, t = this.line();
+    if (t.slice(0, c.col).trim()) return;
+    let want: string;
+    if (ch === '#') want = '';
+    else {
+      // The opener this closes: the nearest unmatched one above.
+      const open = ({ '}': '{', ']': '[', ')': '(' } as Record<string, string>)[ch];
+      let depth = 0, found: string | null = null;
+      for (let l = c.line - 1; l >= 0 && found === null; l--) {
+        const u = this.line(l);
+        for (let i = u.length - 1; i >= 0; i--) {
+          if (u[i] === ch) depth++;
+          else if (u[i] === open && depth-- === 0) { found = indentOf(u); break; }
+        }
+      }
+      // smartindent without a match: one level out.
+      want = found ?? (ts ? indentOf(t) : this.indentStr(Math.max(0, displayWidth(indentOf(t), Number(this.opt('tabstop')) || 8) - this.sw())));
+    }
+    const lead = t.slice(0, c.col);
+    if (want === lead) return;
+    this.buf.setLine(c.line, want + t.slice(c.col));
+    c.col = want.length;
+  }
+
+  /** A comment continued by o/O ('o') or <CR> ('r'): noted where plain Neovim's ftplugin wouldn't. */
+  noteContinued(flag: 'o' | 'r') {
+    if (plainFo(this.buf.filetype).includes(flag)) return;
+    this.noteLazy('comment', `LazyVim continued the comment on the new line (formatoptions ${flag}). Plain Neovim leaves a new line empty in ${this.buf.filetype} files.`);
+  }
+
+  /** A line opened with an automatic indent or leader and left untyped loses its trailing blanks. */
+  private trimAuto() {
+    const a = this.insert?.auto;
+    if (!a) return;
+    this.insert!.auto = undefined;
+    if (a.line >= this.buf.lineCount || this.line(a.line) !== a.text) return;
+    const t = a.text.replace(/[ \t]+$/, '');
+    if (t === a.text) return;
+    this.buf.setLine(a.line, t);
+    if (this.cursor.line === a.line) this.win.cursor = pos(a.line, Math.min(this.cursor.col, t.length));
+  }
+
   leaveInsert() {
     const ins = this.insert;
     if (!ins) {
@@ -1944,12 +2512,13 @@ export class Vim {
       for (let l = first + 1; l <= last; l++) {
         const t = this.line(l);
         if (append && toEol) this.buf.setLine(l, t + ins.typed);
-        else if (t.length >= col || append) this.buf.setLine(l, t.padEnd(col) .slice(0, Math.max(col, append ? col : 0)) + ins.typed + t.slice(col));
+        else if (t.length >= col || append || ins.block.pad) this.buf.setLine(l, t.padEnd(col) .slice(0, Math.max(col, append ? col : 0)) + ins.typed + t.slice(col));
       }
     }
     // Remove whitespace-only line left by o/O/cc when leaving immediately.
     const typedNothing = ins.typed === '' && (ins.kind === 'o' || ins.kind === 'O' || ins.kind === 'cc');
     if (typedNothing && this.line().trim() === '' && this.line() !== '') this.buf.setLine(this.cursor.line, '');
+    this.trimAuto();
     this.lastInserted = ins.typed;
     this.buf.marks.set('^', { ...this.cursor });
     this.buf.marks.set(']', pos(this.cursor.line, Math.max(0, this.cursor.col - 1)));
@@ -2005,7 +2574,8 @@ export class Vim {
         const text = cl.text;
         this.cmdline = null;
         this.cmdlineSaved = cl.saved?.cursor ?? null;
-        if ((cl.type === '/' || cl.type === '?') && cl.saved) this.win.cursor = { ...cl.saved.cursor };
+        // The view incsearch showed goes back too: the search jumps from where it started.
+        if ((cl.type === '/' || cl.type === '?') && cl.saved) { this.win.cursor = { ...cl.saved.cursor }; this.win.top = cl.saved.top; }
         this.mode = this.visual ? 'visual' : 'normal';
         if (cl.type === ':' || cl.type === '/' || cl.type === '?') {
           if (text) {
@@ -2149,6 +2719,25 @@ export class Vim {
     }
   }
 
+  /**
+   * 'ignorecase' (LazyVim, with smartcase): note it the first time a match was found only because
+   * case was ignored, that is, the pattern matched case-sensitively wouldn't match there. A \c or
+   * \C in the pattern is the learner's own choice: no note.
+   */
+  noteIgnoreCase(pattern: string, line: number, col: number, len: number, star = false) {
+    if (!this.opt('ignorecase') || /\\[cC]/.test(pattern)) return;
+    let re: RegExp;
+    try { const c = compile(pattern, {}).re; re = new RegExp(c.source, c.flags.replace(/[gy]/g, '') + 'y'); } catch { return; }
+    const t = this.buf.line(line);
+    re.lastIndex = col;
+    const m = re.exec(t);
+    if (m && m[0].length === len) return;
+    const found = t.slice(col, col + len);
+    this.noteLazy('ignorecase', star
+      ? `LazyVim ignores case (ignorecase), and * and # don't use smartcase, so they found "${found}". Plain Vim matches case exactly.`
+      : `LazyVim ignores case unless you type a capital (ignorecase + smartcase), so "${pattern}" found "${found}". Plain Vim matches case exactly.`);
+  }
+
   /** All matches of a pattern in a buffer (for highlighting and n/N). */
   matches(pattern: string, buf = this.buf, opts: { noSmartcase?: boolean } = {}): { start: Pos; end: Pos }[] {
     if (!pattern) return [];
@@ -2208,6 +2797,7 @@ export class Vim {
     }
     if (!m) return null;
     this.hlActive = true;
+    this.noteIgnoreCase(pattern, m.start.line, m.start.col, (m.end.line === m.start.line ? m.end.col + 1 : this.line(m.start.line).length) - m.start.col, !!opts.noSmartcase);
     if (wrapped) this.msg(dir === 1 ? 'search hit BOTTOM, continuing at TOP' : 'search hit TOP, continuing at BOTTOM', 'warn');
     else this.msg((dir === 1 ? '/' : '?') + pattern);
     this.emit('search');

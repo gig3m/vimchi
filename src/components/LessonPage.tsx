@@ -43,6 +43,12 @@ export function LessonPage({ lesson, seed, reps, coachLive, runs: lessonRuns, re
       <div className="eyebrow">{sectionOf(lesson.id).title} · {lesson.boss ? 'Boss' : numberOf(lesson.id)}</div>
       <h1 className="h1">{lesson.title}</h1>
       {lesson.intro}
+      {lesson.lazyvim && (
+        <div className="lazy-callout" role="note">
+          <span className="lazy-badge">LazyVim vs Vim</span>
+          <div className="lazy-body">{lesson.lazyvim}</div>
+        </div>
+      )}
       <div className="cards">
         {lesson.keyCards.map(k => (
           <div key={k.key} className={'card' + (lesson.narrowCards ? ' narrow' : '')}>

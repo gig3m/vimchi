@@ -139,7 +139,7 @@ export const nextSteps: Section = {
       chips: [':w', ':q', ':wq', ':q!'],
       keyCards: [
         { key: ':w', glyph: '💾', label: 'write the file' },
-        { key: ':q', glyph: '⏏', label: 'quit', sub: 'refuses unsaved changes' },
+        { key: ':q', glyph: '⏏', label: 'quit', sub: 'asks first if unsaved' },
         { key: ':wq', glyph: '💾⏏', label: 'write and quit' },
         { key: ':q!', glyph: '⏏!', label: 'quit, discard changes' },
       ],
@@ -147,8 +147,8 @@ export const nextSteps: Section = {
         <>
           <p>
             Every command that starts with <Code>:</Code> is typed on the line at the bottom and run with{' '}
-            <Code>enter</Code>. <Code>:w</Code> writes the buffer to its file. <Code>:q</Code> quits, but only
-            if there is nothing unsaved; it tells you so otherwise. <Code>:wq</Code> does both, and{' '}
+            <Code>enter</Code>. <Code>:w</Code> writes the buffer to its file. <Code>:q</Code> quits; with
+            unsaved changes it asks first whether to save them. <Code>:wq</Code> writes and quits in one go, and{' '}
             <Code>:q!</Code> quits throwing your changes away.
           </p>
           <p>
@@ -158,6 +158,19 @@ export const nextSteps: Section = {
         </>
       ),
       practice: total => <p>Each round has you make a small edit (or none), then save or quit as the prompt says. {total} rounds.</p>,
+      lazyvim: (
+        <>
+          <p>
+            LazyVim turns on <Code>confirm</Code>, so <Code>:q</Code> on a changed file asks{' '}
+            <Code>Save changes?</Code>: <Code>y</Code> saves and quits, <Code>n</Code> quits without saving,{' '}
+            <Code>c</Code> stays.
+          </p>
+          <p>
+            Plain Vim doesn't ask. It refuses with <Code>E37: No write since last change</Code>, and you choose
+            between <Code>:wq</Code> and <Code>:q!</Code> yourself. Both work the same in LazyVim.
+          </p>
+        </>
+      ),
       aside: {
         title: 'ZZ and friends',
         body: (
@@ -197,6 +210,12 @@ export const nextSteps: Section = {
             prompt: 'On second thought, keep the file as it was: quit without saving.',
             goal: { check: vim => vim.events.includes('quit') && vim.fs.read('notes.md') === '# Notes\n\n- buy milk\n- call Sam\n' },
             solution: 'x:q!<CR>',
+          },
+          {
+            steps: [{ prompt: 'Delete the "-" in front of "buy milk".', goal: { text: ['# Notes', '', ' buy milk', '- call Sam'] } }],
+            prompt: 'Quit with :q, and when it asks, save the change.',
+            goal: { check: vim => vim.events.includes('quit') && vim.fs.read('notes.md') === '# Notes\n\n buy milk\n- call Sam\n' },
+            solution: 'jjx:q<CR>y',
           },
         ],
       },

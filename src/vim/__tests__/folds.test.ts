@@ -4,9 +4,12 @@
 import { describe, expect, it } from 'vitest';
 import { Vim } from '../editor';
 
+/** Manual folds, as these tests make them (LazyVim's foldmethod=indent refuses :fold with E350). */
+const manual = (v: Vim) => { v.options.foldmethod = 'manual'; return v; };
+
 /** a..f with lines 2-3 (1-based) folded and opened, as `:2,3fold | zR`. */
 function six() {
-  const vim = new Vim({ text: 'a\nb\nc\nd\ne\nf', name: 'x.txt' });
+  const vim = manual(new Vim({ text: 'a\nb\nc\nd\ne\nf', name: 'x.txt' }));
   vim.win.folds.push({ start: 1, end: 2, closed: false });
   return vim;
 }
@@ -46,7 +49,7 @@ describe('folds follow edits (foldMarkAdjust)', () => {
 describe('fold commands', () => {
   const fns = 'function a() {\n  one();\n  two();\n}\nfunction b() {\n  three();\n  four();\n}\nend();';
   const make = () => {
-    const vim = new Vim({ text: fns, name: 'x.ts' });
+    const vim = manual(new Vim({ text: fns, name: 'x.ts' }));
     vim.feedKeys(':2,3fold<CR>:6,7fold<CR>');
     return vim;
   };
@@ -61,7 +64,7 @@ describe('fold commands', () => {
     expect(vim.cursor.line).toBe(2); // za, zc and zM leave the line alone (Neovim)
   });
   it('the cursor keeps its line inside a closed fold (a..g, 5,7fold)', () => {
-    const vim = new Vim({ text: 'a\nb\nc\nd\ne\nf\ng', name: 'x.txt' });
+    const vim = manual(new Vim({ text: 'a\nb\nc\nd\ne\nf\ng', name: 'x.txt' }));
     vim.feedKeys(':5,7fold<CR>G');
     expect(vim.cursor.line).toBe(6); // G: 7
     vim.feedKeys('za');
@@ -128,7 +131,7 @@ describe('fold commands', () => {
 describe('commands on a closed fold (Neovim 0.12, :3,4fold on a { one(); two(); } block)', () => {
   const text = 'a\n{\n  one();\n  two();\n}\nz\nw\nv';
   const run = (keys: string) => {
-    const vim = new Vim({ text, name: 'x.txt' });
+    const vim = manual(new Vim({ text, name: 'x.txt' }));
     vim.feedKeys(keys);
     const f = vim.win.folds.find(f => f.closed);
     return {

@@ -455,8 +455,8 @@ describe('insert mode', () => {
 });
 
 describe('folds and scrolling', () => {
-  it('zf, zo, zc and j over a fold', () => {
-    const v = run('|a\nb\nc\nd', 'zfjj');
+  it('zf, zo, zc and j over a fold (foldmethod=manual, plain Vim\'s)', () => {
+    const v = run('|a\nb\nc\nd', ':set fdm=manual<CR>zfjj');
     expect(v.cursor.line).toBe(2);
     v.feedKeys('ggzo');
     expect(v.win.folds[0].closed).toBe(false);
@@ -465,9 +465,10 @@ describe('folds and scrolling', () => {
     v.feedKeys('zR');
     expect(v.win.folds[0].closed).toBe(false);
   });
+  // Plain Neovim (scrolloff=0); LazyVim's scrolloff=4 is in lazyvim.test.ts.
   it('<C-d> moves half a screen', () => {
     const doc = '|' + Array.from({ length: 60 }, (_, i) => 'l' + i).join('\n');
-    const v = run(doc, '');
+    const v = run(doc, ':set so=0<CR>');
     v.win.height = 20;
     v.feedKeys('<C-d>');
     expect(v.cursor.line).toBe(10);
@@ -475,16 +476,20 @@ describe('folds and scrolling', () => {
     v.feedKeys('<C-u>');
     expect(v.cursor.line).toBe(0);
   });
+  // H and L as motions: in Visual and operator-pending (Normal-mode H and L switch buffers, as
+  // in LazyVim).
   it('H M L', () => {
     const doc = '|' + Array.from({ length: 60 }, (_, i) => 'l' + i).join('\n');
-    const v = run(doc, '');
+    const v = run(doc, ':set so=0<CR>');
     v.win.height = 20;
-    v.feedKeys('L');
+    v.feedKeys('vL<Esc>');
     expect(v.cursor.line).toBe(19);
     v.feedKeys('M');
     expect(v.cursor.line).toBe(9);
-    v.feedKeys('H');
+    v.feedKeys('vH<Esc>');
     expect(v.cursor.line).toBe(0);
+    v.feedKeys('dL');
+    expect(v.buf.lineCount).toBe(40);
   });
 });
 
@@ -502,7 +507,8 @@ describe('windows and buffers', () => {
     v.feedKeys(':vs b.ts<CR>');
     expect(v.tab.windows().length).toBe(2);
     expect(v.buf.name).toBe('b.ts');
-    v.feedKeys('<C-w>l');
+    // LazyVim's splitright: the new window is on the right, a.ts on the left.
+    v.feedKeys('<C-w>h');
     expect(v.buf.name).toBe('a.ts');
     v.feedKeys('<C-w>o');
     expect(v.tab.windows().length).toBe(1);
@@ -747,9 +753,9 @@ describe('option scope, round 2 (checked in nvim --clean 0.12.6)', () => {
     const v = new Vim({ files, open: 'c.ts' });
     v.feedKeys(':set list<CR>:split<CR>:set nolist<CR>');
     expect(v.optIn(v.win, 'list')).toBe(false);
-    v.feedKeys('<C-w>j');
+    v.feedKeys('<C-w>k'); // splitbelow (LazyVim): the old window is above
     expect(v.optIn(v.win, 'list')).toBe(true);
-    v.feedKeys(':set nonumber<CR><C-w>k');
+    v.feedKeys(':set nonumber<CR><C-w>j');
     expect(v.optIn(v.win, 'number')).toBe(true);
   });
   it('a split copies the window\'s own values', () => {
@@ -768,9 +774,17 @@ describe('option scope, round 2 (checked in nvim --clean 0.12.6)', () => {
     v.feedKeys(':set<CR>');
     expect(v.message?.text).toBe([
       '--- Options ---',
-      // Sorted by option name, so nowrap is under w; filled down, then across.
-      '  cursorline          list                shiftwidth=4      nowrap',
-      '  expandtab           number              tabstop=4',
+      // Sorted by option name, so nowrap is under w; filled down, then across; LazyVim's options
+      // among them (nvim with LazyVim's options.lua prints these too, plus ones the tutor doesn't model).
+      '  comments=b:#,fb:-   ignorecase          shiftwidth=4        tabstop=4',
+      '  confirm             jumpoptions=view  noshowmode            timeoutlen=300',
+      '  cursorline          laststatus=3        sidescrolloff=8     virtualedit=block',
+      '  expandtab           list                signcolumn=yes      winminwidth=5',
+      '  fillchars=eob:      number              smartcase         nowrap',
+      '  foldlevel=99        relativenumber      smartindent',
+      '  foldmethod=indent   scrolloff=4         splitbelow',
+      '  foldtext=           shiftround          splitright',
+      '  formatoptions=jcroqlnt',
     ].join('\n'));
     v.feedKeys(':setlocal sw=3<CR>:set<CR>');
     expect(v.message?.text).toContain('shiftwidth=3');

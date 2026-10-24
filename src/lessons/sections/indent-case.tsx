@@ -69,6 +69,15 @@ export const indentCase: Section = {
           Shift lines until the indentation matches the goal. Shiftwidth is 2 here. {total} rounds.
         </p>
       ),
+      lazyvim: (
+        <>
+          <p>
+            LazyVim turns on <Code>shiftround</Code>: a shift lands on the next multiple of the indent size, so a line
+            three spaces in goes to 2 with <Code>&lt;&lt;</Code> or 4 with <Code>&gt;&gt;</Code>.
+          </p>
+          <p>Plain Vim adds or takes exactly one indent, leaving a stray space where it was: 3 becomes 1 or 5.</p>
+        </>
+      ),
       aside: {
         title: 'Deeper in one go',
         body: (
@@ -127,6 +136,12 @@ export const indentCase: Section = {
             },
             goal: { text: ['jobs:', '  test:', '    runs-on: ubuntu-latest', '    steps:', '      - uses: actions/checkout@v4'] },
             solution: '<2j',
+          },
+          {
+            prompt: 'The "start();" line is one space too deep. Shift it left to line up.',
+            setup: { name: 'boot.ts', text: ['if (ready) {', '   start();', '}'], cursor: { line: 1, col: 3 } },
+            goal: { text: ['if (ready) {', '  start();', '}'] },
+            solution: '<<',
           },
         ],
       },

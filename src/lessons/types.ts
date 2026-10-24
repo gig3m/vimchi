@@ -29,6 +29,9 @@ export type Lesson = {
   /** Instructions above the practice editor; receives the number of targets/rounds. */
   practice: (total: number) => ReactNode;
   aside: { title: string; body: ReactNode };
+  /** Where this lesson's keys behave differently in LazyVim (what the tutor runs) than in plain
+   * Vim/Neovim: shown loudly under the intro, so nobody learns a LazyVim default as Vim's. */
+  lazyvim?: ReactNode;
   challenge: Challenge;
   /** Optional boss level: not counted toward completion. */
   boss?: boolean;
@@ -200,6 +203,10 @@ export type Setup = {
   search?: string;
   /** Rows available to the editor (default: fit the buffer, 6–20). */
   height?: number;
+  /** The window's first line (0-based) as the round opens, where a chain of scrolling rounds left
+   * the view: page and screen motions depend on it. Unlike an `init` scroll, the cursor still
+   * carries over. */
+  top?: number;
   /** Escape hatch for anything else (splits, quickfix lists, …). Runs last. */
   init?: (vim: Vim) => void;
 };

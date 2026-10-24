@@ -202,7 +202,7 @@ function mainWin(vim: Vim): Window {
   if (prev && wins.includes(prev)) return prev;
   if (wins.length) return wins[0];
   const blank = vim.addBuffer(new Buffer('[No Name]', ''));
-  return vim.splitWindow('row', blank);
+  return vim.splitWindow('row', blank, 'before');
 }
 
 function openFile(vim: Vim, path: string) {

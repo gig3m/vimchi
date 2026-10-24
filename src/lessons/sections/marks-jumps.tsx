@@ -755,7 +755,8 @@ export const marksJumps: Section = {
           <p>
             <Code>j</Code>, <Code>w</Code> and <Code>f</Code> are not jumps, so they don't move the <Code>'</Code> mark.
             Searches, <Code>G</Code>, <Code>gg</Code>, <Code>%</Code>, <Code>{'{'}</Code>, <Code>{'}'}</Code>,{' '}
-            <Code>H</Code>, <Code>M</Code>, <Code>L</Code> and mark jumps are.
+            <Code>M</Code> and mark jumps are (and <Code>H</Code> and <Code>L</Code>, in plain Vim; LazyVim gives them
+            to buffers).
           </p>
         ),
       },

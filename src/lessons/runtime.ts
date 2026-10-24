@@ -76,6 +76,7 @@ export function createVim(setup: Setup): Vim {
   const rows = setup.height ?? Math.max(6, Math.min(20, vim.buf.lineCount + 1));
   vim.screenRows = rows;
   vim.win.height = rows;
+  if (setup.top != null) vim.win.top = setup.top;
   setup.init?.(vim);
   vim.clampCursor();
   vim.scrollToCursor();
@@ -115,12 +116,20 @@ function stepsRequired(setup: Setup, round: Round): boolean {
   return goalMet(vim, final);
 }
 
-/** Whether a round's reference solution, started with the cursor at `at`, reaches its goal. */
-export function solves(setup: Setup, round: Round, at: Pos): boolean {
+/** Whether a round's reference solution, started with the cursor at `at`, reaches its goal. With
+ * `walkTo`, the cursor (and a view whose top line is `top`) first walks there with j/k, column
+ * kept, as a learner would from a carried cursor: the view that walk leaves matters to page
+ * and screen motions. */
+export function solves(setup: Setup, round: Round, at: Pos, top?: number, walkTo?: number): boolean {
   const vim = createVim(setup);
   vim.win.cursor = { ...at };
   vim.win.want = at.col;
+  if (top != null) vim.win.top = top;
   vim.scrollToCursor();
+  if (walkTo != null && walkTo !== at.line) {
+    const n = Math.abs(walkTo - at.line);
+    for (const k of solutionKeys(`${n}${walkTo > at.line ? 'j' : 'k'}`)) vim.feed(k);
+  }
   const steps = stepsOf(round);
   let i = 0;
   for (const k of solutionKeys(round.solution)) {
@@ -185,7 +194,8 @@ function finalize(elapsed: number, parTime: number, parKeys: number, keys: numbe
 
 // ---- session ---------------------------------------------------------------------------------------
 
-export type MsgKind = 'info' | 'warn' | 'error';
+/** `lazy`: a LazyVim default just did something plain Vim wouldn't (said once, badged). */
+export type MsgKind = 'info' | 'warn' | 'error' | 'lazy';
 
 export type SessionView = {
   vim: Vim | null;
@@ -377,6 +387,8 @@ export class Session {
       const col = Math.min(prev.cursor.col, Math.max(0, this.vim.line(line).length - 1));
       this.vim.win.cursor = { line, col };
       this.vim.win.want = col;
+      // The view stays as the last round left it too: the text doesn't jump between rounds.
+      this.vim.win.top = prev.win.top;
       this.vim.scrollToCursor();
       // Kept only while the round still works from here: once on the round's starting line, its
       // own solution must reach the goal. A backward motion with the target now ahead, `*` on
@@ -384,7 +396,9 @@ export class Session {
       // cursor goes back to the round's start, and says so (a cursor that jumps unannounced
       // loses the learner's place).
       const onLine = { line: start.line, col: Math.min(col, Math.max(0, this.vim.line(start.line).length - 1)) };
-      const fits = eqPos(onLine, start) || solves(setup, r, onLine);
+      // On the start line with the round's own view, nothing to check; any other view (a page
+      // motion depends on it) or place, replay the solution from there.
+      const fits = (eqPos(onLine, start) && this.vim.win.top === this.roundTop) || solves(setup, r, { line, col }, this.vim.win.top, start.line);
       if (goalMet(this.vim, stepsOf(r)[0].goal) || !fits) {
         if (!fits && !eqPos(start, this.vim.cursor)) {
           this.moved = { from: { ...this.vim.cursor }, to: start };
@@ -393,6 +407,7 @@ export class Session {
         }
         this.vim.win.cursor = start;
         this.vim.win.want = start.col;
+        if (!fits) this.vim.win.top = this.roundTop; // the round's own view, which its solution needs
         this.vim.scrollToCursor();
       } else {
         // Par grows by the basic moves from here to where the reference solution starts.
@@ -414,6 +429,8 @@ export class Session {
   private stepsRequired = false;
   /** The buffer text the round started with. */
   private roundText = '';
+  /** LazyVim notes already shown in this lesson. */
+  private lazySaid = new Set<string>();
   private carryByRound: number[] = [];
 
   /** Par keys for a finished round (reference length + carry-over path), or null. */
@@ -526,6 +543,16 @@ export class Session {
       doneNow.forEach((d, i) => { if (!d) this.ticks[i] = 0; else if (settled && !this.ticks[i]) this.ticks[i] = this.keys; });
       this.hits = doneNow.filter(Boolean).length;
       if (goalMet(vim, { text: g.goal })) this.finish(now);
+    }
+    // A LazyVim default just did something plain Vim wouldn't: say so, badged, once a lesson (each
+    // round has a fresh editor). It waits while a tutor note, Vim's own message, a dialog or the
+    // command line has the row.
+    if (vim.lazyNote && this.lazySaid.has(vim.lazyNote)) vim.lazyNote = null;
+    if (vim.lazyNote && !this.msg && !vim.message && !vim.confirm && vim.mode !== 'cmdline') {
+      this.msg = vim.lazyNote;
+      this.msgKind = 'lazy';
+      this.lazySaid.add(vim.lazyNote);
+      vim.lazyNote = null;
     }
     if (!this.msg && vim.message) {
       this.msg = vim.message.text.split('\n')[0];

@@ -60,7 +60,7 @@ describe('coach', () => {
       for (const cr of rep.critiques) offenders.push(`${l.id} r${cr.unit + 1}: ${cr.you} → ${cr.better.map(b => `${b.keys} (${b.rule})`).join(' | ')}`);
     }
     expect(offenders).toEqual([]);
-  });
+  }, 20_000); // every lesson's reference run, coached: ~2.5 s alone, more when the suite runs in parallel
   it('a generated run replayed with par motions gets no critiques', () => {
     const ch = CHALLENGES[0];
     for (let seed = 1; seed <= 20; seed++) {

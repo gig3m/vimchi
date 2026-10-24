@@ -39,7 +39,7 @@ export const PATTERNS: Record<string, Pattern> = {
   paragraph: { name: 'Hop between paragraphs', principle: '} jumps to the next blank line and { to the one before, skipping a whole block at a time.', lesson: 'paragraphs' },
   'match-pair': { name: 'Jump to the matching bracket', principle: '% jumps from a bracket to the one that closes or opens it.', lesson: 'matching-pairs' },
   'half-page': { name: 'Move half a screen', principle: 'Ctrl-d moves down half a screen and Ctrl-u moves up, instead of holding j or k.', lesson: 'half-pages' },
-  'screen-jump': { name: 'Jump to the top, middle or bottom of the screen', principle: 'H, M and L jump to the top, middle and bottom lines you can see.', lesson: 'screen-lines' },
+  'screen-jump': { name: 'Jump to the middle of the screen', principle: 'M jumps to the middle line you can see. (In LazyVim H and L switch buffers; they jump to the top and bottom only in Visual mode or after an operator.)', lesson: 'screen-lines' },
   'search-jump': { name: 'Jump by searching', principle: 'Type / and a few letters of where you want to go, then Enter: the cursor lands on the next match, however far away it is. n goes to the match after that.', lesson: 'search-forward' },
   'star-jump': { name: 'Find this word again', principle: '* jumps to the next place the word under the cursor appears, and # to the one before.', lesson: 'word-under-cursor' },
 };

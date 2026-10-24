@@ -74,6 +74,15 @@ const shape = (vim: Vim) => {
   return walk(vim.tab.root);
 };
 
+/** Build a starting layout the same way whatever the split options: placed as written (keymaps
+ * above options, init left of options), not where LazyVim's splitbelow/splitright would put it. */
+const placed = (build: (vim: Vim) => void) => (vim: Vim) => {
+  const { splitbelow, splitright } = vim.options;
+  vim.options.splitbelow = false;
+  vim.options.splitright = false;
+  try { build(vim); } finally { vim.options.splitbelow = splitbelow; vim.options.splitright = splitright; }
+};
+
 const focus = (vim: Vim, name: string) => {
   const w = vim.tab.windows().find(w => w.buf.name === name);
   if (w) vim.focusWindow(w);
@@ -84,7 +93,7 @@ const focus = (vim: Vim, name: string) => {
  *   keymaps | lsp
  *   options | init
  */
-const grid = (at: string) => (vim: Vim) => {
+const grid = (at: string) => placed((vim: Vim) => {
   const opt = vim.win;
   vim.ex('vs init.lua');
   vim.tab.moveToEdge(vim.win, 'L');
@@ -92,7 +101,7 @@ const grid = (at: string) => (vim: Vim) => {
   vim.focusWindow(opt);
   vim.ex(`sp ${KEY}`);
   focus(vim, at);
-};
+});
 
 /** Every split in the layout has equal shares. */
 const balanced = (vim: Vim) => {
@@ -130,20 +139,26 @@ export const windowsTabs: Section = {
       title: 'Splitting',
       chips: [':sp', ':vs'],
       keyCards: [
-        { key: ':sp', glyph: '⬒', label: 'split above', sub: ':sp file' },
-        { key: ':vs', glyph: '◧', label: 'split beside', sub: ':vs file' },
+        { key: ':sp', glyph: '⬓', label: 'split below', sub: ':sp file' },
+        { key: ':vs', glyph: '◨', label: 'split to the right', sub: ':vs file' },
       ],
       intro: (
         <>
           <p>
-            <Code>:sp</Code> splits the window in two, one above the other. <Code>:vs</Code> splits it side by side.
-            Both leave the cursor in the new window.
+            <Code>:sp</Code> splits the window in two, one above the other, and puts the new one below.{' '}
+            <Code>:vs</Code> splits it side by side, the new one on the right. Both leave the cursor in the new window.
           </p>
           <p>
             Give either a file name to open that file in the new window: <Code>:vs init.lua</Code> puts init.lua next
             to what you are editing. Without a name you get a second view of the same buffer.
           </p>
         </>
+      ),
+      lazyvim: (
+        <p>
+          LazyVim opens <Code>:sp</Code> below and <Code>:vs</Code> to the right (<Code>splitbelow</Code>,{' '}
+          <Code>splitright</Code>). Plain Vim and Neovim open the new window above and to the left.
+        </p>
       ),
       practice: total => (
         <p>
@@ -169,19 +184,19 @@ export const windowsTabs: Section = {
             solution: ':vs<CR>',
           },
           {
-            prompt: 'Open lua/keymaps.lua in a split above this one.',
-            goal: { buffer: KEY, check: vim => shape(vim) === 'col(keymaps,options)' },
+            prompt: 'Open lua/keymaps.lua in a split below this one.',
+            goal: { buffer: KEY, check: vim => shape(vim) === 'col(options,keymaps)' },
             solution: `:sp ${KEY}<CR>`,
           },
           {
-            prompt: 'Put init.lua beside this file.',
-            goal: { buffer: 'init.lua', check: vim => shape(vim) === 'row(init,options)' },
+            prompt: 'Put init.lua beside this file, on the right.',
+            goal: { buffer: 'init.lua', check: vim => shape(vim) === 'row(options,init)' },
             solution: ':vs init.lua<CR>',
           },
           {
-            prompt: 'You are in telescope.lua, on the left. Open lua/plugins/lsp.lua above it.',
-            setup: { init: vim => vim.ex(`vs ${TEL}`) },
-            goal: { buffer: LSP, check: vim => shape(vim) === 'row(col(lsp,telescope),options)' },
+            prompt: 'You are in the left window, the telescope plugin. Open lua/plugins/lsp.lua below it.',
+            setup: { init: placed(vim => vim.ex(`vs ${TEL}`)) },
+            goal: { buffer: LSP, check: vim => shape(vim) === 'row(col(telescope,lsp),options)' },
             solution: `:sp ${LSP}<CR>`,
           },
           {
@@ -212,10 +227,17 @@ export const windowsTabs: Section = {
           <p>They are the same directions as the cursor keys, one level up: moving between windows, not characters.</p>
         </>
       ),
+      lazyvim: (
+        <p>
+          LazyVim draws one status line for the whole screen (<Code>laststatus=3</Code>), and it names only the
+          window you are in. Plain Vim and Neovim give every window its own status line with its file name.
+        </p>
+      ),
       practice: total => (
         <p>
-          Four windows are open: keymaps and options on the left, lsp and init on the right. Move to the one each
-          round names. {ALT_NOTE} {total} rounds.
+          Four windows are open: keymaps above options on the left, the LSP spec above init.lua on the right.
+          Only the window you are in is named, in the status line; tell the others apart by what is in them.
+          Move to the one each round names. {ALT_NOTE} {total} rounds.
         </p>
       ),
       aside: {
@@ -232,18 +254,18 @@ export const windowsTabs: Section = {
         kind: 'rounds',
         base: { files: CONFIG, open: OPT, height: 18 },
         rounds: [
-          { prompt: 'Move right to lsp.lua.', setup: { init: grid(KEY) }, goal: { buffer: LSP }, solution: '<C-w>l' },
-          { prompt: 'Move down to init.lua.', setup: { init: grid(LSP) }, goal: { buffer: 'init.lua' }, solution: '<C-w>j' },
-          { prompt: 'Move left to options.lua.', setup: { init: grid('init.lua') }, goal: { buffer: OPT }, solution: '<C-w>h' },
-          { prompt: 'Move up to keymaps.lua.', setup: { init: grid(OPT) }, goal: { buffer: KEY }, solution: '<C-w>k' },
+          { prompt: 'Move right, to the LSP plugin spec (lsp.lua).', setup: { init: grid(KEY) }, goal: { buffer: LSP }, solution: '<C-w>l' },
+          { prompt: 'Move down, to the require lines (init.lua).', setup: { init: grid(LSP) }, goal: { buffer: 'init.lua' }, solution: '<C-w>j' },
+          { prompt: 'Move left, to the opt. lines (options.lua).', setup: { init: grid('init.lua') }, goal: { buffer: OPT }, solution: '<C-w>h' },
+          { prompt: 'Move up, to the map lines (keymaps.lua).', setup: { init: grid(OPT) }, goal: { buffer: KEY }, solution: '<C-w>k' },
           {
-            prompt: 'Get to init.lua, bottom right.',
+            prompt: 'Get to init.lua, the require lines bottom right.',
             setup: { init: grid(KEY) },
             goal: { buffer: 'init.lua' },
             solution: '<C-w>j<C-w>l',
           },
           {
-            prompt: 'Get to keymaps.lua, top left.',
+            prompt: 'Get to keymaps.lua, the map lines top left.',
             setup: { init: grid('init.lua') },
             goal: { buffer: KEY },
             solution: '<C-w>k<C-w>h',
@@ -272,8 +294,8 @@ export const windowsTabs: Section = {
       ),
       practice: total => (
         <p>
-          Four windows: keymaps and options on the left, lsp and init on the right. Close the ones each round asks
-          for. {ALT_NOTE} {total} rounds.
+          Four windows: keymaps above options on the left, the LSP spec above init.lua on the right. Close the ones
+          each round asks for. {ALT_NOTE} {total} rounds.
         </p>
       ),
       aside: {
@@ -290,32 +312,32 @@ export const windowsTabs: Section = {
         base: { files: CONFIG, open: OPT, height: 18 },
         rounds: [
           {
-            prompt: 'Close this window (lsp.lua).',
+            prompt: 'Close this window, the LSP plugin spec.',
             setup: { init: grid(LSP) },
             goal: { check: vim => vim.tab.windows().length === 3 && !vim.tab.windows().some(w => w.buf.name === LSP) },
             solution: '<C-w>c',
           },
           {
-            prompt: 'Keep only options.lua.',
+            prompt: 'Keep only this window, the options.',
             setup: { init: grid(OPT) },
             goal: { buffer: OPT, check: vim => vim.tab.windows().length === 1 },
             solution: '<C-w>o',
           },
           {
-            prompt: 'You are in keymaps.lua. Close options.lua, the window below.',
+            prompt: 'You are in the keymaps. Close the options, the window below.',
             setup: { init: grid(KEY) },
             goal: { check: vim => vim.tab.windows().length === 3 && !vim.tab.windows().some(w => w.buf.name === OPT) },
             solution: '<C-w>j<C-w>c',
           },
           {
-            prompt: 'Make lsp.lua the only window.',
+            prompt: 'Make the LSP plugin spec, top right, the only window.',
             setup: { init: grid('init.lua') },
             goal: { buffer: LSP, check: vim => vim.tab.windows().length === 1 },
             solution: '<C-w>k<C-w>o',
           },
           {
-            prompt: 'Close init.lua, the window to the left.',
-            setup: { init: vim => { vim.ex('vs init.lua'); focus(vim, OPT); } },
+            prompt: 'Close init.lua, the require lines in the window to the left.',
+            setup: { init: placed(vim => { vim.ex('vs init.lua'); focus(vim, OPT); }) },
             goal: { buffer: OPT, check: vim => vim.tab.windows().length === 1 },
             solution: '<C-w>h<C-w>c',
           },
@@ -345,8 +367,8 @@ export const windowsTabs: Section = {
       ),
       practice: total => (
         <p>
-          Resize the windows the way each round asks. The four-window rounds have keymaps and options on the left,
-          lsp and init on the right. {ALT_NOTE} {total} rounds.
+          Resize the windows the way each round asks. The four-window rounds have keymaps above options on the left,
+          the LSP spec above init.lua on the right. {ALT_NOTE} {total} rounds.
         </p>
       ),
       aside: {
@@ -364,13 +386,13 @@ export const windowsTabs: Section = {
         rounds: [
           {
             prompt: 'Give keymaps.lua all the height.',
-            setup: { init: vim => vim.ex(`sp ${KEY}`) },
+            setup: { init: placed(vim => vim.ex(`sp ${KEY}`)) },
             goal: { buffer: KEY, check: vim => maxed(vim, 'tall') },
             solution: '<C-w>_',
           },
           {
             prompt: 'Make init.lua as wide as it goes.',
-            setup: { init: vim => vim.ex('vs init.lua') },
+            setup: { init: placed(vim => vim.ex('vs init.lua')) },
             goal: { buffer: 'init.lua', check: vim => maxed(vim, 'wide') },
             solution: '<C-w>|',
           },
@@ -381,13 +403,13 @@ export const windowsTabs: Section = {
             solution: '<C-w>=',
           },
           {
-            prompt: 'You are in keymaps.lua. Give options.lua, the window below, all the height.',
+            prompt: 'You are in the keymaps. Give the options, the window below, all the height.',
             setup: { init: grid(KEY) },
             goal: { buffer: OPT, check: vim => maxed(vim, 'tall') },
             solution: '<C-w>j<C-w>_',
           },
           {
-            prompt: 'Make lsp.lua as wide as it goes.',
+            prompt: 'Make the LSP plugin spec, top right, as wide as it goes.',
             setup: { init: grid(KEY) },
             goal: { buffer: LSP, check: vim => maxed(vim, 'wide') },
             solution: '<C-w>l<C-w>|',
@@ -438,30 +460,30 @@ export const windowsTabs: Section = {
         rounds: [
           {
             prompt: 'keymaps.lua is above options.lua. Move keymaps to the right, side by side.',
-            setup: { init: vim => vim.ex(`sp ${KEY}`) },
+            setup: { init: placed(vim => vim.ex(`sp ${KEY}`)) },
             goal: { check: vim => shape(vim) === 'row(options,keymaps)' },
             solution: '<C-w>L',
           },
           {
             prompt: 'You are in init.lua. Put it on top, full width.',
-            setup: { init: vim => vim.ex('vs init.lua') },
+            setup: { init: placed(vim => vim.ex('vs init.lua')) },
             goal: { check: vim => shape(vim) === 'col(init,options)' },
             solution: '<C-w>K',
           },
           {
-            prompt: 'Make lsp.lua a full-width window at the bottom.',
+            prompt: 'Make this window, the LSP plugin spec, full width at the bottom.',
             setup: { init: grid(LSP) },
             goal: { check: vim => shape(vim) === 'col(row(col(keymaps,options),init),lsp)' },
             solution: '<C-w>J',
           },
           {
-            prompt: 'Make options.lua a full-height window on the left.',
+            prompt: 'Make this window, the options, full height on the left.',
             setup: { init: grid(OPT) },
             goal: { check: vim => shape(vim) === 'row(options,keymaps,col(lsp,init))' },
             solution: '<C-w>H',
           },
           {
-            prompt: 'Make init.lua a full-height window on the far right.',
+            prompt: 'Make this window, init.lua, full height on the far right.',
             setup: { init: grid('init.lua') },
             goal: { check: vim => shape(vim) === 'row(col(keymaps,options),lsp,init)' },
             solution: '<C-w>L',

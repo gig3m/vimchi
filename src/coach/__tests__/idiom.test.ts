@@ -84,13 +84,21 @@ describe('motion critic: canonical routes, one suggestion', () => {
   it('24 j to line 25 → 25G once G is taught', () => {
     expect(motion('top-bottom', 2, 'j'.repeat(24)).map(c => c.better[0].keys)).toContain('25G');
   });
+  it('k-spam to the middle of the screen → M; never H or L, which are buffers in LazyVim', () => {
+    expect(motion('screen-lines', 0, 'k'.repeat(6)).map(c => c.better[0].keys)).toContain('M');
+    for (const keys of ['k'.repeat(11), 'j'.repeat(10)]) {
+      for (const c of motion('screen-lines', 0, keys)) expect(c.better.map(b => b.keys).join(' ')).not.toMatch(/\b\d*[HL]\b/);
+    }
+  });
   it('l-spam to the closing paren in the % lesson → %', () => {
     const c = motion('matching-pairs', 4, 'l'.repeat(20));
     expect(c.map(x => x.better[0].keys)).toContain('%');
   });
   it('j-spam in the half-pages lesson → <C-d>', () => {
-    const c = motion('half-pages', 0, 'j'.repeat(12));
-    expect(c[0]?.better[0].keys).toMatch(/^(<C-d>)+$/);
+    // Line 16 is two C-d from the top (scrolloff=4 makes the first one go 10). The round's goal is
+    // line 28, so the session doesn't end there.
+    const c = motion('half-pages', 0, 'j'.repeat(16));
+    expect(c[0]?.better[0].keys).toBe('<C-d><C-d>');
   });
   it('vertical then horizontal: never 3jEj3j3j or 2wjl', () => {
     for (const [lesson, round, keys] of [['search-forward', 0, 'jjjjjjjjjjw'], ['insert-mode', 0, 'j' + 'l'.repeat(17)]] as const) {

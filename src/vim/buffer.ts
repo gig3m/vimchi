@@ -1,4 +1,5 @@
 import { fail, type Pos, pos } from './types';
+import { FT_COMMENTS } from './comments';
 
 export const E21 = "E21: Cannot make changes, 'modifiable' is off";
 
@@ -35,7 +36,8 @@ export class Buffer {
   modifiable = true;
   /** Lowercase marks plus automatic ones: [ ] < > . ^ " */
   marks = new Map<string, Pos>();
-  changelist: Pos[] = [];
+  /** `top`: the window's view when the change was made ('jumpoptions' view restores it on g;). */
+  changelist: (Pos & { top?: number })[] = [];
   changeIdx = -1;
   /** Buffer-local option values ('shiftwidth' and friends, see BUFFER_LOCAL): the filetype's as
    * Neovim's ftplugins set them, the rest copied from the global values (Vim.localsOf). */
@@ -395,17 +397,30 @@ export function filetypeOf(name: string): string {
 
 /**
  * What Neovim's own ftplugins (0.12, recommended styles on, as nvim --clean and LazyVim have them)
- * set for indenting: Python's PEP 8 four spaces. 'softtabstop' is left out (the engine has none).
- * From $VIMRUNTIME/ftplugin/{python,rust,yaml,ruby}.vim.
+ * set: Python's PEP 8 four spaces, and each filetype's 'comments' and 'formatoptions' (most drop
+ * LazyVim's t; Markdown also drops r and o, so its lists and quotes don't continue). 'softtabstop'
+ * is left out (the engine has none). From $VIMRUNTIME/ftplugin/*.vim, checked with :set in each.
  */
-export const FT_OPTIONS: Record<string, Record<string, boolean | number>> = {
+const FO_CODE = 'jncroql';
+export const FT_OPTIONS: Record<string, Record<string, boolean | number | string>> = {
   python: { expandtab: true, tabstop: 4, shiftwidth: 4 },
   // Not markdown's (sw=4 ts=4): LazyVim sets g:markdown_recommended_style = 0.
-  rust: { expandtab: true, shiftwidth: 4 },
-  yaml: { expandtab: true, shiftwidth: 2 },
-  ruby: { expandtab: true, shiftwidth: 2 },
+  markdown: { formatoptions: 'jtcqln' },
+  rust: { expandtab: true, shiftwidth: 4, formatoptions: 'croqnlj' },
+  yaml: { expandtab: true, shiftwidth: 2, formatoptions: FO_CODE },
+  ruby: { expandtab: true, shiftwidth: 2, formatoptions: FO_CODE },
   // Not Go's (noexpandtab shiftwidth=0): the challenge corpus has its Go indented with two spaces.
+  go: { formatoptions: 'jcroqln' },
+  json: { formatoptions: 'jcroqln' },
+  typescript: { formatoptions: FO_CODE },
+  javascript: { formatoptions: FO_CODE },
+  c: { formatoptions: FO_CODE },
+  css: { formatoptions: FO_CODE },
+  lua: { formatoptions: FO_CODE },
+  sh: { formatoptions: FO_CODE },
+  vim: { formatoptions: FO_CODE },
 };
+for (const [ft, c] of Object.entries(FT_COMMENTS)) (FT_OPTIONS[ft] ??= {}).comments = c;
 
 export const COMMENT_STRINGS: Record<string, string> = {
   typescript: '// %s', javascript: '// %s', go: '// %s', rust: '// %s', c: '// %s', css: '/* %s */', json: '// %s',

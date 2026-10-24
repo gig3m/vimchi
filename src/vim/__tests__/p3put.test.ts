@@ -69,8 +69,9 @@ describe('Visual $ selects the end-of-line', () => {
     ['|abcd\nabcde\nx', 'jllll<C-v>ky', 'abc|d\nabcde\nx', { text: '\ne', kind: 'block' }],
     ['|ab\nx\nabcd', '<C-v>jly', '|ab\nx\nabcd', { text: 'ab\nx', kind: 'block' }],
   ])('%s  %s', (doc, keys, want, unnamed) => {
-    const v = run(doc, keys);
-    expect(C(doc, keys)).toBe(want);
+    // Plain Neovim's virtualedit= (LazyVim's virtualedit=block is in lazyvim.test.ts).
+    const v = run(doc, ':set ve=<CR>' + keys);
+    expect(C(doc, ':set ve=<CR>' + keys)).toBe(want);
     expect(reg(v)).toEqual(unnamed);
   });
   it('Esc after v$j leaves the cursor on the last character', () => {
@@ -159,7 +160,7 @@ describe('Visual put: selection kind x register kind, p and P, counts', () => {
     ['|ab\nx\nabcd', 'yiwjjll<C-v>kkp', 'aba|b\nx\nababd'], // a line ending before the block is skipped
     ['|ab\nx\nabcd', '<C-v>jlyjjl<C-v>kkp', 'a|ab\nxx\nacd'],
   ])('%s  %s', (doc, keys, want) => {
-    expect(C(doc, keys)).toBe(want);
+    expect(C(doc, ':set ve=<CR>' + keys)).toBe(want); // plain Neovim's virtualedit=
   });
 
   it.each([
@@ -248,7 +249,8 @@ describe('r<Tab> and r<CR>', () => {
     ['|abcdef', 'lvlr<CR>', 'a|\r\rdef'],
     ['|abcdef', 'lvlr<Tab>', 'a|\t\tdef'],
   ])('%j  %s', (doc, keys, want) => {
-    expect(C(doc, keys)).toBe(want);
+    // Plain Neovim's tabstop=8 and nosmartindent (LazyVim's are in lazyvim.test.ts).
+    expect(C(doc, ':set ts=8 nosi<CR>' + keys)).toBe(want);
   });
 });
 
