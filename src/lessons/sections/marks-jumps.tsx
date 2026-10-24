@@ -10,6 +10,21 @@ const history = (keys: string) => (vim: Vim) => {
   vim.typedKeys = 0;
 };
 
+/** Mark `m` is on `line` (and at `col`, when given). */
+const markOn = (m: string, line: number, col?: number) => (vim: Vim) => {
+  const at = vim.buf.marks.get(m);
+  return !!at && at.line === line && (col == null || at.col === col);
+};
+
+/** Mark `m` is on `line` (and `col`) and the cursor jumped back to it from another line: setting
+ * the mark where the cursor already is doesn't count as the jump. */
+const backTo = (m: string, line: number, col?: number) => (vim: Vim) => {
+  const from = vim.buf.marks.get("'");
+  return markOn(m, line, col)(vim) && !!from && from.line !== line;
+};
+
+const onLine = (line: number) => (vim: Vim) => vim.cursor.line === line;
+
 /** Load other files and set uppercase marks in them, then return to the opened file. */
 const fileMarks = (marks: Record<string, [file: string, line: number, col: number]>) => (vim: Vim) => {
   const home = vim.buf;
@@ -73,6 +88,41 @@ const PROJECT = {
   ].join('\n'),
 };
 
+/** SHOP with some lines replaced (null drops the line). */
+const shop = (edits: Record<number, string[] | null>) => SHOP.flatMap((l, i) => (i in edits ? (edits[i] ?? []) : [l]));
+
+const GETJSON = (rest: string) => [
+  "import { HttpError } from './errors';",
+  '',
+  'export async function getJson(url: string) {',
+  '  const res = await fetch(url);',
+  `  if (!res.ok)${rest}`,
+  '  return res.json();',
+  '}',
+];
+const CLIENT = (timeout: string) => [
+  'export const client = createClient({',
+  "  baseUrl: '/api',",
+  `  timeout: ${timeout},`,
+  '  retries: 2,',
+  '});',
+  '',
+  'export default client;',
+];
+const LIMITS = (idle: string) => ['export const limits = {', '  maxBodyBytes: 1_048_576,', `  idleTimeout: ${idle}`, '  maxConnections: 512,', '};'];
+const README = (line: string) => [
+  '# vimchi',
+  '',
+  'A browser Vim tutor.',
+  '',
+  '## Setup',
+  '',
+  'Run `npm install`, then `npm run dev`.',
+  line,
+  '',
+  '## Lessons',
+];
+
 const SHOP = [
   "import { formatPrice } from './money';",
   '',
@@ -117,7 +167,8 @@ export const marksJumps: Section = {
       ),
       practice: total => (
         <p>
-          Reach the <span className="hl-green">green box</span> using the mark the prompt names. {total} rounds.
+          Set the marks the round asks for, move away, then jump back with <Code>'</Code> or <Code>`</Code>.{' '}
+          {total} rounds.
         </p>
       ),
       aside: {
@@ -135,43 +186,78 @@ export const marksJumps: Section = {
         base: { name: 'server.ts', text: SERVER },
         rounds: [
           {
-            prompt: 'Jump to the line of mark a.',
-            setup: { cursor: { line: 0, col: 0 }, marks: { a: { line: 9, col: 21 } } },
-            goal: { cursor: { line: 9, col: 2 } },
-            solution: "'a",
+            setup: { cursor: { line: 9, col: 2 } },
+            steps: [
+              {
+                prompt: 'Set mark a on the "const user" line.',
+                goal: { check: markOn('a', 9) },
+                mark: { start: { line: 9, col: 2 }, end: { line: 9, col: 49 } },
+              },
+              { prompt: 'Go to the last line.', goal: { check: onLine(14) } },
+            ],
+            prompt: 'Jump back to the line of mark a.',
+            goal: { cursor: { line: 9, col: 2 }, check: backTo('a', 9) },
+            solution: "maG'a",
           },
           {
-            prompt: 'Jump to the exact spot of mark a.',
-            setup: { cursor: { line: 13, col: 0 }, marks: { a: { line: 9, col: 21 } } },
-            goal: { cursor: { line: 9, col: 21 } },
-            solution: '`a',
+            setup: { cursor: { line: 10, col: 2 } },
+            steps: [
+              {
+                prompt: 'Set mark s on "404".',
+                goal: { check: markOn('s', 10, 31) },
+                mark: { start: { line: 10, col: 31 }, end: { line: 10, col: 33 } },
+              },
+              { prompt: 'Go to the top of the file.', goal: { check: onLine(0) } },
+            ],
+            prompt: 'Jump to the exact spot of mark s.',
+            goal: { cursor: { line: 10, col: 31 }, check: backTo('s', 10, 31) },
+            solution: 'f4msgg`s',
           },
           {
-            prompt: 'Back to mark d, exact column.',
-            setup: { cursor: { line: 14, col: 0 }, marks: { d: { line: 1, col: 9 } } },
-            goal: { cursor: { line: 1, col: 9 } },
-            solution: '`d',
+            setup: { cursor: { line: 3, col: 0 } },
+            steps: [
+              {
+                prompt: 'Set mark b on the "const app" line.',
+                goal: { check: markOn('b', 3) },
+                mark: { start: { line: 3, col: 0 }, end: { line: 3, col: 21 } },
+              },
+              { prompt: 'Go to the top of the file.', goal: { check: onLine(0) } },
+            ],
+            prompt: 'Jump back to the line of mark b.',
+            goal: { cursor: { line: 3, col: 0 }, check: backTo('b', 3) },
+            solution: "mbgg'b",
           },
           {
-            prompt: 'Mark this spot b, then jump to the line of mark a.',
-            setup: { cursor: { line: 11, col: 6 }, marks: { a: { line: 3, col: 6 } } },
-            goal: {
-              cursor: { line: 3, col: 0 },
-              check: vim => vim.buf.marks.get('b')?.line === 11 && vim.buf.marks.get('b')?.col === 6,
-            },
-            solution: "mb'a",
+            setup: { cursor: { line: 6, col: 0 } },
+            steps: [
+              {
+                prompt: 'Set mark h on the "/health" line.',
+                goal: { check: markOn('h', 6) },
+                mark: { start: { line: 6, col: 0 }, end: { line: 6, col: 49 } },
+              },
+              {
+                prompt: 'Set mark r on the "res.json(user)" line.',
+                goal: { check: markOn('r', 11) },
+                mark: { start: { line: 11, col: 2 }, end: { line: 11, col: 16 } },
+              },
+            ],
+            prompt: 'Jump to the line of mark h.',
+            goal: { cursor: { line: 6, col: 0 }, check: backTo('h', 6) },
+            solution: "mh5jmr'h",
           },
           {
-            prompt: 'Jump to the line of mark r.',
-            setup: { cursor: { line: 4, col: 4 }, marks: { h: { line: 6, col: 9 }, r: { line: 10, col: 25 } } },
-            goal: { cursor: { line: 10, col: 2 } },
-            solution: "'r",
-          },
-          {
-            prompt: 'Jump to the exact spot of mark h.',
-            setup: { cursor: { line: 12, col: 0 }, marks: { h: { line: 6, col: 9 }, r: { line: 10, col: 25 } } },
-            goal: { cursor: { line: 6, col: 9 } },
-            solution: '`h',
+            setup: { cursor: { line: 9, col: 2 } },
+            steps: [
+              {
+                prompt: 'Set mark f on "find".',
+                goal: { check: markOn('f', 9, 30) },
+                mark: { start: { line: 9, col: 30 }, end: { line: 9, col: 33 } },
+              },
+              { prompt: 'Go to the top of the file.', goal: { check: onLine(0) } },
+            ],
+            prompt: 'Jump to the exact spot of mark f.',
+            goal: { cursor: { line: 9, col: 30 }, check: backTo('f', 9, 30) },
+            solution: 'ffmfgg`f',
           },
         ],
       },
@@ -461,7 +547,7 @@ export const marksJumps: Section = {
       ),
       practice: total => (
         <p>
-          You made an edit, then wandered off. Get back to it and finish the job. {total} rounds.
+          Make an edit, wander off, then get back to it and finish the job. {total} rounds.
         </p>
       ),
       aside: {
@@ -478,119 +564,54 @@ export const marksJumps: Section = {
         base: { name: 'http.ts' },
         rounds: [
           {
-            prompt: 'You left insert mode mid-line and went to the top. Finish the line with "status);".',
-            setup: {
-              text: [
-                "import { HttpError } from './errors';",
-                '',
-                'export async function getJson(url: string) {',
-                '  const res = await fetch(url);',
-                '  if (!res.ok)',
-                '  return res.json();',
-                '}',
-              ],
-              cursor: { line: 4, col: 0 },
-              init: history('A throw new HttpError(res.<Esc>gg'),
-            },
-            goal: {
-              text: [
-                "import { HttpError } from './errors';",
-                '',
-                'export async function getJson(url: string) {',
-                '  const res = await fetch(url);',
-                '  if (!res.ok) throw new HttpError(res.status);',
-                '  return res.json();',
-                '}',
-              ],
-            },
-            solution: 'gistatus);<Esc>',
+            setup: { text: GETJSON(" throw new HttpError('');"), cursor: { line: 4, col: 2 } },
+            inOrder: true,
+            steps: [
+              {
+                prompt: 'Type "Not" between the quotes of HttpError(\'\'), then leave insert mode.',
+                goal: { text: GETJSON(" throw new HttpError('Not');") },
+              },
+              { prompt: 'Go to the top of the file.', goal: { text: GETJSON(" throw new HttpError('Not');"), check: onLine(0) } },
+            ],
+            prompt: 'Go back to where you were typing and finish the message: "Not ok".',
+            goal: { text: GETJSON(" throw new HttpError('Not ok');") },
+            solution: "ci'Not<Esc>gggi ok<Esc>",
           },
           {
-            prompt: 'You just typed 30000 and moved away. Make it 30_000.',
-            setup: {
-              text: [
-                'export const client = createClient({',
-                "  baseUrl: '/api',",
-                '  timeout: 5000,',
-                '  retries: 2,',
-                '});',
-                '',
-                'export default client;',
-              ],
-              cursor: { line: 2, col: 11 },
-              init: history('ciw30000<Esc>G'),
-            },
-            goal: {
-              text: [
-                'export const client = createClient({',
-                "  baseUrl: '/api',",
-                '  timeout: 30_000,',
-                '  retries: 2,',
-                '});',
-                '',
-                'export default client;',
-              ],
-            },
-            solution: '`.hhi_<Esc>',
+            setup: { text: CLIENT('5000'), cursor: { line: 2, col: 2 } },
+            inOrder: true,
+            steps: [
+              { prompt: 'Change 5000 to 30000.', goal: { text: CLIENT('30000') } },
+              { prompt: 'Go to the last line.', goal: { text: CLIENT('30000'), check: onLine(6) } },
+            ],
+            prompt: 'Jump back to that change and make it 30_000.',
+            goal: { text: CLIENT('30_000') },
+            solution: 'f5ciw30000<Esc>G`.hhi_<Esc>',
           },
           {
-            prompt: 'Add a "// ms" comment to the end of the line you last changed.',
-            setup: {
-              text: [
-                'export const limits = {',
-                '  maxBodyBytes: 1_048_576,',
-                '  idleTimeout: 60_000,',
-                '  maxConnections: 512,',
-                '};',
-              ],
-              cursor: { line: 2, col: 15 },
-              init: history('ciw60_000<Esc>gg'),
-            },
-            goal: {
-              text: [
-                'export const limits = {',
-                '  maxBodyBytes: 1_048_576,',
-                '  idleTimeout: 60_000, // ms',
-                '  maxConnections: 512,',
-                '};',
-              ],
-            },
-            solution: "'.A // ms<Esc>",
+            setup: { text: LIMITS('60000,'), cursor: { line: 2, col: 2 } },
+            inOrder: true,
+            steps: [
+              { prompt: 'Change 60000 to 90000.', goal: { text: LIMITS('90000,') } },
+              { prompt: 'Go to the top of the file.', goal: { text: LIMITS('90000,'), check: onLine(0) } },
+            ],
+            prompt: 'Add a "// ms" comment to the end of the line you changed.',
+            goal: { text: LIMITS('90000, // ms') },
+            solution: "f6r9gg'.A // ms<Esc>",
           },
           {
-            prompt: 'You left insert mode mid-sentence and went to the top. Make it end "in your browser tab."',
-            setup: {
-              name: 'README.md',
-              text: [
-                '# vimchi',
-                '',
-                'A browser Vim tutor.',
-                '',
-                '## Setup',
-                '',
-                'Run `npm install`, then `npm run dev`.',
-                'The tutor opens',
-                '',
-                '## Lessons',
-              ],
-              cursor: { line: 7, col: 0 },
-              init: history('A in your browser<Esc>gg'),
-            },
-            goal: {
-              text: [
-                '# vimchi',
-                '',
-                'A browser Vim tutor.',
-                '',
-                '## Setup',
-                '',
-                'Run `npm install`, then `npm run dev`.',
-                'The tutor opens in your browser tab.',
-                '',
-                '## Lessons',
-              ],
-            },
-            solution: 'gi tab.<Esc>',
+            setup: { name: 'README.md', text: README('The tutor opens in a'), cursor: { line: 7, col: 0 } },
+            inOrder: true,
+            steps: [
+              {
+                prompt: 'Add " tab" to the end of "The tutor opens in a", then leave insert mode.',
+                goal: { text: README('The tutor opens in a tab') },
+              },
+              { prompt: 'Go to the top of the file.', goal: { text: README('The tutor opens in a tab'), check: onLine(0) } },
+            ],
+            prompt: 'Go back to where you were typing and end the sentence with a period.',
+            goal: { text: README('The tutor opens in a tab.') },
+            solution: 'A tab<Esc>gggi.<Esc>',
           },
         ],
       },
@@ -623,7 +644,8 @@ export const marksJumps: Section = {
       ),
       practice: total => (
         <p>
-          Something was just yanked, put or typed. Reach the <span className="hl-green">green box</span> at one of its edges.{' '}
+          Yank, put or type what the round asks, then reach the <span className="hl-green">green box</span> at one of
+          its edges.{' '}
           {total} rounds.
         </p>
       ),
@@ -642,38 +664,62 @@ export const marksJumps: Section = {
         base: { name: 'cart.ts', text: SHOP },
         rounds: [
           {
-            prompt: 'You yanked the text inside formatPrice( ). Jump to the end of it.',
-            setup: { cursor: { line: 8, col: 22 }, init: history('yi(') },
+            setup: { cursor: { line: 8, col: 4 } },
+            steps: [
+              {
+                prompt: 'Yank the text inside formatPrice( ).',
+                goal: yanked('total + shipping'),
+                mark: { start: { line: 8, col: 23 }, end: { line: 8, col: 38 } },
+              },
+            ],
+            prompt: 'Jump to the end of what you yanked.',
             goal: { cursor: { line: 8, col: 38 } },
-            solution: '`]',
+            solution: 'f(yi(`]',
           },
           {
-            prompt: 'You put three lines below. Jump to the last character put.',
-            setup: {
-              cursor: { line: 3, col: 2 },
-              registers: { a: '  const tax = Math.round(total * 0.2);\n  const discount = cart.coupon?.amount ?? 0;\n  const net = total - discount;\n' },
-              init: history('"ap'),
-            },
-            goal: { cursor: { line: 6, col: 30 } },
-            solution: '`]',
+            setup: { cursor: { line: 3, col: 2 } },
+            steps: [
+              { prompt: 'Cut the "const count" line.', goal: { text: shop({ 3: null }) } },
+              { prompt: 'Put it back below "const total".', goal: { text: shop({ 3: null, 4: [SHOP[4], SHOP[3]] }) } },
+            ],
+            prompt: 'Jump to the last character you put.',
+            goal: { cursor: { line: 4, col: 33 } },
+            solution: 'ddp`]',
           },
           {
-            prompt: 'You changed 5000 to "FREE_MIN * 2". Jump to its first character.',
-            setup: { cursor: { line: 5, col: 27 }, init: history('ciwFREE_MIN * 2<Esc>') },
+            setup: { cursor: { line: 5, col: 2 } },
+            steps: [
+              {
+                prompt: 'Change 5000 to 7500.',
+                goal: { text: shop({ 5: ['  const shipping = total > 7500 ? 0 : 499;'] }) },
+              },
+            ],
+            prompt: 'Jump to the first character of what you typed.',
             goal: { cursor: { line: 5, col: 27 } },
-            solution: '`[',
+            solution: 'f5ciw7500<Esc>`[',
           },
           {
-            prompt: 'You just typed two new lines. Jump to the line where you started.',
-            setup: { cursor: { line: 3, col: 0 }, init: history('oif (count === 0) {<CR>return null;<Esc>') },
-            goal: { cursor: { line: 4, col: 2 } },
-            solution: "'[",
+            setup: { cursor: { line: 5, col: 2 } },
+            steps: [
+              { prompt: 'Change the 499 to 0.', goal: { text: shop({ 5: ['  const shipping = total > 5000 ? 0 : 0;'] }) } },
+              { prompt: 'Go to the top of the file.', goal: { text: shop({ 5: ['  const shipping = total > 5000 ? 0 : 0;'] }), check: onLine(0) } },
+            ],
+            prompt: 'Jump back to the line you changed.',
+            goal: { cursor: { line: 5, col: 2 } },
+            solution: "f4ciw0<Esc>gg'[",
           },
           {
-            prompt: 'You yanked three lines. Jump to the last character of the yank.',
-            setup: { cursor: { line: 4, col: 2 }, init: history('y2j') },
+            setup: { cursor: { line: 4, col: 2 } },
+            steps: [
+              {
+                prompt: 'Yank the "const total" line and the two below it.',
+                goal: yanked(SHOP.slice(4, 7).join('\n') + '\n', 'line'),
+                mark: { start: { line: 4, col: 2 }, end: { line: 6, col: 9 } },
+              },
+            ],
+            prompt: 'Jump to the last character of the yank.',
             goal: { cursor: { line: 6, col: 9 } },
-            solution: '`]',
+            solution: 'y2j`]',
           },
         ],
       },

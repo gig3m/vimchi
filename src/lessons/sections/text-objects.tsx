@@ -111,7 +111,7 @@ export const textObjects: Section = {
                 'applyTheme(theme);',
                 'savePrefs({ theme });',
               ],
-              cursor: { line: 0, col: 17 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
@@ -144,7 +144,7 @@ export const textObjects: Section = {
             solution: 'jf(di(j.',
           },
           {
-            prompt: 'Change "5000" to "1000".',
+            prompt: 'Change "5000" to "250".',
             setup: {
               text: [
                 "const poll = () => fetch('/api/status');",
@@ -156,11 +156,11 @@ export const textObjects: Section = {
             goal: {
               text: [
                 "const poll = () => fetch('/api/status');",
-                'setInterval(poll, 1000);',
+                'setInterval(poll, 250);',
                 "window.addEventListener('focus', poll);",
               ],
             },
-            solution: 'jf5ciw1000<Esc>',
+            solution: 'jf5ciw250<Esc>',
           },
         ],
       },
@@ -303,7 +303,7 @@ export const textObjects: Section = {
                 'vim.opt.ignorecase = false',
                 'vim.opt.hlsearch = false',
               ],
-              cursor: { line: 1, col: 23 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
@@ -312,7 +312,7 @@ export const textObjects: Section = {
                 'vim.opt.hlsearch = true',
               ],
             },
-            solution: 'ciwtrue<Esc>j.',
+            solution: 'jffciwtrue<Esc>j.',
           },
           {
             prompt: 'Delete the second "async".',
@@ -453,7 +453,7 @@ export const textObjects: Section = {
                 "  return data?.user?.profile?.name ?? 'anon';",
                 '}',
               ],
-              cursor: { line: 2, col: 22 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
@@ -463,7 +463,7 @@ export const textObjects: Section = {
                 '}',
               ],
             },
-            solution: 'ciWname<Esc>',
+            solution: 'jjfdciWname<Esc>',
           },
           {
             prompt: 'Delete "**really**" and its space.',
@@ -587,7 +587,7 @@ export const textObjects: Section = {
                 'DIR=`dirname "$0"`',
                 'cd "$DIR" && make build',
               ],
-              cursor: { line: 1, col: 6 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
@@ -596,7 +596,7 @@ export const textObjects: Section = {
                 'cd "$DIR" && make build',
               ],
             },
-            solution: 'ci`pwd<Esc>',
+            solution: 'jci`pwd<Esc>',
           },
           {
             prompt: 'Empty the "sk-live-4f9a2c" and "hunter2" strings.',
@@ -692,7 +692,7 @@ export const textObjects: Section = {
               text: [
                 'const user = await loadUser(id);',
                 'greet(user.firstName, user.lastName);',
-                'track(user.id, user.email);',
+                'track(ctx.id, ctx.mail);',
               ],
               cursor: { line: 0, col: 0 },
             },
@@ -755,7 +755,7 @@ export const textObjects: Section = {
                 '  return Math.max(0, Math.min(v, 99));',
                 '}',
               ],
-              cursor: { line: 1, col: 19 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
@@ -764,7 +764,7 @@ export const textObjects: Section = {
                 '}',
               ],
             },
-            solution: 'ci(v, 0<Esc>',
+            solution: 'jf(ci(v, 0<Esc>',
           },
           {
             prompt: 'Change what is inside the Println parentheses to "msg".',
@@ -870,7 +870,7 @@ export const textObjects: Section = {
             solution: 'f{di{j.',
           },
           {
-            prompt: 'Delete the three lines between "{" and "}".',
+            prompt: 'Empty the function body.',
             setup: {
               name: 'counter.ts',
               text: [
@@ -878,6 +878,8 @@ export const textObjects: Section = {
                 '  count = 0;',
                 '  total = 0;',
                 '  history.length = 0;',
+                '  lastReset = Date.now();',
+                '  emit("reset");',
                 '}',
               ],
               cursor: { line: 0, col: 0 },
@@ -891,7 +893,7 @@ export const textObjects: Section = {
             solution: 'jdiB',
           },
           {
-            prompt: 'Make the [ ] hold only "dist".',
+            prompt: 'Make the [ ] hold only "lib".',
             setup: {
               name: 'package.json',
               text: [
@@ -907,12 +909,12 @@ export const textObjects: Section = {
               text: [
                 '{',
                 '  "name": "vimchi",',
-                '  "files": ["dist"],',
+                '  "files": ["lib"],',
                 '  "type": "module"',
                 '}',
               ],
             },
-            solution: 'jjf[ci["dist"<Esc>',
+            solution: 'jjf[ci["lib"<Esc>',
           },
           {
             prompt: 'Empty the { } the cursor is in, on the which-key line.',
@@ -1009,7 +1011,7 @@ export const textObjects: Section = {
                 '  <Button variant="primary">Submit form</Button>',
                 '</form>',
               ],
-              cursor: { line: 2, col: 32 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
@@ -1019,7 +1021,7 @@ export const textObjects: Section = {
                 '</form>',
               ],
             },
-            solution: 'citSave<Esc>',
+            solution: 'jjfScitSave<Esc>',
           },
           {
             prompt: 'Delete both <span> elements, tags and all.',
@@ -1051,7 +1053,7 @@ export const textObjects: Section = {
                 '  <p>Read the <a href="/guide">guide</a> first.</p>',
                 '</section>',
               ],
-              cursor: { line: 2, col: 7 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
@@ -1061,7 +1063,7 @@ export const textObjects: Section = {
                 '</section>',
               ],
             },
-            solution: 'citSoon.<Esc>',
+            solution: 'jjfRcitSoon.<Esc>',
           },
           {
             prompt: 'Change "Untitled" to "vimchi".',
@@ -1159,7 +1161,7 @@ export const textObjects: Section = {
                 'Save with :w. Easy, right? Quit with :q.',
                 'Undo with u. Easy, right? Redo with C-r.',
               ],
-              cursor: { line: 2, col: 16 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
@@ -1169,7 +1171,7 @@ export const textObjects: Section = {
                 'Undo with u. Redo with C-r.',
               ],
             },
-            solution: 'dasj.',
+            solution: 'jjfEdasj.',
           },
           {
             prompt: 'Change "Or else." to "Ship."',
@@ -1207,7 +1209,7 @@ export const textObjects: Section = {
                 '',
                 'Less memory used.',
               ],
-              cursor: { line: 3, col: 2 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
@@ -1218,7 +1220,7 @@ export const textObjects: Section = {
                 'Less memory used.',
               ],
             },
-            solution: 'dapjj.',
+            solution: 'jjdapjj.',
           },
           {
             prompt: 'Delete the "function unused()" block and the blank line after it.',
@@ -1235,7 +1237,7 @@ export const textObjects: Section = {
                 '',
                 'export const noop = () => {};',
               ],
-              cursor: { line: 5, col: 4 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
@@ -1246,7 +1248,7 @@ export const textObjects: Section = {
                 'export const noop = () => {};',
               ],
             },
-            solution: 'dap',
+            solution: '4jdap',
           },
           {
             setup: {
@@ -1285,10 +1287,10 @@ export const textObjects: Section = {
             setup: {
               name: 'NOTES.md',
               text: ['## Summary', '', 'The first draft said too much.', 'It went on for three lines', 'and never got to the point.', '', '## Next'],
-              cursor: { line: 3, col: 7 },
+              cursor: { line: 0, col: 0 },
             },
             goal: { text: ['## Summary', '', 'TBD.', '', '## Next'] },
-            solution: 'cipTBD.<Esc>',
+            solution: 'jjcipTBD.<Esc>',
           },
         ],
       },
@@ -1356,23 +1358,23 @@ export const textObjects: Section = {
             solution: "ci'nord<Esc>",
           },
           {
-            prompt: "Change the ' ' string to ','.",
+            prompt: "Change 'auto' to 'yes'.",
             setup: {
               text: [
-                '-- Leader keys',
-                "vim.g.mapleader = ' '",
-                'vim.opt.timeoutlen = 300',
+                '-- Gutter',
+                "vim.opt.signcolumn = 'auto'",
+                'vim.opt.number = true',
               ],
               cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
-                '-- Leader keys',
-                "vim.g.mapleader = ','",
-                'vim.opt.timeoutlen = 300',
+                '-- Gutter',
+                "vim.opt.signcolumn = 'yes'",
+                'vim.opt.number = true',
               ],
             },
-            solution: "jci',<Esc>",
+            solution: "jci'yes<Esc>",
           },
           {
             prompt: 'Make the last line read "console.log(sum);".',

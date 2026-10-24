@@ -30,11 +30,11 @@ const CONFIG: Record<string, string> = {
     'local map = vim.keymap.set',
     '',
     "map('n', '<Esc>', '<cmd>nohlsearch<CR>')",
-    "map('n', '<leader>w', '<cmd>write<CR>', { desc = 'Save' })",
-    "map('n', '<C-h>', '<C-w>h', { desc = 'Window left' })",
-    "map('n', '<C-j>', '<C-w>j', { desc = 'Window down' })",
-    "map('n', '<C-k>', '<C-w>k', { desc = 'Window up' })",
-    "map('n', '<C-l>', '<C-w>l', { desc = 'Window right' })",
+    "map('n', '<leader>w', '<cmd>write<CR>')",
+    "map('n', '<C-h>', '<C-w>h')",
+    "map('n', '<C-j>', '<C-w>j')",
+    "map('n', '<C-k>', '<C-w>k')",
+    "map('n', '<C-l>', '<C-w>l')",
   ),
   'lua/bootstrap.lua': file(
     "local path = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'",
@@ -169,7 +169,7 @@ export const windowsTabs: Section = {
             solution: ':vs<CR>',
           },
           {
-            prompt: 'Open keymaps.lua in a split above this one.',
+            prompt: 'Open lua/keymaps.lua in a split above this one.',
             goal: { buffer: KEY, check: vim => shape(vim) === 'col(keymaps,options)' },
             solution: `:sp ${KEY}<CR>`,
           },
@@ -179,7 +179,7 @@ export const windowsTabs: Section = {
             solution: ':vs init.lua<CR>',
           },
           {
-            prompt: 'You are in telescope.lua, on the left. Open lsp.lua above it.',
+            prompt: 'You are in telescope.lua, on the left. Open lua/plugins/lsp.lua above it.',
             setup: { init: vim => vim.ex(`vs ${TEL}`) },
             goal: { buffer: LSP, check: vim => shape(vim) === 'row(col(lsp,telescope),options)' },
             solution: `:sp ${LSP}<CR>`,
@@ -375,7 +375,7 @@ export const windowsTabs: Section = {
             solution: '<C-w>|',
           },
           {
-            prompt: 'Even out all four windows.',
+            prompt: 'keymaps.lua has squeezed the other three windows nearly shut. Even out all four.',
             setup: { init: vim => { grid(KEY)(vim); vim.tab.maximize(vim.win, 'col'); vim.tab.maximize(vim.win, 'row'); } },
             goal: { check: balanced },
             solution: '<C-w>=',
@@ -461,9 +461,9 @@ export const windowsTabs: Section = {
             solution: '<C-w>H',
           },
           {
-            prompt: 'Move init.lua to the far right.',
-            setup: { init: vim => { vim.ex('vs init.lua'); } },
-            goal: { check: vim => shape(vim) === 'row(options,init)' },
+            prompt: 'Make init.lua a full-height window on the far right.',
+            setup: { init: grid('init.lua') },
+            goal: { check: vim => shape(vim) === 'row(col(keymaps,options),lsp,init)' },
             solution: '<C-w>L',
           },
         ],
@@ -510,7 +510,7 @@ export const windowsTabs: Section = {
         base: { files: CONFIG, open: OPT, height: 16 },
         rounds: [
           {
-            prompt: 'Open keymaps.lua in a new tab.',
+            prompt: 'Open lua/keymaps.lua in a new tab.',
             goal: { buffer: KEY, check: vim => vim.tabs.length === 2 && vim.tabIdx === 1 },
             solution: `:tabnew ${KEY}<CR>`,
           },

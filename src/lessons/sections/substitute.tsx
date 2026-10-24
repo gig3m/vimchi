@@ -197,7 +197,7 @@ export const substitute: Section = {
             setup: {
               name: 'server.js',
               text: ["const express = require('express');", 'var app = express();', 'app.listen(3000);'],
-              cursor: { line: 1, col: 6 },
+              cursor: { line: 1, col: 0 },
             },
             goal: { text: ["const express = require('express');", 'const app = express();', 'app.listen(3000);'] },
             solution: ':s/var/const/<CR>',
@@ -214,7 +214,7 @@ export const substitute: Section = {
                 '',
                 'Open the page and start typing.',
               ],
-              cursor: { line: 3, col: 10 },
+              cursor: { line: 3, col: 0 },
             },
             goal: {
               text: [
@@ -233,7 +233,7 @@ export const substitute: Section = {
             setup: {
               name: 'settings.py',
               text: ['SECRET_KEY = env("SECRET_KEY")', 'DEBUG = True', 'ALLOWED_HOSTS = ["localhost"]', 'USE_TZ = True'],
-              cursor: { line: 1, col: 8 },
+              cursor: { line: 1, col: 0 },
             },
             goal: { text: ['SECRET_KEY = env("SECRET_KEY")', 'DEBUG = False', 'ALLOWED_HOSTS = ["localhost"]', 'USE_TZ = True'] },
             solution: ':s/True/False/<CR>',
@@ -253,7 +253,7 @@ export const substitute: Section = {
             setup: {
               name: 'checkout.ts',
               text: ['const total = cart.total();', "console.log('debug', total);", 'return total;'],
-              cursor: { line: 1, col: 12 },
+              cursor: { line: 1, col: 0 },
             },
             goal: { text: ['const total = cart.total();', 'console.log(total);', 'return total;'] },
             solution: ":s/'debug', //<CR>",
@@ -899,7 +899,7 @@ export const substitute: Section = {
           },
           {
             prompt: 'Put double quotes around each value between commas.',
-            setup: { name: 'contacts.csv', text: ['name,city', 'Ada,London', 'Grace,New York'], cursor: { line: 2, col: 4 } },
+            setup: { name: 'contacts.csv', text: ['name,city', 'Ada,London', 'Grace,New York'], cursor: { line: 2, col: 0 } },
             goal: { text: ['"name","city"', '"Ada","London"', '"Grace","New York"'] },
             solution: ':%s/[^,]\\+/"&"/g<CR>',
           },
@@ -970,7 +970,7 @@ export const substitute: Section = {
                 'const last_login_at = user.last_login_at;',
                 'render(first_name, last_login_at);',
               ],
-              cursor: { line: 2, col: 6 },
+              cursor: { line: 2, col: 0 },
             },
             goal: {
               text: [
@@ -989,7 +989,7 @@ export const substitute: Section = {
             solution: ':%s/\\v^\\w+/\\U&/<CR>',
           },
           {
-            prompt: "Turn each indented word into a line like PENDING = 'pending',.",
+            prompt: "Turn each indented word into an enum entry: pending becomes PENDING = 'pending',",
             setup: {
               name: 'status.ts',
               text: ['enum Status {', '  pending', '  active', '  archived', '}'],
@@ -1062,7 +1062,7 @@ export const substitute: Section = {
             setup: {
               name: 'path.txt',
               text: ['# PATH on the CI runner', '', '/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin', '# checked weekly'],
-              cursor: { line: 2, col: 5 },
+              cursor: { line: 2, col: 0 },
             },
             goal: {
               text: ['# PATH on the CI runner', '', '/usr/local/bin', '/usr/bin', '/bin', '/opt/homebrew/bin', '# checked weekly'],
@@ -1070,7 +1070,7 @@ export const substitute: Section = {
             solution: ':s/:/\\r/g<CR>',
           },
           {
-            prompt: 'Join the four numbers into one line with ", " between them. Run it on lines 2 to 4 only.',
+            prompt: 'Join the four numbers on lines 2 to 5 into one line, with ", " between them. Replace the line breaks at the ends of lines 2 to 4.',
             setup: { name: 'ids.sql', text: ['-- ids from the refund export', '1042', '1043', '1057', '1101'], cursor: { line: 4, col: 0 } },
             goal: { text: ['-- ids from the refund export', '1042, 1043, 1057, 1101'] },
             solution: ':2,4s/\\n/, /<CR>',
@@ -1238,7 +1238,7 @@ export const substitute: Section = {
                 '<p>Press <kbd>Esc</kbd> to leave <em>insert</em> mode.</p>',
                 '<!-- end -->',
               ],
-              cursor: { line: 1, col: 9 },
+              cursor: { line: 1, col: 0 },
             },
             goal: { text: ['<!-- docs home, first paragraph -->', 'Press Esc to leave insert mode.', '<!-- end -->'] },
             solution: ':s/<lt>.\\{-}>//g<CR>',
@@ -1252,7 +1252,7 @@ export const substitute: Section = {
                 '[2026-09-27 10:14:09] [WARN] slow query',
                 '[2026-09-27 10:14:11] [INFO] GET /health 200',
               ],
-              cursor: { line: 1, col: 22 },
+              cursor: { line: 1, col: 0 },
             },
             goal: { text: ['[INFO] server started', '[WARN] slow query', '[INFO] GET /health 200'] },
             solution: ':%s/^.\\{-}] //<CR>',
@@ -1275,7 +1275,7 @@ export const substitute: Section = {
                 'login user="lin" token="a1b2c3" ip="10.0.0.4"',
                 'fetch path="/me" status="200"',
               ],
-              cursor: { line: 1, col: 6 },
+              cursor: { line: 1, col: 0 },
             },
             goal: { text: ['boot host="api-2"', 'login user="***" token="***" ip="***"', 'fetch path="/me" status="200"'] },
             solution: ':s/".\\{-}"/"***"/g<CR>',
@@ -1354,16 +1354,16 @@ export const substitute: Section = {
             solution: '/\\d\\+ms<CR>:%s//`&`/g<CR>',
           },
           {
-            prompt: 'The last search was /colou\\?r. Change its matches to "color" on the cursor line only.',
+            steps: [{ prompt: 'Search for /colou\\?r, which matches both spellings.', goal: { check: vim => vim.search.pattern === 'colou\\?r' } }],
+            prompt: 'Change its matches to "color" on line 2 only, reusing the search.',
             setup: {
               name: 'style.md',
-              search: 'colou\\?r',
               text: [
                 'Headings use the accent colour.',
                 'Body text uses the base colour, links the accent colour.',
                 'Borders use a lighter colour.',
               ],
-              cursor: { line: 1, col: 10 },
+              cursor: { line: 1, col: 0 },
             },
             goal: {
               text: [
@@ -1372,7 +1372,7 @@ export const substitute: Section = {
                 'Borders use a lighter colour.',
               ],
             },
-            solution: ':s//color/g<CR>',
+            solution: '/colou\\?r<CR>:s//color/g<CR>',
           },
         ],
       },
@@ -1523,7 +1523,7 @@ export const substitute: Section = {
       ),
       practice: total => (
         <p>
-          A substitute has already run on the cursor's line. Repeat it where the goal needs it. {total} rounds.
+          Run a substitute on one line, then repeat it where the goal needs it. {total} rounds.
         </p>
       ),
       aside: {
@@ -1540,59 +1540,68 @@ export const substitute: Section = {
         base: {},
         rounds: [
           {
-            prompt: `Line 1 went through :s/"/'/g. Do the same to the whole file.`,
+            steps: [
+              {
+                prompt: `On line 1, run :s/"/'/g to switch its double quotes to single.`,
+                goal: { text: ["import React from 'react';", 'import { Button } from "./ui";', 'import styles from "./App.css";'] },
+              },
+            ],
+            prompt: 'Now repeat that substitute on every line.',
             setup: {
               name: 'App.jsx',
-              text: ["import React from 'react';", 'import { Button } from "./ui";', 'import styles from "./App.css";'],
-              init: vim => {
-                vim.lastSub = { pattern: '"', replacement: "'", flags: 'g' };
-                vim.search = { pattern: '"', dir: 1, offset: '' };
-              },
+              text: ['import React from "react";', 'import { Button } from "./ui";', 'import styles from "./App.css";'],
+              cursor: { line: 0, col: 0 },
             },
             goal: { text: ["import React from 'react';", "import { Button } from './ui';", "import styles from './App.css';"] },
-            solution: 'g&',
+            solution: `:s/"/'/g<CR>g&`,
           },
           {
-            prompt: 'Line 1 went through :s/;/,/g. Repeat it on line 3 only.',
+            steps: [
+              {
+                prompt: 'On line 1, run :s/;/,/g to turn its semicolons into commas.',
+                goal: { text: ['id,name,plan', '7;Ada;pro', '8;Lin;team', '9;Grace;free'] },
+              },
+            ],
+            prompt: 'Repeat it on line 3 only.',
             setup: {
               name: 'export.csv',
-              text: ['id,name,plan', '7;Ada;pro', 'id;name;plan', '9;Grace;free'],
+              text: ['id;name;plan', '7;Ada;pro', '8;Lin;team', '9;Grace;free'],
               cursor: { line: 0, col: 0 },
-              init: vim => {
-                vim.lastSub = { pattern: ';', replacement: ',', flags: 'g' };
-                vim.search = { pattern: ';', dir: 1, offset: '' };
-              },
             },
-            goal: { text: ['id,name,plan', '7;Ada;pro', 'id,name,plan', '9;Grace;free'] },
-            solution: 'jj&',
+            goal: { text: ['id,name,plan', '7;Ada;pro', '8,Lin,team', '9;Grace;free'] },
+            solution: ':s/;/,/g<CR>jj&',
           },
           {
-            prompt: 'Line 1 went through :s/\\s\\+$//. Repeat it on the next two matches only.',
+            steps: [
+              {
+                prompt: 'On line 1, run :s/TODO/DONE/ to mark it done.',
+                goal: { text: ['- DONE write tests', '- TODO fix the build', '- note: CI is slow', '- TODO update docs', '- TODO tag the release'] },
+              },
+            ],
+            prompt: 'The search is now TODO too. Repeat the substitute on the next two matches only.',
             setup: {
-              name: 'poem.md',
-              text: ['Roses are red,', 'violets are blue,  ', 'sugar is sweet,  ', 'and so are you.  '],
+              name: 'notes.md',
+              text: ['- TODO write tests', '- TODO fix the build', '- note: CI is slow', '- TODO update docs', '- TODO tag the release'],
               cursor: { line: 0, col: 0 },
-              init: vim => {
-                vim.lastSub = { pattern: '\\s\\+$', replacement: '', flags: '' };
-                vim.search = { pattern: '\\s\\+$', dir: 1, offset: '' };
-              },
             },
-            goal: { text: ['Roses are red,', 'violets are blue,', 'sugar is sweet,', 'and so are you.  '] },
-            solution: 'n&n&',
+            goal: { text: ['- DONE write tests', '- DONE fix the build', '- note: CI is slow', '- DONE update docs', '- TODO tag the release'] },
+            solution: ':s/TODO/DONE/<CR>n&n&',
           },
           {
-            prompt: 'Line 1 went through :s/px/rem/g. Repeat it on the last line.',
+            steps: [
+              {
+                prompt: 'On line 1, run :s/px/rem/g.',
+                goal: { text: ['.a { margin: 1rem 2rem; }', '.b { margin: 1px; }', '.c { padding: 1px 2px; }'] },
+              },
+            ],
+            prompt: 'Repeat it on the last line only.',
             setup: {
               name: 'spacing.css',
-              text: ['.a { margin: 1rem 2rem; }', '.b { margin: 1px; }', '.c { padding: 1px 2px; }'],
+              text: ['.a { margin: 1px 2px; }', '.b { margin: 1px; }', '.c { padding: 1px 2px; }'],
               cursor: { line: 0, col: 0 },
-              init: vim => {
-                vim.lastSub = { pattern: 'px', replacement: 'rem', flags: 'g' };
-                vim.search = { pattern: 'px', dir: 1, offset: '' };
-              },
             },
             goal: { text: ['.a { margin: 1rem 2rem; }', '.b { margin: 1px; }', '.c { padding: 1rem 2rem; }'] },
-            solution: 'G&',
+            solution: ':s/px/rem/g<CR>G&',
           },
         ],
       },
@@ -1933,7 +1942,7 @@ export const substitute: Section = {
         base: { name: 'retry.js' },
         rounds: [
           {
-            prompt: '1/3: Replace every var with let. Leave "variant" alone.',
+            prompt: 'Replace every var with let. Leave "variant" alone.',
             setup: {
               text: [
                 'var retry_count = 0;',
@@ -1957,7 +1966,7 @@ export const substitute: Section = {
             solution: ':%s/\\<lt>var\\>/let/<CR>',
           },
           {
-            prompt: '2/3: Remove each "_" in a name and uppercase the letter after it: retry_count becomes retryCount.',
+            prompt: 'Remove each "_" in a name and uppercase the letter after it: retry_count becomes retryCount.',
             setup: {
               text: [
                 'let retry_count = 0;',
@@ -1981,7 +1990,7 @@ export const substitute: Section = {
             solution: ':%s/\\v_(.)/\\u\\1/g<CR>',
           },
           {
-            prompt: '3/3: Switch every double-quoted string to single quotes.',
+            prompt: 'Switch every double-quoted string to single quotes.',
             setup: {
               text: [
                 'let retryCount = 0;',

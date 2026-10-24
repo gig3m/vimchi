@@ -55,7 +55,7 @@ export const macros: Section = {
             prompt: 'Put "- " in front of each item line.',
             setup: {
               text: ['# Saturday', '', 'oat milk', 'coffee beans', 'lemons', 'sourdough'],
-              cursor: { line: 2, col: 4 },
+              cursor: { line: 2, col: 0 },
             },
             goal: { text: ['# Saturday', '', '- oat milk', '- coffee beans', '- lemons', '- sourdough'] },
             solution: 'qaI- <Esc>jq@a@a@a',
@@ -71,7 +71,7 @@ export const macros: Section = {
                 'app.use(cors())',
                 'app.listen(3000)',
               ],
-              cursor: { line: 0, col: 7 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: [
@@ -89,7 +89,7 @@ export const macros: Section = {
             setup: {
               name: 'theme.json',
               text: ['{', '  background: "#1e1e2e",', '  foreground: "#cdd6f4",', '  accent: "#f5c2e7"', '}'],
-              cursor: { line: 1, col: 6 },
+              cursor: { line: 1, col: 2 },
             },
             goal: { text: ['{', '  "background": "#1e1e2e",', '  "foreground": "#cdd6f4",', '  "accent": "#f5c2e7"', '}'] },
             solution: 'qaI"<Esc>f:i"<Esc>jq@a@a',
@@ -106,7 +106,7 @@ export const macros: Section = {
                 "    print('writing cache')",
                 '    return rows',
               ],
-              cursor: { line: 1, col: 4 },
+              cursor: { line: 1, col: 0 },
             },
             goal: {
               text: [
@@ -171,7 +171,7 @@ export const macros: Section = {
             setup: {
               name: 'regions.ts',
               text: ['const regions = [', "  'us-east-1'", "  'us-west-2'", "  'eu-west-1'", "  'eu-central-1'", "  'ap-south-1'", "  'ap-northeast-1'", '];'],
-              cursor: { line: 0, col: 6 },
+              cursor: { line: 0, col: 0 },
             },
             goal: {
               text: ['const regions = [', "  'us-east-1',", "  'us-west-2',", "  'eu-west-1',", "  'eu-central-1',", "  'ap-south-1',", "  'ap-northeast-1'", '];'],
@@ -179,7 +179,7 @@ export const macros: Section = {
             solution: 'jqaA,<Esc>jq4@a',
           },
           {
-            prompt: 'Register a puts "-- " at the start of a line and moves down. Run it on four lines, from the cursor.',
+            prompt: 'Comment out lines 2 to 5 with "-- ": record it on one line, then replay with @a and @@.',
             setup: {
               name: 'init.lua',
               text: [
@@ -190,8 +190,7 @@ export const macros: Section = {
                 "vim.opt.textwidth = 80",
                 "vim.opt.number = true",
               ],
-              registers: { a: 'I-- \x1bj' },
-              cursor: { line: 1, col: 8 },
+              cursor: { line: 1, col: 0 },
             },
             goal: {
               text: [
@@ -203,13 +202,13 @@ export const macros: Section = {
                 'vim.opt.number = true',
               ],
             },
-            solution: '4@a',
+            solution: 'qaI-- <Esc>jq@a@@@@',
           },
           {
             prompt: 'Add seats 2 to 6: copy the INSERT line and bump its first number by one each time.',
             setup: {
               text: ['-- hall A, front row', 'BEGIN;', "INSERT INTO seats (id, row) VALUES (1, 'A');", 'COMMIT;'],
-              cursor: { line: 2, col: 12 },
+              cursor: { line: 2, col: 0 },
             },
             goal: {
               text: [
@@ -237,7 +236,7 @@ export const macros: Section = {
                 'export const accepted = 202;',
                 'export const conflict = 409;',
               ],
-              cursor: { line: 1, col: 13 },
+              cursor: { line: 1, col: 0 },
             },
             goal: {
               text: ['// HTTP status codes', "export const OK = 200;", "export const CREATED = 201;", "export const ACCEPTED = 202;", "export const CONFLICT = 409;"],
@@ -424,7 +423,7 @@ export const macros: Section = {
                 '- move CI to arm runners',
                 '- delete the feature flags',
               ],
-              cursor: { line: 2, col: 5 },
+              cursor: { line: 2, col: 0 },
             },
             goal: {
               text: [
@@ -454,7 +453,7 @@ export const macros: Section = {
                 '  return order;',
                 '}',
               ],
-              cursor: { line: 2, col: 8 },
+              cursor: { line: 2, col: 2 },
             },
             goal: {
               text: [
@@ -549,7 +548,7 @@ export const macros: Section = {
         base: { name: 'legacy.py' },
         rounds: [
           {
-            prompt: 'Register a deletes a trailing semicolon but forgets to move down. Add the j, then run it on all four lines.',
+            prompt: 'Register a holds $x: it deletes a trailing ";" but never moves down. Add a j, then run it on all four lines.',
             setup: {
               text: ['import json;', 'rows = load();', 'total = sum(r.amount for r in rows);', 'print(json.dumps(total));'],
               registers: { a: '$x' },
@@ -559,7 +558,7 @@ export const macros: Section = {
             solution: 'Go<Esc>"apAj<Esc>0"ay$ddgg4@a',
           },
           {
-            prompt: 'Register v should delete the version at the start of a line, but dw stops at the dot. Make it dW.',
+            prompt: 'Register v holds 0dwj, to delete the version at the start of a line, but dw stops at the dot. Make it 0dWj.',
             setup: {
               name: 'CHANGELOG.md',
               text: ['v2.4.0 Add dark mode', 'v2.3.1 Fix login redirect', 'v2.3.0 Drop Node 18'],
@@ -570,7 +569,7 @@ export const macros: Section = {
             solution: 'Go<Esc>"vpFwrW0"vy$dd',
           },
           {
-            prompt: 'Register c removes one character, but each line starts with "# ". Make it 02xj, then run it on all three lines.',
+            prompt: 'Register c holds 0xj, which removes one character, but each line starts with "# ". Make it 02xj, then run it on all three lines.',
             setup: {
               name: 'config.py',
               text: ['# DEBUG = True', '# ALLOWED_HOSTS = ["*"]', '# CACHE_TTL = 0'],

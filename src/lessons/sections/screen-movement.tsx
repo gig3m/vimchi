@@ -236,6 +236,8 @@ const top = (line: number) => (vim: Vim) => {
   vim.win.top = line;
 };
 const topIs = (line: number) => (vim: Vim) => vim.win.top === line;
+/** The cursor is on this line, whatever its column (scrolling keeps the column it had). */
+const onLine = (line: number) => (vim: Vim) => vim.cursor.line === line;
 
 export const screenMovement: Section = {
   id: 'screen-movement',
@@ -286,38 +288,38 @@ export const screenMovement: Section = {
           {
             prompt: 'Scroll down to "const DEFAULTS".',
             setup: { cursor: { line: 0, col: 0 } },
-            goal: { cursor: { line: 18, col: 0 } },
+            goal: { check: onLine(18) },
             solution: '<C-d><C-d><C-d>',
-          },
-          {
-            prompt: 'Scroll down to "export class Queue".',
-            setup: { cursor: { line: 12, col: 7 } },
-            goal: { cursor: { line: 24, col: 7 } },
-            solution: '<C-d><C-d>',
           },
           {
             prompt: 'Scroll down to "constructor(".',
-            setup: { cursor: { line: 24, col: 2 } },
-            goal: { cursor: { line: 30, col: 2 } },
-            solution: '<C-d>',
+            setup: { cursor: { line: 18, col: 0 } },
+            goal: { check: onLine(30) },
+            solution: '<C-d><C-d>',
           },
           {
-            prompt: 'Scroll down to "private async run".',
-            setup: { cursor: { line: 50, col: 4 } },
-            goal: { cursor: { line: 68, col: 4 } },
-            solution: '<C-d><C-d><C-d>',
+            prompt: 'Scroll down to "this.running++".',
+            setup: { cursor: { line: 30, col: 0 } },
+            goal: { check: onLine(60) },
+            solution: '<C-d><C-d><C-d><C-d><C-d>',
           },
           {
-            prompt: 'Scroll back up to "private tick()".',
-            setup: { cursor: { line: 73, col: 6 } },
-            goal: { cursor: { line: 55, col: 6 } },
-            solution: '<C-u><C-u><C-u>',
+            prompt: 'Scroll down to "async drain()".',
+            setup: { cursor: { line: 60, col: 0 } },
+            goal: { check: onLine(84) },
+            solution: '<C-d><C-d><C-d><C-d>',
           },
           {
-            prompt: 'Scroll up to "push(id".',
-            setup: { cursor: { line: 50, col: 2 }, init: top(45) },
-            goal: { cursor: { line: 38, col: 2 } },
+            prompt: 'Scroll back up to "} catch (err) {".',
+            setup: { cursor: { line: 84, col: 0 } },
+            goal: { check: onLine(72) },
             solution: '<C-u><C-u>',
+          },
+          {
+            prompt: 'Scroll up to "this.tick()" at the end of push.',
+            setup: { cursor: { line: 72, col: 0 } },
+            goal: { check: onLine(42) },
+            solution: '<C-u><C-u><C-u><C-u><C-u>',
           },
         ],
       },
@@ -476,8 +478,7 @@ export const screenMovement: Section = {
       ),
       practice: total => (
         <p>
-          The cursor is already on the line in the <span className="hl-green">green box</span>. Scroll it where the
-          round asks. {total} rounds.
+          The cursor is already on the line the round names. Scroll that line where the round asks. {total} rounds.
         </p>
       ),
       aside: {
@@ -555,8 +556,8 @@ export const screenMovement: Section = {
       ),
       practice: total => (
         <p>
-          Scroll the window until the line the prompt names is at the top of the screen, or where it asks. The cursor
-          should end in the <span className="hl-green">green box</span>. {total} rounds.
+          Scroll the window until the line the prompt names is at the top of the screen, or where it asks. When the
+          cursor has to move, it ends in the <span className="hl-green">green box</span>. {total} rounds.
         </p>
       ),
       aside: {
@@ -581,8 +582,8 @@ export const screenMovement: Section = {
           },
           {
             prompt: 'Scroll up until "push(id" is the top line.',
-            setup: { cursor: { line: 45, col: 6 }, init: top(40) },
-            goal: { cursor: { line: 45, col: 6 }, check: topIs(38) },
+            setup: { cursor: { line: 45, col: 2 }, init: top(40) },
+            goal: { cursor: { line: 45, col: 2 }, check: topIs(38) },
             solution: '2<C-y>',
           },
           {
@@ -593,20 +594,20 @@ export const screenMovement: Section = {
           },
           {
             prompt: 'Scroll up until "return i === -1" is the top line.',
-            setup: { cursor: { line: 68, col: 4 }, init: top(56) },
-            goal: { cursor: { line: 64, col: 4 }, check: topIs(52) },
+            setup: { cursor: { line: 68, col: 2 }, init: top(56) },
+            goal: { cursor: { line: 64, col: 2 }, check: topIs(52) },
             solution: '4<C-y>',
           },
           {
-            prompt: 'Scroll down until the last line of the file, "}", is the bottom line.',
+            prompt: 'Scroll down until line 92, the last line of the file, is the bottom line.',
             setup: { cursor: { line: 82, col: 2 }, init: top(70) },
             goal: { cursor: { line: 82, col: 2 }, check: topIs(79) },
             solution: '9<C-e>',
           },
           {
             prompt: 'Scroll up until the first line of the file is the top line.',
-            setup: { cursor: { line: 10, col: 7 }, init: top(3) },
-            goal: { cursor: { line: 10, col: 7 }, check: topIs(0) },
+            setup: { cursor: { line: 10, col: 0 }, init: top(3) },
+            goal: { cursor: { line: 10, col: 0 }, check: topIs(0) },
             solution: '3<C-y>',
           },
         ],

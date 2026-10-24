@@ -149,6 +149,9 @@ export type Round = {
    * then: "yank this" → "now put it there", "select this" → "actually, include that too".
    */
   steps?: Step[];
+  /** The steps are the lesson (wander off, then come back with gi): the final goal counts only
+   * after them, even when the same text could be typed in one go. */
+  inOrder?: boolean;
   /** Reference keys in Vim notation, e.g. "d2w" or ":%s/a/b/g<CR>". Covers every step. */
   solution: string;
 };

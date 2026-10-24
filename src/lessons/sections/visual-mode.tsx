@@ -333,7 +333,7 @@ export const visualMode: Section = {
       ),
       practice: total => (
         <p>
-          Each round names a selection you made a moment ago. Get it back with <Code>gv</Code> and finish the edit.{' '}
+          Make a selection, let it go, then get it back with <Code>gv</Code> and finish the edit.{' '}
           {total} rounds.
         </p>
       ),
@@ -352,7 +352,6 @@ export const visualMode: Section = {
         base: { name: 'list.lua' },
         rounds: [
           {
-            prompt: 'You just selected the first two "old" entries. Delete them, then the other two.',
             setup: {
               text: [
                 'local plugins = {',
@@ -364,10 +363,18 @@ export const visualMode: Section = {
                 '}',
               ],
               cursor: { line: 0, col: 0 },
-              init: vim => vim.feedKeys('jVj<Esc>G'),
             },
+            steps: [
+              {
+                prompt: 'Select the first two "old" lines.',
+                goal: selecting({ line: 1, col: 0 }, { line: 2, col: 0 }, 'line'),
+                mark: { start: { line: 1, col: 0 }, end: { line: 2, col: 11 } },
+              },
+              { prompt: 'Check them, then leave the selection with Esc.', goal: { check: v => !v.buf.modified } },
+            ],
+            prompt: 'Bring the selection back with gv and delete it. Then delete the other two.',
             goal: { text: ['local plugins = {', '  "folke/lazy.nvim",', '}'] },
-            solution: 'gvdj.',
+            solution: 'jVj<Esc>gvdj.',
           },
           {
             prompt: 'Yank the run() and done() lines, then reselect and delete them.',
@@ -380,28 +387,27 @@ export const visualMode: Section = {
             solution: 'Vjygvd',
           },
           {
-            prompt: 'You selected "timeout" a moment ago. Change it to "delay".',
+            prompt: 'Select "timeout" and yank it, then reselect it and change it to "delay".',
             setup: {
               name: 'client.ts',
               text: ['const client = createClient({', '  timeout: 3000,', '});'],
-              cursor: { line: 1, col: 2 },
-              init: vim => vim.feedKeys('ve<Esc>gg'),
+              cursor: { line: 0, col: 0 },
             },
-            goal: { text: ['const client = createClient({', '  delay: 3000,', '});'] },
-            solution: 'gvcdelay<Esc>',
+            goal: { text: ['const client = createClient({', '  delay: 3000,', '});'], registers: { '0': 'timeout' } },
+            solution: 'j^veygvcdelay<Esc>',
           },
           {
-            prompt: 'You last selected the first hand-wrapped paragraph. Join it, then the second.',
+            prompt: 'Yank the first paragraph, then reselect it and join it. Then join the second paragraph.',
             setup: {
               name: 'notes.md',
               text: ['This paragraph was', 'wrapped by hand and', 'reads badly.', '', 'So was this', 'one, three', 'lines long.'],
               cursor: { line: 0, col: 0 },
-              init: vim => vim.feedKeys('Vjj<Esc>G'),
             },
             goal: {
               text: ['This paragraph was wrapped by hand and reads badly.', '', 'So was this one, three lines long.'],
+              registers: { '0': 'This paragraph was\nwrapped by hand and\nreads badly.\n' },
             },
-            solution: 'gvJjj.',
+            solution: 'VjjygvJjj.',
           },
         ],
       },
@@ -504,7 +510,7 @@ export const visualMode: Section = {
             prompt: 'Change "yes" on the dark line to "no".',
             setup: {
               text: ['const flags = {', '  beta: "yes",', '  dark: "yes",', '  sync: "yes",', '};'],
-              cursor: { line: 1, col: 9 },
+              cursor: { line: 1, col: 2 },
             },
             goal: { text: ['const flags = {', '  beta: "yes",', '  dark: "no",', '  sync: "yes",', '};'] },
             solution: 'jvi"cno<Esc>',
@@ -747,7 +753,8 @@ export const visualMode: Section = {
           </p>
           <p>
             <Code>i(</Code> grows the same way, one level at a time, but stops inside the parentheses. Keep pressing until
-            the highlight covers what you want, then act on it.
+            the highlight covers what you want, then act on it. Brackets and braces grow the same way, with{' '}
+            <Code>i[</Code> or <Code>a{'{'}</Code>.
           </p>
           <Objects
             text="if (ok(a) && (isAdmin(u) || isOwner(u))) {"

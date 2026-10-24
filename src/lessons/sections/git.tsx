@@ -146,7 +146,7 @@ export const git: Section = {
       ),
       practice: total => (
         <p>
-          Reach the <span className="hl-green">green box</span> at the start of each hunk. {total} rounds.
+          Jump to the hunk each round names with <Code>]h</Code> and <Code>[h</Code>. {total} rounds.
         </p>
       ),
       aside: {
@@ -164,11 +164,36 @@ export const git: Section = {
         // 12 rows keep the hunk at line 8 off M (the middle row of a full-height window).
         base: { ...repo({ 'weather/cli.py': file(...CLI_ARGPARSE) }), open: 'weather/cli.py', plugins: ['gitsigns'], height: 12 },
         rounds: [
-          { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: { line: 8, col: 0 } }, solution: ']h' },
-          { setup: { cursor: { line: 3, col: 0 } }, goal: { cursor: { line: 13, col: 0 } }, solution: '2]h' },
-          { setup: { cursor: { line: 17, col: 4 } }, goal: { cursor: { line: 13, col: 0 } }, solution: '[h' },
-          { setup: { cursor: { line: 13, col: 8 } }, goal: { cursor: { line: 0, col: 0 } }, solution: ']h' },
-          { setup: { cursor: { line: 17, col: 4 } }, goal: { cursor: { line: 8, col: 0 } }, solution: '2[h' },
+          {
+            prompt: 'Jump to the next hunk below the cursor.',
+            setup: { cursor: { line: 3, col: 0 } },
+            goal: { cursor: { line: 8, col: 0 } },
+            solution: ']h',
+          },
+          {
+            prompt: 'Jump two hunks down. The second one starts below the window.',
+            setup: { cursor: { line: 3, col: 0 } },
+            goal: { cursor: { line: 13, col: 0 } },
+            solution: '2]h',
+          },
+          {
+            prompt: 'Jump back to the hunk above the cursor.',
+            setup: { cursor: { line: 17, col: 4 } },
+            goal: { cursor: { line: 13, col: 0 } },
+            solution: '[h',
+          },
+          {
+            prompt: 'Jump to the next hunk. None is left below, so it wraps to the top.',
+            setup: { cursor: { line: 13, col: 8 } },
+            goal: { cursor: { line: 0, col: 0 } },
+            solution: ']h',
+          },
+          {
+            prompt: 'Jump back two hunks.',
+            setup: { cursor: { line: 17, col: 4 } },
+            goal: { cursor: { line: 8, col: 0 } },
+            solution: '2[h',
+          },
         ],
       },
     },

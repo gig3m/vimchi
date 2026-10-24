@@ -233,13 +233,13 @@ export const insertPower: Section = {
             solution: '<C-o>T await <Esc>',
           },
           {
-            prompt: 'You just typed max_retries. Make it upper case.',
+            prompt: 'You just typed max_retries. Make it upper case without retyping it.',
             setup: { ...typing(['const max_retries‸ = 3;', 'const BACKOFF_MS = 250;', 'const TIMEOUT_MS = 5000;']) },
             goal: { text: ['const MAX_RETRIES = 3;', 'const BACKOFF_MS = 250;', 'const TIMEOUT_MS = 5000;'] },
             solution: '<C-o>gUb<Esc>',
           },
           {
-            prompt: 'Type "v2", then delete the rest of the path up to the quote.',
+            prompt: 'Replace "v1/users" with "v2": type v2 first, then delete the rest up to the quote.',
             setup: {
               ...typing(['const base = process.env.API_URL;', "const url = base + '/api/‸v1/users';", 'const res = await fetch(url);']),
             },
@@ -304,9 +304,15 @@ export const insertPower: Section = {
             solution: '<C-n><C-n><C-y><Esc>',
           },
           {
-            prompt: 'Open the menu, then dismiss it and keep "ord".',
-            setup: typing(['const orders = [];', 'const order = 1;', 'const x = ord‸']),
-            goal: { text: ['const orders = [];', 'const order = 1;', 'const x = ord'] },
+            setup: typing(['const orders = [];', 'const order = 1;', 'const x = ord‸', '', 'export default x;']),
+            steps: [
+              {
+                prompt: 'Open the menu with C-n. It fills in "orders".',
+                goal: { text: ['const orders = [];', 'const order = 1;', 'const x = orders', '', 'export default x;'], mode: 'any' },
+              },
+            ],
+            prompt: 'You wanted "ord" as it was: dismiss the menu with C-e, then leave insert mode.',
+            goal: { text: ['const orders = [];', 'const order = 1;', 'const x = ord', '', 'export default x;'] },
             solution: '<C-n><C-e><Esc>',
           },
         ],
@@ -353,6 +359,8 @@ export const insertPower: Section = {
       },
       challenge: {
         kind: 'rounds',
+        // Inline marks would show the expansion as text to type by hand; the pane shows the result.
+        showGoal: 'pane',
         base: { name: 'util.ts', plugins: ['snippets'] },
         rounds: [
           {

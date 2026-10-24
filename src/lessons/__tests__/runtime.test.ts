@@ -216,3 +216,33 @@ describe('round steps', () => {
     expect(goalMet(v, yanked('alpha', 'char'))).toBe(false);
   });
 });
+
+describe('rounds with steps', () => {
+  const two = (round: RoundsChallenge['rounds'][number]): RoundsChallenge => ({
+    kind: 'rounds', base: { name: 'a.ts', text: ['alpha beta gamma', 'delta'] }, rounds: [round, { goal: { cursor: { line: 1, col: 0 } }, solution: 'j0' }],
+  });
+  const play = (c: RoundsChallenge, keys: string) => {
+    const s = new Session(c, { carryCursor: false });
+    for (const k of solutionKeys(keys)) s.key(k);
+    return s.view().roundDone;
+  };
+  it('a text goal reached another way still finishes the round', () => {
+    const c = two({ setup: { cursor: { line: 0, col: 0 } }, steps: [{ prompt: 'w', goal: { cursor: { line: 0, col: 6 } } }], goal: { text: ['beta gamma', 'delta'] }, solution: 'wd0' });
+    expect(play(c, 'dw')).toBe(true);
+  });
+  it('a place to stand only counts once the steps are done', () => {
+    const c = two({ setup: { cursor: { line: 0, col: 0 } }, steps: [{ prompt: 'x', goal: { text: ['lpha beta gamma', 'delta'] } }], goal: { cursor: { line: 0, col: 5 } }, solution: 'xw' });
+    expect(play(c, '5l')).toBe(false);
+    expect(play(c, 'xw')).toBe(true);
+  });
+  it('inOrder: the same text typed in one go does not skip the steps', () => {
+    const c = two({ inOrder: true, setup: { cursor: { line: 0, col: 0 } }, steps: [{ prompt: 'x', goal: { text: ['lpha beta gamma', 'delta'] } }, { prompt: 'j', goal: { text: ['lpha beta gamma', 'delta'], cursor: { line: 1, col: 0 } } }], goal: { text: ['pha beta gamma', 'delta'] }, solution: 'xjkx' });
+    expect(play(c, 'xx')).toBe(false);
+    expect(play(c, 'xjkx')).toBe(true);
+  });
+  it('a goal that Esc meets at the start needs the steps', () => {
+    const c = two({ setup: { cursor: { line: 0, col: 0 } }, steps: [{ prompt: 'x', goal: { text: ['lpha beta gamma', 'delta'] } }], goal: { text: ['alpha beta gamma', 'delta'] }, solution: 'xu' });
+    expect(play(c, '<Esc>')).toBe(false);
+    expect(play(c, 'xu')).toBe(true);
+  });
+});

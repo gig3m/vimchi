@@ -103,7 +103,7 @@ export const globalCommands: Section = {
             setup: {
               name: 'signups.csv',
               text: ['date,plan,count', '', '2026-09-01,free,118', '2026-09-01,pro,14', '', '', '2026-09-02,free,97', '2026-09-02,pro,21'],
-              cursor: { line: 2, col: 11 },
+              cursor: { line: 2, col: 0 },
             },
             goal: { text: ['date,plan,count', '2026-09-01,free,118', '2026-09-01,pro,14', '2026-09-02,free,97', '2026-09-02,pro,21'] },
             solution: ':g/^$/d<CR>',
@@ -144,7 +144,7 @@ export const globalCommands: Section = {
                 "  vim.o.guifont = 'JetBrains Mono:h14'",
                 'end',
               ],
-              cursor: { line: 5, col: 2 },
+              cursor: { line: 5, col: 0 },
             },
             goal: {
               text: [
@@ -222,7 +222,7 @@ export const globalCommands: Section = {
             setup: {
               name: 'customers.csv',
               text: ['id,name,country', '101,Ada Lovelace,GB', '102,Jonas Weber,DE', '103,Lea Fischer,DE', '104,Marta Silva,PT'],
-              cursor: { line: 3, col: 4 },
+              cursor: { line: 3, col: 0 },
             },
             goal: { text: ['id,name,country', '102,Jonas Weber,DE', '103,Lea Fischer,DE'] },
             solution: ':2,$v/DE/d<CR>',
@@ -239,7 +239,7 @@ export const globalCommands: Section = {
                 '// TODO: currency codes',
                 'export const add = (a: number, b: number) => a + b;',
               ],
-              cursor: { line: 2, col: 6 },
+              cursor: { line: 2, col: 0 },
             },
             goal: {
               text: [
@@ -251,11 +251,11 @@ export const globalCommands: Section = {
             solution: ':v/^export/d<CR>',
           },
           {
-            prompt: 'Delete every line that is empty or only spaces and tabs.',
+            prompt: 'Keep only the lines with some text on them. \\S matches any character but a space or tab.',
             setup: {
               name: 'notes.md',
               text: ['# Standup', '   ', '- shipped the export fix', '', '- pairing on auth after lunch', '\t', '- blocked on staging creds'],
-              cursor: { line: 2, col: 2 },
+              cursor: { line: 2, col: 0 },
             },
             goal: { text: ['# Standup', '- shipped the export fix', '- pairing on auth after lunch', '- blocked on staging creds'] },
             solution: ':v/\\S/d<CR>',
@@ -342,7 +342,7 @@ export const globalCommands: Section = {
                 '- [ ] drop the legacy export @lin',
                 '- [ ] update onboarding copy @sam',
               ],
-              cursor: { line: 1, col: 6 },
+              cursor: { line: 1, col: 0 },
             },
             goal: {
               text: [
@@ -378,7 +378,7 @@ export const globalCommands: Section = {
                 '09:12:10 ERROR job 312: timeout after 5000ms',
                 '    at Timeout._onTimeout (queue.js:88)',
               ],
-              cursor: { line: 3, col: 9 },
+              cursor: { line: 3, col: 0 },
             },
             goal: {
               text: [
@@ -443,7 +443,7 @@ export const globalCommands: Section = {
             setup: {
               name: 'commits.txt',
               text: ['a1f3c9e init project', '4be02d1 add login form', '9c71aa0 fix session expiry', 'e02b5f4 release v1.2.0'],
-              cursor: { line: 2, col: 8 },
+              cursor: { line: 2, col: 0 },
             },
             goal: { text: ['e02b5f4 release v1.2.0', '9c71aa0 fix session expiry', '4be02d1 add login form', 'a1f3c9e init project'] },
             solution: ':g/^/m0<CR>',
@@ -494,7 +494,7 @@ export const globalCommands: Section = {
                 '',
                 '// public API:',
               ],
-              cursor: { line: 5, col: 3 },
+              cursor: { line: 5, col: 0 },
             },
             goal: {
               text: [
@@ -581,7 +581,7 @@ export const globalCommands: Section = {
             setup: {
               name: 'scores.txt',
               text: ['1840 ada', '2210 grace', '975 linus', '3120 margaret'],
-              cursor: { line: 1, col: 5 },
+              cursor: { line: 1, col: 0 },
             },
             goal: { text: ['3120 margaret', '2210 grace', '1840 ada', '975 linus'] },
             solution: ':sort! n<CR>',
@@ -781,7 +781,7 @@ export const globalCommands: Section = {
             setup: {
               name: 'access.log',
               text: ['10:02:11 GET /orders 200', '10:02:13 GET /invoices/88 500', '10:02:19 POST /checkout 500'],
-              cursor: { line: 2, col: 9 },
+              cursor: { line: 2, col: 0 },
             },
             goal: { text: ['/orders', '/invoices/88', '/checkout'] },
             solution: ":%!awk '{print $3}'<CR>",
