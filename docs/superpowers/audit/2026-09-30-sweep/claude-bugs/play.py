@@ -1,11 +1,12 @@
-# Headless playthroughs for the audit. Run inside the cellgate-bridge image:
-#   docker run --rm --network host -v $PWD/<dir>:/w cellgate-bridge-cellgate-bridge:latest python /w/play.py
+# Headless playthroughs for the audit. Serve the app, then run this with Playwright:
+#   npx vite preview --port 5397
+#   python play.py
 import json, re, sys
 from playwright.sync_api import sync_playwright
 
 BASE = 'http://localhost:5397/'
-OUT = '/w/shots/'
-SOL = json.load(open('/w/solutions.json'))
+OUT = 'shots/'
+SOL = json.load(open('solutions.json'))
 log = []
 
 def P(*a):

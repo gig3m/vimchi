@@ -6,3 +6,6 @@ var/
 db-snapshot/
 .superpowers/
 look/
+docker/.env
+__pycache__/
+*.pyc

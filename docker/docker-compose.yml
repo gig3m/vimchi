@@ -1,8 +1,5 @@
-# vimchi — browser Vim tutor, local/staging recipe (the tailnet instance was retired 2026-09-30;
-# production is deploy/do). Start with ./up.sh
-# (injects the GitHub OAuth app credentials from keys); for a code change
-# `./up.sh` again (it rebuilds). No host port: NPM host reaches it as
-# `vimchi:8080` over nginx-proxy-manager_default.
+# Local run of the production image. Copy .env.example to .env (gitignored).
+# Production is deploy/do.
 name: vimchi
 
 services:
@@ -13,23 +10,17 @@ services:
     container_name: vimchi
     restart: unless-stopped
     init: true
+    ports:
+      - "${VIMCHI_PORT:-8080}:8080"
     environment:
-      TZ: America/Chicago
-      VIMCHI_BASE_URL: https://vimchi.nrsil.io
-      VIMCHI_SECURE_COOKIES: "1"
-      VIMCHI_TRUST_PROXY: "1"   # behind NPM: the client is the last X-Forwarded-For hop
-      # Optional: without them the server runs and /auth/github/login is 503.
+      TZ: ${TZ:-UTC}
+      VIMCHI_BASE_URL: ${VIMCHI_BASE_URL:-http://localhost:8080}
+      VIMCHI_SECURE_COOKIES: ${VIMCHI_SECURE_COOKIES:-0}
+      VIMCHI_TRUST_PROXY: ${VIMCHI_TRUST_PROXY:-0}
       GITHUB_CLIENT_ID: ${VIMCHI_GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${VIMCHI_GITHUB_CLIENT_SECRET:-}
-    networks: [npm]
     volumes:
-      # SQLite (users, sessions, lesson runs) on the host; local-tier backup.
       - ../var:/data
     logging:
       driver: json-file
       options: {max-size: "10m", max-file: "3"}
-
-networks:
-  npm:
-    name: nginx-proxy-manager_default
-    external: true

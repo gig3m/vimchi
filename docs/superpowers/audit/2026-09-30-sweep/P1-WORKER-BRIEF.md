@@ -1,7 +1,7 @@
 # P1 worker brief (2026-09-30)
 
 You are one of several parallel workers rewriting vimchi lessons on branch `p1` in
-/home/kyle/projects/vimchi. Other workers edit OTHER files at the same time.
+this repository. Other workers edit OTHER files at the same time.
 
 Hard rules:
 - Edit ONLY the files your prompt assigns. Never touch other section files, `src/lessons/index.ts`,

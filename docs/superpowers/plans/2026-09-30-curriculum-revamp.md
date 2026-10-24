@@ -1102,4 +1102,4 @@ git add docs/LESSONS.md src/challenges/index.ts
 git commit -m "curriculum: document the band rule"
 ```
 
-Deploy after review and merge (`./docker/up.sh`, then check `https://vimchi.nrsil.io/#picker-word` renders and the sidebar shows six bands).
+Deploy after review and merge (`./docker/up.sh`, then check `https://vimchi.dev/#picker-word` renders and the sidebar shows six bands).

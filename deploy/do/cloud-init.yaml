@@ -1,16 +1,17 @@
 #cloud-config
-# vimchi public droplet (vimchi.dev). Rendered by create-droplet.sh, which fills
-# __HUB_KEY__ and __TS_AUTHKEY__. Everything here is idempotent on first boot.
+# vimchi public droplet. create-droplet.sh renders this template and replaces
+# every placeholder from the environment (see local.env.example).
+# Real keys, hostnames, and addresses belong in local.env, which is gitignored.
 hostname: vimchi
 manage_etc_hosts: true
 disable_root: true
 ssh_pwauth: false
 package_update: true
 package_upgrade: true
-packages: [ca-certificates, curl, ufw, unattended-upgrades, rsync]
+packages: [ca-certificates, curl, ufw, unattended-upgrades, rsync, sqlite3]
 
 users:
-  - name: kyle
+  - name: __SSH_USER__
     groups: [sudo]
     shell: /bin/bash
     sudo: "ALL=(ALL) NOPASSWD:ALL"
@@ -18,25 +19,26 @@ users:
       - "__HUB_KEY__"
 
 write_files:
-  # Fleet SSH CA trust: any cert signed by the hub's user CA may log in as kyle.
-  - path: /etc/ssh/fleet_user_ca.pub
+  # Optional SSH user CA. Any cert it signs may log in as __SSH_USER__.
+  # A comment when VIMCHI_SSH_USER_CA is unset.
+  - path: /etc/ssh/user_ca.pub
     permissions: "0644"
     content: |
-      ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPm28zORSvFIPkR05A2VZ17hNtk39iz8Wo/r78Djimrs fleet-user-ca@sleepwalker 2026-09-12
-  - path: /etc/ssh/fleet_revoked_keys
+      __SSH_USER_CA__
+  - path: /etc/ssh/revoked_keys
     permissions: "0644"
     content: |
-      ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPl19HyVRPVABtk+e4tq6T11EMDAyige9OIUiVLgXh03
+      __SSH_REVOKED_KEYS__
   - path: /etc/ssh/ssh_known_hosts
     permissions: "0644"
     content: |
-      @cert-authority * ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIM4FEeilr4QY1NYRsmr+8RF6bw1DQAWD/u9h4ZZF3PeK
-  - path: /etc/ssh/sshd_config.d/05-fleet-ca.conf
+      __SSH_HOST_CA__
+  - path: /etc/ssh/sshd_config.d/05-user-ca.conf
     permissions: "0644"
     content: |
-      TrustedUserCAKeys /etc/ssh/fleet_user_ca.pub
-      RevokedKeys /etc/ssh/fleet_revoked_keys
-  - path: /etc/ssh/sshd_config.d/05-fleet-no-password.conf
+      TrustedUserCAKeys /etc/ssh/user_ca.pub
+      RevokedKeys /etc/ssh/revoked_keys
+  - path: /etc/ssh/sshd_config.d/05-no-password.conf
     permissions: "0644"
     content: |
       PasswordAuthentication no
@@ -51,23 +53,26 @@ write_files:
     permissions: "0600"
     owner: root:root
     content: |
-      # Filled by hand after the GitHub OAuth app for vimchi.dev exists.
+      # GitHub OAuth app. Leave empty to run with sign-in off.
+      # Callback URL: https://<your-domain>/auth/github/callback
       VIMCHI_GITHUB_CLIENT_ID=
       VIMCHI_GITHUB_CLIENT_SECRET=
+      # Container timezone for logs. UTC when unset.
+      TZ=UTC
 
 runcmd:
   - [sh, -c, "curl -fsSL https://get.docker.com | sh"]
-  - [usermod, -aG, docker, kyle]
-  - [sh, -c, "curl -fsSL https://tailscale.com/install.sh | sh"]
-  - [tailscale, up, "--authkey=__TS_AUTHKEY__", "--hostname=vimchi"]
+  - [usermod, -aG, docker, __SSH_USER__]
+  # __TAILSCALE__
   - [ufw, default, deny, incoming]
   - [ufw, default, allow, outgoing]
-  - [ufw, allow, in, on, tailscale0]
+  # __UFW_TAILSCALE__
   - [ufw, allow, "80/tcp"]
   - [ufw, allow, "443/tcp"]
+  # __UFW_SSH__
   - [ufw, --force, enable]
   - [mkdir, -p, /opt/vimchi/var, /opt/vimchi/caddy]
   - [chown, -R, "1000:1000", /opt/vimchi/var]
-  - [chown, kyle:kyle, /opt/vimchi, /opt/vimchi/.env]
-  - [chown, -R, kyle:kyle, /opt/vimchi/caddy]
+  - [chown, __SSH_USER__:__SSH_USER__, /opt/vimchi, /opt/vimchi/.env]
+  - [chown, -R, __SSH_USER__:__SSH_USER__, /opt/vimchi/caddy]
   - [systemctl, restart, ssh]
