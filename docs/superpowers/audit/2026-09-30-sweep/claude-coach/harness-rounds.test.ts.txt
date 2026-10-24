@@ -9,7 +9,7 @@ import { coach, coachSegment, nudgeText } from '../../coach';
 import { segment } from '../../coach/segment';
 import { coachable, taughtBy } from '../../coach/vocab';
 
-const OUT = '[scratch]/638a614d-62ff-4893-9d1b-f4608b9fcb46/scratchpad/';
+const OUT = '/tmp/vimchi-audit-scratch/';
 
 type Sc = { id: string; r: number; keys: string; expert: string; note: string };
 const SC: Sc[] = JSON.parse(readFileSync(OUT + (process.env.SWEEP_IN ?? 'sc.json'), 'utf8'));

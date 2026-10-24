@@ -1612,7 +1612,7 @@ Expected: all pass, tsc clean.
 
 - [ ] **Step 9: Visual check**
 
-Start `npx vite --host 0.0.0.0`, then run a Playwright script via the [browser-container] image (pattern in `[screenshot-script]`) that opens `http://[lan-ip]:5317/#challenge-fix-the-file?seed=5`, focuses `.editor`, replays the first two items' fixes (teleport is not available from the browser; use `gg` then the item's `line` + `G`, `0`, `col` × `l`, then the keys) and screenshots `.editor`. Confirm: checklist on the right with two ticks, editor still scrolls horizontally, inline hints present. Save the shot under the scratchpad, not the repo. Kill Vite by pid from `ss -ltnp | grep :5317`, never `pkill -f`.
+Start `npx vite`, then run a Playwright script (see `scripts/look.mjs`) that opens `http://127.0.0.1:5317/#challenge-fix-the-file?seed=5`, focuses `.editor`, replays the first two items' fixes (teleport is not available from the browser; use `gg` then the item's `line` + `G`, `0`, `col` × `l`, then the keys) and screenshots `.editor`. Confirm: checklist on the right with two ticks, editor still scrolls horizontally, inline hints present. Save the shot under the scratchpad, not the repo. Kill Vite by pid from `ss -ltnp | grep :5317`, never `pkill -f`.
 
 - [ ] **Step 10: Commit**
 
@@ -1676,4 +1676,4 @@ git commit -m "challenges: document the band and how to extend it"
 ./docker/up.sh
 ```
 
-Then confirm `https://[internal-host]/#challenge-fix-the-file` renders the Challenges band and a checklist, and `curl -s https://[internal-host]/healthz` returns `{"ok":true}`.
+Then confirm `https://vimchi.dev/#challenge-fix-the-file` renders the Challenges band and a checklist, and `curl -s https://vimchi.dev/healthz` returns `{"ok":true}`.

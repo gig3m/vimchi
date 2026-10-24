@@ -1,6 +1,6 @@
-# vimchi on the public droplet: Caddy terminates TLS for vimchi.dev and proxies
-# to the same image [host] runs. The image is shipped by deploy.sh
-# (docker save | docker load); nothing is built here.
+# vimchi on the public droplet: Caddy terminates TLS and proxies to the app.
+# deploy.sh ships the image (docker save | docker load); nothing is built here.
+# /opt/vimchi/.env (written by hand, mode 0600) supplies GitHub OAuth and TZ.
 name: vimchi
 
 services:
@@ -21,8 +21,8 @@ services:
     restart: unless-stopped
     init: true
     environment:
-      TZ: America/Chicago
-      VIMCHI_BASE_URL: https://vimchi.dev
+      TZ: ${TZ:-UTC}
+      VIMCHI_BASE_URL: ${VIMCHI_BASE_URL:-https://vimchi.dev}
       VIMCHI_SECURE_COOKIES: "1"
       VIMCHI_TRUST_PROXY: "1"
       GITHUB_CLIENT_ID: ${VIMCHI_GITHUB_CLIENT_ID:-}

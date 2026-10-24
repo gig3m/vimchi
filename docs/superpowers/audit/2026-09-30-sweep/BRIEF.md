@@ -1,7 +1,7 @@
 # vimchi full sweep — shared brief (2026-09-30)
 
-You are one of several independent reviewers auditing vimchi, a browser Vim tutor at
-[repo] (TypeScript/React/Vite front end, custom Vim engine in `src/vim`,
+You are one of several independent reviewers auditing vimchi, a browser Vim tutor in
+this repository (TypeScript/React/Vite front end, custom Vim engine in `src/vim`,
 lessons in `src/lessons/sections/*.tsx`, generated challenges in `src/challenges`, the Coach in
 `src/coach`, practice UI in `src/components/Practice.tsx` + `EditorView.tsx`, Go server in
 `server/`). Docs: `CURRICULUM.md` (generated lesson list), `docs/LESSONS.md` (authoring rules),
@@ -12,9 +12,8 @@ Rules for every reviewer:
   Scratch scripts go in /tmp or in your report directory only.
 - Run `npx vitest run <file>` / `npx tsc -b` freely (the full suite is ~1 min, 41k tests).
 - `createVim()` from `src/lessons/runtime.ts` and `Session` there let you replay any lesson in
-  node via vitest; `scripts/play.mjs` documents the Playwright approach (headless Chromium is
-  only available via `docker run … [browser-container]:latest python /script.py`,
-  see `[other-project]/CLAUDE.md` for the recipe; the app must be served, e.g. `npx vite preview --port 53xx`).
+  node via vitest. `scripts/look.mjs` and `scripts/play.mjs` drive headless Chromium via
+  Playwright. The app must be served, e.g. `npx vite preview --port 53xx`.
 - Ground every claim in a file:line, a replayed key sequence, or a measurement. No vibes.
 - Rank findings by the effect on a learner. Be concrete about the fix shape.
 - Write your report as Markdown to the path your prompt names. Keep it under ~400 lines;

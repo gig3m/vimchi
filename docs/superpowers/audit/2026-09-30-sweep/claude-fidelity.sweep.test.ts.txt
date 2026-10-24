@@ -31,5 +31,5 @@ it('sweep', () => {
     });
     out.push({ id: l.id, title: l.title, section: s.id, band: s.band, kind: 'rounds', chips: l.chips, chipsNorm: l.chips.map(normChip), rounds });
   }
-  writeFileSync('[scratch]/638a614d-62ff-4893-9d1b-f4608b9fcb46/scratchpad/sweep.json', JSON.stringify(out, null, 1));
+  writeFileSync('/tmp/vimchi-audit-scratch/sweep.json', JSON.stringify(out, null, 1));
 });

@@ -12,7 +12,7 @@ Raw data, scripts and screenshots: `docs/superpowers/audit/2026-09-30-sweep/clau
   goal not met at setup, goal not met after the cursor carries over, and the reference solution reaching
   the goal. My sweep added a check of the other files in each project setup: **0 lines over 60 columns**
   (`files-long.tsv`).
-- **12 headless playthroughs** (Chromium in the [browser-container] image, against a fresh `vite build` in
+- **12 headless playthroughs** (headless Chromium, against a fresh `vite build` in
   scratch, `vite preview :5397`), covering:
   - target `move`, word `words`, replace `r`;
   - rounds `change-words`, `find-char`, `insert-line-ends`;

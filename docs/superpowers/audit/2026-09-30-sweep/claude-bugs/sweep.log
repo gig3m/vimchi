@@ -1,5 +1,5 @@
 
- RUN  v5.0.2 [repo]
+ RUN  v5.0.2 .
 
 stdout | docs/superpowers/audit/2026-09-30-sweep/claude-bugs/sweep.test.ts > sweep
 {
