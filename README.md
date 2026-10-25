@@ -6,7 +6,7 @@ A browser Vim tutor: 193 short lessons, each one a real edit, from `hjkl` to mac
 
 **Play it at [vimchi.dev](https://vimchi.dev).**
 
-![The Quotes lesson: the sidebar lists the Text Objects section, and the practice editor is mid-`ci"`, in Insert mode renaming a package.json string to "vimchi" with the remaining text hinted above the cursor](docs/screenshot.png)
+![The Quotes lesson: the sidebar lists the Text Objects section, and the practice editor is mid-`ci"`, in Insert mode renaming a package.json string to "app", with the next string marked for its change to "src"](docs/screenshot.png)
 
 No install. Progress stays in the browser. Sign in with GitHub when you want runs to follow you to another machine.
 
